@@ -22,13 +22,19 @@
 #include "cores/VideoPlayer/DVDStreamInfo.h"
 #include "cores/VideoPlayer/DVDDemuxers/DemuxCrypto.h"
 #include "cores/VideoPlayer/DVDCodecs/DVDCodecs.h"
+#include "cores/VideoPlayer/TimingConstants.h"
 #include "utils/log.h"
 
 using namespace ADDON;
 
+#define ALIGN(value, alignment) (((value)+(alignment-1))&~(alignment-1))
+
 CAddonVideoCodec::CAddonVideoCodec(CProcessInfo &processInfo, ADDON::AddonInfoPtr& addonInfo, kodi::addon::IAddonInstance* parentInstance)
   : CDVDVideoCodec(processInfo),
     IAddonInstanceHandler(ADDON::ADDON_VIDEOCODEC, addonInfo, parentInstance)
+  , m_decodedData(nullptr)
+  , m_decodedDataSize(0)
+  , m_display_aspect(0.0f)
 {
   memset(&m_struct, 0, sizeof(m_struct));
   m_struct.toKodi.kodiInstance = this;
@@ -37,16 +43,19 @@ CAddonVideoCodec::CAddonVideoCodec(CProcessInfo &processInfo, ADDON::AddonInfoPt
     CLog::Log(LOGERROR, "CAddonVideoCodec: Failed to create add-on instance for '%s'", addonInfo->ID().c_str());
     return;
   }
+  if (m_struct.toAddon.GetName)
+    m_processInfo.SetVideoDecoderName(m_struct.toAddon.GetName(m_addonInstance), false);
 }
 
 CAddonVideoCodec::~CAddonVideoCodec()
 {
   DestroyInstance();
+  free(m_decodedData);
 }
 
 bool CAddonVideoCodec::CopyToInitData(VIDEOCODEC_INITDATA &initData, CDVDStreamInfo &hints)
 {
-  initData.codecProfile = VIDEOCODEC_INITDATA::CodecProfileNotNeeded;
+  initData.codecProfile = CODEC_PROFILE::CodecProfileNotNeeded;
   switch (hints.codec)
   {
   case AV_CODEC_ID_H264:
@@ -54,28 +63,29 @@ bool CAddonVideoCodec::CopyToInitData(VIDEOCODEC_INITDATA &initData, CDVDStreamI
     switch (hints.profile)
     {
     case 0:
-      initData.codecProfile = VIDEOCODEC_INITDATA::CodecProfileUnknown;
+    case FF_PROFILE_UNKNOWN:
+      initData.codecProfile = CODEC_PROFILE::CodecProfileUnknown;
       break;
     case FF_PROFILE_H264_BASELINE:
-      initData.codecProfile = VIDEOCODEC_INITDATA::H264CodecProfileBaseline;
+      initData.codecProfile = CODEC_PROFILE::H264CodecProfileBaseline;
       break;
     case FF_PROFILE_H264_MAIN:
-      initData.codecProfile = VIDEOCODEC_INITDATA::H264CodecProfileMain;
+      initData.codecProfile = CODEC_PROFILE::H264CodecProfileMain;
       break;
     case FF_PROFILE_H264_EXTENDED:
-      initData.codecProfile = VIDEOCODEC_INITDATA::H264CodecProfileExtended;
+      initData.codecProfile = CODEC_PROFILE::H264CodecProfileExtended;
       break;
     case FF_PROFILE_H264_HIGH:
-      initData.codecProfile = VIDEOCODEC_INITDATA::H264CodecProfileHigh;
+      initData.codecProfile = CODEC_PROFILE::H264CodecProfileHigh;
       break;
     case FF_PROFILE_H264_HIGH_10:
-      initData.codecProfile = VIDEOCODEC_INITDATA::H264CodecProfileHigh10;
+      initData.codecProfile = CODEC_PROFILE::H264CodecProfileHigh10;
       break;
     case FF_PROFILE_H264_HIGH_422:
-      initData.codecProfile = VIDEOCODEC_INITDATA::H264CodecProfileHigh422;
+      initData.codecProfile = CODEC_PROFILE::H264CodecProfileHigh422;
       break;
     case FF_PROFILE_H264_HIGH_444_PREDICTIVE:
-      initData.codecProfile = VIDEOCODEC_INITDATA::H264CodecProfileHigh444Predictive;
+      initData.codecProfile = CODEC_PROFILE::H264CodecProfileHigh444Predictive;
       break;
     default:
       return false;
@@ -117,7 +127,22 @@ bool CAddonVideoCodec::CopyToInitData(VIDEOCODEC_INITDATA &initData, CDVDStreamI
   initData.height = hints.height;
   initData.videoFormats = m_formats;
 
+  m_display_aspect = 0.0; (hints.aspect > 0.0 && !hints.forced_aspect) ? hints.aspect : 0.0f;
+
+  m_processInfo.SetVideoDimensions(hints.width, hints.height);
+
   return true;
+}
+
+bool CAddonVideoCodec::AllocateBuffer(unsigned int width, unsigned int height)
+{
+  size_t newSize = ALIGN(height, 16) * (ALIGN(width, 32) + ALIGN(ALIGN(width, 16) / 2, 16));
+  if (newSize > m_decodedDataSize)
+  {
+    m_decodedDataSize = newSize;
+    m_decodedData = (uint8_t*)realloc(m_decodedData, m_decodedDataSize);
+  }
+  return m_decodedDataSize==0 || m_decodedData != 0;
 }
 
 bool CAddonVideoCodec::Open(CDVDStreamInfo &hints, CDVDCodecOptions &options)
@@ -141,7 +166,7 @@ bool CAddonVideoCodec::Open(CDVDStreamInfo &hints, CDVDCodecOptions &options)
   if (!CopyToInitData(initData, hints))
     return false;
 
-  return m_struct.toAddon.Open(m_addonInstance, initData);
+  return m_struct.toAddon.Open(m_addonInstance, initData) && AllocateBuffer(initData.width, initData.height);
 }
 
 bool CAddonVideoCodec::Reconfigure(CDVDStreamInfo &hints)
@@ -153,7 +178,7 @@ bool CAddonVideoCodec::Reconfigure(CDVDStreamInfo &hints)
   if (!CopyToInitData(initData, hints))
     return false;
 
-  return m_struct.toAddon.Reconfigure(m_addonInstance, initData);
+  return m_struct.toAddon.Reconfigure(m_addonInstance, initData) && AllocateBuffer(initData.width, initData.height);
 }
 
 bool CAddonVideoCodec::AddData(const DemuxPacket &packet)
@@ -170,6 +195,9 @@ CDVDVideoCodec::VCReturn CAddonVideoCodec::GetPicture(DVDVideoPicture* pDvdVideo
     return CDVDVideoCodec::VC_ERROR;
 
   VIDEOCODEC_PICTURE picture;
+  picture.decodedData = m_decodedData;
+  picture.decodedDataSize = m_decodedDataSize;
+
   switch (m_struct.toAddon.GetPicture(m_addonInstance, picture))
   {
   case VC_NONE:
@@ -179,7 +207,34 @@ CDVDVideoCodec::VCReturn CAddonVideoCodec::GetPicture(DVDVideoPicture* pDvdVideo
   case VC_BUFFER:
     return CDVDVideoCodec::VC_BUFFER;
   case VC_PICTURE:
-    //TODO: copy data from picture to pDvdVideoPicture
+    pDvdVideoPicture->data[0] = m_decodedData + picture.planeOffsets[0];
+    pDvdVideoPicture->data[1] = m_decodedData + picture.planeOffsets[1];
+    pDvdVideoPicture->data[2] = m_decodedData + picture.planeOffsets[2];
+    pDvdVideoPicture->iLineSize[0] = picture.stride[0];
+    pDvdVideoPicture->iLineSize[1] = picture.stride[1];
+    pDvdVideoPicture->iLineSize[2] = picture.stride[2];
+    pDvdVideoPicture->iWidth = picture.width;
+    pDvdVideoPicture->iHeight = picture.height;
+    pDvdVideoPicture->pts = picture.pts;
+    pDvdVideoPicture->dts = DVD_NOPTS_VALUE;
+    pDvdVideoPicture->color_range = 0;
+    pDvdVideoPicture->color_matrix = 4;
+    pDvdVideoPicture->iFlags = DVP_FLAG_ALLOCATED;
+    pDvdVideoPicture->format = RENDER_FMT_YUV420P;
+
+
+    pDvdVideoPicture->iDisplayWidth = pDvdVideoPicture->iWidth;
+    pDvdVideoPicture->iDisplayHeight = pDvdVideoPicture->iHeight;
+    if (m_display_aspect > 0.0)
+    {
+      pDvdVideoPicture->iDisplayWidth = ((int)lrint(pDvdVideoPicture->iHeight * m_display_aspect)) & ~3;
+      if (pDvdVideoPicture->iDisplayWidth > pDvdVideoPicture->iWidth)
+      {
+        pDvdVideoPicture->iDisplayWidth = pDvdVideoPicture->iWidth;
+        pDvdVideoPicture->iDisplayHeight = ((int)lrint(pDvdVideoPicture->iWidth / m_display_aspect)) & ~3;
+      }
+    }
+    return CDVDVideoCodec::VC_PICTURE;
   default:
     return CDVDVideoCodec::VC_ERROR;
   }
@@ -199,4 +254,3 @@ void CAddonVideoCodec::Reset()
 
   m_struct.toAddon.Reset(m_addonInstance);
 }
-

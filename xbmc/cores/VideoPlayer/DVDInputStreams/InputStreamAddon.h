@@ -30,7 +30,7 @@
 #include "addons/kodi-addon-dev-kit/include/kodi/addon-instance/Inputstream.h"
 
 class CInputStreamProvider
-  : public ADDON::CAddonProvider
+  : public ADDON::IAddonProvider
 {
 public:
   CInputStreamProvider(ADDON::AddonInfoPtr addonInfo, kodi::addon::IAddonInstance* parentInstance);
@@ -110,6 +110,8 @@ public:
 protected:
   void UpdateStreams();
   void DisposeStreams();
+  int ConvertVideoCodecProfile(ADDON::CODEC_PROFILE profile);
+
 
   IVideoPlayer* m_player;
 

@@ -40,10 +40,15 @@ public:
   virtual void SetCodecControl(int flags) override { m_codecFlags = flags; }
 private:
   bool CopyToInitData(VIDEOCODEC_INITDATA &initData, CDVDStreamInfo &hints);
+  bool AllocateBuffer(unsigned int width, unsigned int heigth);
 
   kodi::addon::CInstanceVideoCodec* m_addonInstance;
   AddonInstance_VideoCodec m_struct;
-  
+
   int m_codecFlags;
   VIDEOCODEC_FORMAT m_formats[VIDEOCODEC_FORMAT::MaxVideoFormats + 1];
+
+  uint8_t *m_decodedData;
+  size_t m_decodedDataSize;
+  float m_display_aspect;
 };

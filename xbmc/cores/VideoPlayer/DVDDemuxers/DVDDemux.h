@@ -31,7 +31,7 @@ struct DemuxCryptoSession;
 class CDVDInputStream;
 
 namespace ADDON {
-  class CAddonProvider;
+  class IAddonProvider;
 }
 
 #ifndef __GNUC__
@@ -144,7 +144,7 @@ public:
   } flags;
 
   std::shared_ptr<DemuxCryptoSession> cryptoSession;
-  std::shared_ptr<ADDON::CAddonProvider> externalInterfaces;
+  std::shared_ptr<ADDON::IAddonProvider> externalInterfaces;
 };
 
 class CDemuxStreamVideo : public CDemuxStream
