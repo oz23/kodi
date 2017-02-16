@@ -1,4 +1,4 @@
-set(SOURCES DVDAudio.cpp
+set(SOURCES AudioSinkAE.cpp
             DVDClock.cpp
             DVDDemuxSPU.cpp
             DVDFileInfo.cpp
@@ -16,7 +16,7 @@ set(SOURCES DVDAudio.cpp
             VideoPlayerVideo.cpp
             VideoReferenceClock.cpp)
 
-set(HEADERS DVDAudio.h
+set(HEADERS AudioSinkAE.h
             DVDClock.h
             DVDDemuxSPU.h
             DVDFileInfo.h

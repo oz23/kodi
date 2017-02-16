@@ -34,7 +34,7 @@ class CProcessInfo;
 class CDVDAudioCodecPassthrough : public CDVDAudioCodec
 {
 public:
-  CDVDAudioCodecPassthrough(CProcessInfo &processInfo);
+  CDVDAudioCodecPassthrough(CProcessInfo &processInfo, CAEStreamInfo::DataType streamType);
   virtual ~CDVDAudioCodecPassthrough();
 
   virtual bool Open(CDVDStreamInfo &hints, CDVDCodecOptions &options) override;

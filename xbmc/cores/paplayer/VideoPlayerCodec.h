@@ -50,8 +50,11 @@ public:
   void SetContentType(const std::string &strContent);
 
   bool NeedConvert(AEDataFormat fmt);
+  void SetPassthroughStreamType(CAEStreamInfo::DataType streamType);
 
 private:
+  CAEStreamInfo::DataType GetPassthroughStreamType(AVCodecID codecId, int samplerate);
+
   CDVDDemux* m_pDemuxer;
   CDVDInputStream* m_pInputStream;
   CDVDAudioCodec* m_pAudioCodec;
