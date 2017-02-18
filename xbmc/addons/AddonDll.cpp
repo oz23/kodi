@@ -37,6 +37,7 @@
  * Standard addon interface function includes
  */
 #include "addons/interfaces/kodi/General.h"
+#include "addons/interfaces/kodi/AudioEngine.h"
 #include "addons/interfaces/kodi/gui/General.h"
 
 namespace ADDON
@@ -611,6 +612,7 @@ bool CAddonDll::InitInterface(KODI_HANDLE firstKodiInstance)
   m_interface.toKodi.free_string = free_string;
 
   Interface_General::Init(&m_interface);
+  Interface_AudioEngine::Init(&m_interface);
   Interface_GUIGeneral::Init(&m_interface);
 
   return true;
@@ -618,6 +620,9 @@ bool CAddonDll::InitInterface(KODI_HANDLE firstKodiInstance)
 
 void CAddonDll::DeInitInterface()
 {
+  Interface_General::DeInit(&m_interface);
+  Interface_AudioEngine::DeInit(&m_interface);
+  Interface_GUIGeneral::DeInit(&m_interface);
   free((char*)m_interface.libBasePath);
 }
 

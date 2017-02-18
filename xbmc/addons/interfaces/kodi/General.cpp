@@ -46,7 +46,7 @@ void Interface_General::Init(AddonGlobalInterface* addonInterface)
   addonInterface->toKodi.kodi->set_setting = set_setting;
   addonInterface->toKodi.kodi->open_settings_dialog = open_settings_dialog;
   addonInterface->toKodi.kodi->get_localized_string = get_localized_string;
-  
+
   Interface_Filesystem::Init(addonInterface);
 }
 
