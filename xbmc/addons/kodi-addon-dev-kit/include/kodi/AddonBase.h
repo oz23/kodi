@@ -159,6 +159,7 @@ typedef ADDON_HANDLE_STRUCT *ADDON_HANDLE;
  * Set complete from Kodi!
  */
 struct AddonToKodiFuncTable_kodi;
+struct AddonToKodiFuncTable_kodi_audioengine;
 struct AddonToKodiFuncTable_kodi_gui;
 typedef struct AddonToKodiFuncTable_Addon
 {
@@ -174,6 +175,7 @@ typedef struct AddonToKodiFuncTable_Addon
 
   AddonToKodiFuncTable_kodi* kodi;
   AddonToKodiFuncTable_kodi_gui* kodi_gui;
+  AddonToKodiFuncTable_kodi_audioengine* kodi_audioengine;
 } AddonToKodiFuncTable_Addon;
 
 /*
