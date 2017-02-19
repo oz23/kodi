@@ -85,18 +85,15 @@ IFileDirectory* CFileDirectoryFactory::Create(const CURL& url, CFileItem* pItem,
     }
   }
 
-  if (CServiceBroker::IsBinaryAddonCacheUp())
+  if (!strExtension.empty() && CServiceBroker::IsBinaryAddonCacheUp())
   {
-    VECADDONS vfs;
-    CBinaryAddonCache &addonCache = CServiceBroker::GetBinaryAddonCache();
-    addonCache.GetAddons(vfs, ADDON_VFS);
-    for (size_t i=0;i<vfs.size();++i)
+    for (const auto& addonInfo : CAddonMgr::GetInstance().GetAddonInfos(true, ADDON::ADDON_VFS))
     {
-      std::shared_ptr<CVFSEntry> dec(std::static_pointer_cast<CVFSEntry>(vfs[i]));
-      if (!strExtension.empty() && dec->HasFileDirectories() &&
-          dec->GetExtensions().find(strExtension) != std::string::npos)
+      if (addonInfo->Type(ADDON_VFS)->GetValue("@filedirectories").asBoolean() &&
+          addonInfo->Type(ADDON_VFS)->GetValue("@extensions").asString().find(strExtension) != std::string::npos)
       {
-        CVFSEntryIFileDirectoryWrapper* wrap = new CVFSEntryIFileDirectoryWrapper(dec);
+        VFSEntryPtr vfs = std::make_shared<CVFSEntry>(addonInfo);
+        CVFSEntryIFileDirectoryWrapper* wrap = new CVFSEntryIFileDirectoryWrapper(vfs);
         if (wrap->ContainsFiles(url))
         {
           if (wrap->m_items.Size() == 1)
@@ -114,7 +111,7 @@ IFileDirectory* CFileDirectoryFactory::Create(const CURL& url, CFileItem* pItem,
           pItem->m_bIsFolder = true;
 
         delete wrap;
-        return NULL;
+        return nullptr;
       }
     }
   }

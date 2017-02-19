@@ -203,14 +203,14 @@ IDirectory* CDirectoryFactory::Create(const CURL& url)
 
   if (!url.GetProtocol().empty() && CServiceBroker::IsBinaryAddonCacheUp())
   {
-    VECADDONS addons;
-    ADDON::CBinaryAddonCache &addonCache = CServiceBroker::GetBinaryAddonCache();
-    addonCache.GetAddons(addons, ADDON::ADDON_VFS);
-    for (size_t i=0;i<addons.size();++i)
+    for (const auto& addonInfo : CAddonMgr::GetInstance().GetAddonInfos(true, ADDON::ADDON_VFS))
     {
-      VFSEntryPtr vfs(std::static_pointer_cast<CVFSEntry>(addons[i]));
-      if (vfs->HasDirectories() && vfs->GetProtocols().find(url.GetProtocol()) != std::string::npos)
+      if (addonInfo->Type(ADDON_VFS)->GetValue("@directories").asBoolean() &&
+          addonInfo->Type(ADDON_VFS)->GetValue("@protocols").asString().find(url.GetProtocol()) != std::string::npos)
+      {
+        VFSEntryPtr vfs = std::make_shared<CVFSEntry>(addonInfo);
         return new CVFSEntryIDirectoryWrapper(vfs);
+      }
     }
   }
 

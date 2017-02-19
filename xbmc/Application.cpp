@@ -2904,14 +2904,14 @@ void CApplication::Stop(int exitCode)
 #ifdef HAS_FILESYSTEM_SFTP
     CSFTPSessionManager::DisconnectAllSessions();
 #endif
-    VECADDONS addons;
+    /*VECADDONS addons;
     CServiceBroker::GetBinaryAddonCache().GetAddons(addons, ADDON_VFS);
     for (auto& it : addons)
     {
       AddonPtr addon = CServiceBroker::GetBinaryAddonCache().GetAddonInstance(it->ID(), ADDON_VFS);
       VFSEntryPtr vfs = std::static_pointer_cast<CVFSEntry>(addon);
       vfs->DisconnectAll();
-    }
+    }*/
 
 #if defined(TARGET_POSIX) && defined(HAS_FILESYSTEM_SMB)
     smb.Deinit();
@@ -4582,7 +4582,7 @@ void CApplication::ProcessSlow()
 #ifdef HAS_FILESYSTEM_SFTP
   CSFTPSessionManager::ClearOutIdleSessions();
 #endif
-
+/*
   VECADDONS addons;
   CServiceBroker::GetBinaryAddonCache().GetAddons(addons, ADDON_VFS);
   for (auto& it : addons)
@@ -4590,7 +4590,7 @@ void CApplication::ProcessSlow()
     AddonPtr addon = CServiceBroker::GetBinaryAddonCache().GetAddonInstance(it->ID(), ADDON_VFS);
     VFSEntryPtr vfs = std::static_pointer_cast<CVFSEntry>(addon);
     vfs->ClearOutIdle();
-  }
+  }*/
 
   g_mediaManager.ProcessEvents();
 
@@ -5223,7 +5223,7 @@ void CApplication::CloseNetworkShares()
 #ifdef HAS_FILESYSTEM_SFTP
   CSFTPSessionManager::DisconnectAllSessions();
 #endif
-
+/*
   VECADDONS addons;
   CServiceBroker::GetBinaryAddonCache().GetAddons(addons, ADDON_VFS);
   for (auto& it : addons)
@@ -5231,7 +5231,7 @@ void CApplication::CloseNetworkShares()
     AddonPtr addon = CServiceBroker::GetBinaryAddonCache().GetAddonInstance(it->ID(), ADDON_VFS);
     VFSEntryPtr vfs = std::static_pointer_cast<CVFSEntry>(addon);
     vfs->DisconnectAll();
-  }
+  }*/
 }
 
 void CApplication::RegisterActionListener(IActionListener *listener)

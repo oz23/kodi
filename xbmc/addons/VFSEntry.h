@@ -27,7 +27,7 @@
 namespace ADDON
 {
   //! \brief A virtual filesystem entry add-on.
-  class CVFSEntry : public CAddonDll
+  class CVFSEntry : public IAddonInstanceHandler
   {
   public:
     //! \brief Construct from add-on properties.
@@ -35,10 +35,9 @@ namespace ADDON
     CVFSEntry(AddonInfoPtr addonInfo);
 
     //! \brief Empty destructor.
-    virtual ~CVFSEntry() {}
+    virtual ~CVFSEntry();
 
     // Things that MUST be supplied by the child classes
-    bool Create();
     void* Open(const CURL& url);
     void* OpenForWrite(const CURL& url, bool bOverWrite);
     bool Exists(const CURL& url);
@@ -75,8 +74,9 @@ namespace ADDON
     bool m_files;             //!< Vfs entry can read files.
     bool m_directories;       //!< VFS entry can list directories.
     bool m_filedirectories;   //!< VFS entry contains file directories.
-    KodiToAddonFuncTable_VFSEntry m_struct; //!< VFS callback table
-    VFS_PROPS m_info; //!< (Dummy) properties
+
+    kodi::addon::CInstanceExternVFS* m_addonInstance;
+    AddonInstance_VFSEntry m_struct;
   };
 
   typedef std::shared_ptr<CVFSEntry> VFSEntryPtr; //!< Convenience typedef.

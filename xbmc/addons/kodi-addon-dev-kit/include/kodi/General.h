@@ -162,4 +162,41 @@ namespace kodi
   }
   //----------------------------------------------------------------------------
 
+  //============================================================================
+  ///
+  /// \ingroup cpp_kodi
+  /// @brief Translate a string with an unknown encoding to UTF8.
+  ///
+  /// @param[in]  stringSrc       The string to translate.
+  /// @param[out] utf8StringDst   The translated string.
+  /// @param[in]  failOnBadChar   [opt] return failed if bad character is inside <em>(default is <b><c>false</c></b>)</em>
+  /// @return                     true if OK
+  ///
+  ///
+  /// ------------------------------------------------------------------------
+  ///
+  /// **Example:**
+  /// ~~~~~~~~~~~~~{.cpp}
+  /// #include <kodi/General.h>
+  /// ...
+  /// std::string ret;
+  /// if (!kodi::UnknownToUTF8("test string", ret, true))
+  ///   fprintf(stderr, "Translation to UTF8 failed!\n");
+  /// ...
+  /// ~~~~~~~~~~~~~
+  ///
+  inline bool UnknownToUTF8(const std::string& stringSrc, std::string& utf8StringDst, bool failOnBadChar = false)
+  {
+    bool ret = false;
+    char* retString = ::kodi::addon::CAddonBase::m_interface->toKodi.kodi->unknown_to_utf8(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, stringSrc.c_str(), ret, failOnBadChar);
+    if (retString != nullptr)
+    {
+      if (ret)
+        utf8StringDst = retString;
+        ::kodi::addon::CAddonBase::m_interface->toKodi.free_string(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, retString);
+    }
+    return ret;
+  }
+  //----------------------------------------------------------------------------
+
 } /* namespace kodi */

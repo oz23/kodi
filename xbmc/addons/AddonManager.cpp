@@ -764,8 +764,6 @@ std::shared_ptr<CAddon> CAddonMgr::CreateAddon(AddonInfoPtr addonInfo, TYPE addo
       return std::make_shared<ActiveAE::CActiveAEDSPAddon>(addonInfo);
     case ADDON_GAMEDLL:
       return std::make_shared<GAME::CGameClient>(addonInfo);
-    case ADDON_VFS:
-      return std::make_shared<CVFSEntry>(addonInfo);
     case ADDON_SKIN:
       return std::make_shared<CSkinInfo>(addonInfo);
     case ADDON_RESOURCE_IMAGES:
