@@ -19,7 +19,7 @@
 #pragma once
 
 #include "AddonDll.h"
-#include "addons/kodi-addon-dev-kit/include/kodi/kodi_vfs_types.h"
+#include "addons/kodi-addon-dev-kit/include/kodi/addon-instance/ExternVFS.h"
 #include "filesystem/IFile.h"
 #include "filesystem/IDirectory.h"
 #include "filesystem/IFileDirectory.h"

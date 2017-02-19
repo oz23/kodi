@@ -1,3 +1,4 @@
+#pragma once
 /*
  *      Copyright (C) 2015 Team Kodi
  *
@@ -16,23 +17,11 @@
  *  <http://www.gnu.org/licenses/>.
  *
  */
-#pragma once
 
-#ifdef TARGET_WINDOWS
-#include <windows.h>
-#else
-#ifndef __cdecl
-#define __cdecl
-#endif
-#ifndef __declspec
-#define __declspec(X)
-#endif
-#endif
+#include "../AddonBase.h"
 
-#include <stdint.h>
-#include "xbmc_addon_types.h"
 #ifdef BUILD_KODI_ADDON
-#include "IFileTypes.h"
+#include "../IFileTypes.h"
 #else
 #include "filesystem/IFileTypes.h"
 #include "PlatformDefs.h"
