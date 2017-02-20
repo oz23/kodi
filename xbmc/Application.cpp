@@ -3798,6 +3798,11 @@ void CApplication::UpdateFileState()
           m_progressTrackingVideoResumeBookmark.timeInSeconds = 0.0f;
         }
       }
+      if (m_pPlayer->IsPlayingAudio() && !m_pPlayer->IsPlayingGame())
+      {
+        if (m_progressTrackingItem->IsAudioBook())
+          m_progressTrackingVideoResumeBookmark.timeInSeconds = GetTime();
+      }
     }
   }
 }
@@ -4067,7 +4072,7 @@ void CApplication::ActivateScreenSaver(bool forceType /*= false */)
   // set to Dim in the case of a dialog on screen or playing video
   if (!forceType && (g_windowManager.HasModalDialog() ||
       (m_pPlayer->IsPlayingVideo() && m_ServiceManager->GetSettings().GetBool(CSettings::SETTING_SCREENSAVER_USEDIMONPAUSE)) ||
-      g_PVRManager.IsRunningChannelScan()))
+      CPVRGUIActions::GetInstance().IsRunningChannelScan()))
     m_screensaverIdInUse = "screensaver.xbmc.builtin.dim";
   else // Get Screensaver Mode
     m_screensaverIdInUse = m_ServiceManager->GetSettings().GetString(CSettings::SETTING_SCREENSAVER_MODE);

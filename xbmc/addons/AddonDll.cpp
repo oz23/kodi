@@ -412,7 +412,7 @@ bool CAddonDll::CheckAPIVersion(int type)
                             addonVersion);
 
     std::string heading = StringUtils::Format("%s: %s", CAddonInfo::TranslateType(MainType(), true).c_str(), Name().c_str());
-    std::string text = StringUtils::Format(g_localizeStrings.Get(24084).c_str(),
+    std::string text = StringUtils::Format(g_localizeStrings.Get(24803).c_str(),
                                            kodi::addon::GetTypeName(type),
                                            kodiVersion,
                                            addonVersion);

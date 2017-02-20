@@ -27,6 +27,7 @@ include(cmake/scripts/common/AddOptions.cmake)
 include(cmake/scripts/common/ArchSetup.cmake)
 include(cmake/scripts/common/Macros.cmake)
 include(cmake/scripts/common/ProjectMacros.cmake)
+core_find_versions()
 include(cmake/scripts/${CORE_SYSTEM_NAME}/PathSetup.cmake)
 include(ExternalProject)
 
@@ -76,7 +77,6 @@ else()
 endif()
 
 core_find_git_rev(APP_SCMID FULL)
-core_find_versions()
 
 # add-on xml's
 # find all folders conains a addon.xml.in

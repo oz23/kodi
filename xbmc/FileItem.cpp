@@ -911,6 +911,11 @@ bool CFileItem::IsDeleted() const
   return false;
 }
 
+bool CFileItem::IsAudioBook() const
+{
+  return IsType(".m4b") || IsType(".mka");
+}
+
 bool CFileItem::IsGame() const
 {
   if (HasGameInfoTag())
@@ -993,7 +998,7 @@ bool CFileItem::IsFileFolder(EFileFolderType types) const
     || IsZIP()
     || IsRAR()
     || IsRSS()
-    || IsType(".iso")
+    || IsAudioBook()
     || IsType(".ogg|.oga|.nsf|.sid|.sap|.xbt|.xsp")
 #if defined(TARGET_ANDROID)
     || IsType(".apk")
