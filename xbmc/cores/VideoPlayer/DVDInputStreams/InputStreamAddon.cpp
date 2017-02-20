@@ -39,7 +39,7 @@ CInputStreamProvider::CInputStreamProvider(ADDON::AddonInfoPtr addonInfo, kodi::
 
 void CInputStreamProvider::getAddonInstance(INSTANCE_TYPE instance_type, ADDON::AddonInfoPtr& addonInfo, kodi::addon::IAddonInstance*& parentInstance)
 {
-  if (instance_type == ADDON::CAddonProvider::INSTANCE_VIDEOCODEC)
+  if (instance_type == ADDON::IAddonProvider::INSTANCE_VIDEOCODEC)
   {
     addonInfo = m_addonInfo;
     parentInstance = m_parentInstance;
@@ -50,6 +50,7 @@ void CInputStreamProvider::getAddonInstance(INSTANCE_TYPE instance_type, ADDON::
 /*****************************************************************************************************************/
 
 using namespace ADDON;
+using namespace kodi::addon;
 
 CInputStreamAddon::CInputStreamAddon(ADDON::AddonInfoPtr addonInfo, IVideoPlayer* player, const CFileItem& fileitem)
   : CDVDInputStream(DVDSTREAM_TYPE_ADDON, fileitem)
@@ -459,6 +460,7 @@ void CInputStreamAddon::UpdateStreams()
       videoStream->fAspect = stream.m_Aspect;
       videoStream->stereo_mode = "mono";
       videoStream->iBitRate = stream.m_BitRate;
+      videoStream->profile = ConvertVideoCodecProfile(stream.m_codecProfile);
       demuxStream = videoStream;
     }
     else if (stream.m_streamType == INPUTSTREAM_INFO::TYPE_SUBTITLE)
@@ -498,7 +500,7 @@ void CInputStreamAddon::UpdateStreams()
       demuxStream->cryptoSession = std::shared_ptr<DemuxCryptoSession>(new DemuxCryptoSession(
         map[stream.m_cryptoInfo.m_CryptoKeySystem], stream.m_cryptoInfo.m_CryptoSessionIdSize, stream.m_cryptoInfo.m_CryptoSessionId));
 
-      if ((m_caps.m_mask & INPUTSTREAM_CAPABILITIES::SUPPORTSDECODE) != 0)
+      if ((stream.m_features & INPUTSTREAM_INFO::FEATURE_DECODE) != 0)
       {
         if (!m_subAddonProvider)
           m_subAddonProvider = std::shared_ptr<CInputStreamProvider>(new CInputStreamProvider(AddonInfo(), m_addonInstance));
@@ -516,6 +518,29 @@ void CInputStreamAddon::DisposeStreams()
   for (auto &stream : m_streams)
     delete stream.second;
   m_streams.clear();
+}
+
+int CInputStreamAddon::ConvertVideoCodecProfile(CODEC_PROFILE profile)
+{
+  switch (profile)
+  {
+  case H264CodecProfileBaseline:
+    return FF_PROFILE_H264_BASELINE;
+  case  H264CodecProfileMain:
+    return FF_PROFILE_H264_MAIN;
+  case  H264CodecProfileExtended:
+    return FF_PROFILE_H264_EXTENDED;
+  case  H264CodecProfileHigh:
+    return FF_PROFILE_H264_HIGH;
+  case H264CodecProfileHigh10:
+    return FF_PROFILE_H264_HIGH_10;
+  case H264CodecProfileHigh422:
+    return FF_PROFILE_H264_HIGH_422;
+  case H264CodecProfileHigh444Predictive:
+    return FF_PROFILE_H264_HIGH_444_PREDICTIVE;
+  default:
+    return FF_PROFILE_UNKNOWN;
+  }
 }
 
 /*!

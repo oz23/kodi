@@ -26,6 +26,7 @@
 
 #include "../AddonBase.h"
 #include "../StreamCrypto.h"
+#include "../StreamCodec.h"
 
 #ifdef BUILD_KODI_ADDON
 #include "../DVDDemuxPacket.h"
@@ -58,10 +59,7 @@ extern "C"
       SUPPORTSSEEK = (1 << 3),
 
       /// supports pause
-      SUPPORTSPAUSE = (1 << 4),
-
-      /// supports decode
-      SUPPORTSDECODE = (1 << 5)
+      SUPPORTSPAUSE = (1 << 4)
     };
 
     /// set of supported capabilities
@@ -112,8 +110,15 @@ extern "C"
       TYPE_TELETEXT
     } m_streamType;
 
+    enum Codec_FEATURES
+    {
+      FEATURE_DECODE = 1
+    };
+    unsigned int m_features;
+
     char m_codecName[32];                /*!< @brief (required) name of codec according to ffmpeg */
     char m_codecInternalName[32];        /*!< @brief (optional) internal name of codec (selectionstream info) */
+    kodi::addon::CODEC_PROFILE m_codecProfile; /*!< @brief (optional) bandwidth of the stream (selectionstream info) */
     unsigned int m_pID;                  /*!< @brief (required) physical index */
     unsigned int m_Bandwidth;            /*!< @brief (optional) bandwidth of the stream (selectionstream info) */
 

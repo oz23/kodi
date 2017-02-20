@@ -22,6 +22,7 @@
 
 #include "../AddonBase.h"
 #include "../StreamCrypto.h"
+#include "../StreamCodec.h"
 
 #ifdef BUILD_KODI_ADDON
 #include "../DVDDemuxPacket.h"
@@ -51,18 +52,7 @@ extern "C"
       CodecVp9
     } codec;
 
-    enum CodecProfile
-    {
-      CodecProfileUnknown = 0,
-      CodecProfileNotNeeded,
-      H264CodecProfileBaseline,
-      H264CodecProfileMain,
-      H264CodecProfileExtended,
-      H264CodecProfileHigh,
-      H264CodecProfileHigh10,
-      H264CodecProfileHigh422,
-      H264CodecProfileHigh444Predictive
-    } codecProfile;
+    kodi::addon::CODEC_PROFILE codecProfile;
     
     //UnknownVideoFormat is terminator
     VIDEOCODEC_FORMAT *videoFormats;
@@ -87,7 +77,9 @@ extern "C"
     VIDEOCODEC_FORMAT videoFormat;
 
     uint32_t width, height;
+
     const uint8_t *decodedData;
+    size_t decodedDataSize;
 
     uint32_t planeOffsets[VideoPlane::MaxPlanes];
     uint32_t stride[VideoPlane::MaxPlanes];

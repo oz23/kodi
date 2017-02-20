@@ -33,14 +33,14 @@ namespace ADDON
   class CAddonInfo;
   typedef std::shared_ptr<CAddonInfo> AddonInfoPtr;
 
-  class CAddonProvider
+  class IAddonProvider
   {
   public:
     enum INSTANCE_TYPE
     {
       INSTANCE_VIDEOCODEC
     };
-    virtual void getAddonInstance(INSTANCE_TYPE instance_type, AddonInfoPtr& addonInfo, kodi::addon::IAddonInstance*& parentInstance) {};
+    virtual void getAddonInstance(INSTANCE_TYPE instance_type, AddonInfoPtr& addonInfo, kodi::addon::IAddonInstance*& parentInstance) = 0;
   };
 
   } //Namespace

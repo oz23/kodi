@@ -19,15 +19,20 @@
  *
  */
 
-typedef struct CRYPTO_INFO
-{
-  enum CRYPTO_KEY_SYSTEM :uint16_t
-  {
-    CRYPTO_KEY_SYSTEM_NONE = 0,
-    CRYPTO_KEY_SYSTEM_WIDEVINE,
-    CRYPTO_KEY_SYSTEM_PLAYREADY,
-    CRYPTO_KEY_SYSTEM_COUNT
-  } m_CryptoKeySystem;                 /*!< @brief keysystem for encrypted media, KEY_SYSTEM_NONE for unencrypted media */
-  const char *m_CryptoSessionId;       /*!< @brief The crypto session key id */
-  uint16_t m_CryptoSessionIdSize;      /*!< @brief The size of the crypto session key id */
-} CRYPTO_INFO;
+namespace kodi {
+  namespace addon {
+
+    enum CODEC_PROFILE
+    {
+      CodecProfileUnknown = 0,
+      CodecProfileNotNeeded,
+      H264CodecProfileBaseline,
+      H264CodecProfileMain,
+      H264CodecProfileExtended,
+      H264CodecProfileHigh,
+      H264CodecProfileHigh10,
+      H264CodecProfileHigh422,
+      H264CodecProfileHigh444Predictive
+    };
+  }
+}
