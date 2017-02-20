@@ -230,6 +230,16 @@ CDVDVideoCodec* CDVDFactoryCodec::CreateVideoCodecHW(CProcessInfo &processInfo)
 }
 #endif
 
+#if defined(HAS_LIBAMCODEC)
+#define VP_VIDEOCODEC_HW
+#include "Video/DVDVideoCodecAmlogic.h"
+CDVDVideoCodec* CDVDFactoryCodec::CreateVideoCodecHW(CProcessInfo &processInfo)
+{
+  CDVDVideoCodec* pCodec = new CDVDVideoCodecAmlogic(processInfo);
+  return pCodec;
+}
+#endif
+
 #if !defined(VP_VIDEOCODEC_HW)
 CDVDVideoCodec* CDVDFactoryCodec::CreateVideoCodecHW(CProcessInfo &processInfo)
 {
