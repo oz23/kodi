@@ -50,6 +50,7 @@ void CInputStreamProvider::getAddonInstance(INSTANCE_TYPE instance_type, ADDON::
 /*****************************************************************************************************************/
 
 using namespace ADDON;
+using namespace kodi::addon;
 
 CInputStreamAddon::CInputStreamAddon(ADDON::AddonInfoPtr addonInfo, IVideoPlayer* player, const CFileItem& fileitem)
   : CDVDInputStream(DVDSTREAM_TYPE_ADDON, fileitem)

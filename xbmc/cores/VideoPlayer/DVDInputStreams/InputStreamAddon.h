@@ -110,7 +110,7 @@ public:
 protected:
   void UpdateStreams();
   void DisposeStreams();
-  int ConvertVideoCodecProfile(ADDON::CODEC_PROFILE profile);
+  int ConvertVideoCodecProfile(kodi::addon::CODEC_PROFILE profile);
 
 
   IVideoPlayer* m_player;

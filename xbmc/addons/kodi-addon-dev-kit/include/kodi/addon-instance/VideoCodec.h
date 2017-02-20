@@ -52,7 +52,7 @@ extern "C"
       CodecVp9
     } codec;
 
-    ADDON::CODEC_PROFILE codecProfile;
+    kodi::addon::CODEC_PROFILE codecProfile;
     
     //UnknownVideoFormat is terminator
     VIDEOCODEC_FORMAT *videoFormats;

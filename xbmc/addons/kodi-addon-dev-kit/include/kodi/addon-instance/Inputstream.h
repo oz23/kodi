@@ -118,7 +118,7 @@ extern "C"
 
     char m_codecName[32];                /*!< @brief (required) name of codec according to ffmpeg */
     char m_codecInternalName[32];        /*!< @brief (optional) internal name of codec (selectionstream info) */
-    ADDON::CODEC_PROFILE m_codecProfile; /*!< @brief (optional) bandwidth of the stream (selectionstream info) */
+    kodi::addon::CODEC_PROFILE m_codecProfile; /*!< @brief (optional) bandwidth of the stream (selectionstream info) */
     unsigned int m_pID;                  /*!< @brief (required) physical index */
     unsigned int m_Bandwidth;            /*!< @brief (optional) bandwidth of the stream (selectionstream info) */
 
