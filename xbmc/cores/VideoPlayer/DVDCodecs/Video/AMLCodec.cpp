@@ -1865,6 +1865,9 @@ int CAMLCodec::ReleaseFrame(const uint32_t index, bool drop)
   vbuf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
   vbuf.index = index;
 
+  if (!m_amlVideoFile)
+    return 0;
+
   if (drop)
     vbuf.flags |= V4L2_BUF_FLAG_DONE;
 
