@@ -26,6 +26,69 @@
 namespace ADDON
 {
 
+
+CVFSAddonCache::~CVFSAddonCache()
+{
+  Deinit();
+}
+
+void CVFSAddonCache::Init()
+{
+  CAddonMgr::GetInstance().Events().Subscribe(this, &CVFSAddonCache::OnEvent);
+  Update();
+}
+
+void CVFSAddonCache::Deinit()
+{
+  CAddonMgr::GetInstance().Events().Unsubscribe(this);
+}
+
+const std::vector<VFSEntryPtr> CVFSAddonCache::GetAddonInstances()
+{
+  CSingleLock lock(m_critSection);
+  return m_addonsInstances;
+}
+
+VFSEntryPtr CVFSAddonCache::GetAddonInstance(const std::string& strId, TYPE type)
+{
+  VFSEntryPtr addon;
+
+  CSingleLock lock(m_critSection);
+
+  const auto& itAddon = std::find_if(m_addonsInstances.begin(), m_addonsInstances.end(),
+    [&strId](const VFSEntryPtr& addon)
+    {
+      return addon->ID() == strId;
+    });
+
+  if (itAddon != m_addonsInstances.end())
+    addon = *itAddon;
+
+  return addon;
+}
+
+void CVFSAddonCache::OnEvent(const AddonEvent& event)
+{
+  if (typeid(event) == typeid(AddonEvents::InstalledChanged))
+    Update();
+}
+
+void CVFSAddonCache::Update()
+{
+  std::vector<VFSEntryPtr> addonmap;
+
+  for (const auto& addonInfo : CAddonMgr::GetInstance().GetAddonInfos(true, ADDON::ADDON_VFS))
+  {
+    VFSEntryPtr vfs = std::make_shared<CVFSEntry>(addonInfo);
+    addonmap.push_back(vfs);
+  }
+
+  {
+    CSingleLock lock(m_critSection);
+    m_addonsInstances = std::move(addonmap);
+  }
+}
+
 class CVFSURLWrapper
 {
   public:

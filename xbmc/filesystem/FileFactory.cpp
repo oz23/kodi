@@ -79,7 +79,6 @@
 #include "utils/StringUtils.h"
 #include "ServiceBroker.h"
 #include "addons/VFSEntry.h"
-#include "addons/BinaryAddonCache.h"
 
 using namespace ADDON;
 using namespace XFILE;
@@ -104,18 +103,13 @@ IFile* CFileFactory::CreateLoader(const CURL& url)
     return NULL;
 
   std::string strProtocol = url.GetProtocol();
-  StringUtils::ToLower(strProtocol);
-
   if (!strProtocol.empty() && CServiceBroker::IsBinaryAddonCacheUp())
   {
-    for (const auto& addonInfo : CAddonMgr::GetInstance().GetAddonInfos(true, ADDON::ADDON_VFS))
+    StringUtils::ToLower(strProtocol);
+    for (const auto& vfsAddon : CServiceBroker::GetVFSAddonCache().GetAddonInstances())
     {
-      if (addonInfo->Type(ADDON_VFS)->GetValue("@files").asBoolean() &&
-          addonInfo->Type(ADDON_VFS)->GetValue("@protocols").asString().find(strProtocol) != std::string::npos)
-      {
-        VFSEntryPtr vfs = std::make_shared<CVFSEntry>(addonInfo);
-        return new CVFSEntryIFileWrapper(vfs);
-      }
+      if (vfsAddon->HasFiles() && vfsAddon->GetProtocols().find(strProtocol) != std::string::npos)
+        return new CVFSEntryIFileWrapper(vfsAddon);
     }
   }
 

@@ -46,7 +46,6 @@
 #include "ServiceBroker.h"
 #include "addons/AudioDecoder.h"
 #include "addons/VFSEntry.h"
-#include "addons/BinaryAddonCache.h"
 #include "AudioBookFileDirectory.h"
 
 using namespace ADDON;
@@ -87,13 +86,12 @@ IFileDirectory* CFileDirectoryFactory::Create(const CURL& url, CFileItem* pItem,
 
   if (!strExtension.empty() && CServiceBroker::IsBinaryAddonCacheUp())
   {
-    for (const auto& addonInfo : CAddonMgr::GetInstance().GetAddonInfos(true, ADDON::ADDON_VFS))
+    for (const auto& vfsAddon : CServiceBroker::GetVFSAddonCache().GetAddonInstances())
     {
-      if (addonInfo->Type(ADDON_VFS)->GetValue("@filedirectories").asBoolean() &&
-          addonInfo->Type(ADDON_VFS)->GetValue("@extensions").asString().find(strExtension) != std::string::npos)
+      if (!vfsAddon->HasFileDirectories() &&
+           vfsAddon->GetExtensions().find(strExtension) != std::string::npos)
       {
-        VFSEntryPtr vfs = std::make_shared<CVFSEntry>(addonInfo);
-        CVFSEntryIFileDirectoryWrapper* wrap = new CVFSEntryIFileDirectoryWrapper(vfs);
+        CVFSEntryIFileDirectoryWrapper* wrap = new CVFSEntryIFileDirectoryWrapper(vfsAddon);
         if (wrap->ContainsFiles(url))
         {
           if (wrap->m_items.Size() == 1)

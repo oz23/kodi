@@ -26,6 +26,27 @@
 
 namespace ADDON
 {
+
+  class CVFSEntry;
+  typedef std::shared_ptr<CVFSEntry> VFSEntryPtr; //!< Convenience typedef.
+  
+  class CVFSAddonCache
+  {
+  public:
+    virtual ~CVFSAddonCache();
+    void Init();
+    void Deinit();
+    const std::vector<VFSEntryPtr> GetAddonInstances();
+    VFSEntryPtr GetAddonInstance(const std::string& strId, TYPE type);
+
+  protected:
+    void Update();
+    void OnEvent(const AddonEvent& event);
+    
+    CCriticalSection m_critSection;
+    std::vector<VFSEntryPtr> m_addonsInstances;
+  };
+
   //! \brief A virtual filesystem entry add-on.
   class CVFSEntry : public IAddonInstanceHandler
   {
@@ -78,8 +99,6 @@ namespace ADDON
     kodi::addon::CInstanceExternVFS* m_addonInstance;
     AddonInstance_VFSEntry m_struct;
   };
-
-  typedef std::shared_ptr<CVFSEntry> VFSEntryPtr; //!< Convenience typedef.
 
   //! \brief Wrapper equpping a CVFSEntry with an IFile interface.
   //! \details Needed as CVFSEntry implements several VFS interfaces

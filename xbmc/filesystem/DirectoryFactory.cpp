@@ -97,7 +97,6 @@
 #include "ResourceDirectory.h"
 #include "ServiceBroker.h"
 #include "addons/VFSEntry.h"
-#include "addons/BinaryAddonCache.h"
 
 using namespace ADDON;
 
@@ -203,14 +202,10 @@ IDirectory* CDirectoryFactory::Create(const CURL& url)
 
   if (!url.GetProtocol().empty() && CServiceBroker::IsBinaryAddonCacheUp())
   {
-    for (const auto& addonInfo : CAddonMgr::GetInstance().GetAddonInfos(true, ADDON::ADDON_VFS))
+    for (const auto& vfsAddon : CServiceBroker::GetVFSAddonCache().GetAddonInstances())
     {
-      if (addonInfo->Type(ADDON_VFS)->GetValue("@directories").asBoolean() &&
-          addonInfo->Type(ADDON_VFS)->GetValue("@protocols").asString().find(url.GetProtocol()) != std::string::npos)
-      {
-        VFSEntryPtr vfs = std::make_shared<CVFSEntry>(addonInfo);
-        return new CVFSEntryIDirectoryWrapper(vfs);
-      }
+      if (vfsAddon->HasDirectories() && vfsAddon->GetProtocols().find(url.GetProtocol()) != std::string::npos)
+        return new CVFSEntryIDirectoryWrapper(vfsAddon);
     }
   }
 
