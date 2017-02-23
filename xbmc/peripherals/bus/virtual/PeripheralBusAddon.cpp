@@ -55,7 +55,6 @@ CPeripheralBusAddon::~CPeripheralBusAddon()
   // stop everything before destroying any (loaded) addons
   Clear();
 
-  // destroy any (loaded) addons
   m_failedAddons.clear();
   m_addons.clear();
 }

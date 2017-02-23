@@ -233,8 +233,8 @@ namespace addon
 
   typedef PeripheralVector<PeripheralEvent, PERIPHERAL_EVENT> PeripheralEvents;
 
-  /*!
-   * ADDON::Joystick
+  /*!OH
+   * kodi::addon::Joystick
    *
    * Wrapper class providing additional joystick information not provided by
    * ADDON::Peripheral.
@@ -572,7 +572,7 @@ namespace addon
   typedef PeripheralVector<DriverPrimitive, JOYSTICK_DRIVER_PRIMITIVE> DriverPrimitives;
 
   /*!
-   * ADDON::JoystickFeature
+   * kodi::addon::JoystickFeature
    *
    * Class for joystick features. A feature can be:
    *
