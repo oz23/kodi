@@ -186,7 +186,8 @@ void CAddon::UpdateSetting(const std::string& key, const std::string& value)
 void CAddon::UpdateSettings(std::map<std::string, std::string>& settings)
 {
   LoadSettings();
-  m_settings = settings;
+  for (const auto& setting : settings)
+    m_settings[setting.first] = setting.second;
 }
 
 bool CAddon::SettingsFromXML(const CXBMCTinyXML &doc, bool loadDefaults /*=false */)

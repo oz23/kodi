@@ -23,6 +23,8 @@
 #include "addons/AddonDll.h"
 #include "addons/kodi-addon-dev-kit/include/kodi/addon-instance/VideoCodec.h"
 
+class BufferPool;
+
 class CAddonVideoCodec
   : public CDVDVideoCodec
   , public ADDON::IAddonInstanceHandler
@@ -40,15 +42,24 @@ public:
   virtual void SetCodecControl(int flags) override { m_codecFlags = flags; }
 private:
   bool CopyToInitData(VIDEOCODEC_INITDATA &initData, CDVDStreamInfo &hints);
-  bool AllocateBuffer(unsigned int width, unsigned int heigth);
+
+  /*!
+  * @brief all picture members can be expected to be set correctly except decodedData and pts.
+    GetFrameBuffer has to set decodedData() to a valid memory adress and return true.
+    In case no buffer allocation fails, return false.
+  */
+  bool GetFrameBuffer(VIDEOCODEC_PICTURE &picture);
+
+  static bool get_frame_buffer(void* kodiInstance, VIDEOCODEC_PICTURE &picture);
 
   kodi::addon::CInstanceVideoCodec* m_addonInstance;
   AddonInstance_VideoCodec m_struct;
 
   int m_codecFlags;
   VIDEOCODEC_FORMAT m_formats[VIDEOCODEC_FORMAT::MaxVideoFormats + 1];
+  float m_displayAspect;
 
-  uint8_t *m_decodedData;
-  size_t m_decodedDataSize;
-  float m_display_aspect;
+  void * m_lastPictureBuffer;
+
+  BufferPool *m_bufferPool;
 };

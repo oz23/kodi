@@ -23,6 +23,7 @@
 #include "cores/VideoPlayer/VideoRenderers/RenderFormats.h"
 #include "cores/VideoPlayer/VideoRenderers/BaseRenderer.h"
 #include "cores/VideoPlayer/Process/ProcessInfo.h"
+#include "cores/AudioEngine/Utils/AEStreamInfo.h"
 
 class CDVDVideoCodec;
 class CDVDAudioCodec;
@@ -47,7 +48,8 @@ public:
                                           CProcessInfo &processInfo);
 
   static CDVDAudioCodec* CreateAudioCodec(CDVDStreamInfo &hint, CProcessInfo &processInfo,
-                                          bool allowpassthrough, bool allowdtshddecode);
+                                          bool allowpassthrough, bool allowdtshddecode,
+                                          CAEStreamInfo::DataType ptStreamType);
 
   static CDVDOverlayCodec* CreateOverlayCodec(CDVDStreamInfo &hint);
 

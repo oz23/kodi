@@ -1901,6 +1901,23 @@ void CDVDDemuxFFmpeg::ParsePacket(AVPacket *pkt)
           st->codecpar->extradata_size = i;
           memcpy(st->codecpar->extradata, pkt->data, i);
           memset(st->codecpar->extradata + i, 0, FF_INPUT_BUFFER_PADDING_SIZE);
+
+          if (parser->second->m_parserCtx->parser->parser_parse)
+          {
+            parser->second->m_codecCtx->extradata = st->codecpar->extradata;
+            parser->second->m_codecCtx->extradata_size = st->codecpar->extradata_size;
+            const uint8_t *outbufptr;
+            int bufSize;
+            parser->second->m_parserCtx->flags |= PARSER_FLAG_COMPLETE_FRAMES;
+            parser->second->m_parserCtx->parser->parser_parse(parser->second->m_parserCtx,
+                                                              parser->second->m_codecCtx,
+                                                              &outbufptr, &bufSize,
+                                                              pkt->data, pkt->size);
+            parser->second->m_codecCtx->extradata = nullptr;
+            parser->second->m_codecCtx->extradata_size = 0;
+            st->codecpar->width = parser->second->m_parserCtx->width;
+            st->codecpar->height = parser->second->m_parserCtx->height;
+          }
         }
       }
     }

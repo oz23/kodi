@@ -45,9 +45,9 @@ public:
   void          CloseDecoder();
   void          Reset();
 
-  int           Decode(uint8_t *pData, size_t size, double dts, double pts);
+  bool          AddData(uint8_t *pData, size_t size, double dts, double pts);
+  CDVDVideoCodec::VCReturn GetPicture(DVDVideoPicture* pDvdVideoPicture);
 
-  bool          GetPicture(DVDVideoPicture* pDvdVideoPicture);
   void          SetSpeed(int speed);
   void          SetVideoRect(const CRect &SrcRect, const CRect &DestRect);
   void          SetVideoRate(int videoRate);
