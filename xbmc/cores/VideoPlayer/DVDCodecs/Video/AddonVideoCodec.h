@@ -23,6 +23,8 @@
 #include "addons/AddonDll.h"
 #include "addons/kodi-addon-dev-kit/include/kodi/addon-instance/VideoCodec.h"
 
+class BufferPool;
+
 class CAddonVideoCodec
   : public CDVDVideoCodec
   , public ADDON::IAddonInstanceHandler
@@ -40,7 +42,6 @@ public:
   virtual void SetCodecControl(int flags) override { m_codecFlags = flags; }
 private:
   bool CopyToInitData(VIDEOCODEC_INITDATA &initData, CDVDStreamInfo &hints);
-  bool AllocateBuffer(unsigned int width, unsigned int heigth);
 
   /*!
   * @brief all picture members can be expected to be set correctly except decodedData and pts.
@@ -56,8 +57,7 @@ private:
 
   int m_codecFlags;
   VIDEOCODEC_FORMAT m_formats[VIDEOCODEC_FORMAT::MaxVideoFormats + 1];
+  float m_displayAspect;
 
-  uint8_t *m_decodedData;
-  size_t m_decodedDataSize;
-  float m_display_aspect;
+  BufferPool *m_bufferPool;
 };
