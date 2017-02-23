@@ -38,6 +38,7 @@ CAddonVideoCodec::CAddonVideoCodec(CProcessInfo &processInfo, ADDON::AddonInfoPt
 {
   memset(&m_struct, 0, sizeof(m_struct));
   m_struct.toKodi.kodiInstance = this;
+  m_struct.toKodi.GetFrameBuffer = get_frame_buffer;
   if (!CreateInstance(ADDON_INSTANCE_VIDEOCODEC, &m_struct, reinterpret_cast<KODI_HANDLE*>(&m_addonInstance)) || !m_struct.toAddon.Open)
   {
     CLog::Log(LOGERROR, "CAddonVideoCodec: Failed to create add-on instance for '%s'", addonInfo->ID().c_str());
@@ -253,4 +254,19 @@ void CAddonVideoCodec::Reset()
     return;
 
   m_struct.toAddon.Reset(m_addonInstance);
+}
+
+bool CAddonVideoCodec::GetFrameBuffer(VIDEOCODEC_PICTURE &picture)
+{
+  return false;
+}
+
+/*********************     ADDON-TO-KODI    **********************/
+
+bool CAddonVideoCodec::get_frame_buffer(void* kodiInstance, VIDEOCODEC_PICTURE &picture)
+{
+  if (!kodiInstance)
+    return false;
+
+  return static_cast<CAddonVideoCodec*>(kodiInstance)->GetFrameBuffer(picture);
 }

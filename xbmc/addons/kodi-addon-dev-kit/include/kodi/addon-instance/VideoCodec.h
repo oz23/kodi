@@ -126,6 +126,7 @@ extern "C"
   typedef struct AddonToKodiFuncTable_VideoCodec
   {
     KODI_HANDLE kodiInstance;
+    bool(*GetFrameBuffer)(void* kodiInstance, VIDEOCODEC_PICTURE &picture);
   } AddonToKodiFuncTable_VideoCodec;
 
   typedef struct AddonInstance_VideoCodec
@@ -172,6 +173,16 @@ namespace kodi
 
       //! \copydoc CInstanceVideoCodec::Reset
       virtual void Reset() {};
+
+      /*!
+      * @brief AddonToKodi interface
+      */
+
+      //! \copydoc CInstanceVideoCodec::GetFrameBuffer
+      bool GetFrameBuffer(VIDEOCODEC_PICTURE &picture)
+      {
+        return m_instanceData->toKodi.GetFrameBuffer(m_instanceData->toKodi.kodiInstance, picture);
+      }
 
     private:
       void SetAddonStruct(KODI_HANDLE instance)
