@@ -59,5 +59,7 @@ private:
   VIDEOCODEC_FORMAT m_formats[VIDEOCODEC_FORMAT::MaxVideoFormats + 1];
   float m_displayAspect;
 
+  void * m_lastPictureBuffer;
+
   BufferPool *m_bufferPool;
 };

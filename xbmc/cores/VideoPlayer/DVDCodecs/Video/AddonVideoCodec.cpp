@@ -65,9 +65,9 @@ public:
     return true;
   }
 
-  void ReleaseBuffer(VIDEOCODEC_PICTURE &picture)
+  void ReleaseBuffer(void *bufferPtr)
   {
-    std::vector<BUFFER>::iterator res(std::find(usedBuffer.begin(), usedBuffer.end(), picture.decodedData));
+    std::vector<BUFFER>::iterator res(std::find(usedBuffer.begin(), usedBuffer.end(), bufferPtr));
     if (res == usedBuffer.end())
       return;
     freeBuffer.push_back(*res);
@@ -90,6 +90,7 @@ CAddonVideoCodec::CAddonVideoCodec(CProcessInfo &processInfo, ADDON::AddonInfoPt
   : CDVDVideoCodec(processInfo),
     IAddonInstanceHandler(ADDON::ADDON_VIDEOCODEC, addonInfo, parentInstance)
   , m_displayAspect(0.0f)
+  , m_lastPictureBuffer(nullptr)
   , m_bufferPool(new BufferPool())
 
 {
@@ -108,6 +109,9 @@ CAddonVideoCodec::CAddonVideoCodec(CProcessInfo &processInfo, ADDON::AddonInfoPt
 CAddonVideoCodec::~CAddonVideoCodec()
 {
   DestroyInstance();
+
+  m_bufferPool->ReleaseBuffer(m_lastPictureBuffer);
+
   delete m_bufferPool;
 }
 
@@ -213,6 +217,8 @@ bool CAddonVideoCodec::Open(CDVDStreamInfo &hints, CDVDCodecOptions &options)
   if (!CopyToInitData(initData, hints))
     return false;
 
+  m_lastPictureBuffer = nullptr;
+
   return m_struct.toAddon.Open(m_addonInstance, initData);
 }
 
@@ -282,7 +288,9 @@ CDVDVideoCodec::VCReturn CAddonVideoCodec::GetPicture(DVDVideoPicture* pDvdVideo
     if (g_advancedSettings.CanLogComponent(LOGVIDEO))
       CLog::Log(LOGDEBUG, "CAddonVideoCodec: GetPicture::VC_PICTURE with pts %llu", picture.pts);
 
-    m_bufferPool->ReleaseBuffer(picture);
+    m_bufferPool->ReleaseBuffer(m_lastPictureBuffer);
+    m_lastPictureBuffer = picture.decodedData;
+
     return CDVDVideoCodec::VC_PICTURE;
   default:
     return CDVDVideoCodec::VC_ERROR;
@@ -300,6 +308,9 @@ void CAddonVideoCodec::Reset()
 {
   if (!m_struct.toAddon.Reset)
     return;
+
+  m_bufferPool->ReleaseBuffer(m_lastPictureBuffer);
+  m_lastPictureBuffer = nullptr;
 
   m_struct.toAddon.Reset(m_addonInstance);
 }
