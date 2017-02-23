@@ -21,6 +21,7 @@
 #include "VideoPlayerCodec.h"
 #include "cores/AudioEngine/Utils/AEUtil.h"
 #include "cores/AudioEngine/AEResampleFactory.h"
+#include "cores/AudioEngine/Interfaces/AE.h"
 
 #include "cores/VideoPlayer/DVDInputStreams/DVDFactoryInputStream.h"
 #include "cores/VideoPlayer/DVDDemuxers/DVDFactoryDemuxer.h"
@@ -31,6 +32,7 @@
 #include "utils/log.h"
 #include "URL.h"
 #include "utils/StringUtils.h"
+#include "ServiceBroker.h"
 
 VideoPlayerCodec::VideoPlayerCodec()
 {
@@ -67,6 +69,11 @@ void VideoPlayerCodec::SetContentType(const std::string &strContent)
 {
   m_strContentType = strContent;
   StringUtils::ToLower(m_strContentType);
+}
+
+void  VideoPlayerCodec::SetPassthroughStreamType(CAEStreamInfo::DataType streamType)
+{
+  m_srcFormat.m_streamInfo.m_type = streamType;
 }
 
 bool VideoPlayerCodec::Init(const CFileItem &file, unsigned int filecache)
@@ -165,7 +172,8 @@ bool VideoPlayerCodec::Init(const CFileItem &file, unsigned int filecache)
 
   CDVDStreamInfo hint(*pStream, true);
 
-  m_pAudioCodec = CDVDFactoryCodec::CreateAudioCodec(hint, *m_processInfo.get(), true, true);
+  CAEStreamInfo::DataType ptStreamTye = GetPassthroughStreamType(hint.codec, hint.samplerate);
+  m_pAudioCodec = CDVDFactoryCodec::CreateAudioCodec(hint, *m_processInfo.get(), true, true, ptStreamTye);
   if (!m_pAudioCodec)
   {
     CLog::Log(LOGERROR, "%s: Could not create audio codec", __FUNCTION__);
@@ -484,4 +492,39 @@ bool VideoPlayerCodec::NeedConvert(AEDataFormat fmt)
     default:
       return true;
   }
+}
+
+CAEStreamInfo::DataType VideoPlayerCodec::GetPassthroughStreamType(AVCodecID codecId, int samplerate)
+{
+  AEAudioFormat format;
+  format.m_dataFormat = AE_FMT_RAW;
+  format.m_sampleRate = samplerate;
+  format.m_streamInfo.m_type = CAEStreamInfo::DataType::STREAM_TYPE_NULL;
+  switch (codecId)
+  {
+    case AV_CODEC_ID_AC3:
+      format.m_streamInfo.m_type = CAEStreamInfo::STREAM_TYPE_AC3;
+      format.m_streamInfo.m_sampleRate = samplerate;
+      break;
+
+    case AV_CODEC_ID_EAC3:
+      format.m_streamInfo.m_type = CAEStreamInfo::STREAM_TYPE_EAC3;
+      format.m_streamInfo.m_sampleRate = samplerate;
+      break;
+
+    case AV_CODEC_ID_DTS:
+      format.m_streamInfo.m_type = CAEStreamInfo::STREAM_TYPE_DTSHD_CORE;
+      format.m_streamInfo.m_sampleRate = samplerate;
+      break;
+
+    default:
+      format.m_streamInfo.m_type = CAEStreamInfo::STREAM_TYPE_NULL;
+  }
+
+  bool supports = CServiceBroker::GetActiveAE().SupportsRaw(format);
+
+  if (supports)
+    return format.m_streamInfo.m_type;
+  else
+    return CAEStreamInfo::DataType::STREAM_TYPE_NULL;
 }

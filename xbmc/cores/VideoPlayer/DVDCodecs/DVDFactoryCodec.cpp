@@ -116,7 +116,9 @@ CDVDVideoCodec* CDVDFactoryCodec::CreateVideoCodec(CDVDStreamInfo &hint, CProces
 // Audio
 //------------------------------------------------------------------------------
 
-CDVDAudioCodec* CDVDFactoryCodec::CreateAudioCodec(CDVDStreamInfo &hint, CProcessInfo &processInfo, bool allowpassthrough, bool allowdtshddecode)
+CDVDAudioCodec* CDVDFactoryCodec::CreateAudioCodec(CDVDStreamInfo &hint, CProcessInfo &processInfo,
+                                                   bool allowpassthrough, bool allowdtshddecode,
+                                                   CAEStreamInfo::DataType ptStreamType)
 {
   std::unique_ptr<CDVDAudioCodec> pCodec;
   CDVDCodecOptions options;
@@ -132,9 +134,9 @@ CDVDAudioCodec* CDVDFactoryCodec::CreateAudioCodec(CDVDStreamInfo &hint, CProces
     options.m_keys.push_back(CDVDCodecOption("allowdtshddecode", "0"));
 
   // we don't use passthrough if "sync playback to display" is enabled
-  if (allowpassthrough)
+  if (allowpassthrough && ptStreamType != CAEStreamInfo::STREAM_TYPE_NULL)
   {
-    pCodec.reset(new CDVDAudioCodecPassthrough(processInfo));
+    pCodec.reset(new CDVDAudioCodecPassthrough(processInfo, ptStreamType));
     if (pCodec->Open(hint, options))
     {
       return pCodec.release();
