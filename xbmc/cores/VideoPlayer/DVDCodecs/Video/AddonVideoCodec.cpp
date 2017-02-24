@@ -90,6 +90,7 @@ CAddonVideoCodec::CAddonVideoCodec(CProcessInfo &processInfo, ADDON::AddonInfoPt
   : CDVDVideoCodec(processInfo),
     IAddonInstanceHandler(ADDON::ADDON_VIDEOCODEC, addonInfo, parentInstance)
   , m_displayAspect(0.0f)
+  , m_codecFlags(0)
   , m_lastPictureBuffer(nullptr)
   , m_bufferPool(new BufferPool())
 
@@ -189,7 +190,9 @@ bool CAddonVideoCodec::CopyToInitData(VIDEOCODEC_INITDATA &initData, CDVDStreamI
   initData.height = hints.height;
   initData.videoFormats = m_formats;
 
-  m_displayAspect = 0.0; (hints.aspect > 0.0 && !hints.forced_aspect) ? hints.aspect : 0.0f;
+  m_displayAspect = (hints.aspect > 0.0 && !hints.forced_aspect) ? hints.aspect : 0.0f;
+  m_width = hints.width;
+  m_height = hints.height;
 
   m_processInfo.SetVideoDimensions(hints.width, hints.height);
 
@@ -248,16 +251,17 @@ CDVDVideoCodec::VCReturn CAddonVideoCodec::GetPicture(DVDVideoPicture* pDvdVideo
     return CDVDVideoCodec::VC_ERROR;
 
   VIDEOCODEC_PICTURE picture;
+  picture.flags = (m_codecFlags & DVD_CODEC_CTRL_DRAIN) ? VIDEOCODEC_PICTURE::FLAG_DRAIN : 0;
 
   switch (m_struct.toAddon.GetPicture(m_addonInstance, picture))
   {
-  case VC_NONE:
+  case VIDEOCODEC_RETVAL::VC_NONE:
     return CDVDVideoCodec::VC_NONE;
-  case VC_ERROR:
+  case VIDEOCODEC_RETVAL::VC_ERROR:
     return CDVDVideoCodec::VC_ERROR;
-  case VC_BUFFER:
+  case VIDEOCODEC_RETVAL::VC_BUFFER:
     return CDVDVideoCodec::VC_BUFFER;
-  case VC_PICTURE:
+  case VIDEOCODEC_RETVAL::VC_PICTURE:
     pDvdVideoPicture->data[0] = picture.decodedData + picture.planeOffsets[0];
     pDvdVideoPicture->data[1] = picture.decodedData + picture.planeOffsets[1];
     pDvdVideoPicture->data[2] = picture.decodedData + picture.planeOffsets[2];
@@ -266,11 +270,14 @@ CDVDVideoCodec::VCReturn CAddonVideoCodec::GetPicture(DVDVideoPicture* pDvdVideo
     pDvdVideoPicture->iLineSize[2] = picture.stride[2];
     pDvdVideoPicture->iWidth = picture.width;
     pDvdVideoPicture->iHeight = picture.height;
-    pDvdVideoPicture->pts = DVD_NOPTS_VALUE;
+    pDvdVideoPicture->pts = picture.pts;
     pDvdVideoPicture->dts = DVD_NOPTS_VALUE;
     pDvdVideoPicture->color_range = 0;
     pDvdVideoPicture->color_matrix = 4;
     pDvdVideoPicture->iFlags = DVP_FLAG_ALLOCATED;
+    if (m_codecFlags & DVD_CODEC_CTRL_DROP)
+      pDvdVideoPicture->iFlags |= DVP_FLAG_DROPPED;
+
     pDvdVideoPicture->format = RENDER_FMT_YUV420P;
 
     pDvdVideoPicture->iDisplayWidth = pDvdVideoPicture->iWidth;
@@ -291,7 +298,16 @@ CDVDVideoCodec::VCReturn CAddonVideoCodec::GetPicture(DVDVideoPicture* pDvdVideo
     m_bufferPool->ReleaseBuffer(m_lastPictureBuffer);
     m_lastPictureBuffer = picture.decodedData;
 
+    if (picture.width != m_width || picture.height != m_height)
+    {
+      m_width = picture.width;
+      m_height = picture.height;
+      m_processInfo.SetVideoDimensions(m_width, m_height);
+    }
+
     return CDVDVideoCodec::VC_PICTURE;
+  case VIDEOCODEC_RETVAL::VC_EOF:
+    return CDVDVideoCodec::VC_EOF;
   default:
     return CDVDVideoCodec::VC_ERROR;
   }

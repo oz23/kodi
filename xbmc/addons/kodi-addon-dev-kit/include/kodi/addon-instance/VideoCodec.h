@@ -74,7 +74,13 @@ extern "C"
       MaxPlanes = 3,
     };
 
+    enum Flags :uint32_t {
+      FLAG_DROP,
+      FLAG_DRAIN
+    };
+
     VIDEOCODEC_FORMAT videoFormat;
+    uint32_t flags;
 
     uint32_t width, height;
 
@@ -93,6 +99,7 @@ extern "C"
     VC_ERROR,           //< an error occured, no other messages will be returned
     VC_BUFFER,          //< the decoder needs more data
     VC_PICTURE,         //< the decoder got a picture
+    VC_EOF,             //< the decoder signals EOF
   };
 
   // this are properties given to the addon on create
