@@ -319,7 +319,7 @@ static void VFSDirEntriesToCFileItemList(int num_entries,
     item->m_bIsFolder = entries[i].folder;
     if (entries[i].title)
       item->m_strTitle = entries[i].title;
-    for (int j=0;j<entries[i].num_props;++j)
+    for (unsigned int j=0;j<entries[i].num_props;++j)
     {
       if (strcasecmp(entries[i].properties[j].name, "propmisusepreformatted") == 0)
       {
@@ -347,19 +347,17 @@ bool CVFSEntry::GetDirectory(const CURL& url, CFileItemList& items,
   callbacks.SetErrorDialog = CVFSEntryIDirectoryWrapper::DoSetErrorDialog;
   callbacks.RequireAuthentication = CVFSEntryIDirectoryWrapper::DoRequireAuthentication;
 
-  VFSDirEntry* entries;
-  int num_entries;
+  VFSDirEntry* entries = nullptr;
+  int num_entries = 0;
   CVFSURLWrapper url2(url);
-  void* ctx2 = m_struct.toAddon.GetDirectory(m_addonInstance, &url2.url, &entries, &num_entries, &callbacks);
-  if (ctx2)
+  bool ret = m_struct.toAddon.GetDirectory(m_addonInstance, &url2.url, &entries, &num_entries, &callbacks);
+  if (ret)
   {
     VFSDirEntriesToCFileItemList(num_entries, entries, items);
-    m_struct.toAddon.FreeDirectory(m_addonInstance, ctx2);
-
-    return true;
+    m_struct.toAddon.FreeDirectory(m_addonInstance, entries, num_entries);
   }
 
-  return false;
+  return ret;
 }
 
 bool CVFSEntry::ContainsFiles(const CURL& url, CFileItemList& items)
@@ -367,18 +365,18 @@ bool CVFSEntry::ContainsFiles(const CURL& url, CFileItemList& items)
   if (!m_struct.toAddon.ContainsFiles || !m_struct.toAddon.FreeDirectory)
     return false;
 
-  VFSDirEntry* entries;
-  int num_entries;
+  VFSDirEntry* entries = nullptr;
+  int num_entries = 0;
 
   CVFSURLWrapper url2(url);
-  char rootpath[1024];
+  char rootpath[ADDON_STANDARD_STRING_LENGTH];
   rootpath[0] = 0;
-  void* ctx = m_struct.toAddon.ContainsFiles(m_addonInstance, &url2.url, &entries, &num_entries, rootpath);
-  if (!ctx)
+  bool ret = m_struct.toAddon.ContainsFiles(m_addonInstance, &url2.url, &entries, &num_entries, rootpath);
+  if (!ret)
     return false;
 
   VFSDirEntriesToCFileItemList(num_entries, entries, items);
-  m_struct.toAddon.FreeDirectory(m_addonInstance, ctx);
+  m_struct.toAddon.FreeDirectory(m_addonInstance, entries, num_entries);
   if (strlen(rootpath))
     items.SetPath(rootpath);
 

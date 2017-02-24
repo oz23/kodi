@@ -22,6 +22,8 @@
 #include "AddonBase.h"
 #include "definitions.h"
 
+#include <map>
+
 #ifndef S_ISDIR
   #define S_ISDIR(mode)  ((((mode)) & 0170000) == (0040000))
 #endif
@@ -44,7 +46,7 @@ extern "C"
     char* label;             //!< item label
     char* title;             //!< item title
     char* path;              //!< item path
-    int num_props;           //!< Number of properties attached to item
+    unsigned int num_props;  //!< Number of properties attached to item
     VFSProperty* properties; //!< Properties
     //FILETIME mtime;          //!< Mtime for file represented by item
     bool folder;             //!< Item is a folder
@@ -133,9 +135,9 @@ namespace vfs
   {
   public:
     CDirEntry(const std::string& label = "",
-                 const std::string& path = "",
-                 bool bFolder = false,
-                 int64_t size = -1) :
+              const std::string& path = "",
+              bool bFolder = false,
+              int64_t size = -1) :
       m_label(label),
       m_path(path),
       m_bFolder(bFolder),
@@ -152,18 +154,26 @@ namespace vfs
     }
 
     const std::string& Label(void) const { return m_label; }
+    const std::string& Title(void) const { return m_title; }
     const std::string& Path(void) const { return m_path; }
     bool IsFolder(void) const { return m_bFolder; }
     int64_t Size(void) const { return m_size; }
 
     void SetLabel(const std::string& label) { m_label = label; }
+    void SetTitle(const std::string& title) { m_title = title; }
     void SetPath(const std::string& path) { m_path = path; }
     void SetFolder(bool bFolder) { m_bFolder = bFolder; }
     void SetSize(int64_t size) { m_size = size; }
 
+    void AddProperty(const std::string& id, const std::string& value) { m_property[id] = value; }
+    void ClearProperties() { m_property.clear(); }
+    const std::map<std::string, std::string>& GetProperties() const { return m_property; }
+
   private:
     std::string m_label;
+    std::string m_title;
     std::string m_path;
+    std::map<std::string, std::string> m_property;
     bool m_bFolder;
     int64_t m_size;
   };

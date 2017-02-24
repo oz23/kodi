@@ -28,7 +28,7 @@
 #include "PlatformDefs.h"
 #endif
 
-namespace kodi { namespace addon { class CInstanceExternVFS; }}
+namespace kodi { namespace addon { class CInstanceVFS; }}
 
 extern "C"
 {
@@ -82,37 +82,37 @@ extern "C"
 
   typedef struct KodiToAddonFuncTable_VFSEntry
   {
-    void* (__cdecl* Open) (kodi::addon::CInstanceExternVFS* addonInstance, VFSURL* url);
-    void* (__cdecl* OpenForWrite) (kodi::addon::CInstanceExternVFS* addonInstance, VFSURL* url, bool bOverWrite);
-    ssize_t (__cdecl* Read) (kodi::addon::CInstanceExternVFS* addonInstance, void* context, void* buffer, size_t uiBufSize);
-    ssize_t (__cdecl* Write) (kodi::addon::CInstanceExternVFS* addonInstance, void* context, const void* buffer, size_t uiBufSize);
-    int64_t (__cdecl* Seek) (kodi::addon::CInstanceExternVFS* addonInstance, void* context, int64_t position, int whence);
-    int (__cdecl* Truncate) (kodi::addon::CInstanceExternVFS* addonInstance, void* context, int64_t size);
-    int64_t (__cdecl* GetLength) (kodi::addon::CInstanceExternVFS* addonInstance, void* context);
-    int64_t (__cdecl* GetPosition) (kodi::addon::CInstanceExternVFS* addonInstance, void* context);
-    int (__cdecl* GetChunkSize) (kodi::addon::CInstanceExternVFS* addonInstance, void* context);
-    int (__cdecl* IoControl) (kodi::addon::CInstanceExternVFS* addonInstance, void* context, XFILE::EIoControl request, void* param);
-    int (__cdecl* Stat) (kodi::addon::CInstanceExternVFS* addonInstance, VFSURL* url, struct __stat64* buffer);
-    bool (__cdecl* Close) (kodi::addon::CInstanceExternVFS* addonInstance, void* context);
-    bool (__cdecl* Exists) (kodi::addon::CInstanceExternVFS* addonInstance, VFSURL* url);
-    void (__cdecl* ClearOutIdle) (kodi::addon::CInstanceExternVFS* addonInstance);
-    void (__cdecl* DisconnectAll) (kodi::addon::CInstanceExternVFS* addonInstance);
-    bool (__cdecl* Delete) (kodi::addon::CInstanceExternVFS* addonInstance, VFSURL* url);
-    bool (__cdecl* Rename) (kodi::addon::CInstanceExternVFS* addonInstance, VFSURL* url, VFSURL* url2);
-    bool (__cdecl* DirectoryExists) (kodi::addon::CInstanceExternVFS* addonInstance, VFSURL* url);
-    bool (__cdecl* RemoveDirectory) (kodi::addon::CInstanceExternVFS* addonInstance, VFSURL* url);
-    bool (__cdecl* CreateDirectory) (kodi::addon::CInstanceExternVFS* addonInstance, VFSURL* url);
-    void* (__cdecl* GetDirectory) (kodi::addon::CInstanceExternVFS* addonInstance,
+    void* (__cdecl* Open) (kodi::addon::CInstanceVFS* addonInstance, VFSURL* url);
+    void* (__cdecl* OpenForWrite) (kodi::addon::CInstanceVFS* addonInstance, VFSURL* url, bool bOverWrite);
+    ssize_t (__cdecl* Read) (kodi::addon::CInstanceVFS* addonInstance, void* context, void* buffer, size_t uiBufSize);
+    ssize_t (__cdecl* Write) (kodi::addon::CInstanceVFS* addonInstance, void* context, const void* buffer, size_t uiBufSize);
+    int64_t (__cdecl* Seek) (kodi::addon::CInstanceVFS* addonInstance, void* context, int64_t position, int whence);
+    int (__cdecl* Truncate) (kodi::addon::CInstanceVFS* addonInstance, void* context, int64_t size);
+    int64_t (__cdecl* GetLength) (kodi::addon::CInstanceVFS* addonInstance, void* context);
+    int64_t (__cdecl* GetPosition) (kodi::addon::CInstanceVFS* addonInstance, void* context);
+    int (__cdecl* GetChunkSize) (kodi::addon::CInstanceVFS* addonInstance, void* context);
+    int (__cdecl* IoControl) (kodi::addon::CInstanceVFS* addonInstance, void* context, XFILE::EIoControl request, void* param);
+    int (__cdecl* Stat) (kodi::addon::CInstanceVFS* addonInstance, VFSURL* url, struct __stat64* buffer);
+    bool (__cdecl* Close) (kodi::addon::CInstanceVFS* addonInstance, void* context);
+    bool (__cdecl* Exists) (kodi::addon::CInstanceVFS* addonInstance, VFSURL* url);
+    void (__cdecl* ClearOutIdle) (kodi::addon::CInstanceVFS* addonInstance);
+    void (__cdecl* DisconnectAll) (kodi::addon::CInstanceVFS* addonInstance);
+    bool (__cdecl* Delete) (kodi::addon::CInstanceVFS* addonInstance, VFSURL* url);
+    bool (__cdecl* Rename) (kodi::addon::CInstanceVFS* addonInstance, VFSURL* url, VFSURL* url2);
+    bool (__cdecl* DirectoryExists) (kodi::addon::CInstanceVFS* addonInstance, VFSURL* url);
+    bool (__cdecl* RemoveDirectory) (kodi::addon::CInstanceVFS* addonInstance, VFSURL* url);
+    bool (__cdecl* CreateDirectory) (kodi::addon::CInstanceVFS* addonInstance, VFSURL* url);
+    bool (__cdecl* GetDirectory) (kodi::addon::CInstanceVFS* addonInstance,
+                                  VFSURL* url,
+                                  VFSDirEntry** entries,
+                                  int* num_entries,
+                                  VFSCallbacks* callbacks);
+    bool (__cdecl* ContainsFiles) (kodi::addon::CInstanceVFS* addonInstance,
                                    VFSURL* url,
                                    VFSDirEntry** entries,
                                    int* num_entries,
-                                   VFSCallbacks* callbacks);
-    void (__cdecl* FreeDirectory) (kodi::addon::CInstanceExternVFS* addonInstance, void* ctx);
-    void* (__cdecl* ContainsFiles) (kodi::addon::CInstanceExternVFS* addonInstance,
-                                    VFSURL* url,
-                                    VFSDirEntry** entries,
-                                    int* num_entries,
-                                    char* rootpath);
+                                   char* rootpath);
+    void (__cdecl* FreeDirectory) (kodi::addon::CInstanceVFS* addonInstance, VFSDirEntry* entries, int num_entries);
   } KodiToAddonFuncTable_VFSEntry;
 
   typedef struct AddonInstance_VFSEntry
@@ -128,19 +128,19 @@ namespace kodi
 {
 namespace addon
 {
-  class CInstanceExternVFS : public IAddonInstance
+  class CInstanceVFS : public IAddonInstance
   {
   public:
-    CInstanceExternVFS(KODI_HANDLE instance)
+    CInstanceVFS(KODI_HANDLE instance)
       : IAddonInstance(ADDON_INSTANCE_VFS)
     {
       if (CAddonBase::m_interface->globalSingleInstance != nullptr)
-        throw std::logic_error("kodi::addon::CInstanceExternVFS: Creation of multiple together with single instance way is not allowed!");
+        throw std::logic_error("kodi::addon::CInstanceVFS: Creation of multiple together with single instance way is not allowed!");
 
       SetAddonStruct(instance);
     }
 
-    virtual ~CInstanceExternVFS() { }
+    virtual ~CInstanceVFS() { }
 
     //! \brief Open a file for input
     //! \param url The URL of the file
@@ -212,18 +212,18 @@ namespace addon
     //! \sa IFile::IoControl
     virtual int IoControl(void* context, XFILE::EIoControl request, void* param) { return -1; }
 
+    //! \brief Close a file
+    //! \param context The context of the file
+    //! \return True on success, false on failure
+    //! \sa IFile::Close
+    virtual bool Close(void* context) { return false; }
+
     //! \brief Stat a file
     //! \param url The URL of the file
     //! \param buffer The buffer to store results in
     //! \return -1 on error, 0 otherwise
     //! \sa IFile::Stat
     virtual int Stat(VFSURL* url, struct __stat64* buffer) { return 0; }
-
-    //! \brief Close a file
-    //! \param context The context of the file
-    //! \return True on success, false on failure
-    //! \sa IFile::Close
-    virtual bool Close(void* context) { return false; }
 
     //! \brief Check for file existence
     //! \param url The URL of the file
@@ -275,13 +275,9 @@ namespace addon
     //! \param callbacks A callback structure
     //! \return Context for the directory listing
     //! \sa IDirectory::GetDirectory
-    virtual void* GetDirectory(VFSURL* url,
-                               VFSDirEntry** entries,
-                               int* num_entries,
-                               VFSCallbacks* callbacks) { return nullptr; }
-
-    //! \brief Free up resources after listing a directory
-    virtual void FreeDirectory(void* ctx) { }
+    virtual bool GetDirectory(VFSURL* url,
+                              std::vector<kodi::vfs::CDirEntry>& entries,
+                              VFSCallbacks* callbacks) { return false; }
 
     //! \brief Check if file should be presented as a directory (multiple streams)
     //! \param url The URL of the file
@@ -290,15 +286,14 @@ namespace addon
     //! \param rootpath Path to root directory if multiple entries
     //! \return Context for the directory listing
     //! \sa IFileDirectory::ContainsFiles, FreeDirectory
-    virtual void* ContainsFiles(VFSURL* url,
-                                VFSDirEntry** entries,
-                                int* num_entries,
-                                char* rootpath) { return nullptr; }
+    virtual bool ContainsFiles(VFSURL* url,
+                               std::vector<kodi::vfs::CDirEntry>& entries,
+                               std::string& rootPath) { return false; }
   private:
     void SetAddonStruct(KODI_HANDLE instance)
     {
       if (instance == nullptr)
-        throw std::logic_error("kodi::addon::CInstanceExternVFS: Creation with empty addon structure not allowed, table must be given from Kodi!");
+        throw std::logic_error("kodi::addon::CInstanceVFS: Creation with empty addon structure not allowed, table must be given from Kodi!");
 
       m_instanceData = static_cast<AddonInstance_VFSEntry*>(instance);
 
@@ -327,127 +322,206 @@ namespace addon
       m_instanceData->toAddon.ContainsFiles = ADDON_ContainsFiles;
     }
 
-    inline static void* ADDON_Open(kodi::addon::CInstanceExternVFS* addonInstance, VFSURL* url)
+    inline static void* ADDON_Open(kodi::addon::CInstanceVFS* addonInstance, VFSURL* url)
     {
       return addonInstance->Open(url);
     }
 
-    inline static void* ADDON_OpenForWrite(kodi::addon::CInstanceExternVFS* addonInstance, VFSURL* url, bool bOverWrite)
+    inline static void* ADDON_OpenForWrite(kodi::addon::CInstanceVFS* addonInstance, VFSURL* url, bool bOverWrite)
     {
       return addonInstance->OpenForWrite(url, bOverWrite);
     }
 
-    inline static ssize_t ADDON_Read(kodi::addon::CInstanceExternVFS* addonInstance, void* context, void* buffer, size_t uiBufSize)
+    inline static ssize_t ADDON_Read(kodi::addon::CInstanceVFS* addonInstance, void* context, void* buffer, size_t uiBufSize)
     {
       return addonInstance->Read(context, buffer, uiBufSize);
     }
 
-    inline static ssize_t ADDON_Write(kodi::addon::CInstanceExternVFS* addonInstance, void* context, const void* buffer, size_t uiBufSize)
+    inline static ssize_t ADDON_Write(kodi::addon::CInstanceVFS* addonInstance, void* context, const void* buffer, size_t uiBufSize)
     {
       return addonInstance->Write(context, buffer, uiBufSize);
     }
 
-    inline static int64_t ADDON_Seek(kodi::addon::CInstanceExternVFS* addonInstance, void* context, int64_t position, int whence)
+    inline static int64_t ADDON_Seek(kodi::addon::CInstanceVFS* addonInstance, void* context, int64_t position, int whence)
     {
       return addonInstance->Seek(context, position, whence);
     }
 
-    inline static int ADDON_Truncate(kodi::addon::CInstanceExternVFS* addonInstance, void* context, int64_t size)
+    inline static int ADDON_Truncate(kodi::addon::CInstanceVFS* addonInstance, void* context, int64_t size)
     {
       return addonInstance->Truncate(context, size);
     }
 
-    inline static int64_t ADDON_GetLength(kodi::addon::CInstanceExternVFS* addonInstance, void* context)
+    inline static int64_t ADDON_GetLength(kodi::addon::CInstanceVFS* addonInstance, void* context)
     {
       return addonInstance->GetLength(context);
     }
 
-    inline static int64_t ADDON_GetPosition(kodi::addon::CInstanceExternVFS* addonInstance, void* context)
+    inline static int64_t ADDON_GetPosition(kodi::addon::CInstanceVFS* addonInstance, void* context)
     {
       return addonInstance->GetPosition(context);
     }
 
-    inline static int ADDON_GetChunkSize(kodi::addon::CInstanceExternVFS* addonInstance, void* context)
+    inline static int ADDON_GetChunkSize(kodi::addon::CInstanceVFS* addonInstance, void* context)
     {
       return addonInstance->GetChunkSize(context);
     }
 
-    inline static int ADDON_IoControl(kodi::addon::CInstanceExternVFS* addonInstance, void* context, XFILE::EIoControl request, void* param)
+    inline static int ADDON_IoControl(kodi::addon::CInstanceVFS* addonInstance, void* context, XFILE::EIoControl request, void* param)
     {
       return addonInstance->IoControl(context, request, param);
     }
 
-    inline static int ADDON_Stat(kodi::addon::CInstanceExternVFS* addonInstance, VFSURL* url, struct __stat64* buffer)
+    inline static int ADDON_Stat(kodi::addon::CInstanceVFS* addonInstance, VFSURL* url, struct __stat64* buffer)
     {
       return addonInstance->Stat(url, buffer);
     }
 
-    inline static bool ADDON_Close(kodi::addon::CInstanceExternVFS* addonInstance, void* context)
+    inline static bool ADDON_Close(kodi::addon::CInstanceVFS* addonInstance, void* context)
     {
       return addonInstance->Close(context);
     }
 
-    inline static bool ADDON_Exists(kodi::addon::CInstanceExternVFS* addonInstance, VFSURL* url)
+    inline static bool ADDON_Exists(kodi::addon::CInstanceVFS* addonInstance, VFSURL* url)
     {
       return addonInstance->Exists(url);
     }
 
-    inline static void ADDON_ClearOutIdle(kodi::addon::CInstanceExternVFS* addonInstance)
+    inline static void ADDON_ClearOutIdle(kodi::addon::CInstanceVFS* addonInstance)
     {
       return addonInstance->ClearOutIdle();
     }
 
-    inline static void ADDON_DisconnectAll(kodi::addon::CInstanceExternVFS* addonInstance)
+    inline static void ADDON_DisconnectAll(kodi::addon::CInstanceVFS* addonInstance)
     {
       return addonInstance->DisconnectAll();
     }
 
-    inline static bool ADDON_Delete(kodi::addon::CInstanceExternVFS* addonInstance, VFSURL* url)
+    inline static bool ADDON_Delete(kodi::addon::CInstanceVFS* addonInstance, VFSURL* url)
     {
       return addonInstance->Delete(url);
     }
 
-    inline static bool ADDON_Rename(kodi::addon::CInstanceExternVFS* addonInstance, VFSURL* url, VFSURL* url2)
+    inline static bool ADDON_Rename(kodi::addon::CInstanceVFS* addonInstance, VFSURL* url, VFSURL* url2)
     {
       return addonInstance->Rename(url, url2);
     }
 
-    inline static bool ADDON_DirectoryExists(kodi::addon::CInstanceExternVFS* addonInstance, VFSURL* url)
+    inline static bool ADDON_DirectoryExists(kodi::addon::CInstanceVFS* addonInstance, VFSURL* url)
     {
       return addonInstance->DirectoryExists(url);
     }
 
-    inline static bool ADDON_RemoveDirectory(kodi::addon::CInstanceExternVFS* addonInstance, VFSURL* url)
+    inline static bool ADDON_RemoveDirectory(kodi::addon::CInstanceVFS* addonInstance, VFSURL* url)
     {
       return addonInstance->RemoveDirectory(url);
     }
 
-    inline static bool ADDON_CreateDirectory(kodi::addon::CInstanceExternVFS* addonInstance, VFSURL* url)
+    inline static bool ADDON_CreateDirectory(kodi::addon::CInstanceVFS* addonInstance, VFSURL* url)
     {
       return addonInstance->CreateDirectory(url);
     }
 
-    inline static void* ADDON_GetDirectory(kodi::addon::CInstanceExternVFS* addonInstance,
+    inline static bool ADDON_GetDirectory(kodi::addon::CInstanceVFS* addonInstance,
                                    VFSURL* url,
-                                   VFSDirEntry** entries,
+                                   VFSDirEntry** retEntries,
                                    int* num_entries,
                                    VFSCallbacks* callbacks)
     {
-      return addonInstance->GetDirectory(url, entries, num_entries, callbacks);
+      std::vector<kodi::vfs::CDirEntry> addonEntries;
+      bool ret = addonInstance->GetDirectory(url, addonEntries, callbacks);
+      if (ret)
+      {
+        VFSDirEntry* entries = (VFSDirEntry*)malloc(sizeof(VFSDirEntry) * addonEntries.size());
+        for (unsigned int i = 0; i < addonEntries.size(); ++i)
+        {
+          entries[i].label = strdup(addonEntries[i].Label().c_str());
+          entries[i].title = strdup(addonEntries[i].Title().c_str());
+          entries[i].path = strdup(addonEntries[i].Path().c_str());
+          entries[i].folder = addonEntries[i].IsFolder();
+          entries[i].size = addonEntries[i].Size();
+
+          entries[i].num_props = 0;
+          const std::map<std::string, std::string>& props = addonEntries[i].GetProperties();
+          if (!props.empty())
+          {
+            entries[i].properties = (VFSProperty*)malloc(sizeof(VFSProperty)*props.size());
+            for (const auto& prop : props)
+            {
+              entries[i].properties[entries[i].num_props].name = strdup(prop.first.c_str());
+              entries[i].properties[entries[i].num_props].val = strdup(prop.second.c_str());
+              ++entries[i].num_props;
+            }
+          }
+          else
+            entries[i].properties = nullptr;
+        }
+        *retEntries = entries;
+        *num_entries = addonEntries.size();
+      }
+      return ret;
     }
 
-    inline static void ADDON_FreeDirectory(kodi::addon::CInstanceExternVFS* addonInstance, void* ctx)
+    inline static void ADDON_FreeDirectory(kodi::addon::CInstanceVFS* addonInstance, VFSDirEntry* entries, int num_entries)
     {
-      addonInstance->FreeDirectory(ctx);
+      for (int i = 0; i < num_entries; ++i)
+      {
+        free(entries[i].label);
+        if (entries[i].properties)
+        {
+          for (unsigned int j=0; j < entries[i].num_props; ++j)
+          {
+            free(entries[i].properties[j].name);
+            free(entries[i].properties[j].val);
+          }
+          free(entries[i].properties);
+        }
+        free(entries[i].path);
+      }
+      free(entries);
     }
 
-    inline static void* ADDON_ContainsFiles(kodi::addon::CInstanceExternVFS* addonInstance,
-                                    VFSURL* url,
-                                    VFSDirEntry** entries,
-                                    int* num_entries,
-                                    char* rootpath)
+    inline static bool ADDON_ContainsFiles(kodi::addon::CInstanceVFS* addonInstance,
+                                           VFSURL* url,
+                                           VFSDirEntry** retEntries,
+                                           int* num_entries,
+                                           char* rootpath)
     {
-      return addonInstance->ContainsFiles(url, entries, num_entries, rootpath);
+      std::string cppRootPath; 
+      std::vector<kodi::vfs::CDirEntry> addonEntries;
+      bool ret = addonInstance->ContainsFiles(url, addonEntries, cppRootPath);
+      if (ret)
+      {
+        strncpy(rootpath, cppRootPath.c_str(), ADDON_STANDARD_STRING_LENGTH);
+
+        VFSDirEntry* entries = (VFSDirEntry*)malloc(sizeof(VFSDirEntry) * addonEntries.size());
+        for (unsigned int i = 0; i < addonEntries.size(); ++i)
+        {
+          entries[i].label = strdup(addonEntries[i].Label().c_str());
+          entries[i].title = strdup(addonEntries[i].Title().c_str());
+          entries[i].path = strdup(addonEntries[i].Path().c_str());
+          entries[i].folder = addonEntries[i].IsFolder();
+          entries[i].size = addonEntries[i].Size();
+
+          entries[i].num_props = 0;
+          const std::map<std::string, std::string>& props = addonEntries[i].GetProperties();
+          if (!props.empty())
+          {
+            entries[i].properties = (VFSProperty*)malloc(sizeof(VFSProperty)*props.size());
+            for (const auto& prop : props)
+            {
+              entries[i].properties[entries[i].num_props].name = strdup(prop.first.c_str());
+              entries[i].properties[entries[i].num_props].val = strdup(prop.second.c_str());
+              ++entries[i].num_props;
+            }
+          }
+          else
+            entries[i].properties = nullptr;
+        }
+        *retEntries = entries;
+        *num_entries = addonEntries.size();
+      }
+      return ret;
     }
 
     AddonInstance_VFSEntry* m_instanceData;

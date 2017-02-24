@@ -19,7 +19,7 @@
 #pragma once
 
 #include "AddonDll.h"
-#include "addons/kodi-addon-dev-kit/include/kodi/addon-instance/ExternVFS.h"
+#include "addons/kodi-addon-dev-kit/include/kodi/addon-instance/VFS.h"
 #include "filesystem/IFile.h"
 #include "filesystem/IDirectory.h"
 #include "filesystem/IFileDirectory.h"
@@ -29,7 +29,7 @@ namespace ADDON
 
   class CVFSEntry;
   typedef std::shared_ptr<CVFSEntry> VFSEntryPtr; //!< Convenience typedef.
-  
+
   class CVFSAddonCache
   {
   public:
@@ -42,7 +42,7 @@ namespace ADDON
   protected:
     void Update();
     void OnEvent(const AddonEvent& event);
-    
+
     CCriticalSection m_critSection;
     std::vector<VFSEntryPtr> m_addonsInstances;
   };
@@ -96,7 +96,7 @@ namespace ADDON
     bool m_directories;       //!< VFS entry can list directories.
     bool m_filedirectories;   //!< VFS entry contains file directories.
 
-    kodi::addon::CInstanceExternVFS* m_addonInstance;
+    kodi::addon::CInstanceVFS* m_addonInstance;
     AddonInstance_VFSEntry m_struct;
   };
 
