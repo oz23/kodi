@@ -58,6 +58,7 @@ private:
   int m_codecFlags;
   VIDEOCODEC_FORMAT m_formats[VIDEOCODEC_FORMAT::MaxVideoFormats + 1];
   float m_displayAspect;
+  unsigned int m_width, m_height;
 
   void * m_lastPictureBuffer;
 
