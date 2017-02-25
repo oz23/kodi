@@ -19,15 +19,36 @@
 #pragma once
 
 #include "AddonDll.h"
-#include "addons/kodi-addon-dev-kit/include/kodi/kodi_vfs_types.h"
+#include "addons/kodi-addon-dev-kit/include/kodi/addon-instance/VFS.h"
 #include "filesystem/IFile.h"
 #include "filesystem/IDirectory.h"
 #include "filesystem/IFileDirectory.h"
 
 namespace ADDON
 {
+
+  class CVFSEntry;
+  typedef std::shared_ptr<CVFSEntry> VFSEntryPtr; //!< Convenience typedef.
+
+  class CVFSAddonCache
+  {
+  public:
+    virtual ~CVFSAddonCache();
+    void Init();
+    void Deinit();
+    const std::vector<VFSEntryPtr> GetAddonInstances();
+    VFSEntryPtr GetAddonInstance(const std::string& strId, TYPE type);
+
+  protected:
+    void Update();
+    void OnEvent(const AddonEvent& event);
+
+    CCriticalSection m_critSection;
+    std::vector<VFSEntryPtr> m_addonsInstances;
+  };
+
   //! \brief A virtual filesystem entry add-on.
-  class CVFSEntry : public CAddonDll
+  class CVFSEntry : public IAddonInstanceHandler
   {
   public:
     //! \brief Construct from add-on properties.
@@ -35,10 +56,9 @@ namespace ADDON
     CVFSEntry(AddonInfoPtr addonInfo);
 
     //! \brief Empty destructor.
-    virtual ~CVFSEntry() {}
+    virtual ~CVFSEntry();
 
     // Things that MUST be supplied by the child classes
-    bool Create();
     void* Open(const CURL& url);
     void* OpenForWrite(const CURL& url, bool bOverWrite);
     bool Exists(const CURL& url);
@@ -75,11 +95,10 @@ namespace ADDON
     bool m_files;             //!< Vfs entry can read files.
     bool m_directories;       //!< VFS entry can list directories.
     bool m_filedirectories;   //!< VFS entry contains file directories.
-    KodiToAddonFuncTable_VFSEntry m_struct; //!< VFS callback table
-    VFS_PROPS m_info; //!< (Dummy) properties
-  };
 
-  typedef std::shared_ptr<CVFSEntry> VFSEntryPtr; //!< Convenience typedef.
+    kodi::addon::CInstanceVFS* m_addonInstance;
+    AddonInstance_VFSEntry m_struct;
+  };
 
   //! \brief Wrapper equpping a CVFSEntry with an IFile interface.
   //! \details Needed as CVFSEntry implements several VFS interfaces

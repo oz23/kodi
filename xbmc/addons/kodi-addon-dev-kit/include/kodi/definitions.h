@@ -93,6 +93,7 @@ typedef struct AddonToKodiFuncTable_kodi
   bool (*set_setting)(void* kodiBase, const char* settingName, const char* settingValue);
   void (*open_settings_dialog)(void* kodiBase);
   char* (*get_localized_string)(void* kodiBase, long dwCode);
+  char* (*unknown_to_utf8)(void* kodiBase, const char* source, bool& ret, bool failOnBadChar);
   AddonToKodiFuncTable_kodi_filesystem filesystem;
 } AddonToKodiFuncTable_kodi;
 

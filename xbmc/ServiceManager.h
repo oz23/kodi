@@ -26,6 +26,7 @@
 namespace ADDON {
 class CAddonMgr;
 class CBinaryAddonCache;
+class CVFSAddonCache;
 }
 
 namespace ActiveAE {
@@ -76,6 +77,7 @@ public:
   void Deinit();
   ADDON::CAddonMgr& GetAddonMgr();
   ADDON::CBinaryAddonCache& GetBinaryAddonCache();
+  ADDON::CVFSAddonCache& GetVFSAddonCache();
   ANNOUNCEMENT::CAnnouncementManager& GetAnnouncementManager();
 #ifdef HAS_PYTHON
   XBPython& GetXBPython();
@@ -113,6 +115,7 @@ protected:
 
   std::unique_ptr<ADDON::CAddonMgr> m_addonMgr;
   std::unique_ptr<ADDON::CBinaryAddonCache> m_binaryAddonCache;
+  std::unique_ptr<ADDON::CVFSAddonCache> m_vfsAddonCache;
   std::unique_ptr<ANNOUNCEMENT::CAnnouncementManager> m_announcementManager;
 #ifdef HAS_PYTHON
   std::unique_ptr<XBPython> m_XBPython;

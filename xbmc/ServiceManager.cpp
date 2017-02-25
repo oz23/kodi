@@ -20,6 +20,7 @@
 
 #include "ServiceManager.h"
 #include "addons/BinaryAddonCache.h"
+#include "addons/VFSEntry.h"
 #include "ContextMenuManager.h"
 #include "cores/AudioEngine/Engines/ActiveAE/AudioDSPAddons/ActiveAEDSP.h"
 #include "cores/DataCacheCore.h"
@@ -80,6 +81,9 @@ bool CServiceManager::Init2()
   m_binaryAddonCache.reset( new ADDON::CBinaryAddonCache());
   m_binaryAddonCache->Init();
 
+  m_vfsAddonCache.reset( new ADDON::CVFSAddonCache());
+  m_vfsAddonCache->Init();
+
   m_contextMenuManager.reset(new CContextMenuManager(*m_addonMgr.get()));
 
   init_level = 2;
@@ -130,6 +134,7 @@ void CServiceManager::Deinit()
 {
   m_gameServices->Deinit();
   m_contextMenuManager.reset();
+  m_vfsAddonCache.reset();
   m_binaryAddonCache.reset();
   if (m_PVRManager)
     m_PVRManager->Shutdown();
@@ -152,6 +157,11 @@ ADDON::CAddonMgr &CServiceManager::GetAddonMgr()
 ADDON::CBinaryAddonCache &CServiceManager::GetBinaryAddonCache()
 {
   return *m_binaryAddonCache.get();
+}
+
+ADDON::CVFSAddonCache &CServiceManager::GetVFSAddonCache()
+{
+  return *m_vfsAddonCache.get();
 }
 
 ANNOUNCEMENT::CAnnouncementManager& CServiceManager::GetAnnouncementManager()

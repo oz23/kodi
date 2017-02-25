@@ -31,6 +31,7 @@
 #include "addons/GUIDialogAddonSettings.h"
 #include "guilib/GUIWindowManager.h"
 #include "settings/Settings.h"
+#include "utils/CharsetConverter.h"
 #include "utils/log.h"
 #include "utils/StringUtils.h"
 
@@ -46,6 +47,7 @@ void Interface_General::Init(AddonGlobalInterface* addonInterface)
   addonInterface->toKodi.kodi->set_setting = set_setting;
   addonInterface->toKodi.kodi->open_settings_dialog = open_settings_dialog;
   addonInterface->toKodi.kodi->get_localized_string = get_localized_string;
+  addonInterface->toKodi.kodi->unknown_to_utf8 = unknown_to_utf8;
 
   Interface_Filesystem::Init(addonInterface);
 }
@@ -212,5 +214,21 @@ char* Interface_General::get_localized_string(void* kodiInstance, long dwCode)
   char* buffer = strdup(string.c_str());
   return buffer;
 }
+
+char* Interface_General::unknown_to_utf8(void* kodiInstance, const char* source, bool& ret, bool failOnBadChar)
+{
+  CAddonDll* addon = static_cast<CAddonDll*>(kodiInstance);
+  if (!addon || !source)
+  {
+    CLog::Log(LOGERROR, "kodi::General::%s - invalid data (addon='%p', source='%p')", __FUNCTION__, addon, source);
+    return nullptr;
+  }
+   
+  std::string string;
+  ret = g_charsetConverter.unknownToUTF8(source, string, failOnBadChar);
+  char* buffer = strdup(string.c_str());
+  return buffer;
+}
+
 
 } /* namespace ADDON */
