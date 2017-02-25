@@ -333,10 +333,11 @@ std::string CAddonInfo::TranslateIconType(ADDON::TYPE type)
 CAddonInfo::CAddonInfo(std::string addonPath)
   : m_usable(false),
     m_mainType(ADDON_UNKNOWN),
-    m_path(addonPath),
     m_packageSize(0)
 {
   m_path = CSpecialProtocol::TranslatePath(addonPath);
+  StringUtils::TrimRight(m_path, "/\\");
+
   auto addonXmlPath = URIUtils::AddFileToFolder(m_path, "addon.xml");
 
   CXBMCTinyXML xmlDoc;
