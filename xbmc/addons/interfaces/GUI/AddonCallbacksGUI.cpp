@@ -256,12 +256,15 @@ GUIHANDLE CAddonCallbacksGUI::Window_New(void *addonData, const char *xmlFilenam
     strSkinPath = g_SkinInfo->GetSkinPath(xmlFilename, &res);
     if (!XFILE::CFile::Exists(strSkinPath))
     {
+      std::string skinPath = g_SkinInfo->Path();
+      StringUtils::TrimRight(skinPath, "/\\");
+
       /* Check for the matching folder for the skin in the fallback skins folder */
       std::string basePath = URIUtils::AddFileToFolder(
         guiHelper->m_addon->Path(),
         "resources",
         "skins",
-        URIUtils::GetFileName(g_SkinInfo->Path()));
+        URIUtils::GetFileName(skinPath));
       strSkinPath = g_SkinInfo->GetSkinPath(xmlFilename, &res, basePath);
       if (!XFILE::CFile::Exists(strSkinPath))
       {
