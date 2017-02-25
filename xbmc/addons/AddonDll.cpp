@@ -75,7 +75,8 @@ bool IAddonInstanceHandler::CreateInstance(int instanceType, KODI_HANDLE instanc
 
 void IAddonInstanceHandler::DestroyInstance()
 {
-  m_addon->DestroyInstance(m_instanceId);
+  if (m_addon)
+    m_addon->DestroyInstance(m_instanceId);
 }
 
 CAddonDll::CAddonDll(AddonInfoPtr props)
