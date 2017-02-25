@@ -92,7 +92,7 @@ void CAEBitstreamPacker::Pack(CAEStreamInfo &info, uint8_t* data, int size)
   }
 }
 
-void CAEBitstreamPacker::PackPause(CAEStreamInfo &info, unsigned int millis)
+void CAEBitstreamPacker::PackPause(CAEStreamInfo &info, unsigned int millis, bool iecBursts)
 {
   // re-use last buffer
   if (m_pauseDuration == millis)
@@ -119,6 +119,11 @@ void CAEBitstreamPacker::PackPause(CAEStreamInfo &info, unsigned int millis)
     default:
       CLog::Log(LOGERROR, "CAEBitstreamPacker::Pack - no pack function");
   }
+
+  if (!iecBursts)
+  {
+    memset(m_packedBuffer, 0, m_dataSize);
+  }
 }
 
 unsigned int CAEBitstreamPacker::GetSize()
@@ -135,6 +140,8 @@ void CAEBitstreamPacker::Reset()
 {
   m_dataSize = 0;
   m_trueHDPos = 0;
+  m_pauseDuration = 0;
+  m_packedBuffer[0] = 0;
 }
 
 /* we need to pack 24 TrueHD audio units into the unknown MAT format before packing into IEC61937 */
