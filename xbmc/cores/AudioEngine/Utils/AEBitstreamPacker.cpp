@@ -44,6 +44,7 @@ CAEBitstreamPacker::CAEBitstreamPacker() :
   m_dataSize (0),
   m_pauseDuration(0)
 {
+  Reset();
 }
 
 CAEBitstreamPacker::~CAEBitstreamPacker()
