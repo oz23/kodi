@@ -25,10 +25,10 @@
 #include <string>
 #include <vector>
 
-#include "addons/AudioDecoder.h"
 #include "addons/AddonManager.h"
 #include "addons/BinaryAddonCache.h"
-#include "addons/ImageDecoder.h"
+#include "addons/interfaces/kodi/addon-instance/AudioDecoder.h"
+#include "addons/interfaces/kodi/addon-instance/ImageDecoder.h"
 #include "Application.h"
 #include "ServiceBroker.h"
 #include "filesystem/File.h"

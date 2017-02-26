@@ -20,7 +20,7 @@
 
 #include "ServiceManager.h"
 #include "addons/BinaryAddonCache.h"
-#include "addons/VFSEntry.h"
+#include "addons/interfaces/kodi/addon-instance/VFSEntry.h"
 #include "ContextMenuManager.h"
 #include "cores/AudioEngine/Engines/ActiveAE/AudioDSPAddons/ActiveAEDSP.h"
 #include "cores/DataCacheCore.h"

@@ -8,8 +8,6 @@ set(SOURCES Addon.cpp
             AddonStatusHandler.cpp
             AddonSystemSettings.cpp
             AddonVersion.cpp
-            AudioDecoder.cpp
-            AudioEncoder.cpp
             ContextMenuAddon.cpp
             ContextMenus.cpp
             FilesystemInstaller.cpp
@@ -18,7 +16,6 @@ set(SOURCES Addon.cpp
             GUIDialogAddonSettings.cpp
             GUIViewStateAddonBrowser.cpp
             GUIWindowAddonBrowser.cpp
-            ImageDecoder.cpp
             ImageResource.cpp
             LanguageResource.cpp
             PVRClient.cpp
@@ -28,7 +25,6 @@ set(SOURCES Addon.cpp
             Service.cpp
             Skin.cpp
             UISoundsResource.cpp
-            VFSEntry.cpp
             Webinterface.cpp)
 
 set(HEADERS Addon.h
@@ -43,8 +39,6 @@ set(HEADERS Addon.h
             AddonStatusHandler.h
             AddonSystemSettings.h
             AddonVersion.h
-            AudioDecoder.h
-            AudioEncoder.h
             ContextMenuAddon.h
             ContextMenus.h
             DllAddon.h
@@ -54,7 +48,6 @@ set(HEADERS Addon.h
             GUIDialogAddonSettings.h
             GUIViewStateAddonBrowser.h
             GUIWindowAddonBrowser.h
-            ImageDecoder.h
             ImageResource.h
             LanguageResource.h
             PVRClient.h
@@ -65,7 +58,6 @@ set(HEADERS Addon.h
             Service.h
             Skin.h
             UISoundsResource.h
-            VFSEntry.h
             Webinterface.h)
 
 core_add_library(addons)

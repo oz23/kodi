@@ -18,7 +18,7 @@
  */
 #pragma once
 
-#include "AddonDll.h"
+#include "addons/AddonDll.h"
 #include "addons/kodi-addon-dev-kit/include/kodi/addon-instance/AudioDecoder.h"
 #include "cores/paplayer/ICodec.h"
 #include "music/tags/ImusicInfoTagLoader.h"

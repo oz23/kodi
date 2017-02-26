@@ -30,7 +30,7 @@
 #include "FileItem.h"
 
 #include "addons/AddonManager.h"
-#include "addons/AudioDecoder.h"
+#include "addons/interfaces/kodi/addon-instance/AudioDecoder.h"
 
 using namespace ADDON;
 

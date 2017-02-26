@@ -44,8 +44,6 @@
 #include "utils/XBMCTinyXML.h"
 #include "utils/XMLUtils.h"
 
-#include "addons/ImageDecoder.h"
-
 /* CAddon class included add-on's */
 #include "addons/ContextMenuAddon.h"
 #include "addons/GameResource.h"
@@ -56,7 +54,6 @@
 #include "addons/Service.h"
 #include "addons/Skin.h"
 #include "addons/UISoundsResource.h"
-#include "addons/VFSEntry.h"
 #include "addons/Webinterface.h"
 #include "cores/AudioEngine/Engines/ActiveAE/AudioDSPAddons/ActiveAEDSP.h"
 #include "games/addons/GameClient.h"

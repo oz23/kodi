@@ -53,7 +53,7 @@
 #include "addons/BinaryAddonCache.h"
 #include "addons/LanguageResource.h"
 #include "addons/Skin.h"
-#include "addons/VFSEntry.h"
+#include "addons/interfaces/kodi/addon-instance/VFSEntry.h"
 #include "interfaces/generic/ScriptInvocationManager.h"
 #ifdef HAS_PYTHON
 #include "interfaces/python/XBPython.h"
