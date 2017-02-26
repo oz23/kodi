@@ -23,7 +23,7 @@
 #include "URL.h"
 #include "VideoPlayerCodec.h"
 #include "utils/StringUtils.h"
-#include "addons/AudioDecoder.h"
+#include "addons/interfaces/kodi/addon-instance/AudioDecoder.h"
 #include "addons/BinaryAddonCache.h"
 #include "ServiceBroker.h"
 

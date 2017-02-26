@@ -44,8 +44,8 @@
 #include "utils/StringUtils.h"
 #include "URL.h"
 #include "ServiceBroker.h"
-#include "addons/AudioDecoder.h"
-#include "addons/VFSEntry.h"
+#include "addons/interfaces/kodi/addon-instance/AudioDecoder.h"
+#include "addons/interfaces/kodi/addon-instance/VFSEntry.h"
 #include "AudioBookFileDirectory.h"
 
 using namespace ADDON;

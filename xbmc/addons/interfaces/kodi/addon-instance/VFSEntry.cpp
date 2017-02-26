@@ -18,8 +18,8 @@
  */
 
 #include "VFSEntry.h"
-#include "AddonManager.h"
 #include "URL.h"
+#include "addons/AddonManager.h"
 #include "utils/log.h"
 #include "utils/StringUtils.h"
 

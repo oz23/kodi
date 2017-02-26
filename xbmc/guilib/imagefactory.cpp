@@ -20,9 +20,8 @@
 
 #include "imagefactory.h"
 #include "guilib/FFmpegImage.h"
-#include "../addons/ImageDecoder.h"
 #include "addons/BinaryAddonCache.h"
-#include "addons/ImageDecoder.h"
+#include "addons/interfaces/kodi/addon-instance/ImageDecoder.h"
 #include "utils/Mime.h"
 #include "utils/StringUtils.h"
 #include "ServiceBroker.h"

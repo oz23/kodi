@@ -19,11 +19,11 @@
  *
  */
 
-#include "addons/kodi-addon-dev-kit/include/kodi/addon-instance/Screensaver.h"
-#include "addons/AddonDll.h"
 #include "guilib/GUIWindow.h"
 
-class CGUIWindowScreensaver : public CGUIWindow, public ADDON::IAddonInstanceHandler
+namespace ADDON { class CInstanceScreensaver; }
+
+class CGUIWindowScreensaver : public CGUIWindow
 {
 public:
   CGUIWindowScreensaver(void);
@@ -37,12 +37,6 @@ protected:
   virtual EVENT_RESULT OnMouseEvent(const CPoint &point, const CMouseEvent &event);
 
 private:
-  std::string m_name; /*!< To add-on sended name */
-  std::string m_presets; /*!< To add-on sended preset path */
-  std::string m_profile; /*!< To add-on sended profile path */
-
-  ADDON::AddonDllPtr m_addon;
-  kodi::addon::CInstanceScreensaver* m_addonInstance;
-  AddonInstance_Screensaver m_struct;
+  ADDON::CInstanceScreensaver* m_addon;
 };
 

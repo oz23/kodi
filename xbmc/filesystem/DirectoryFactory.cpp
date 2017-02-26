@@ -96,7 +96,7 @@
 #endif
 #include "ResourceDirectory.h"
 #include "ServiceBroker.h"
-#include "addons/VFSEntry.h"
+#include "addons/interfaces/kodi/addon-instance/VFSEntry.h"
 
 using namespace ADDON;
 
