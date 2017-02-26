@@ -88,7 +88,6 @@ CVideoPlayerVideo::CVideoPlayerVideo(CDVDClock* pClock
 
   m_iDroppedFrames = 0;
   m_fFrameRate = 25;
-  m_bCalcFrameRate = false;
   m_fStableFrameRate = 0.0;
   m_iFrameRateCount = 0;
   m_bAllowDrop = false;
@@ -176,8 +175,6 @@ void CVideoPlayerVideo::OpenStream(CDVDStreamInfo &hint, CDVDVideoCodec* codec)
   }
 
   m_ptsTracker.ResetVFRDetection();
-  m_bCalcFrameRate = CServiceBroker::GetSettings().GetBool(CSettings::SETTING_VIDEOPLAYER_USEDISPLAYASCLOCK) ||
-                     CServiceBroker::GetSettings().GetInt(CSettings::SETTING_VIDEOPLAYER_ADJUSTREFRESHRATE) != ADJUST_REFRESHRATE_OFF;
   ResetFrameRateCalc();
 
   m_iDroppedRequest = 0;
@@ -928,12 +925,10 @@ int CVideoPlayerVideo::GetVideoBitrate()
 void CVideoPlayerVideo::ResetFrameRateCalc()
 {
   m_fStableFrameRate = 0.0;
-  m_iFrameRateCount  = 0;
+  m_iFrameRateCount = 0;
   m_iFrameRateLength = 1;
-  m_iFrameRateErr    = 0;
-
-  m_bAllowDrop       = (!m_bCalcFrameRate && CMediaSettings::GetInstance().GetCurrentVideoSettings().m_ScalingMethod != VS_SCALINGMETHOD_AUTO) ||
-                        g_advancedSettings.m_videoFpsDetect == 0;
+  m_iFrameRateErr = 0;
+  m_bAllowDrop = g_advancedSettings.m_videoFpsDetect == 0;
 }
 
 double CVideoPlayerVideo::GetCurrentPts()
@@ -964,14 +959,6 @@ void CVideoPlayerVideo::CalcFrameRate()
 {
   if (m_iFrameRateLength >= 128 || g_advancedSettings.m_videoFpsDetect == 0)
     return; //don't calculate the fps
-
-  //only calculate the framerate if sync playback to display is on, adjust refreshrate is on,
-  //or scaling method is set to auto
-  if (!m_bCalcFrameRate && CMediaSettings::GetInstance().GetCurrentVideoSettings().m_ScalingMethod != VS_SCALINGMETHOD_AUTO)
-  {
-    ResetFrameRateCalc();
-    return;
-  }
 
   if (!m_ptsTracker.HasFullBuffer())
     return; //we can only calculate the frameduration if m_pullupCorrection has a full buffer
