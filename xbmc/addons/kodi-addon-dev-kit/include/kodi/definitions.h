@@ -19,9 +19,11 @@
  *
  */
 
-#if !defined(_WIN32) && !defined(TARGET_DARWIN)
+#if !defined(_WIN32)
   #include <sys/stat.h>
-  #define __stat64 stat64
+  #if !defined(__stat64)
+    #define __stat64 stat64
+  #endif
 #endif
 #ifdef _WIN32                   // windows
 #ifndef _SSIZE_T_DEFINED
