@@ -325,6 +325,18 @@ void CAddonVideoCodec::Reset()
   if (!m_struct.toAddon.Reset)
     return;
 
+  CLog::Log(LOGDEBUG, "CAddonVideoCodec: Reset");
+
+  // Get the remaining pictures out of the external decoder
+  VIDEOCODEC_PICTURE picture;
+  picture.flags = VIDEOCODEC_PICTURE::FLAG_DRAIN;
+
+  while (m_struct.toAddon.GetPicture(m_addonInstance, picture) != VIDEOCODEC_RETVAL::VC_EOF)
+  {
+    m_bufferPool->ReleaseBuffer(m_lastPictureBuffer);
+    m_lastPictureBuffer = picture.decodedData;
+  }
+
   m_bufferPool->ReleaseBuffer(m_lastPictureBuffer);
   m_lastPictureBuffer = nullptr;
 

@@ -23,6 +23,10 @@
 #include "filesystem/SpecialProtocol.h"
 #include "guilib/GUIWindowManager.h"
 #include "utils/log.h"
+#ifdef HAS_DX
+#include "windowing/windows/WinSystemWin32DX.h"
+#endif
+
 
 namespace ADDON
 {
