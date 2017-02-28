@@ -397,6 +397,15 @@ namespace ADDON
     const std::string& Path() const { return m_path; }
 
     /*!
+    * @brief Set the Path where add-on is present
+    *
+    * Can be local or also repository URL's
+    *
+    * @return
+    */
+    void SetPath(const std::string& path) { m_path = path; }
+
+    /*!
      * @brief To get Path with icon file
      *
      * @return If a icon present a path to them, otherwise empty

@@ -284,7 +284,10 @@ bool CAddonInstaller::InstallFromZip(const std::string &path)
   {
     AddonInfoPtr addon;
     if (CAddonMgr::LoadAddonDescription(addon, items[0]->GetPath()))
+    {
+      addon->SetPath(path);
       return DoInstall(addon, RepositoryPtr());
+    }
   }
 
   CEventLog::GetInstance().AddWithNotification(EventPtr(new CNotificationEvent(24045,
