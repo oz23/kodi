@@ -156,15 +156,15 @@ bool CInputStreamAddon::Open()
   props.m_libFolder = libFolder.c_str();
   props.m_profileFolder = profileFolder.c_str();
 
+  unsigned int videoWidth = 1280;
+  unsigned int videoHeight = 720;
+  if (m_player)
+    m_player->GetVideoResolution(videoWidth, videoHeight);
+  SetVideoResolution(videoWidth, videoHeight);
+
   bool ret = m_struct.toAddon.Open(m_addonInstance, props);
   if (ret)
   {
-    unsigned int videoWidth = 1280;
-    unsigned int videoHeight = 720;
-    if (m_player)
-      m_player->GetVideoResolution(videoWidth, videoHeight);
-    SetVideoResolution(videoWidth, videoHeight);
-
     memset(&m_caps, 0, sizeof(m_caps));
     m_struct.toAddon.GetCapabilities(m_addonInstance, &m_caps);
   }
