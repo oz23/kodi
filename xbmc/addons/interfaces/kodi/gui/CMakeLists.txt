@@ -1,7 +1,25 @@
 set(SOURCES General.cpp
-            DialogOK.cpp)
+            DialogContextMenu.cpp
+            DialogExtendedProgressBar.cpp
+            DialogFileBrowser.cpp
+            DialogKeyboard.cpp
+            DialogNumeric.cpp
+            DialogOK.cpp
+            DialogProgress.cpp
+            DialogSelect.cpp
+            DialogTextViewer.cpp
+            DialogYesNo.cpp)
 
 set(HEADERS General.h
-            DialogOK.h)
+            DialogContextMenu.h
+            DialogExtendedProgressBar.h
+            DialogFileBrowser.h
+            DialogKeyboard.h
+            DialogNumeric.h
+            DialogOK.h
+            DialogProgress.h
+            DialogSelect.h
+            DialogTextViewer.h
+            DialogYesNo.h)
 
 core_add_library(addonInterface_kodi_gui)

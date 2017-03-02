@@ -1,5 +1,5 @@
 /*
- *      Copyright (C) 2015-2016 Team KODI
+ *      Copyright (C) 2005-2017 Team Kodi
  *      http://kodi.tv
  *
  *  This Program is free software; you can redistribute it and/or modify
@@ -19,7 +19,16 @@
  */
 
 #include "General.h"
+#include "DialogContextMenu.h"
+#include "DialogExtendedProgressBar.h"
+#include "DialogFileBrowser.h"
+#include "DialogKeyboard.h"
+#include "DialogNumeric.h"
 #include "DialogOK.h"
+#include "DialogProgress.h"
+#include "DialogSelect.h"
+#include "DialogTextViewer.h"
+#include "DialogYesNo.h"
 #include "addons/kodi-addon-dev-kit/include/kodi/gui/General.h"
 
 #include "addons/AddonDll.h"
@@ -51,7 +60,16 @@ void Interface_GUIGeneral::Init(AddonGlobalInterface* addonInterface)
   addonInterface->toKodi.kodi_gui->general.get_current_window_dialog_id = get_current_window_dialog_id;
   addonInterface->toKodi.kodi_gui->general.get_current_window_id = get_current_window_id;
 
+  Interface_GUIDialogContextMenu::Init(addonInterface);
+  Interface_GUIDialogExtendedProgress::Init(addonInterface);
+  Interface_GUIDialogFileBrowser::Init(addonInterface);
+  Interface_GUIDialogKeyboard::Init(addonInterface);
+  Interface_GUIDialogNumeric::Init(addonInterface);
   Interface_GUIDialogOK::Init(addonInterface);
+  Interface_GUIDialogProgress::Init(addonInterface);
+  Interface_GUIDialogSelect::Init(addonInterface);
+  Interface_GUIDialogTextViewer::Init(addonInterface);
+  Interface_GUIDialogYesNo::Init(addonInterface);
 }
 
 void Interface_GUIGeneral::DeInit(AddonGlobalInterface* addonInterface)

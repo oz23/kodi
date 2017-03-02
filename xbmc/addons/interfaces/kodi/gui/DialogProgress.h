@@ -27,24 +27,23 @@ struct AddonGlobalInterface;
 namespace ADDON
 {
 
-  struct Interface_GUIDialogOK
+  struct Interface_GUIDialogProgress
   {
     static void Init(AddonGlobalInterface* addonInterface);
 
-    /*!
-     * @brief callback functions from add-on to kodi
-     *
-     * @note For add of new functions use the "_" style to identify direct a
-     * add-on callback function. Everything with CamelCase is only for the
-     * usage in Kodi only.
-     *
-     * The parameter `kodiBase` is used to become the pointer for a `CAddonDll`
-     * class.
-     */
-    //@{
-    static void show_and_get_input_single_text(void* kodiBase, const char *heading, const char *text);
-    static void show_and_get_input_line_text(void* kodiBase, const char *heading, const char *line0, const char *line1, const char *line2);
-    //@}
+    static void* New(void* kodiBase);
+    static void Delete(void* kodiBase, void* handle);
+    static void Open(void* kodiBase, void* handle);
+    static void SetHeading(void* kodiBase, void* handle, const char *heading);
+    static void SetLine(void* kodiBase, void* handle, unsigned int iLine, const char *line);
+    static void SetCanCancel(void* kodiBase, void* handle, bool canCancel);
+    static bool IsCanceled(void* kodiBase, void* handle);
+    static void SetPercentage(void* kodiBase, void* handle, int percentage);
+    static int GetPercentage(void* kodiBase, void* handle);
+    static void ShowProgressBar(void* kodiBase, void* handle, bool bOnOff);
+    static void SetProgressMax(void* kodiBase, void* handle, int max);
+    static void SetProgressAdvance(void* kodiBase, void* handle, int nSteps);
+    static bool Abort(void* kodiBase, void* handle);
   };
 
 } /* namespace ADDON */
