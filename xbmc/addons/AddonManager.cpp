@@ -540,6 +540,7 @@ bool CAddonMgr::AddNewInstalledAddon(AddonInfoPtr& addonInfo)
   AddonInfoPtr installedAddonInfo = std::make_shared<CAddonInfo>("special://home/addons/" + addonInfo->ID());
   if (installedAddonInfo->IsUsable())
   {
+    m_database.AddInstalled(addonInfo->ID(), true);
     m_installedAddons[addonInfo->ID()] = installedAddonInfo;
     if (EnableAddon(installedAddonInfo->ID()))
       return true;
