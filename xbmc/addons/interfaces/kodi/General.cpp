@@ -21,6 +21,7 @@
 
 #include "General.h"
 #include "Filesystem.h"
+#include "Network.h"
 
 #include "addons/kodi-addon-dev-kit/include/kodi/General.h"
 
@@ -29,6 +30,7 @@
 #include "ServiceBroker.h"
 #include "addons/AddonDll.h"
 #include "addons/GUIDialogAddonSettings.h"
+#include "dialogs/GUIDialogKaiToast.h"
 #include "guilib/GUIWindowManager.h"
 #include "settings/Settings.h"
 #include "utils/CharsetConverter.h"
@@ -48,8 +50,13 @@ void Interface_General::Init(AddonGlobalInterface* addonInterface)
   addonInterface->toKodi.kodi->open_settings_dialog = open_settings_dialog;
   addonInterface->toKodi.kodi->get_localized_string = get_localized_string;
   addonInterface->toKodi.kodi->unknown_to_utf8 = unknown_to_utf8;
+  addonInterface->toKodi.kodi->queue_notification = queue_notification;
+  addonInterface->toKodi.kodi->queue_notification_from_type = queue_notification_from_type;
+  addonInterface->toKodi.kodi->queue_notification_with_image = queue_notification_with_image;
+  addonInterface->toKodi.kodi->get_dvd_menu_language = get_dvd_menu_language;
 
   Interface_Filesystem::Init(addonInterface);
+  Interface_Network::Init(addonInterface);
 }
 
 void Interface_General::DeInit(AddonGlobalInterface* addonInterface)
@@ -193,9 +200,9 @@ void Interface_General::open_settings_dialog(void* kodiBase)
   CGUIDialogAddonSettings::ShowAndGetInput(addonInfo);
 }
 
-char* Interface_General::get_localized_string(void* kodiInstance, long dwCode)
+char* Interface_General::get_localized_string(void* kodiBase, long dwCode)
 {
-  CAddonDll* addon = static_cast<CAddonDll*>(kodiInstance);
+  CAddonDll* addon = static_cast<CAddonDll*>(kodiBase);
   if (!addon)
   {
     CLog::Log(LOGERROR, "kodi::General::%s - invalid data (addon='%p')", __FUNCTION__, addon);
@@ -215,9 +222,9 @@ char* Interface_General::get_localized_string(void* kodiInstance, long dwCode)
   return buffer;
 }
 
-char* Interface_General::unknown_to_utf8(void* kodiInstance, const char* source, bool& ret, bool failOnBadChar)
+char* Interface_General::unknown_to_utf8(void* kodiBase, const char* source, bool& ret, bool failOnBadChar)
 {
-  CAddonDll* addon = static_cast<CAddonDll*>(kodiInstance);
+  CAddonDll* addon = static_cast<CAddonDll*>(kodiBase);
   if (!addon || !source)
   {
     CLog::Log(LOGERROR, "kodi::General::%s - invalid data (addon='%p', source='%p')", __FUNCTION__, addon, source);
@@ -230,5 +237,102 @@ char* Interface_General::unknown_to_utf8(void* kodiInstance, const char* source,
   return buffer;
 }
 
+void Interface_General::get_dvd_menu_language(void* kodiBase, char& language, unsigned int& iMaxStringSize)
+{
+  CAddonDll* addon = static_cast<CAddonDll*>(kodiBase);
+  if (!addon)
+  {
+    CLog::Log(LOGERROR, "kodi::General::%s - invalid data (addon='%p')", __FUNCTION__, addon);
+    return;
+  }
+
+  std::string str = g_langInfo.GetDVDMenuLanguage();
+  strncpy(&language, str.c_str(), iMaxStringSize);
+  iMaxStringSize = str.length();
+}
+
+void Interface_General::queue_notification(
+        void*                     kodiBase,
+        const int                 type,
+        const char*               message)
+{
+  CAddonDll* addon = static_cast<CAddonDll*>(kodiBase);
+  if (addon == nullptr || message == nullptr)
+  {
+    CLog::Log(LOGERROR, "kodi::General::%s - called with a null pointer", __FUNCTION__);
+    return;
+  }
+
+  switch (type)
+  {
+    case QUEUE_WARNING:
+      CGUIDialogKaiToast::QueueNotification(CGUIDialogKaiToast::Warning, addon->Name(), message, 3000, true);
+      CLog::Log(LOGDEBUG, "Interface_General - %s - %s - Warning Message: '%s'", __FUNCTION__, addon->Name().c_str(), message);
+      break;
+  
+    case QUEUE_ERROR:
+      CGUIDialogKaiToast::QueueNotification(CGUIDialogKaiToast::Error, addon->Name(), message, 3000, true);
+      CLog::Log(LOGDEBUG, "Interface_General - %s - %s - Error Message : '%s'", __FUNCTION__, addon->Name().c_str(), message);
+      break;
+  
+    case QUEUE_INFO:
+    default:
+      CGUIDialogKaiToast::QueueNotification(CGUIDialogKaiToast::Info, addon->Name(), message, 3000, false);
+      CLog::Log(LOGDEBUG, "Interface_General - %s - %s - Info Message : '%s'", __FUNCTION__, addon->Name().c_str(), message);
+      break;
+  }
+}
+
+void Interface_General::queue_notification_from_type(
+        void*                     kodiBase,
+        const int                 type,
+        const char*               aCaption,
+        const char*               aDescription,
+        unsigned int              displayTime,
+        bool                      withSound,
+        unsigned int              messageTime)
+{
+  CAddonDll* addon = static_cast<CAddonDll*>(kodiBase);
+  if (addon == nullptr || aCaption == nullptr || aDescription == nullptr)
+  {
+    CLog::Log(LOGERROR, "kodi::General::%s - called with a null pointer", __FUNCTION__);
+    return;
+  }
+  
+  CGUIDialogKaiToast::eMessageType usedType;
+  switch (type)
+  {
+  case QUEUE_WARNING:
+    usedType = CGUIDialogKaiToast::Warning;
+    break;
+  case QUEUE_ERROR:
+    usedType = CGUIDialogKaiToast::Error;
+    break;
+  case QUEUE_INFO:
+  default:
+    usedType = CGUIDialogKaiToast::Info;
+    break;
+  }
+  CGUIDialogKaiToast::QueueNotification(usedType, aCaption, aDescription, displayTime, withSound, messageTime);
+}
+
+void Interface_General::queue_notification_with_image(
+        void*                     kodiBase,
+        const char*               aImageFile,
+        const char*               aCaption,
+        const char*               aDescription,
+        unsigned int              displayTime,
+        bool                      withSound,
+        unsigned int              messageTime)
+{
+  CAddonDll* addon = static_cast<CAddonDll*>(kodiBase);
+  if (addon == nullptr || aImageFile == nullptr || aCaption == nullptr  || aDescription == nullptr)
+  {
+    CLog::Log(LOGERROR, "kodi::General::%s - called with a null pointer", __FUNCTION__);
+    return;
+  }
+
+  CGUIDialogKaiToast::QueueNotification(aImageFile, aCaption, aDescription, displayTime, withSound, messageTime);
+}
 
 } /* namespace ADDON */

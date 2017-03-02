@@ -56,7 +56,11 @@ namespace ADDON
     static bool set_setting(void* kodiBase, const char* settingName, const char* settingValue);
     static void open_settings_dialog(void* kodiBase);
     static char* get_localized_string(void* kodiBase, long dwCode);
-    static char* unknown_to_utf8(void* kodiInstance, const char* source, bool& ret, bool failOnBadChar);
+    static char* unknown_to_utf8(void* kodiBase, const char* source, bool& ret, bool failOnBadChar);
+    static void queue_notification(void* kodiBase, const int type, const char* message);
+    static void queue_notification_from_type(void* kodiBase, const int type, const char* caption, const char* description, unsigned int displayTime, bool withSound, unsigned int messageTime);
+    static void queue_notification_with_image(void* kodiBase, const char* aImageFile, const char* caption, const char* description, unsigned int displayTime, bool withSound, unsigned int messageTime);
+    static void get_dvd_menu_language(void* kodiInstance, char& language, unsigned int& iMaxStringSize);
     //@}
   };
 
