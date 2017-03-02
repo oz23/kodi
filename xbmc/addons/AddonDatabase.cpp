@@ -1076,6 +1076,16 @@ bool CAddonDatabase::AddPackage(const std::string& addonID,
   return ExecuteQuery(sql);
 }
 
+bool CAddonDatabase::AddInstalled(const std::string& addonID, bool enabled)
+{
+  std::string now = CDateTime::GetCurrentDateTime().GetAsDBDateTime();
+
+  std::string sql = PrepareSQL("insert into installed(addonID, enabled, installDate)"
+    "values('%s', '%d', '%s')",
+    addonID.c_str(), enabled ? 1 : 0, now.c_str());
+  return ExecuteQuery(sql);
+}
+
 bool CAddonDatabase::GetPackageHash(const std::string& addonID,
                                     const std::string& packageFileName,
                                     std::string&       hash)

@@ -115,6 +115,15 @@ public:
   bool AddPackage(const std::string& addonID,
                   const std::string& packageFileName,
                   const std::string& hash);
+
+  /*! \brief Store an addon in installed table
+  \param  addonID         id of the addon we're adding a package for
+  \param  enable          initial enable state of the addon
+  \return Whether or not the info successfully made it into the DB.
+  \sa SyncInstalled
+  */
+  bool AddInstalled(const std::string& addonID, bool enabled);
+
   /*! \brief Query the MD5 checksum of the given given addon's given package
       \param  addonID         id of the addon we're who's package we're querying
       \param  packageFileName filename of the package
