@@ -866,7 +866,7 @@ CPVRTimerInfoTagPtr CPVRTimers::GetTimerRule(const CPVRTimerInfoTagPtr &timer) c
   return CPVRTimerInfoTagPtr();
 }
 
-CFileItemPtr CPVRTimers::GetTimerRule(const CFileItem *item) const
+CFileItemPtr CPVRTimers::GetTimerRule(const CFileItemPtr &item) const
 {
   CPVRTimerInfoTagPtr timer;
   if (item && item->HasEPGInfoTag())
@@ -875,8 +875,11 @@ CFileItemPtr CPVRTimers::GetTimerRule(const CFileItem *item) const
     timer = item->GetPVRTimerInfoTag();
 
   if (timer)
-    return CFileItemPtr(new CFileItem(GetTimerRule(timer)));
-
+  {
+    timer = GetTimerRule(timer);
+    if (timer)
+      return CFileItemPtr(new CFileItem(timer));
+  }
   return CFileItemPtr();
 }
 

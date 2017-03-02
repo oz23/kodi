@@ -272,11 +272,6 @@ CBitstreamParser::~CBitstreamParser()
 {
 }
 
-bool CBitstreamParser::Open()
-{
-  return true;
-}
-
 void CBitstreamParser::Close()
 {
 }

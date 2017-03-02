@@ -69,6 +69,8 @@ extern "C"
   typedef struct PERIPHERAL_CAPABILITIES
   {
     bool provides_joysticks;            /*!< @brief true if the add-on provides joysticks */
+    bool provides_joystick_rumble;
+    bool provides_joystick_power_off;
     bool provides_buttonmaps;           /*!< @brief true if the add-on provides button maps */
   } ATTRIBUTE_PACKED PERIPHERAL_CAPABILITIES;
   ///}
