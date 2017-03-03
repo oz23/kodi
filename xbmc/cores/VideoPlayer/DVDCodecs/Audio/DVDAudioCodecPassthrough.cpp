@@ -97,7 +97,7 @@ void CDVDAudioCodecPassthrough::Dispose()
   m_bufferSize = 0;
 }
 
-int CDVDAudioCodecPassthrough::AddData(const DemuxPacket &packet)
+bool CDVDAudioCodecPassthrough::AddData(const DemuxPacket &packet)
 {
   int used = 0;
   int skip = 0;
@@ -154,7 +154,7 @@ int CDVDAudioCodecPassthrough::AddData(const DemuxPacket &packet)
   if (pData && !m_backlogSize)
   {
     if (iSize <= 0)
-      return used + skip;
+      return true;
 
     m_dataSize = m_bufferSize;
     used = m_parser.AddData(pData, iSize, &m_buffer, &m_dataSize);
@@ -175,7 +175,7 @@ int CDVDAudioCodecPassthrough::AddData(const DemuxPacket &packet)
   }
 
   if (!m_dataSize)
-    return 0;
+    return true;
 
   if (m_dataSize)
   {
@@ -212,12 +212,13 @@ int CDVDAudioCodecPassthrough::AddData(const DemuxPacket &packet)
       m_dataSize = 0;
   }
 
-  return 0;
+  return true;
 }
 
 void CDVDAudioCodecPassthrough::GetData(DVDAudioFrame &frame)
 {
   frame.nb_frames = GetData(frame.data);
+  frame.framesOut = 0;
 
   if (frame.nb_frames == 0)
     return;

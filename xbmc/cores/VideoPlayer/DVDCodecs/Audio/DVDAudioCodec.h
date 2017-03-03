@@ -46,6 +46,7 @@ typedef struct stDVDAudioFrame
   bool hasTimestamp;
   double duration;
   unsigned int nb_frames;
+  unsigned int framesOut;
   unsigned int framesize;
   unsigned int planes;
 
@@ -55,7 +56,7 @@ typedef struct stDVDAudioFrame
   AEAudioFormat audioFormat;
   enum AVAudioServiceType audio_service_type;
   enum AVMatrixEncoding matrix_encoding;
-  int               profile;
+  int profile;
 } DVDAudioFrame;
 
 class CDVDAudioCodec
@@ -76,10 +77,10 @@ public:
   virtual void Dispose() = 0;
 
   /*
-   * returns -1 on error
+   * returns false on error
    *
    */
-  virtual int AddData(const DemuxPacket &packet) = 0;
+  virtual bool AddData(const DemuxPacket &packet) = 0;
 
   /*
    * returns nr of bytes in decode buffer

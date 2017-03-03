@@ -135,9 +135,9 @@ unsigned int CAudioSinkAE::AddPackets(const DVDAudioFrame &audioframe)
   timeout += DVD_SEC_TO_TIME(1.0);
   timeout += m_pClock->GetAbsoluteClock();
 
-  unsigned int total = audioframe.nb_frames;
-  unsigned int frames = audioframe.nb_frames;
-  unsigned int offset = 0;
+  unsigned int total = audioframe.nb_frames - audioframe.framesOut;
+  unsigned int frames = total;
+  unsigned int offset = audioframe.framesOut;
   do
   {
     double pts = (offset == 0) ? audioframe.pts / DVD_TIME_BASE * 1000 : 0.0;
