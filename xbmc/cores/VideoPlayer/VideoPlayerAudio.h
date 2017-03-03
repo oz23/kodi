@@ -75,6 +75,7 @@ protected:
   virtual void OnStartup();
   virtual void OnExit();
   virtual void Process();
+  bool ProcessDecoderOutput(DVDAudioFrame &audioframe);
 
   void UpdatePlayerInfo();
   void OpenStream(CDVDStreamInfo &hints, CDVDAudioCodec* codec);
@@ -97,8 +98,6 @@ protected:
   bool m_paused;
   IDVDStreamPlayer::ESyncState m_syncState;
   XbmcThreads::EndTime m_syncTimer;
-
-  bool OutputPacket(DVDAudioFrame &audioframe);
 
   //SYNC_DISCON, SYNC_SKIPDUP, SYNC_RESAMPLE
   int    m_synctype;

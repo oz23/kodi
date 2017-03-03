@@ -389,11 +389,12 @@ int VideoPlayerCodec::ReadPCM(BYTE *pBuffer, int size, int *actualsize)
     {
       return READ_ERROR;
     }
+
+    bytes = m_pAudioCodec->GetData(m_audioPlanes);
   }
 
   m_nDecodedLen = bytes;
   // scale decoded bytes to destination format
-  m_nDecodedLen = m_pAudioCodec->GetData(m_audioPlanes);
   if (m_needConvert)
     m_nDecodedLen *= (m_bitsPerSample>>3) / (m_srcFormat.m_frameSize / m_channels);
 

@@ -137,7 +137,7 @@ void CDVDAudioCodecFFmpeg::Dispose()
   avcodec_free_context(&m_pCodecContext);
 }
 
-int CDVDAudioCodecFFmpeg::AddData(const DemuxPacket &packet)
+bool CDVDAudioCodecFFmpeg::AddData(const DemuxPacket &packet)
 {
   if (!m_pCodecContext)
     return -1;
@@ -155,17 +155,10 @@ int CDVDAudioCodecFFmpeg::AddData(const DemuxPacket &packet)
   avpkt.pts = (packet.pts == DVD_NOPTS_VALUE) ? AV_NOPTS_VALUE : packet.pts / DVD_TIME_BASE * AV_TIME_BASE;
   int ret = avcodec_send_packet(m_pCodecContext, &avpkt);
 
-  // try again
-  while (ret == AVERROR(EAGAIN))
-  {
-    ret = avcodec_send_packet(m_pCodecContext, &avpkt);
-    Sleep(20);
-  }
-
   if (ret)
-    return -1;
+    return false;
 
-  return 0;
+  return true;
 }
 
 void CDVDAudioCodecFFmpeg::GetData(DVDAudioFrame &frame)
@@ -187,6 +180,7 @@ void CDVDAudioCodecFFmpeg::GetData(DVDAudioFrame &frame)
     return;
 
   frame.nb_frames = bytes/frame.framesize;
+  frame.framesOut = 0;
   frame.planes = AE_IS_PLANAR(frame.format.m_dataFormat) ? frame.format.m_channelLayout.Count() : 1;
 
   for (unsigned int i=0; i<frame.planes; i++)
