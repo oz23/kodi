@@ -3357,12 +3357,14 @@ void CVideoPlayer::UpdateStreamInfos()
           SelectionStream& select = m_SelectionStreams.Get(STREAM_VIDEO, i);
           select.width = static_cast<CDemuxStreamVideo*>(stream)->iWidth;
           select.height = static_cast<CDemuxStreamVideo*>(stream)->iHeight;
+          select.bitrate = static_cast<CDemuxStreamVideo*>(stream)->iBitRate;
         }
       }
       else
       {
         s.width = static_cast<CDemuxStreamVideo*>(stream)->iWidth;
         s.height = static_cast<CDemuxStreamVideo*>(stream)->iHeight;
+        s.bitrate = static_cast<CDemuxStreamVideo*>(stream)->iBitRate;
       }
       s.stereo_mode = m_VideoPlayerVideo->GetStereoMode();
       if (s.stereo_mode == "mono")
