@@ -421,6 +421,7 @@ void CDVDDemuxClient::RequestStreams()
       streamVideo->iHeight         = source->iHeight;
       streamVideo->iWidth          = source->iWidth;
       streamVideo->fAspect         = source->fAspect;
+      streamVideo->iBitRate = source->iBitRate;
       streamVideo->stereo_mode     = "mono";
       if (source->ExtraSize > 0 && source->ExtraData)
       {
@@ -523,7 +524,6 @@ void CDVDDemuxClient::RequestStreams()
     dStream->uniqueId = stream->uniqueId;
     dStream->codec = stream->codec;
     dStream->codecName = stream->codecName;
-    dStream->bandwidth = stream->bandwidth;
     dStream->uniqueId = stream->uniqueId;
     dStream->cryptoSession = stream->cryptoSession;
     dStream->externalInterfaces = stream->externalInterfaces;

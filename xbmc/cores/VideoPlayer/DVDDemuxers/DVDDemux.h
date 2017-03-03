@@ -96,7 +96,6 @@ public:
     changes = 0;
     flags = FLAG_NONE;
     realtime = false;
-    bandwidth = 0;
   }
 
   virtual ~CDemuxStream()
@@ -116,7 +115,6 @@ public:
   StreamType type;
   int source;
   bool realtime;
-  unsigned int bandwidth;
 
   int iDuration; // in mseconds
   void* pPrivate; // private pointer for the demuxer
