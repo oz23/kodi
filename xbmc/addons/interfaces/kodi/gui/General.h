@@ -27,6 +27,9 @@ struct AddonGlobalInterface;
 namespace ADDON
 {
 
+  int GetAddonGUIActionType(int kodiAction);
+  int GetKodiGUIActionType(int addonAction);
+
   /*!
    * @brief Global gui Add-on to Kodi callback functions
    *

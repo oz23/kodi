@@ -1,4 +1,16 @@
 set(SOURCES General.cpp
+            ControlButton.cpp
+            ControlEdit.cpp
+            ControlFadeLabel.cpp
+            ControlImage.cpp
+            ControlLabel.cpp
+            ControlProgress.cpp
+            ControlRadioButton.cpp
+            ControlRendering.cpp
+            ControlSettingsSlider.cpp
+            ControlSlider.cpp
+            ControlSpin.cpp
+            ControlTextBox.cpp
             DialogContextMenu.cpp
             DialogExtendedProgressBar.cpp
             DialogFileBrowser.cpp
@@ -8,9 +20,23 @@ set(SOURCES General.cpp
             DialogProgress.cpp
             DialogSelect.cpp
             DialogTextViewer.cpp
-            DialogYesNo.cpp)
+            DialogYesNo.cpp
+            ListItem.cpp
+            Window.cpp)
 
 set(HEADERS General.h
+            ControlButton.h
+            ControlEdit.h
+            ControlFadeLabel.h
+            ControlImage.h
+            ControlLabel.h
+            ControlProgress.h
+            ControlRadioButton.h
+            ControlRendering.h
+            ControlSettingsSlider.h
+            ControlSlider.h
+            ControlSpin.h
+            ControlTextBox.h
             DialogContextMenu.h
             DialogExtendedProgressBar.h
             DialogFileBrowser.h
@@ -20,6 +46,8 @@ set(HEADERS General.h
             DialogProgress.h
             DialogSelect.h
             DialogTextViewer.h
-            DialogYesNo.h)
+            DialogYesNo.h
+            ListItem.h
+            Window.h)
 
 core_add_library(addonInterface_kodi_gui)
