@@ -286,6 +286,11 @@ bool CAddonInstaller::InstallFromZip(const std::string &path)
     if (CAddonMgr::LoadAddonDescription(addon, items[0]->GetPath()))
     {
       addon->SetPath(path);
+      // Delete the package file to force the selected one.
+      std::string package = URIUtils::AddFileToFolder("special://home/addons/packages/", URIUtils::GetFileName(path));
+      if (!URIUtils::CompareWithoutSlashAtEnd(package,path))
+        CFile::Delete(package);
+
       return DoInstall(addon, RepositoryPtr());
     }
   }
