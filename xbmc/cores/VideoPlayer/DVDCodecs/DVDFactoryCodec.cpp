@@ -81,7 +81,7 @@ CDVDVideoCodec* CDVDFactoryCodec::CreateVideoCodec(CDVDStreamInfo &hint, CProces
         return pCodec.release();
       }
     }
-    return false;
+    return nullptr;
   }
 
   // platform specifig video decoders
