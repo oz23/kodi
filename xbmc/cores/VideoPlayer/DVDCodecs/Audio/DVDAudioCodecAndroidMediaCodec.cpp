@@ -72,6 +72,9 @@ CDVDAudioCodecAndroidMediaCodec::~CDVDAudioCodecAndroidMediaCodec()
 
 bool CDVDAudioCodecAndroidMediaCodec::Open(CDVDStreamInfo &hints, CDVDCodecOptions &options)
 {
+  if (!hints.cryptoSession)
+    return false;
+
   m_hints = hints;
 
   CLog::Log(LOGDEBUG, "CDVDAudioCodecAndroidMediaCodec::Open codec(%d), profile(%d), tag(%d), extrasize(%d)", hints.codec, hints.profile, hints.codec_tag, hints.extrasize);
@@ -220,7 +223,7 @@ void CDVDAudioCodecAndroidMediaCodec::Dispose()
   }
 }
 
-int CDVDAudioCodecAndroidMediaCodec::AddData(const DemuxPacket &packet)
+bool CDVDAudioCodecAndroidMediaCodec::AddData(const DemuxPacket &packet)
 {
   int rtn = 0;
   if (g_advancedSettings.CanLogComponent(LOGAUDIO))
@@ -267,7 +270,7 @@ int CDVDAudioCodecAndroidMediaCodec::AddData(const DemuxPacket &packet)
         }
       }
       else
-        return packet.iSize;
+        return false;
 
       CJNIMediaCodecCryptoInfo *cryptoInfo(0);
       if (!!m_crypto->get_raw() && packet.cryptoInfo)
@@ -309,7 +312,7 @@ int CDVDAudioCodecAndroidMediaCodec::AddData(const DemuxPacket &packet)
   m_format.m_sampleRate = GetSampleRate();
   m_format.m_frameSize = m_format.m_channelLayout.Count() * CAEUtil::DataFormatToBits(m_format.m_dataFormat) >> 3;
 
-  return rtn;
+  return true;
 }
 
 void CDVDAudioCodecAndroidMediaCodec::Reset()
@@ -406,6 +409,7 @@ void CDVDAudioCodecAndroidMediaCodec::GetData(DVDAudioFrame &frame)
 {
   frame.passthrough = false;
   frame.nb_frames = 0;
+  frame.framesOut = 0;
   frame.format.m_dataFormat = m_format.m_dataFormat;
   frame.format.m_channelLayout = m_format.m_channelLayout;
   frame.framesize = (CAEUtil::DataFormatToBits(frame.format.m_dataFormat) >> 3) * frame.format.m_channelLayout.Count();

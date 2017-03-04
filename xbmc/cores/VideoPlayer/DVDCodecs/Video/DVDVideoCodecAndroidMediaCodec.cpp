@@ -360,10 +360,14 @@ CDVDVideoCodecAndroidMediaCodec::CDVDVideoCodecAndroidMediaCodec(CProcessInfo &p
 
 CDVDVideoCodecAndroidMediaCodec::~CDVDVideoCodecAndroidMediaCodec()
 {
+  CLog::Log(LOGDEBUG, "CDVDMediaCodecInfo::Dtor");
   Dispose();
 
   if (m_crypto)
+  {
+    m_crypto->release();
     delete m_crypto;
+  }
 }
 
 std::atomic<bool> CDVDVideoCodecAndroidMediaCodec::m_InstanceGuard(false);
@@ -451,7 +455,7 @@ bool CDVDVideoCodecAndroidMediaCodec::Open(CDVDStreamInfo &hints, CDVDCodecOptio
       m_mime = "video/avc";
       m_formatname = "amc-h264";
       // check for h264-avcC and convert to h264-annex-b
-      if (m_hints.extradata)
+      if (m_hints.extradata && !m_hints.cryptoSession)
       {
         m_bitstream = new CBitstreamConverter;
         if (!m_bitstream->Open(m_hints.codec, (uint8_t*)m_hints.extradata, m_hints.extrasize, true))
@@ -464,7 +468,7 @@ bool CDVDVideoCodecAndroidMediaCodec::Open(CDVDStreamInfo &hints, CDVDCodecOptio
       m_mime = "video/hevc";
       m_formatname = "amc-h265";
       // check for hevc-hvcC and convert to h265-annex-b
-      if (m_hints.extradata)
+      if (m_hints.extradata && !m_hints.cryptoSession)
       {
         m_bitstream = new CBitstreamConverter;
         if (!m_bitstream->Open(m_hints.codec, (uint8_t*)m_hints.extradata, m_hints.extrasize, true))
@@ -680,15 +684,12 @@ bool CDVDVideoCodecAndroidMediaCodec::Open(CDVDStreamInfo &hints, CDVDCodecOptio
   m_processInfo.SetVideoDeintMethod("hardware");
   m_processInfo.SetVideoDAR(m_hints.aspect);
 
-  if (m_hints.cryptoSession)
-    SAFE_DELETE(m_bitstream);
-
   return true;
 
 FAIL:
   m_InstanceGuard.exchange(false);
   if (m_codec)
-    m_codec.reset();
+    m_codec = nullptr;
   SAFE_DELETE(m_bitstream);
 
   return false;
@@ -719,7 +720,7 @@ void CDVDVideoCodecAndroidMediaCodec::Dispose()
     m_codec->stop();
     m_state = MEDIACODEC_STATE_UNINITIALIZED;
     m_codec->release();
-    m_codec.reset();
+    m_codec = nullptr;
     if (xbmc_jnienv()->ExceptionCheck())
       xbmc_jnienv()->ExceptionClear();
   }
@@ -739,7 +740,7 @@ void CDVDVideoCodecAndroidMediaCodec::Dispose()
 bool CDVDVideoCodecAndroidMediaCodec::AddData(const DemuxPacket &packet)
 {
   if (!m_opened)
-    return 0;
+    return false;
 
   double pts(packet.pts), dts(packet.dts);
 
@@ -948,7 +949,11 @@ CDVDVideoCodec::VCReturn CDVDVideoCodecAndroidMediaCodec::GetPicture(DVDVideoPic
     return VC_ERROR;
   }
   else if (m_indexInputBuffer >= 0)
+  {
+    if (g_advancedSettings.CanLogComponent(LOGVIDEO))
+      CLog::Log(LOGDEBUG, "CDVDVideoCodecAndroidMediaCodec::GetPicture VC_BUFFER");
     return VC_BUFFER;
+  }
 
   return VC_NONE;
 }

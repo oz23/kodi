@@ -46,7 +46,7 @@ public:
 public:
   virtual bool Open(CDVDStreamInfo &hints, CDVDCodecOptions &options) override;
   virtual void Dispose() override;
-  virtual int AddData(const DemuxPacket &packet) override;
+  virtual bool AddData(const DemuxPacket &packet) override;
   virtual void GetData(DVDAudioFrame &frame) override;
   virtual int GetData(uint8_t** dst) override;
   virtual void Reset() override;
