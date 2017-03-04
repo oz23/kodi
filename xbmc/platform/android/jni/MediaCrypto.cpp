@@ -68,3 +68,12 @@ bool CJNIMediaCrypto::requiresSecureDecoderComponent(const std::string& mime)
     "requiresSecureDecoderComponent", "(Ljava/lang/String;)Z",
     jcast<jhstring>(mime));
 }
+
+void CJNIMediaCrypto::release()
+{
+  if (!m_object)
+    return;
+
+  call_method<jboolean>(m_object,
+    "release", "()V");
+}

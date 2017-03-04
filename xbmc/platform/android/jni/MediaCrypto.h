@@ -32,4 +32,5 @@ public:
 
   void setMediaDrmSession(const std::vector<char> & sessionId);
   bool requiresSecureDecoderComponent(const std::string& mime);
+  void release();
 };
