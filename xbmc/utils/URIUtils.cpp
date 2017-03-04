@@ -1114,7 +1114,7 @@ void URIUtils::RemoveSlashAtEnd(std::string& strFolder)
 
 bool URIUtils::CompareWithoutSlashAtEnd(const std::string& strPath1, const std::string& strPath2)
 {
-  std::string strc1 = strPath1, strc2 = strPath2;
+  std::string strc1 = CSpecialProtocol::TranslatePath(strPath1), strc2 = CSpecialProtocol::TranslatePath(strPath2);
   RemoveSlashAtEnd(strc1);
   RemoveSlashAtEnd(strc2);
   return StringUtils::EqualsNoCase(strc1, strc2);
