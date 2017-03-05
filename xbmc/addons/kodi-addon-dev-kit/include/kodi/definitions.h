@@ -89,14 +89,27 @@ typedef struct AddonToKodiFuncTable_kodi_filesystem
   bool (*curl_open)(void* kodiBase, void* file, unsigned int flags);
 } AddonToKodiFuncTable_kodi_filesystem;
 
+typedef struct AddonToKodiFuncTable_kodi_network
+{
+  bool (*wake_on_lan)(void* kodiBase, const char *mac);
+  char* (*get_ip_address)(void* kodiBase);
+  char* (*dns_lookup)(void* kodiBase, const char* url, bool* ret);
+  char* (*url_encode)(void* kodiBase, const char* url);
+} AddonToKodiFuncTable_kodi_network;
+  
 typedef struct AddonToKodiFuncTable_kodi
 {
   bool (*get_setting)(void* kodiBase, const char* settingName, void *settingValue);
   bool (*set_setting)(void* kodiBase, const char* settingName, const char* settingValue);
   void (*open_settings_dialog)(void* kodiBase);
-  char* (*get_localized_string)(void* kodiBase, long dwCode);
   char* (*unknown_to_utf8)(void* kodiBase, const char* source, bool& ret, bool failOnBadChar);
+  char* (*get_localized_string)(void* kodiBase, long dwCode);
+  void (*get_dvd_menu_language)(void* kodiInstance, char &language, unsigned int &iMaxStringSize);
+  void (*queue_notification)(void* kodiBase, const int type, const char* message);
+  void (*queue_notification_from_type)(void* kodiBase, const int type, const char* caption, const char* description, unsigned int displayTime, bool withSound, unsigned int messageTime);
+  void (*queue_notification_with_image)(void* kodiBase, const char* aImageFile, const char* caption, const char* description, unsigned int displayTime, bool withSound, unsigned int messageTime);
   AddonToKodiFuncTable_kodi_filesystem filesystem;
+  AddonToKodiFuncTable_kodi_network network;
 } AddonToKodiFuncTable_kodi;
 
 } /* extern "C" */

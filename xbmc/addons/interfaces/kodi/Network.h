@@ -19,33 +19,19 @@
  *
  */
 
-extern "C"
-{
-
 struct AddonGlobalInterface;
 
 namespace ADDON
 {
 
-  struct Interface_GUIDialogOK
+  struct Interface_Network
   {
     static void Init(AddonGlobalInterface* addonInterface);
 
-    /*!
-     * @brief callback functions from add-on to kodi
-     *
-     * @note For add of new functions use the "_" style to identify direct a
-     * add-on callback function. Everything with CamelCase is only for the
-     * usage in Kodi only.
-     *
-     * The parameter `kodiBase` is used to become the pointer for a `CAddonDll`
-     * class.
-     */
-    //@{
-    static void show_and_get_input_single_text(void* kodiBase, const char *heading, const char *text);
-    static void show_and_get_input_line_text(void* kodiBase, const char *heading, const char *line0, const char *line1, const char *line2);
-    //@}
+    static bool wake_on_lan(void* kodiBase, const char* mac);
+    static char* get_ip_address(void* kodiBase);
+    static char* dns_lookup(void* kodiBase, const char* url, bool* ret);
+    static char* url_encode(void* kodiBase, const char* url);
   };
 
 } /* namespace ADDON */
-} /* extern "C" */

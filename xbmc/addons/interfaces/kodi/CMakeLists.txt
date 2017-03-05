@@ -1,10 +1,12 @@
 set(SOURCES General.cpp
             AudioEngine.cpp
-            Filesystem.cpp)
+            Filesystem.cpp
+            Network.cpp)
 
 set(HEADERS General.h
             AudioEngine.h
-            Filesystem.h)
+            Filesystem.h
+            Network.h)
 
 include_directories(${CORE_SOURCE_DIR}/xbmc/addons/kodi-addon-dev-kit/include)
 

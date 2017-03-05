@@ -1,6 +1,6 @@
 #pragma once
 /*
- *      Copyright (C) 2015-2016 Team KODI
+ *      Copyright (C) 2005-2017 Team Kodi
  *      http://kodi.tv
  *
  *  This Program is free software; you can redistribute it and/or modify
@@ -26,6 +26,9 @@ struct AddonGlobalInterface;
 
 namespace ADDON
 {
+
+  int GetAddonGUIActionType(int kodiAction);
+  int GetKodiGUIActionType(int addonAction);
 
   /*!
    * @brief Global gui Add-on to Kodi callback functions
