@@ -41,14 +41,6 @@ class CDVDMsg;
 class CDVDStreamInfo;
 class CProcessInfo;
 
-struct SStartMsg
-{
-  double timestamp;
-  int player;
-  double cachetime;
-  double cachetotal;
-};
-
 class IVideoPlayer
 {
 public:
@@ -78,6 +70,20 @@ public:
   };
 protected:
   CProcessInfo &m_processInfo;
+};
+
+struct SStartMsg
+{
+  double timestamp;
+  int player;
+  double cachetime;
+  double cachetotal;
+};
+
+struct SStateMsg
+{
+  IDVDStreamPlayer::ESyncState syncState;
+  int player;
 };
 
 class CDVDVideoCodec;

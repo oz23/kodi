@@ -443,6 +443,13 @@ void CVideoPlayerVideo::Process()
       m_paused = static_cast<CDVDMsgBool*>(pMsg)->m_value;
       CLog::Log(LOGDEBUG, "CVideoPlayerVideo - CDVDMsg::GENERAL_PAUSE: %d", m_paused);
     }
+    else if (pMsg->IsType(CDVDMsg::PLAYER_REQUEST_STATE))
+    {
+      SStateMsg msg;
+      msg.player = VideoPlayer_VIDEO;
+      msg.syncState = m_syncState;
+      m_messageParent.Put(new CDVDMsgType<SStateMsg>(CDVDMsg::PLAYER_REPORT_STATE, msg));
+    }
     else if (pMsg->IsType(CDVDMsg::DEMUXER_PACKET))
     {
       DemuxPacket* pPacket = ((CDVDMsgDemuxerPacket*)pMsg)->GetPacket();
