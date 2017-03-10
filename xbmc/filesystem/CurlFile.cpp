@@ -839,6 +839,7 @@ void CCurlFile::ParseAndCorrectUrl(CURL &url2)
           }
           else
           {
+            SetRequestHeader(it->first, value);
             if (name == "authorization")
               CLog::Log(LOGDEBUG, "CurlFile::ParseAndCorrectUrl() adding custom header option '%s: ***********'", it->first.c_str());
             else
