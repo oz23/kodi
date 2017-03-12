@@ -142,7 +142,7 @@ void CContextMenuManager::OnEvent(const ADDON::AddonEvent& event)
   else if (auto disableEvent = dynamic_cast<const AddonEvents::Disabled*>(&event))
   {
     AddonPtr addon;
-    if (m_addonMgr.GetAddon(disableEvent->id, addon, ADDON_CONTEXT_ITEM, false))
+    if (m_addonMgr.GetAddon(disableEvent->addonInfo->ID(), addon, ADDON_CONTEXT_ITEM))
     {
       ReloadAddonItems();
     }

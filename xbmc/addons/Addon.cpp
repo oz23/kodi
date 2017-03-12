@@ -280,9 +280,6 @@ void OnDisabled(const std::string& id)
     if (CAddonMgr::GetInstance().GetAddon(id, addon, ADDON_SERVICE))
       std::static_pointer_cast<CService>(addon)->Stop();
   }
-
-  if (CAddonMgr::GetInstance().GetAddon(id, addon, ADDON_CONTEXT_ITEM))
-    CContextMenuManager::GetInstance().Unload(*std::static_pointer_cast<CContextMenuAddon>(addon));
 }
 
 void OnPreInstall(const AddonPtr& addon)

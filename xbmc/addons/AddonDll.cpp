@@ -47,7 +47,7 @@ IAddonInstanceHandler::IAddonInstanceHandler(TYPE type, const std::string& insta
   : m_type(type),
     m_parentInstance(nullptr)
 {
-  m_instanceId = !instanceID.empty() ? instanceID : StringUtils::Format("%p", this);
+  m_instanceId = !instanceID.empty() ? instanceID : StringUtils::Format("%p", static_cast<void*>(this));
 }
 
 IAddonInstanceHandler::IAddonInstanceHandler(TYPE type, const AddonInfoPtr& addonInfo, kodi::addon::IAddonInstance* parentInstance/* = nullptr*/, const std::string& instanceID/* = ""*/)
@@ -55,7 +55,7 @@ IAddonInstanceHandler::IAddonInstanceHandler(TYPE type, const AddonInfoPtr& addo
     m_parentInstance(parentInstance),
     m_addonInfo(addonInfo)
 {
-  m_instanceId = !instanceID.empty() ? instanceID : StringUtils::Format("%p", this);
+  m_instanceId = !instanceID.empty() ? instanceID : StringUtils::Format("%p", static_cast<void*>(this));
 
   m_addon = CAddonMgr::GetInstance().GetAddon(addonInfo, this);
   if (!m_addon)
