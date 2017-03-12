@@ -2974,6 +2974,19 @@ void CVideoPlayer::HandleMessages()
       }
       CLog::Log(LOGDEBUG, "CVideoPlayer::HandleMessages - player started %d", msg.player);
     }
+    else if (pMsg->IsType(CDVDMsg::PLAYER_REPORT_STATE))
+    {
+      SStateMsg& msg = ((CDVDMsgType<SStateMsg>*)pMsg)->m_value;
+      if (msg.player == VideoPlayer_AUDIO)
+      {
+        m_CurrentAudio.syncState = msg.syncState;
+      }
+      if (msg.player == VideoPlayer_VIDEO)
+      {
+        m_CurrentVideo.syncState = msg.syncState;
+      }
+      CLog::Log(LOGDEBUG, "CVideoPlayer::HandleMessages - player %d reported state: %d", msg.player, msg.syncState);
+    }
     else if (pMsg->IsType(CDVDMsg::SUBTITLE_ADDFILE))
     {
       int id = AddSubtitleFile(((CDVDMsgType<std::string>*) pMsg)->m_value);
@@ -3743,6 +3756,8 @@ bool CVideoPlayer::OpenAudioStream(CDVDStreamInfo& hint, bool reset)
 
   m_HasAudio = true;
 
+  static_cast<IDVDStreamPlayerAudio*>(player)->SendMessage(new CDVDMsg(CDVDMsg::PLAYER_REQUEST_STATE), 1);
+
   return true;
 }
 
@@ -3826,6 +3841,8 @@ bool CVideoPlayer::OpenVideoStream(CDVDStreamInfo& hint, bool reset)
     player->SendMessage(new CDVDMsg(CDVDMsg::GENERAL_RESET), 0);
 
   m_HasVideo = true;
+
+  static_cast<IDVDStreamPlayerVideo*>(player)->SendMessage(new CDVDMsg(CDVDMsg::PLAYER_REQUEST_STATE), 1);
 
   // open CC demuxer if video is mpeg2
   if ((hint.codec == AV_CODEC_ID_MPEG2VIDEO || hint.codec == AV_CODEC_ID_H264) && !m_pCCDemuxer)

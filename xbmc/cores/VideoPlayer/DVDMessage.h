@@ -63,6 +63,7 @@ public:
     PLAYER_SEEK,                    //
     PLAYER_SEEK_CHAPTER,            //
     PLAYER_SETSPEED,                // set the playback speed
+    PLAYER_REQUEST_STATE,
 
     PLAYER_CHANNEL_NEXT,            // switches to next playback channel
     PLAYER_CHANNEL_PREV,            // switches to previous playback channel
@@ -73,6 +74,7 @@ public:
     PLAYER_STARTED,                 // sent whenever a sub player has finished it's first frame after open
     PLAYER_AVCHANGE,                // signal a change in audio or video parameters
     PLAYER_ABORT,
+    PLAYER_REPORT_STATE,
 
     // demuxer related messages
     DEMUXER_PACKET,                 // data packet
