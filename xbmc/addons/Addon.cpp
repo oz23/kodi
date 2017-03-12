@@ -27,7 +27,6 @@
 
 #include "AddonManager.h"
 #include "addons/Service.h"
-#include "ContextMenuManager.h"
 #include "filesystem/Directory.h"
 #include "filesystem/File.h"
 #include "RepositoryUpdater.h"
@@ -158,7 +157,7 @@ void CAddon::SaveSettings(void)
   SettingsToXML(doc);
   doc.SaveFile(m_userSettingsPath);
   m_userSettingsLoaded = true;
-  
+
   CAddonMgr::GetInstance().ReloadSettings(ID());//push the settings changes to the running addon instance
 #ifdef HAS_PYTHON
   g_pythonParser.OnSettingsChanged(ID());
@@ -298,9 +297,6 @@ void OnPreInstall(const AddonPtr& addon)
       std::static_pointer_cast<CService>(localAddon)->Stop();
   }
 
-  if (CAddonMgr::GetInstance().GetAddon(addon->ID(), localAddon, ADDON_CONTEXT_ITEM))
-    CContextMenuManager::GetInstance().Unload(*std::static_pointer_cast<CContextMenuAddon>(localAddon));
-
   //Fallback to the pre-install callback in the addon.
   //! @bug If primary extension point have changed we're calling the wrong method.
   addon->OnPreInstall();
@@ -331,9 +327,6 @@ void OnPreUnInstall(const AddonPtr& addon)
       std::static_pointer_cast<CService>(localAddon)->Stop();
   }
 
-  if (CAddonMgr::GetInstance().GetAddon(addon->ID(), localAddon, ADDON_CONTEXT_ITEM))
-    CContextMenuManager::GetInstance().Unload(*std::static_pointer_cast<CContextMenuAddon>(localAddon));
-
   addon->OnPreUnInstall();
 }
 
@@ -343,4 +336,3 @@ void OnPostUnInstall(const AddonPtr& addon)
 }
 
 } /* namespace ADDON */
-

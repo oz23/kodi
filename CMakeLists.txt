@@ -131,7 +131,7 @@ list(APPEND DEPLIBS ${CMAKE_THREAD_LIBS_INIT})
 
 # Required dependencies
 set(required_deps Sqlite3 FreeType PCRE LibDvd
-                  TinyXML Yajl Cdio
+                  TinyXML Yajl Cdio Fmt
                   Lzo2 Fribidi TagLib FFMPEG CrossGUID)
 if(NOT WIN32)
   list(APPEND required_deps ZLIB)

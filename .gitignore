@@ -213,9 +213,11 @@ cmake_install.cmake
 /project/BuildDependencies/bin/swig
 /project/BuildDependencies/bin/doxygen
 /project/BuildDependencies/bin/json-rpc
+/project/BuildDependencies/x64
 
 # /system
 /system/EasyHook32.dll
+/system/EasyHook64.dll
 /system/libcurl.dll
 /system/libeay32.dll
 /system/librtmp.dll
