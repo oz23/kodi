@@ -880,17 +880,6 @@ DemuxPacket* CDVDDemuxFFmpeg::Read()
     {
       Flush();
     }
-    else if (IsProgramChange())
-    {
-      // update streams
-      CreateStreams(m_program);
-
-      pPacket = CDVDDemuxUtils::AllocateDemuxPacket(0);
-      pPacket->iStreamId = DMX_SPECIALID_STREAMCHANGE;
-      pPacket->demuxerId = m_demuxerId;
-
-      return pPacket;
-    }
     // check size and stream index for being in a valid range
     else if (m_pkt.pkt.size < 0 ||
              m_pkt.pkt.stream_index < 0 ||
@@ -912,6 +901,18 @@ DemuxPacket* CDVDDemuxFFmpeg::Read()
     else
     {
       ParsePacket(&m_pkt.pkt);
+
+      if (IsProgramChange())
+      {
+        // update streams
+        CreateStreams(m_program);
+
+        pPacket = CDVDDemuxUtils::AllocateDemuxPacket(0);
+        pPacket->iStreamId = DMX_SPECIALID_STREAMCHANGE;
+        pPacket->demuxerId = m_demuxerId;
+
+        return pPacket;
+      }
 
       AVStream *stream = m_pFormatContext->streams[m_pkt.pkt.stream_index];
 
