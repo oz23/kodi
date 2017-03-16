@@ -1250,7 +1250,7 @@ void CGUIMediaWindow::SetHistoryForPath(const std::string& strDirectory)
   if (!strDirectory.empty())
   {
     // Build the directory history for default path
-    std::string strPath, strParentPath;
+    std::string strPath, strParentPath, strOptions;
     strPath = strDirectory;
     URIUtils::RemoveSlashAtEnd(strPath);
 
@@ -1259,9 +1259,30 @@ void CGUIMediaWindow::SetHistoryForPath(const std::string& strDirectory)
 
     m_history.ClearPathHistory();
 
+    if (URIUtils::IsPlugin(strPath))
+    {
+      CURL url(strPath);
+      std::map<std::string, std::string> options;
+      url.GetOptions(options);
+      if (options.size() == 1 && options.begin()->first == "content_type")
+      {
+        strOptions = url.GetOptions();
+        url.SetOptions("");
+        strPath = url.Get();
+      }
+    }
+
     bool originalPath = true;
     while (URIUtils::GetParentPath(strPath, strParentPath))
     {
+      if (!strOptions.empty())
+      {
+        CURL url(strPath);
+        url.SetOptions(strOptions);
+        strPath = url.Get();
+        strOptions.clear();
+      }
+
       for (int i = 0; i < (int)items.Size(); ++i)
       {
         CFileItemPtr pItem = items[i];
