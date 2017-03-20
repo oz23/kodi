@@ -155,8 +155,11 @@ bool CDVDAudioCodecFFmpeg::AddData(const DemuxPacket &packet)
   avpkt.pts = (packet.pts == DVD_NOPTS_VALUE) ? AV_NOPTS_VALUE : packet.pts / DVD_TIME_BASE * AV_TIME_BASE;
   int ret = avcodec_send_packet(m_pCodecContext, &avpkt);
 
-  if (ret)
+  // try again
+  if (ret == AVERROR(EAGAIN))
+  {
     return false;
+  }
 
   return true;
 }
