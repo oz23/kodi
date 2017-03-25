@@ -23,6 +23,7 @@
 
 #include "DVDVideoCodecFFmpeg.h"
 #include "cores/VideoPlayer/DVDCodecs/Video/DVDVideoCodec.h"
+#include <CoreVideo/CVPixelBuffer.h>
 
 class CProcessInfo;
 
@@ -37,7 +38,7 @@ public:
   virtual bool Open(AVCodecContext* avctx, AVCodecContext* mainctx,
                     const enum AVPixelFormat, unsigned int surfaces = 0) override;
   virtual CDVDVideoCodec::VCReturn Decode(AVCodecContext* avctx, AVFrame* frame) override;
-  virtual bool GetPicture(AVCodecContext* avctx, DVDVideoPicture* picture) override;
+  virtual bool GetPicture(AVCodecContext* avctx, VideoPicture* picture) override;
   virtual CDVDVideoCodec::VCReturn Check(AVCodecContext* avctx) override;
   virtual const std::string Name() override { return "vtb"; }
   virtual unsigned GetAllowedReferences() override ;
@@ -48,7 +49,7 @@ protected:
   unsigned m_renderbuffers_count;
   AVCodecContext *m_avctx;
   CProcessInfo& m_processInfo;
-  struct __CVBuffer *m_renderPicture;
+  CVPixelBufferRef m_renderPicture;
 };
 
 }

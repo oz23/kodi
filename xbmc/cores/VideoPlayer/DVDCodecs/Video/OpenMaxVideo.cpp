@@ -101,7 +101,7 @@ COpenMaxVideo::COpenMaxVideo()
 
   pthread_cond_init(&m_omx_queue_available, NULL);
 
-  memset(&m_videobuffer, 0, sizeof(DVDVideoPicture));
+  memset(&m_videobuffer, 0, sizeof(VideoPicture));
   m_drop_state = false;
   m_decoded_width = 0;
   m_decoded_height = 0;
@@ -425,11 +425,11 @@ void COpenMaxVideo::Reset(void)
   ::Sleep(100);
 }
 
-bool COpenMaxVideo::ClearPicture(DVDVideoPicture* pDvdVideoPicture)
+bool COpenMaxVideo::ClearPicture(VideoPicture* pVideoPicture)
 {
-  if (pDvdVideoPicture->openMaxBufferHolder) {
-    pDvdVideoPicture->openMaxBufferHolder->Release();
-    pDvdVideoPicture->openMaxBufferHolder = 0;
+  if (pVideoPicture->openMaxBufferHolder) {
+    pVideoPicture->openMaxBufferHolder->Release();
+    pVideoPicture->openMaxBufferHolder = 0;
   }
   return true;
 }
@@ -464,10 +464,10 @@ void COpenMaxVideo::ReleaseBuffer(OpenMaxVideoBuffer* releaseBuffer)
   pthread_mutex_unlock(&m_omx_queue_mutex);
 }
 
-int COpenMaxVideo::GetPicture(DVDVideoPicture* pDvdVideoPicture)
+int COpenMaxVideo::GetPicture(VideoPicture* pVideoPicture)
 {
   int returnCode = 0;
-  pDvdVideoPicture->openMaxBufferHolder = 0;
+  pVideoPicture->openMaxBufferHolder = 0;
 
   if (!m_omx_output_ready.empty())
   {
@@ -487,19 +487,19 @@ int COpenMaxVideo::GetPicture(DVDVideoPicture* pDvdVideoPicture)
           CLASSNAME, __func__, omx_err);
     }
     else {
-      pDvdVideoPicture->dts = DVD_NOPTS_VALUE;
-      pDvdVideoPicture->pts = DVD_NOPTS_VALUE;
-      pDvdVideoPicture->format = RENDER_FMT_OMXEGL;
-      pDvdVideoPicture->openMax = this;
-      pDvdVideoPicture->openMaxBufferHolder = new OpenMaxVideoBufferHolder(buffer);
+      pVideoPicture->dts = DVD_NOPTS_VALUE;
+      pVideoPicture->pts = DVD_NOPTS_VALUE;
+      pVideoPicture->format = RENDER_FMT_OMXEGL;
+      pVideoPicture->openMax = this;
+      pVideoPicture->openMaxBufferHolder = new OpenMaxVideoBufferHolder(buffer);
 
       if (!m_dts_queue.empty())
 	{
-	  pDvdVideoPicture->dts = m_dts_queue.front();
+	  pVideoPicture->dts = m_dts_queue.front();
 	  m_dts_queue.pop();
 	}
       // nTimeStamp is in microseconds
-      pDvdVideoPicture->pts = (buffer->omx_buffer->nTimeStamp == 0) ? DVD_NOPTS_VALUE : (double)buffer->omx_buffer->nTimeStamp / 1000.0;
+      pVideoPicture->pts = (buffer->omx_buffer->nTimeStamp == 0) ? DVD_NOPTS_VALUE : (double)buffer->omx_buffer->nTimeStamp / 1000.0;
 
       returnCode |= VC_PICTURE;
     }
@@ -512,8 +512,8 @@ int COpenMaxVideo::GetPicture(DVDVideoPicture* pDvdVideoPicture)
   #endif
   }
 
-  pDvdVideoPicture->iFlags  = DVP_FLAG_ALLOCATED;
-  pDvdVideoPicture->iFlags |= m_drop_state ? DVP_FLAG_DROPPED : 0;
+  pVideoPicture->iFlags  = DVP_FLAG_ALLOCATED;
+  pVideoPicture->iFlags |= m_drop_state ? DVP_FLAG_DROPPED : 0;
 
   returnCode |= m_omx_input_available.empty() ? 0 : VC_BUFFER;
 

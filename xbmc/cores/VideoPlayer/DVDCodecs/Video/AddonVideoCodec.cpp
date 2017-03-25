@@ -245,7 +245,7 @@ bool CAddonVideoCodec::AddData(const DemuxPacket &packet)
   return m_struct.toAddon.AddData(m_addonInstance, packet);
 }
 
-CDVDVideoCodec::VCReturn CAddonVideoCodec::GetPicture(DVDVideoPicture* pDvdVideoPicture)
+CDVDVideoCodec::VCReturn CAddonVideoCodec::GetPicture(VideoPicture* pVideoPicture)
 {
   if (!m_struct.toAddon.GetPicture)
     return CDVDVideoCodec::VC_ERROR;
@@ -262,33 +262,33 @@ CDVDVideoCodec::VCReturn CAddonVideoCodec::GetPicture(DVDVideoPicture* pDvdVideo
   case VIDEOCODEC_RETVAL::VC_BUFFER:
     return CDVDVideoCodec::VC_BUFFER;
   case VIDEOCODEC_RETVAL::VC_PICTURE:
-    pDvdVideoPicture->data[0] = picture.decodedData + picture.planeOffsets[0];
-    pDvdVideoPicture->data[1] = picture.decodedData + picture.planeOffsets[1];
-    pDvdVideoPicture->data[2] = picture.decodedData + picture.planeOffsets[2];
-    pDvdVideoPicture->iLineSize[0] = picture.stride[0];
-    pDvdVideoPicture->iLineSize[1] = picture.stride[1];
-    pDvdVideoPicture->iLineSize[2] = picture.stride[2];
-    pDvdVideoPicture->iWidth = picture.width;
-    pDvdVideoPicture->iHeight = picture.height;
-    pDvdVideoPicture->pts = picture.pts;
-    pDvdVideoPicture->dts = DVD_NOPTS_VALUE;
-    pDvdVideoPicture->color_range = 0;
-    pDvdVideoPicture->color_matrix = 4;
-    pDvdVideoPicture->iFlags = DVP_FLAG_ALLOCATED;
+    pVideoPicture->data[0] = picture.decodedData + picture.planeOffsets[0];
+    pVideoPicture->data[1] = picture.decodedData + picture.planeOffsets[1];
+    pVideoPicture->data[2] = picture.decodedData + picture.planeOffsets[2];
+    pVideoPicture->iLineSize[0] = picture.stride[0];
+    pVideoPicture->iLineSize[1] = picture.stride[1];
+    pVideoPicture->iLineSize[2] = picture.stride[2];
+    pVideoPicture->iWidth = picture.width;
+    pVideoPicture->iHeight = picture.height;
+    pVideoPicture->pts = picture.pts;
+    pVideoPicture->dts = DVD_NOPTS_VALUE;
+    pVideoPicture->color_range = 0;
+    pVideoPicture->color_matrix = 4;
+    pVideoPicture->iFlags = DVP_FLAG_ALLOCATED;
     if (m_codecFlags & DVD_CODEC_CTRL_DROP)
-      pDvdVideoPicture->iFlags |= DVP_FLAG_DROPPED;
+      pVideoPicture->iFlags |= DVP_FLAG_DROPPED;
 
-    pDvdVideoPicture->format = RENDER_FMT_YUV420P;
+    pVideoPicture->format = RENDER_FMT_YUV420P;
 
-    pDvdVideoPicture->iDisplayWidth = pDvdVideoPicture->iWidth;
-    pDvdVideoPicture->iDisplayHeight = pDvdVideoPicture->iHeight;
+    pVideoPicture->iDisplayWidth = pVideoPicture->iWidth;
+    pVideoPicture->iDisplayHeight = pVideoPicture->iHeight;
     if (m_displayAspect > 0.0)
     {
-      pDvdVideoPicture->iDisplayWidth = ((int)lrint(pDvdVideoPicture->iHeight * m_displayAspect)) & ~3;
-      if (pDvdVideoPicture->iDisplayWidth > pDvdVideoPicture->iWidth)
+      pVideoPicture->iDisplayWidth = ((int)lrint(pVideoPicture->iHeight * m_displayAspect)) & ~3;
+      if (pVideoPicture->iDisplayWidth > pVideoPicture->iWidth)
       {
-        pDvdVideoPicture->iDisplayWidth = pDvdVideoPicture->iWidth;
-        pDvdVideoPicture->iDisplayHeight = ((int)lrint(pDvdVideoPicture->iWidth / m_displayAspect)) & ~3;
+        pVideoPicture->iDisplayWidth = pVideoPicture->iWidth;
+        pVideoPicture->iDisplayHeight = ((int)lrint(pVideoPicture->iWidth / m_displayAspect)) & ~3;
       }
     }
 

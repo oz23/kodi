@@ -74,8 +74,8 @@ public:
   virtual bool Open(CDVDStreamInfo &hints, CDVDCodecOptions &options) override;
   virtual bool AddData(const DemuxPacket &packet) override;
   virtual void Reset() override;
-  virtual VCReturn GetPicture(DVDVideoPicture* pDvdVideoPicture) override;
-  virtual bool ClearPicture(DVDVideoPicture* pDvdVideoPicture) override;
+  virtual VCReturn GetPicture(VideoPicture* pVideoPicture) override;
+  virtual bool ClearPicture(VideoPicture* pVideoPicture) override;
   virtual void SetSpeed(int iSpeed) override;
   virtual void SetCodecControl(int flags) override;
   virtual const char* GetName(void) override { return (const char*)m_pFormatName; }
@@ -90,7 +90,7 @@ protected:
   CAMLCodec      *m_Codec;
   std::set<CDVDAmlogicInfo*> m_inflight;
   const char     *m_pFormatName;
-  DVDVideoPicture m_videobuffer;
+  VideoPicture m_videobuffer;
   bool            m_opened;
   int             m_codecControlFlags;
   CDVDStreamInfo  m_hints;

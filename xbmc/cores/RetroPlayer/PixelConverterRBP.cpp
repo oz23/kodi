@@ -151,11 +151,11 @@ bool CPixelConverterRBP::Decode(const uint8_t* pData, unsigned int size)
   return true;
 }
 
-void CPixelConverterRBP::GetPicture(DVDVideoPicture& dvdVideoPicture)
+void CPixelConverterRBP::GetPicture(VideoPicture& VideoPicture)
 {
-  CPixelConverter::GetPicture(dvdVideoPicture);
+  CPixelConverter::GetPicture(VideoPicture);
 
-  dvdVideoPicture.MMALBuffer = m_buf->MMALBuffer;
+  VideoPicture.MMALBuffer = m_buf->MMALBuffer;
 
   MMAL::CMMALYUVBuffer *omvb = (MMAL::CMMALYUVBuffer *)m_buf->MMALBuffer;
 
@@ -163,10 +163,10 @@ void CPixelConverterRBP::GetPicture(DVDVideoPicture& dvdVideoPicture)
   omvb->gmem->Flush();
 }
 
-DVDVideoPicture* CPixelConverterRBP::AllocatePicture(int iWidth, int iHeight)
+VideoPicture* CPixelConverterRBP::AllocatePicture(int iWidth, int iHeight)
 {
   MMAL::CMMALYUVBuffer *omvb = nullptr;
-  DVDVideoPicture* pPicture = new DVDVideoPicture;
+  VideoPicture* pPicture = new VideoPicture;
 
   // gpu requirements
   int w = (iWidth + 31) & ~31;
@@ -203,7 +203,7 @@ DVDVideoPicture* CPixelConverterRBP::AllocatePicture(int iWidth, int iHeight)
   return pPicture;
 }
 
-void CPixelConverterRBP::FreePicture(DVDVideoPicture* pPicture)
+void CPixelConverterRBP::FreePicture(VideoPicture* pPicture)
 {
   if (pPicture)
   {

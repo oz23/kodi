@@ -37,7 +37,7 @@ public:
   virtual bool Reconfigure(CDVDStreamInfo &hints) override;
   virtual bool AddData(const DemuxPacket &packet) override;
   virtual void Reset() override;
-  virtual VCReturn GetPicture(DVDVideoPicture* pDvdVideoPicture) override;
+  virtual VCReturn GetPicture(VideoPicture* pVideoPicture) override;
   virtual const char* GetName() override;
   virtual void SetCodecControl(int flags) override { m_codecFlags = flags; }
 private:

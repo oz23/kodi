@@ -100,8 +100,8 @@ public:
   void Close(void);
   int  Decode(uint8_t *pData, int iSize, double dts, double pts);
   void Reset(void);
-  int GetPicture(DVDVideoPicture *pDvdVideoPicture);
-  bool ClearPicture(DVDVideoPicture *pDvdVideoPicture);
+  int GetPicture(VideoPicture *pVideoPicture);
+  bool ClearPicture(VideoPicture *pVideoPicture);
   void ReleaseBuffer(OpenMaxVideoBuffer *buffer);
   void SetDropState(bool bDrop);
 protected:
@@ -135,7 +135,7 @@ protected:
   EGLContext        m_egl_context;
 
   // Video format
-  DVDVideoPicture   m_videobuffer;
+  VideoPicture   m_videobuffer;
   bool              m_drop_state;
   int               m_decoded_width;
   int               m_decoded_height;

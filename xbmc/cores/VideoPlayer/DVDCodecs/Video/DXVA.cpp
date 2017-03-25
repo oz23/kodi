@@ -973,14 +973,14 @@ CDVDVideoCodec::VCReturn CDecoder::Decode(AVCodecContext* avctx, AVFrame* frame)
     return CDVDVideoCodec::VC_BUFFER;
 }
 
-bool CDecoder::GetPicture(AVCodecContext* avctx, DVDVideoPicture* picture)
+bool CDecoder::GetPicture(AVCodecContext* avctx, VideoPicture* picture)
 {
   ((ICallbackHWAccel*)avctx->opaque)->GetPictureCommon(picture);
   CSingleLock lock(m_section);
 
-  picture->dxva = m_presentPicture;
+  m_presentPicture->extFormat = (unsigned int)m_format.OutputFormat;
+  picture->hwPic = m_presentPicture;
   picture->format = RENDER_FMT_DXVA;
-  picture->extended_format = (unsigned int)m_format.OutputFormat;
 
   int queued, discard, free;
   m_processInfo.GetRenderBuffers(queued, discard, free);

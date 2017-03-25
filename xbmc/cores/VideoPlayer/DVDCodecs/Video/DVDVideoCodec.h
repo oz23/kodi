@@ -43,83 +43,33 @@ class CSetting;
 #define FRAME_TYPE_B     3
 #define FRAME_TYPE_D     4
 
-namespace DXVA { class CRenderPicture; }
-namespace VAAPI { class CVaapiRenderPicture; }
-namespace VDPAU { class CVdpauRenderPicture; }
-class COpenMax;
-class COpenMaxVideo;
-struct OpenMaxVideoBufferHolder;
-class CDVDMediaCodecInfo;
-class CDVDVideoCodecIMXBuffer;
-class CMMALBuffer;
-class CDVDAmlogicInfo;
-
 
 // should be entirely filled by all codecs
-struct DVDVideoPicture
+struct VideoPicture
 {
   double pts; // timestamp in seconds, used in the CVideoPlayer class to keep track of pts
   double dts;
 
-  union
-  {
-    struct {
-      uint8_t* data[4];   // [4] = alpha channel, currently not used
-      int iLineSize[4];   // [4] = alpha channel, currently not used
-    };
-    struct {
-      DXVA::CRenderPicture* dxva;
-    };
-    struct {
-      VDPAU::CVdpauRenderPicture* vdpau;
-    };
-    struct {
-      VAAPI::CVaapiRenderPicture* vaapi;
-    };
+  uint8_t* data[4];   // [4] = alpha channel, currently not used
+  int iLineSize[4];   // [4] = alpha channel, currently not used
 
-    struct {
-      COpenMax *openMax;
-      OpenMaxVideoBufferHolder *openMaxBufferHolder;
-    };
-
-    struct {
-      struct __CVBuffer *cvBufferRef;
-    };
-
-    struct {
-      CDVDMediaCodecInfo *mediacodec;
-    };
-
-    struct {
-      CDVDVideoCodecIMXBuffer *IMXBuffer;
-    };
-
-    struct {
-      CMMALBuffer *MMALBuffer;
-    };
-
-    struct {
-      CDVDAmlogicInfo *amlcodec;
-    };
-
-  };
+  void *hwPic;
 
   unsigned int iFlags;
 
-  double       iRepeatPicture;
-  double       iDuration;
+  double iRepeatPicture;
+  double iDuration;
   unsigned int iFrameType         : 4;  //< see defines above // 1->I, 2->P, 3->B, 0->Undef
   unsigned int color_matrix       : 4;
   unsigned int color_range        : 1;  //< 1 indicate if we have a full range of color
   unsigned int chroma_position;
   unsigned int color_primaries;
   unsigned int color_transfer;
-  unsigned int extended_format;
-  char         stereo_mode[32];
+  char stereo_mode[32];
 
-  int8_t*      qp_table;                //< Quantization parameters, primarily used by filters
-  int          qstride;
-  int          qscale_type;
+  int8_t* qp_table;                //< Quantization parameters, primarily used by filters
+  int qstride;
+  int qscale_type;
 
   unsigned int iWidth;
   unsigned int iHeight;
@@ -209,15 +159,15 @@ public:
    * it can signal a picture, request a buffer, or return none, if nothing applies
    * the data is valid until the next GetPicture return VC_PICTURE
    */
-  virtual VCReturn GetPicture(DVDVideoPicture* pDvdVideoPicture) = 0;
+  virtual VCReturn GetPicture(VideoPicture* pVideoPicture) = 0;
 
   /**
    * returns true if successfull
    * the data is cleared to zero
    */
-  virtual bool ClearPicture(DVDVideoPicture* pDvdVideoPicture)
+  virtual bool ClearPicture(VideoPicture* pVideoPicture)
   {
-    memset(pDvdVideoPicture, 0, sizeof(DVDVideoPicture));
+    memset(pVideoPicture, 0, sizeof(VideoPicture));
     return true;
   }
 
@@ -319,7 +269,7 @@ public:
   virtual ~IHardwareDecoder() = default;
   virtual bool Open(AVCodecContext* avctx, AVCodecContext* mainctx, const enum AVPixelFormat, unsigned int surfaces) = 0;
   virtual CDVDVideoCodec::VCReturn Decode(AVCodecContext* avctx, AVFrame* frame) = 0;
-  virtual bool GetPicture(AVCodecContext* avctx, DVDVideoPicture* picture) = 0;
+  virtual bool GetPicture(AVCodecContext* avctx, VideoPicture* picture) = 0;
   virtual CDVDVideoCodec::VCReturn Check(AVCodecContext* avctx) = 0;
   virtual void Reset() {}
   virtual unsigned GetAllowedReferences() { return 0; }
@@ -332,5 +282,5 @@ class ICallbackHWAccel
 {
 public:
   virtual IHardwareDecoder* GetHWAccel() = 0;
-  virtual bool GetPictureCommon(DVDVideoPicture* pDvdVideoPicture) = 0;
+  virtual bool GetPictureCommon(VideoPicture* pVideoPicture) = 0;
 };

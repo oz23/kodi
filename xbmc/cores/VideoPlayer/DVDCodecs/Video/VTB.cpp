@@ -116,12 +116,12 @@ CDVDVideoCodec::VCReturn CDecoder::Decode(AVCodecContext* avctx, AVFrame* frame)
     return CDVDVideoCodec::VC_BUFFER;
 }
 
-bool CDecoder::GetPicture(AVCodecContext* avctx, DVDVideoPicture* picture)
+bool CDecoder::GetPicture(AVCodecContext* avctx, VideoPicture* picture)
 {
   ((ICallbackHWAccel*)avctx->opaque)->GetPictureCommon(picture);
 
   picture->format = RENDER_FMT_CVBREF;
-  picture->cvBufferRef = m_renderPicture;
+  picture->hwPic = m_renderPicture;
   return true;
 }
 

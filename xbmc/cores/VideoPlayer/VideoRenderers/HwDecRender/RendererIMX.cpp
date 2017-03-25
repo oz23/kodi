@@ -51,7 +51,7 @@ bool CRendererIMX::RenderCapture(CRenderCapture* capture)
   return true;
 }
 
-void CRendererIMX::AddVideoPictureHW(DVDVideoPicture &picture, int index)
+void CRendererIMX::AddVideoPictureHW(VideoPicture &picture, int index)
 {
   YUVBUFFER &buf = m_buffers[index];
 

@@ -100,10 +100,10 @@ unsigned CDVDVideoCodecIMX::GetAllowedReferences()
   return RENDER_QUEUE_SIZE;
 }
 
-bool CDVDVideoCodecIMX::ClearPicture(DVDVideoPicture* pDvdVideoPicture)
+bool CDVDVideoCodecIMX::ClearPicture(VideoPicture* pVideoPicture)
 {
-  if (pDvdVideoPicture)
-    SAFE_RELEASE(pDvdVideoPicture->IMXBuffer);
+  if (pVideoPicture)
+    SAFE_RELEASE(pVideoPicture->IMXBuffer);
 
   return true;
 }
@@ -1119,55 +1119,55 @@ void CIMXCodec::ExitError(const char *msg, ...)
   StopThread(false);
 }
 
-bool CIMXCodec::GetPicture(DVDVideoPicture* pDvdVideoPicture)
+bool CIMXCodec::GetPicture(VideoPicture* pVideoPicture)
 {
-  pDvdVideoPicture->IMXBuffer = m_decOutput.pop();
-  assert(pDvdVideoPicture->IMXBuffer);
+  pVideoPicture->IMXBuffer = m_decOutput.pop();
+  assert(pVideoPicture->IMXBuffer);
 
 #ifdef IMX_PROFILE
   static unsigned int previous = 0;
   unsigned int current;
 
   current = XbmcThreads::SystemClockMillis();
-  CLog::Log(LOGDEBUG, "+G 0x%x %f/%f tm:%03d : Interlaced 0x%x\n", pDvdVideoPicture->IMXBuffer->GetIdx(),
-                            recalcPts(pDvdVideoPicture->IMXBuffer->GetDts()), recalcPts(pDvdVideoPicture->IMXBuffer->GetPts()), current - previous,
-                            m_initInfo.nInterlace ? pDvdVideoPicture->IMXBuffer->GetFieldType() : 0);
+  CLog::Log(LOGDEBUG, "+G 0x%x %f/%f tm:%03d : Interlaced 0x%x\n", pVideoPicture->IMXBuffer->GetIdx(),
+                            recalcPts(pVideoPicture->IMXBuffer->GetDts()), recalcPts(pVideoPicture->IMXBuffer->GetPts()), current - previous,
+                            m_initInfo.nInterlace ? pVideoPicture->IMXBuffer->GetFieldType() : 0);
   previous = current;
 #endif
 
   if (m_dropRequest && !m_burst)
   {
-    pDvdVideoPicture->iFlags = DVP_FLAG_DROPPED;
+    pVideoPicture->iFlags = DVP_FLAG_DROPPED;
     ++m_dropped;
   }
   else
-    pDvdVideoPicture->iFlags = pDvdVideoPicture->IMXBuffer->GetFlags();
+    pVideoPicture->iFlags = pVideoPicture->IMXBuffer->GetFlags();
 
   if (m_initInfo.nInterlace)
   {
-    if (pDvdVideoPicture->IMXBuffer->GetFieldType() == VPU_FIELD_NONE && m_warnOnce)
+    if (pVideoPicture->IMXBuffer->GetFieldType() == VPU_FIELD_NONE && m_warnOnce)
     {
       m_warnOnce = false;
       CLog::Log(LOGWARNING, "Interlaced content reported by VPU, but full frames detected - Please turn off deinterlacing manually.");
     }
-    else if (pDvdVideoPicture->IMXBuffer->GetFieldType() == VPU_FIELD_TB || pDvdVideoPicture->IMXBuffer->GetFieldType() == VPU_FIELD_TOP)
-      pDvdVideoPicture->iFlags |= DVP_FLAG_TOP_FIELD_FIRST;
+    else if (pVideoPicture->IMXBuffer->GetFieldType() == VPU_FIELD_TB || pVideoPicture->IMXBuffer->GetFieldType() == VPU_FIELD_TOP)
+      pVideoPicture->iFlags |= DVP_FLAG_TOP_FIELD_FIRST;
 
-    pDvdVideoPicture->iFlags |= DVP_FLAG_INTERLACED;
+    pVideoPicture->iFlags |= DVP_FLAG_INTERLACED;
   }
 
-  pDvdVideoPicture->format = RENDER_FMT_IMXMAP;
-  pDvdVideoPicture->iWidth = pDvdVideoPicture->IMXBuffer->m_pctWidth;
-  pDvdVideoPicture->iHeight = pDvdVideoPicture->IMXBuffer->m_pctHeight;
+  pVideoPicture->format = RENDER_FMT_IMXMAP;
+  pVideoPicture->iWidth = pVideoPicture->IMXBuffer->m_pctWidth;
+  pVideoPicture->iHeight = pVideoPicture->IMXBuffer->m_pctHeight;
 
-  pDvdVideoPicture->iDisplayWidth = ((pDvdVideoPicture->iWidth * m_frameInfo.pExtInfo->nQ16ShiftWidthDivHeightRatio) + 32767) >> 16;
-  pDvdVideoPicture->iDisplayHeight = pDvdVideoPicture->iHeight;
+  pVideoPicture->iDisplayWidth = ((pVideoPicture->iWidth * m_frameInfo.pExtInfo->nQ16ShiftWidthDivHeightRatio) + 32767) >> 16;
+  pVideoPicture->iDisplayHeight = pVideoPicture->iHeight;
 
-  pDvdVideoPicture->pts = pDvdVideoPicture->IMXBuffer->GetPts();
-  pDvdVideoPicture->dts = pDvdVideoPicture->IMXBuffer->GetDts();
+  pVideoPicture->pts = pVideoPicture->IMXBuffer->GetPts();
+  pVideoPicture->dts = pVideoPicture->IMXBuffer->GetDts();
 
-  if (pDvdVideoPicture->iFlags & DVP_FLAG_DROPPED)
-    SAFE_RELEASE(pDvdVideoPicture->IMXBuffer);
+  if (pVideoPicture->iFlags & DVP_FLAG_DROPPED)
+    SAFE_RELEASE(pVideoPicture->IMXBuffer);
 
   return true;
 }

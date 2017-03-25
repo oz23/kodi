@@ -216,7 +216,7 @@ bool CDVDFileInfo::ExtractThumb(const std::string &strPath,
       if (pDemuxer->SeekTime(nSeekTo, true))
       {
         CDVDVideoCodec::VCReturn iDecoderState = CDVDVideoCodec::VC_NONE;
-        DVDVideoPicture picture;
+        VideoPicture picture;
 
         memset(&picture, 0, sizeof(picture));
 
@@ -242,7 +242,7 @@ bool CDVDFileInfo::ExtractThumb(const std::string &strPath,
           iDecoderState = CDVDVideoCodec::VC_NONE;
           while (iDecoderState == CDVDVideoCodec::VC_NONE)
           {
-            memset(&picture, 0, sizeof(DVDVideoPicture));
+            memset(&picture, 0, sizeof(VideoPicture));
             iDecoderState = pVideoCodec->GetPicture(&picture);
           }
 

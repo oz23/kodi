@@ -1172,7 +1172,7 @@ CDVDVideoCodec::VCReturn CDecoder::Decode(AVCodecContext *avctx, AVFrame *pFrame
   return CDVDVideoCodec::VC_ERROR;
 }
 
-bool CDecoder::GetPicture(AVCodecContext* avctx, DVDVideoPicture* picture)
+bool CDecoder::GetPicture(AVCodecContext* avctx, VideoPicture* picture)
 {
   CSingleLock lock(m_DecoderSection);
 
@@ -1180,7 +1180,7 @@ bool CDecoder::GetPicture(AVCodecContext* avctx, DVDVideoPicture* picture)
     return false;
 
   *picture = m_presentPicture->DVDPic;
-  picture->vdpau = m_presentPicture;
+  picture->hwPic = m_presentPicture;
 
   return true;
 }
@@ -1528,7 +1528,7 @@ void CMixer::StateMachine(int signal, Protocol *port, Message *msg)
             m_extTimeout = 1000;
             return;
           }
-          if (m_processPicture.DVDPic.format != RENDER_FMT_VDPAU_420)
+          if (!m_processPicture.isYuv)
             m_outputSurfaces.pop();
           m_config.stats->IncProcessed();
           m_config.stats->DecDecoded();
@@ -1588,7 +1588,7 @@ void CMixer::StateMachine(int signal, Protocol *port, Message *msg)
              m_extTimeout = 1000;
              return;
            }
-           if (m_processPicture.DVDPic.format != RENDER_FMT_VDPAU_420)
+           if (!m_processPicture.isYuv)
              m_outputSurfaces.pop();
            m_config.stats->IncProcessed();
            m_dataPort.SendInMessage(CMixerDataProtocol::PICTURE,&m_processPicture,sizeof(m_processPicture));
@@ -2360,17 +2360,17 @@ void CMixer::InitCycle()
       else
         m_mixerfield = VDP_VIDEO_MIXER_PICTURE_STRUCTURE_BOTTOM_FIELD;
 
-      m_mixerInput[1].DVDPic.format = RENDER_FMT_VDPAU;
       m_mixerInput[1].DVDPic.iFlags &= ~(DVP_FLAG_TOP_FIELD_FIRST |
                                         DVP_FLAG_REPEAT_TOP_FIELD |
                                         DVP_FLAG_INTERLACED);
+      m_mixerInput[1].isYuv = false;
       m_config.useInteropYuv = false;
     }
     else if (method == VS_INTERLACEMETHOD_RENDER_BOB)
     {
       m_mixersteps = 1;
       m_mixerfield = VDP_VIDEO_MIXER_PICTURE_STRUCTURE_FRAME;
-      m_mixerInput[1].DVDPic.format = RENDER_FMT_VDPAU_420;
+      m_mixerInput[1].isYuv = true;
       m_config.useInteropYuv = true;
     }
   }
@@ -2380,19 +2380,20 @@ void CMixer::InitCycle()
     m_mixerfield = VDP_VIDEO_MIXER_PICTURE_STRUCTURE_FRAME;
 
     if (m_config.useInteropYuv)
-      m_mixerInput[1].DVDPic.format = RENDER_FMT_VDPAU_420;
+      m_mixerInput[1].isYuv = true;
     else
     {
-      m_mixerInput[1].DVDPic.format = RENDER_FMT_VDPAU;
       m_mixerInput[1].DVDPic.iFlags &= ~(DVP_FLAG_TOP_FIELD_FIRST |
                                         DVP_FLAG_REPEAT_TOP_FIELD |
                                         DVP_FLAG_INTERLACED);
+      m_mixerInput[1].isYuv = false;
     }
   }
   m_mixerstep = 0;
+  m_mixerInput[1].DVDPic.format = RENDER_FMT_VDPAU;
 
   m_processPicture.crop = false;
-  if (m_mixerInput[1].DVDPic.format == RENDER_FMT_VDPAU)
+  if (!m_mixerInput[1].isYuv)
   {
     m_processPicture.outputSurface = m_outputSurfaces.front();
     m_mixerInput[1].DVDPic.iWidth = m_config.outWidth;
@@ -2410,6 +2411,7 @@ void CMixer::InitCycle()
     m_mixerInput[1].DVDPic.iHeight = m_config.vidHeight;
   }
 
+  m_processPicture.isYuv = m_mixerInput[1].isYuv;
   m_processPicture.DVDPic = m_mixerInput[1].DVDPic;
   m_processPicture.videoSurface = m_mixerInput[1].videoSurface;
 }
@@ -2428,7 +2430,7 @@ void CMixer::FiniCycle()
   while (m_mixerInput.size() > surfToKeep)
   {
     CVdpauDecodedPicture &tmp = m_mixerInput.back();
-    if (m_processPicture.DVDPic.format != RENDER_FMT_VDPAU_420)
+    if (!m_processPicture.isYuv)
     {
       m_config.videoSurfaces->ClearRender(tmp.videoSurface);
     }
@@ -2441,7 +2443,7 @@ void CMixer::FiniCycle()
 
 void CMixer::ProcessPicture()
 {
-  if (m_processPicture.DVDPic.format == RENDER_FMT_VDPAU_420)
+  if (m_processPicture.isYuv)
     return;
 
   VdpStatus vdp_st;
@@ -3024,7 +3026,7 @@ void COutput::Flush()
   for (it = m_bufferPool.usedRenderPics.begin(); it != m_bufferPool.usedRenderPics.end(); ++it)
   {
     CVdpauRenderPicture *pic = m_bufferPool.allRenderPics[*it];
-    if (pic->DVDPic.format == RENDER_FMT_VDPAU_420)
+    if (pic->isYuv)
     {
       std::map<VdpVideoSurface, VdpauBufferPool::GLVideoSurface>::iterator it2;
       it2 = m_bufferPool.glVideoSurfaceMap.find(pic->sourceIdx);
@@ -3043,11 +3045,11 @@ void COutput::Flush()
   while(!m_bufferPool.processedPics.empty())
   {
     CVdpauProcessedPicture procPic = m_bufferPool.processedPics.front();
-    if (procPic.DVDPic.format == RENDER_FMT_VDPAU)
+    if (!procPic.isYuv)
     {
       m_mixer.m_dataPort.SendOutMessage(CMixerDataProtocol::BUFFER, &procPic.outputSurface, sizeof(procPic.outputSurface));
     }
-    else if (procPic.DVDPic.format == RENDER_FMT_VDPAU_420)
+    else if (procPic.isYuv)
     {
       m_config.videoSurfaces->ClearRender(procPic.videoSurface);
     }
@@ -3077,7 +3079,8 @@ CVdpauRenderPicture* COutput::ProcessMixerPicture()
 
     retPic->DVDPic = procPic.DVDPic;
     retPic->valid = true;
-    if (retPic->DVDPic.format == RENDER_FMT_VDPAU)
+    retPic->isYuv = procPic.isYuv;
+    if (!retPic->isYuv)
     {
       m_config.useInteropYuv = false;
       m_bufferPool.numOutputSurfaces = NUM_RENDER_PICS;
@@ -3202,7 +3205,7 @@ bool COutput::ProcessSyncPicture()
 
 void COutput::ProcessReturnPicture(CVdpauRenderPicture *pic)
 {
-  if (pic->DVDPic.format == RENDER_FMT_VDPAU_420)
+  if (pic->isYuv)
   {
     std::map<VdpVideoSurface, VdpauBufferPool::GLVideoSurface>::iterator it;
     it = m_bufferPool.glVideoSurfaceMap.find(pic->sourceIdx);
@@ -3219,7 +3222,7 @@ void COutput::ProcessReturnPicture(CVdpauRenderPicture *pic)
     VdpVideoSurface surf = it->second.sourceVuv;
     m_config.videoSurfaces->ClearRender(surf);
   }
-  else if (pic->DVDPic.format == RENDER_FMT_VDPAU)
+  else
   {
     std::map<VdpOutputSurface, VdpauBufferPool::GLVideoSurface>::iterator it;
     it = m_bufferPool.glOutputSurfaceMap.find(pic->sourceIdx);

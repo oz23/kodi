@@ -269,7 +269,7 @@ void CVideoPlayerVideo::Process()
 {
   CLog::Log(LOGNOTICE, "running thread: video_thread");
 
-  memset(&m_picture, 0, sizeof(DVDVideoPicture));
+  memset(&m_picture, 0, sizeof(VideoPicture));
 
   double pts = 0;
   double frametime = (double)DVD_TIME_BASE / m_fFrameRate;
@@ -678,7 +678,7 @@ void CVideoPlayerVideo::Flush(bool sync)
 }
 
 #ifdef HAS_VIDEO_PLAYBACK
-void CVideoPlayerVideo::ProcessOverlays(DVDVideoPicture* pSource, double pts)
+void CVideoPlayerVideo::ProcessOverlays(VideoPicture* pSource, double pts)
 {
   // remove any overlays that are out of time
   if (m_syncState == IDVDStreamPlayer::SYNC_INSYNC)
@@ -741,13 +741,13 @@ std::string CVideoPlayerVideo::GetStereoMode()
   return stereo_mode;
 }
 
-int CVideoPlayerVideo::OutputPicture(const DVDVideoPicture* src, double pts)
+int CVideoPlayerVideo::OutputPicture(const VideoPicture* src, double pts)
 {
   m_bAbortOutput = false;
 
   /* picture buffer is not allowed to be modified in this call */
-  DVDVideoPicture picture(*src);
-  DVDVideoPicture* pPicture = &picture;
+  VideoPicture picture(*src);
+  VideoPicture* pPicture = &picture;
 
   /* grab stereo mode from image if available */
   if (src->stereo_mode[0] && m_hints.stereo_mode.compare(src->stereo_mode) != 0)

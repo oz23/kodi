@@ -40,7 +40,7 @@ CDVDVideoCodecOpenMax::CDVDVideoCodecOpenMax(CProcessInfo &processInfo) : CDVDVi
   m_pFormatName = "omx-xxxx";
 
   m_convert_bitstream = false;
-  memset(&m_videobuffer, 0, sizeof(DVDVideoPicture));
+  memset(&m_videobuffer, 0, sizeof(VideoPicture));
 }
 
 CDVDVideoCodecOpenMax::~CDVDVideoCodecOpenMax()
@@ -97,9 +97,9 @@ bool CDVDVideoCodecOpenMax::Open(CDVDStreamInfo &hints, CDVDCodecOptions &option
       return false;
     }
 
-    // allocate a YV12 DVDVideoPicture buffer.
+    // allocate a YV12 VideoPicture buffer.
     // first make sure all properties are reset.
-    memset(&m_videobuffer, 0, sizeof(DVDVideoPicture));
+    memset(&m_videobuffer, 0, sizeof(VideoPicture));
 
     m_videobuffer.dts = DVD_NOPTS_VALUE;
     m_videobuffer.pts = DVD_NOPTS_VALUE;
@@ -186,18 +186,18 @@ void CDVDVideoCodecOpenMax::Reset(void)
   m_omx_decoder->Reset();
 }
 
-bool CDVDVideoCodecOpenMax::GetPicture(DVDVideoPicture* pDvdVideoPicture)
+bool CDVDVideoCodecOpenMax::GetPicture(VideoPicture* pVideoPicture)
 {
   m_omx_decoder->GetPicture(&m_videobuffer);
-  *pDvdVideoPicture = m_videobuffer;
+  *pVideoPicture = m_videobuffer;
 
   //! @todo what's going on here? bool is required as return value.
   return VC_PICTURE | VC_BUFFER;
 }
 
-bool CDVDVideoCodecOpenMax::ClearPicture(DVDVideoPicture* pDvdVideoPicture)
+bool CDVDVideoCodecOpenMax::ClearPicture(VideoPicture* pVideoPicture)
 {
-  return m_omx_decoder->ClearPicture(pDvdVideoPicture);
+  return m_omx_decoder->ClearPicture(pVideoPicture);
 }
 
 

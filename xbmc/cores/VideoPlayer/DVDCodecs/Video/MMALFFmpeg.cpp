@@ -286,7 +286,7 @@ CDVDVideoCodec::VCReturn CDecoder::Decode(AVCodecContext* avctx, AVFrame* frame)
     return CDVDVideoCodec::VC_BUFFER;
 }
 
-bool CDecoder::GetPicture(AVCodecContext* avctx, DVDVideoPicture* picture)
+bool CDecoder::GetPicture(AVCodecContext* avctx, VideoPicture* picture)
 {
   CSingleLock lock(m_section);
 

@@ -132,7 +132,7 @@ struct CVaapiConfig
  */
 struct CVaapiDecodedPicture
 {
-  DVDVideoPicture DVDPic;
+  VideoPicture DVDPic;
   VASurfaceID videoSurface;
   int index;
 };
@@ -142,7 +142,7 @@ struct CVaapiDecodedPicture
  */
 struct CVaapiProcessedPicture
 {
-  DVDVideoPicture DVDPic;
+  VideoPicture DVDPic;
   VASurfaceID videoSurface;
   AVFrame *frame;
   int id;
@@ -177,7 +177,7 @@ struct CVaapiGLSurface
 /**
  * Ready to render textures
  * Sent from COutput back to CDecoder
- * Objects are referenced by DVDVideoPicture and are sent
+ * Objects are referenced by VideoPicture and are sent
  * to renderer
  */
 class CVaapiRenderPicture
@@ -189,7 +189,7 @@ public:
     : texWidth(0), texHeight(0), texture(None), textureY(None), textureVU(None), valid(false), vaapi(NULL), avFrame(NULL),
       usefence(false), refCount(0), renderPicSection(section) { fence = None; }
   void Sync();
-  DVDVideoPicture DVDPic;
+  VideoPicture DVDPic;
   int texWidth, texHeight;
   CRect crop;
   GLuint texture;
@@ -419,7 +419,7 @@ public:
 
   virtual bool Open (AVCodecContext* avctx, AVCodecContext* mainctx, const enum AVPixelFormat, unsigned int surfaces = 0) override;
   virtual CDVDVideoCodec::VCReturn Decode (AVCodecContext* avctx, AVFrame* frame);
-  virtual bool GetPicture(AVCodecContext* avctx, DVDVideoPicture* picture) override;
+  virtual bool GetPicture(AVCodecContext* avctx, VideoPicture* picture) override;
   virtual void Reset() override;
   virtual void Close();
   virtual long Release() override;
@@ -578,7 +578,7 @@ protected:
   AVFrame *m_pFilterFrameIn;
   AVFrame *m_pFilterFrameOut;
   EINTERLACEMETHOD m_diMethod;
-  DVDVideoPicture m_DVDPic;
+  VideoPicture m_DVDPic;
   double m_frametime;
   double m_lastOutPts;
 };

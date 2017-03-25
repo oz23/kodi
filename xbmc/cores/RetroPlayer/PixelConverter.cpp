@@ -105,23 +105,23 @@ bool CPixelConverter::Decode(const uint8_t* pData, unsigned int size)
   return true;
 }
 
-void CPixelConverter::GetPicture(DVDVideoPicture& dvdVideoPicture)
+void CPixelConverter::GetPicture(VideoPicture& VideoPicture)
 {
-  dvdVideoPicture.dts            = DVD_NOPTS_VALUE;
-  dvdVideoPicture.pts            = DVD_NOPTS_VALUE;
+  VideoPicture.dts            = DVD_NOPTS_VALUE;
+  VideoPicture.pts            = DVD_NOPTS_VALUE;
 
   for (int i = 0; i < 4; i++)
   {
-    dvdVideoPicture.data[i]      = m_buf->data[i];
-    dvdVideoPicture.iLineSize[i] = m_buf->iLineSize[i];
+    VideoPicture.data[i]      = m_buf->data[i];
+    VideoPicture.iLineSize[i] = m_buf->iLineSize[i];
   }
 
-  dvdVideoPicture.iFlags         = 0; // *not* DVP_FLAG_ALLOCATED
-  dvdVideoPicture.color_matrix   = 4; // CONF_FLAGS_YUVCOEF_BT601
-  dvdVideoPicture.color_range    = 0; // *not* CONF_FLAGS_YUV_FULLRANGE
-  dvdVideoPicture.iWidth         = m_width;
-  dvdVideoPicture.iHeight        = m_height;
-  dvdVideoPicture.iDisplayWidth  = m_width; //! @todo: Update if aspect ratio changes
-  dvdVideoPicture.iDisplayHeight = m_height;
-  dvdVideoPicture.format         = m_renderFormat;
+  VideoPicture.iFlags         = 0; // *not* DVP_FLAG_ALLOCATED
+  VideoPicture.color_matrix   = 4; // CONF_FLAGS_YUVCOEF_BT601
+  VideoPicture.color_range    = 0; // *not* CONF_FLAGS_YUV_FULLRANGE
+  VideoPicture.iWidth         = m_width;
+  VideoPicture.iHeight        = m_height;
+  VideoPicture.iDisplayWidth  = m_width; //! @todo: Update if aspect ratio changes
+  VideoPicture.iDisplayHeight = m_height;
+  VideoPicture.format         = m_renderFormat;
 }

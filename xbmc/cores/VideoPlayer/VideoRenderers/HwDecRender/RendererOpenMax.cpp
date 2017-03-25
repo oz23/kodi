@@ -44,7 +44,7 @@ bool CRendererOMX::SkipUploadYV12(int index)
   return m_buffers[index].hwDec != 0 ? true : false;
 }
 
-void CRendererOMX::AddVideoPictureHW(DVDVideoPicture &picture, int index)
+void CRendererOMX::AddVideoPictureHW(VideoPicture &picture, int index)
 {
   YUVBUFFER &buf = m_buffers[index];
   if (buf.hwDec) {

@@ -63,7 +63,7 @@ CRendererVTB::~CRendererVTB()
   }
 }
 
-void CRendererVTB::AddVideoPictureHW(DVDVideoPicture &picture, int index)
+void CRendererVTB::AddVideoPictureHW(VideoPicture &picture, int index)
 {
   CRenderBuffer &buf = m_vtbBuffers[index];
   if (buf.m_videoBuffer)

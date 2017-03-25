@@ -984,7 +984,7 @@ CDVDVideoCodec::VCReturn CDecoder::Check(AVCodecContext* avctx)
   return CDVDVideoCodec::VC_NONE;
 }
 
-bool CDecoder::GetPicture(AVCodecContext* avctx, DVDVideoPicture* picture)
+bool CDecoder::GetPicture(AVCodecContext* avctx, VideoPicture* picture)
 {
   CSingleLock lock(m_DecoderSection);
 
@@ -992,7 +992,7 @@ bool CDecoder::GetPicture(AVCodecContext* avctx, DVDVideoPicture* picture)
     return false;
 
   *picture = m_presentPicture->DVDPic;
-  picture->vaapi = m_presentPicture;
+  picture->hwPic = m_presentPicture;
 
   return true;
 }
@@ -2343,7 +2343,8 @@ CVaapiRenderPicture* COutput::ProcessPicture(CVaapiProcessedPicture &pic)
   {
     av_frame_move_ref(retPic->avFrame, pic.frame);
     av_frame_free(&pic.frame);
-    retPic->DVDPic.format = RENDER_FMT_VAAPINV12;
+    retPic->DVDPic.format = RENDER_FMT_VAAPI;
+    retPic->textureY = GL_NONE;
   }
   else
     return NULL;

@@ -1946,7 +1946,7 @@ float CAMLCodec::GetTimeSize()
   return (float)(m_frameSizes.size() * am_private->video_rate) / UNIT_FREQ;
 }
 
-CDVDVideoCodec::VCReturn CAMLCodec::GetPicture(DVDVideoPicture *pDvdVideoPicture)
+CDVDVideoCodec::VCReturn CAMLCodec::GetPicture(VideoPicture *pVideoPicture)
 {
   if (!m_opened)
     return CDVDVideoCodec::VC_ERROR;
@@ -1957,16 +1957,16 @@ CDVDVideoCodec::VCReturn CAMLCodec::GetPicture(DVDVideoPicture *pDvdVideoPicture
 
   if (DequeueBuffer() == 0)
   {
-    pDvdVideoPicture->iFlags = DVP_FLAG_ALLOCATED;
-    pDvdVideoPicture->format = RENDER_FMT_AML;
+    pVideoPicture->iFlags = DVP_FLAG_ALLOCATED;
+    pVideoPicture->format = RENDER_FMT_AML;
 
     if (m_last_pts <= 0)
-      pDvdVideoPicture->iDuration = (double)(am_private->video_rate * DVD_TIME_BASE) / UNIT_FREQ;
+      pVideoPicture->iDuration = (double)(am_private->video_rate * DVD_TIME_BASE) / UNIT_FREQ;
     else
-      pDvdVideoPicture->iDuration = (double)((m_cur_pts - m_last_pts) * DVD_TIME_BASE) / PTS_FREQ;
+      pVideoPicture->iDuration = (double)((m_cur_pts - m_last_pts) * DVD_TIME_BASE) / PTS_FREQ;
 
-    pDvdVideoPicture->dts = DVD_NOPTS_VALUE;
-    pDvdVideoPicture->pts = (double)GetCurPts() / PTS_FREQ * DVD_TIME_BASE;
+    pVideoPicture->dts = DVD_NOPTS_VALUE;
+    pVideoPicture->pts = (double)GetCurPts() / PTS_FREQ * DVD_TIME_BASE;
 
     return CDVDVideoCodec::VC_PICTURE;
   }
