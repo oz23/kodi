@@ -62,6 +62,11 @@ namespace GAME
   class CGameServices;
 }
 
+namespace PERIPHERALS
+{
+  class CPeripherals;
+}
+
 class CServiceManager
 {
 public:
@@ -91,6 +96,7 @@ public:
    */
   CPlatform& GetPlatform();
   GAME::CGameServices& GetGameServices();
+  PERIPHERALS::CPeripherals& GetPeripherals();
 
   PLAYLIST::CPlayListPlayer& GetPlaylistPlayer();
   int init_level = 0;
@@ -129,4 +135,5 @@ protected:
   std::unique_ptr<PLAYLIST::CPlayListPlayer> m_playlistPlayer;
   std::unique_ptr<CSettings> m_settings;
   std::unique_ptr<GAME::CGameServices> m_gameServices;
+  std::unique_ptr<PERIPHERALS::CPeripherals> m_peripherals;
 };

@@ -341,7 +341,7 @@ void CAddonCallbacksGUI::Window_Delete(void *addonData, GUIHANDLE handle)
   }
 
   CGUIAddonWindow *pAddonWindow = (CGUIAddonWindow*)handle;
-  CGUIWindow      *pWindow      = (CGUIWindow*)g_windowManager.GetWindow(pAddonWindow->m_iWindowId);
+  CGUIWindow      *pWindow      = g_windowManager.GetWindow(pAddonWindow->m_iWindowId);
   if (!pWindow)
     return;
 
@@ -396,7 +396,7 @@ bool CAddonCallbacksGUI::Window_Show(void *addonData, GUIHANDLE handle)
   }
 
   CGUIAddonWindow *pAddonWindow = (CGUIAddonWindow*)handle;
-  CGUIWindow      *pWindow      = (CGUIWindow*)g_windowManager.GetWindow(pAddonWindow->m_iWindowId);
+  CGUIWindow      *pWindow      = g_windowManager.GetWindow(pAddonWindow->m_iWindowId);
   if (!pWindow)
     return false;
 
@@ -428,7 +428,7 @@ bool CAddonCallbacksGUI::Window_Close(void *addonData, GUIHANDLE handle)
   }
 
   CGUIAddonWindow *pAddonWindow = (CGUIAddonWindow*)handle;
-  CGUIWindow      *pWindow      = (CGUIWindow*)g_windowManager.GetWindow(pAddonWindow->m_iWindowId);
+  CGUIWindow      *pWindow      = g_windowManager.GetWindow(pAddonWindow->m_iWindowId);
   if (!pWindow)
     return false;
 
@@ -466,7 +466,7 @@ bool CAddonCallbacksGUI::Window_DoModal(void *addonData, GUIHANDLE handle)
   }
 
   CGUIAddonWindow *pAddonWindow = (CGUIAddonWindow*)handle;
-  CGUIWindow      *pWindow      = (CGUIWindow*)g_windowManager.GetWindow(pAddonWindow->m_iWindowId);
+  CGUIWindow      *pWindow      = g_windowManager.GetWindow(pAddonWindow->m_iWindowId);
   if (!pWindow)
     return false;
 
@@ -493,7 +493,7 @@ bool CAddonCallbacksGUI::Window_SetFocusId(void *addonData, GUIHANDLE handle, in
   }
 
   CGUIAddonWindow *pAddonWindow = (CGUIAddonWindow*)handle;
-  CGUIWindow      *pWindow      = (CGUIWindow*)g_windowManager.GetWindow(pAddonWindow->m_iWindowId);
+  CGUIWindow      *pWindow      = g_windowManager.GetWindow(pAddonWindow->m_iWindowId);
   if (!pWindow)
     return false;
 
@@ -528,7 +528,7 @@ int CAddonCallbacksGUI::Window_GetFocusId(void *addonData, GUIHANDLE handle)
   }
 
   CGUIAddonWindow *pAddonWindow = (CGUIAddonWindow*)handle;
-  CGUIWindow      *pWindow      = (CGUIWindow*)g_windowManager.GetWindow(pAddonWindow->m_iWindowId);
+  CGUIWindow      *pWindow      = g_windowManager.GetWindow(pAddonWindow->m_iWindowId);
   if (!pWindow)
     return iControlId;
 
@@ -566,7 +566,7 @@ bool CAddonCallbacksGUI::Window_SetCoordinateResolution(void *addonData, GUIHAND
   }
 
   CGUIAddonWindow *pAddonWindow = (CGUIAddonWindow*)handle;
-  CGUIWindow      *pWindow      = (CGUIWindow*)g_windowManager.GetWindow(pAddonWindow->m_iWindowId);
+  CGUIWindow      *pWindow      = g_windowManager.GetWindow(pAddonWindow->m_iWindowId);
   if (!pWindow)
     return false;
 
@@ -590,7 +590,7 @@ void CAddonCallbacksGUI::Window_SetProperty(void *addonData, GUIHANDLE handle, c
   }
 
   CGUIAddonWindow *pAddonWindow = (CGUIAddonWindow*)handle;
-  CGUIWindow      *pWindow      = (CGUIWindow*)g_windowManager.GetWindow(pAddonWindow->m_iWindowId);
+  CGUIWindow      *pWindow      = g_windowManager.GetWindow(pAddonWindow->m_iWindowId);
   if (!pWindow)
     return;
 
@@ -617,7 +617,7 @@ void CAddonCallbacksGUI::Window_SetPropertyInt(void *addonData, GUIHANDLE handle
   }
 
   CGUIAddonWindow *pAddonWindow = (CGUIAddonWindow*)handle;
-  CGUIWindow      *pWindow      = (CGUIWindow*)g_windowManager.GetWindow(pAddonWindow->m_iWindowId);
+  CGUIWindow      *pWindow      = g_windowManager.GetWindow(pAddonWindow->m_iWindowId);
   if (!pWindow)
     return;
 
@@ -644,7 +644,7 @@ void CAddonCallbacksGUI::Window_SetPropertyBool(void *addonData, GUIHANDLE handl
   }
 
   CGUIAddonWindow *pAddonWindow = (CGUIAddonWindow*)handle;
-  CGUIWindow      *pWindow      = (CGUIWindow*)g_windowManager.GetWindow(pAddonWindow->m_iWindowId);
+  CGUIWindow      *pWindow      = g_windowManager.GetWindow(pAddonWindow->m_iWindowId);
   if (!pWindow)
     return;
 
@@ -671,7 +671,7 @@ void CAddonCallbacksGUI::Window_SetPropertyDouble(void *addonData, GUIHANDLE han
   }
 
   CGUIAddonWindow *pAddonWindow = (CGUIAddonWindow*)handle;
-  CGUIWindow      *pWindow      = (CGUIWindow*)g_windowManager.GetWindow(pAddonWindow->m_iWindowId);
+  CGUIWindow      *pWindow      = g_windowManager.GetWindow(pAddonWindow->m_iWindowId);
   if (!pWindow)
     return;
 
@@ -698,7 +698,7 @@ const char* CAddonCallbacksGUI::Window_GetProperty(void *addonData, GUIHANDLE ha
   }
 
   CGUIAddonWindow *pAddonWindow = (CGUIAddonWindow*)handle;
-  CGUIWindow      *pWindow      = (CGUIWindow*)g_windowManager.GetWindow(pAddonWindow->m_iWindowId);
+  CGUIWindow      *pWindow      = g_windowManager.GetWindow(pAddonWindow->m_iWindowId);
   if (!pWindow)
     return NULL;
 
@@ -727,7 +727,7 @@ int CAddonCallbacksGUI::Window_GetPropertyInt(void *addonData, GUIHANDLE handle,
   }
 
   CGUIAddonWindow *pAddonWindow = (CGUIAddonWindow*)handle;
-  CGUIWindow      *pWindow      = (CGUIWindow*)g_windowManager.GetWindow(pAddonWindow->m_iWindowId);
+  CGUIWindow      *pWindow      = g_windowManager.GetWindow(pAddonWindow->m_iWindowId);
   if (!pWindow)
     return -1;
 
@@ -756,7 +756,7 @@ bool CAddonCallbacksGUI::Window_GetPropertyBool(void *addonData, GUIHANDLE handl
   }
 
   CGUIAddonWindow *pAddonWindow = (CGUIAddonWindow*)handle;
-  CGUIWindow      *pWindow      = (CGUIWindow*)g_windowManager.GetWindow(pAddonWindow->m_iWindowId);
+  CGUIWindow      *pWindow      = g_windowManager.GetWindow(pAddonWindow->m_iWindowId);
   if (!pWindow)
     return false;
 
@@ -785,7 +785,7 @@ double CAddonCallbacksGUI::Window_GetPropertyDouble(void *addonData, GUIHANDLE h
   }
 
   CGUIAddonWindow *pAddonWindow = (CGUIAddonWindow*)handle;
-  CGUIWindow      *pWindow      = (CGUIWindow*)g_windowManager.GetWindow(pAddonWindow->m_iWindowId);
+  CGUIWindow      *pWindow      = g_windowManager.GetWindow(pAddonWindow->m_iWindowId);
   if (!pWindow)
     return 0.0;
 
@@ -814,7 +814,7 @@ void CAddonCallbacksGUI::Window_ClearProperties(void *addonData, GUIHANDLE handl
   }
 
   CGUIAddonWindow *pAddonWindow = (CGUIAddonWindow*)handle;
-  CGUIWindow      *pWindow      = (CGUIWindow*)g_windowManager.GetWindow(pAddonWindow->m_iWindowId);
+  CGUIWindow      *pWindow      = g_windowManager.GetWindow(pAddonWindow->m_iWindowId);
   if (!pWindow)
     return;
 
@@ -1893,7 +1893,7 @@ bool CAddonCallbacksGUI::Dialog_YesNo_ShowAndGetInputLineButtonText(const char *
 //@{
 void CAddonCallbacksGUI::Dialog_TextViewer(const char *heading, const char *text)
 {
-  CGUIDialogTextViewer* pDialog = (CGUIDialogTextViewer*)g_windowManager.GetWindow(WINDOW_DIALOG_TEXT_VIEWER);
+  CGUIDialogTextViewer* pDialog = g_windowManager.GetWindow<CGUIDialogTextViewer>();
   pDialog->SetHeading(heading);
   pDialog->SetText(text);
   pDialog->Open();
@@ -1904,7 +1904,7 @@ void CAddonCallbacksGUI::Dialog_TextViewer(const char *heading, const char *text
 //@{
 int CAddonCallbacksGUI::Dialog_Select(const char *heading, const char *entries[], unsigned int size, int selected)
 {
-  CGUIDialogSelect* pDialog = (CGUIDialogSelect*)g_windowManager.GetWindow(WINDOW_DIALOG_SELECT);
+  CGUIDialogSelect* pDialog = g_windowManager.GetWindow<CGUIDialogSelect>();
   pDialog->Reset();
   pDialog->SetHeading(CVariant{heading});
 

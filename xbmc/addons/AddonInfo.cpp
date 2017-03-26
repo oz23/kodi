@@ -743,12 +743,16 @@ std::string CAddonInfo::SerializeMetadata()
     }
   }
 
-  return CJSONVariantWriter::Write(variant, true);
+  std::string json;
+  CJSONVariantWriter::Write(variant, json, true);
+  return json;
 }
 
 bool CAddonInfo::DeserializeMetadata(const std::string& document)
 {
-  CVariant variant = CJSONVariantParser::Parse(document);
+  CVariant variant;
+  if (!CJSONVariantParser::Parse(document, variant))
+    return false;
 
   m_author = variant["author"].asString();
   m_disclaimer = variant["disclaimer"].asString();

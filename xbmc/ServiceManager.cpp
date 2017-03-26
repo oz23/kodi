@@ -25,6 +25,7 @@
 #include "cores/AudioEngine/Engines/ActiveAE/AudioDSPAddons/ActiveAEDSP.h"
 #include "cores/DataCacheCore.h"
 #include "games/GameServices.h"
+#include "peripherals/Peripherals.h"
 #include "PlayListPlayer.h"
 #include "utils/log.h"
 #include "interfaces/AnnouncementManager.h"
@@ -35,7 +36,8 @@
 #include "settings/Settings.h"
 
 CServiceManager::CServiceManager() :
-  m_gameServices(new GAME::CGameServices)
+  m_gameServices(new GAME::CGameServices),
+  m_peripherals(new PERIPHERALS::CPeripherals)
 {
 }
 
@@ -121,6 +123,7 @@ bool CServiceManager::StartAudioEngine()
 
 bool CServiceManager::Init3()
 {
+  m_peripherals->Initialise();
   m_ADSPManager->Init();
   m_PVRManager->Init();
   m_contextMenuManager->Init();
@@ -133,11 +136,12 @@ bool CServiceManager::Init3()
 void CServiceManager::Deinit()
 {
   m_gameServices->Deinit();
+  m_peripherals.reset();
   m_contextMenuManager.reset();
   m_vfsAddonCache.reset();
   m_binaryAddonCache.reset();
   if (m_PVRManager)
-    m_PVRManager->Shutdown();
+    m_PVRManager->Deinit();
   m_PVRManager.reset();
   m_ADSPManager.reset();
   m_addonMgr.reset();
@@ -220,6 +224,11 @@ CSettings& CServiceManager::GetSettings()
 GAME::CGameServices& CServiceManager::GetGameServices()
 {
   return *m_gameServices;
+}
+
+PERIPHERALS::CPeripherals& CServiceManager::GetPeripherals()
+{
+  return *m_peripherals;
 }
 
 // deleters for unique_ptr

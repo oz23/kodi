@@ -178,45 +178,20 @@ void CPVRManager::Announce(AnnouncementFlag flag, const char *sender, const char
   if (!IsStarted())
     return;
 
-  if ((flag & (ANNOUNCEMENT::System)))
-  {
-    if (strcmp(message, "OnQuit") == 0 ||
-        strcmp(message, "OnSleep") == 0)
-    {
-      // save the currently playing channel.
-      const CPVRChannelPtr playingChannel(GetCurrentChannel());
-      if (playingChannel)
-        playingChannel->SetWasPlayingOnLastQuit(true);
-    }
-    else if (strcmp(message, "OnWake") == 0)
-    {
-      /* start job to search for missing channel icons */
-      TriggerSearchMissingChannelIcons();
-
-      /* continue last watched channel */
-      TriggerContinueLastChannel();
-
-      /* trigger PVR data updates */
-      TriggerChannelGroupsUpdate();
-      TriggerChannelsUpdate();
-      TriggerRecordingsUpdate();
-      TriggerEpgsCreate();
-      TriggerTimersUpdate();
-    }
-  }
-
   if ((flag & (ANNOUNCEMENT::GUI)))
   {
     if (strcmp(message, "OnScreensaverActivated") == 0)
-      g_PVRClients->OnPowerSavingActivated();
+      CServiceBroker::GetPVRManager().Clients()->OnPowerSavingActivated();
     else if (strcmp(message, "OnScreensaverDeactivated") == 0)
-      g_PVRClients->OnPowerSavingDeactivated();
+      CServiceBroker::GetPVRManager().Clients()->OnPowerSavingDeactivated();
   }
 }
 
-CPVRManager &CPVRManager::GetInstance()
+void CPVRManager::SaveLastPlayedChannel() const
 {
-  return CServiceBroker::GetPVRManager();
+  const CPVRChannelPtr playingChannel(GetCurrentChannel());
+  if (playingChannel)
+    playingChannel->SetWasPlayingOnLastQuit(true);
 }
 
 CPVRDatabasePtr CPVRManager::GetTVDatabase(void) const
@@ -323,7 +298,7 @@ void CPVRManager::Init()
   // Note: we're holding the progress bar dialog instance pointer in a member because it is needed by pvr core
   //       components. The latter might run in a different thread than the gui and g_windowManager.GetWindow()
   //       locks the global graphics mutex, which easily can lead to deadlocks.
-  m_progressBar = dynamic_cast<CGUIDialogExtendedProgressBar *>(g_windowManager.GetWindow(WINDOW_DIALOG_EXT_PROGRESS));
+  m_progressBar = g_windowManager.GetWindow<CGUIDialogExtendedProgressBar>();
 
   if (!m_progressBar)
     CLog::Log(LOGERROR, "CPVRManager - %s - unable to get WINDOW_DIALOG_EXT_PROGRESS!", __FUNCTION__);
@@ -418,11 +393,10 @@ void CPVRManager::Unload()
   g_EpgContainer.Clear();
 }
 
-void CPVRManager::Shutdown()
+void CPVRManager::Deinit()
 {
-  // set system wakeup data
+  SaveLastPlayedChannel();
   SetWakeupCommand();
-
   Unload();
 
   // release addons
@@ -594,12 +568,28 @@ bool CPVRManager::SetWakeupCommand(void)
 
 void CPVRManager::OnSleep()
 {
-  g_PVRClients->OnSystemSleep();
+  SaveLastPlayedChannel();
+  SetWakeupCommand();
+
+  CServiceBroker::GetPVRManager().Clients()->OnSystemSleep();
 }
 
 void CPVRManager::OnWake()
 {
-  g_PVRClients->OnSystemWake();
+  CServiceBroker::GetPVRManager().Clients()->OnSystemWake();
+
+  /* start job to search for missing channel icons */
+  TriggerSearchMissingChannelIcons();
+
+  /* continue last watched channel */
+  TriggerContinueLastChannel();
+
+  /* trigger PVR data updates */
+  TriggerChannelGroupsUpdate();
+  TriggerChannelsUpdate();
+  TriggerRecordingsUpdate();
+  TriggerEpgsCreate();
+  TriggerTimersUpdate();
 }
 
 bool CPVRManager::Load(bool bShowProgress)
@@ -725,7 +715,8 @@ bool CPVRManager::ChannelUpDown(unsigned int *iNewChannelNumber, bool bPreview, 
 
 void CPVRManager::TriggerContinueLastChannel(void)
 {
-  CJobManager::GetInstance().AddJob(new CPVRContinueLastChannelJob(), nullptr);
+  if (IsStarted())
+    CJobManager::GetInstance().AddJob(new CPVRContinueLastChannelJob(), nullptr);
 }
 
 bool CPVRManager::IsPlaying(void) const
@@ -852,38 +843,6 @@ CPVRChannelGroupPtr CPVRManager::GetPlayingGroup(bool bRadio /* = false */)
     return m_channelGroups->GetSelectedGroup(bRadio);
 
   return CPVRChannelGroupPtr();
-}
-
-bool CPVRStartupJob::DoWork(void)
-{
-  g_PVRClients->Start();
-  return true;
-}
-
-bool CPVREpgsCreateJob::DoWork(void)
-{
-  return g_PVRManager.CreateChannelEpgs();
-}
-
-bool CPVRRecordingsUpdateJob::DoWork(void)
-{
-  g_PVRRecordings->Update();
-  return true;
-}
-
-bool CPVRTimersUpdateJob::DoWork(void)
-{
-  return g_PVRTimers->Update();
-}
-
-bool CPVRChannelsUpdateJob::DoWork(void)
-{
-  return g_PVRChannelGroups->Update(true);
-}
-
-bool CPVRChannelGroupsUpdateJob::DoWork(void)
-{
-  return g_PVRChannelGroups->Update(false);
 }
 
 bool CPVRManager::OpenLiveStream(const CFileItem &fileItem)
@@ -1402,41 +1361,8 @@ void CPVRManager::TriggerSearchMissingChannelIcons(void)
 
 void CPVRManager::ConnectionStateChange(CPVRClient *client, std::string connectString, PVR_CONNECTION_STATE state, std::string message)
 {
+  // Note: No check for started pvr manager here. This method is intended to get called even before the mgr is started.
   CJobManager::GetInstance().AddJob(new CPVRClientConnectionJob(client, connectString, state, message), NULL);
-}
-
-bool CPVRChannelSwitchJob::DoWork(void)
-{
-  // announce OnStop and delete m_previous when done
-  if (m_previous)
-  {
-    CVariant data(CVariant::VariantTypeObject);
-    data["end"] = true;
-    ANNOUNCEMENT::CAnnouncementManager::GetInstance().Announce(ANNOUNCEMENT::Player, "xbmc", "OnStop", CFileItemPtr(m_previous), data);
-  }
-
-  // announce OnPlay if the switch was successful
-  if (m_next)
-  {
-    CVariant param;
-    param["player"]["speed"] = 1;
-    param["player"]["playerid"] = g_playlistPlayer.GetCurrentPlaylist();
-    ANNOUNCEMENT::CAnnouncementManager::GetInstance().Announce(ANNOUNCEMENT::Player, "xbmc", "OnPlay", CFileItemPtr(new CFileItem(*m_next)), param);
-  }
-
-  return true;
-}
-
-bool CPVRSearchMissingChannelIconsJob::DoWork(void)
-{
-  g_PVRManager.SearchMissingChannelIcons();
-  return true;
-}
-
-bool CPVRClientConnectionJob::DoWork(void)
-{
-  g_PVRClients->ConnectionStateChange(m_client, m_connectString, m_state, m_message);
-  return true;
 }
 
 bool CPVRManager::CreateChannelEpgs(void)

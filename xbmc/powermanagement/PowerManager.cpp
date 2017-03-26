@@ -175,7 +175,7 @@ bool CPowerManager::Powerdown()
 {
   if (CanPowerdown() && m_instance->Powerdown())
   {
-    CGUIDialogBusy* dialog = (CGUIDialogBusy*)g_windowManager.GetWindow(WINDOW_DIALOG_BUSY);
+    CGUIDialogBusy* dialog = g_windowManager.GetWindow<CGUIDialogBusy>();
     if (dialog)
       dialog->Open();
 
@@ -203,7 +203,7 @@ bool CPowerManager::Reboot()
   {
     CAnnouncementManager::GetInstance().Announce(System, "xbmc", "OnRestart");
 
-    CGUIDialogBusy* dialog = (CGUIDialogBusy*)g_windowManager.GetWindow(WINDOW_DIALOG_BUSY);
+    CGUIDialogBusy* dialog = g_windowManager.GetWindow<CGUIDialogBusy>();
     if (dialog)
       dialog->Open();
   }
@@ -245,7 +245,7 @@ void CPowerManager::OnSleep()
 {
   CAnnouncementManager::GetInstance().Announce(System, "xbmc", "OnSleep");
 
-  CGUIDialogBusy* dialog = (CGUIDialogBusy*)g_windowManager.GetWindow(WINDOW_DIALOG_BUSY);
+  CGUIDialogBusy* dialog = g_windowManager.GetWindow<CGUIDialogBusy>();
   if (dialog)
     dialog->Open();
 
@@ -257,8 +257,7 @@ void CPowerManager::OnSleep()
   CBuiltins::GetInstance().Execute("LIRC.Stop");
 #endif
 
-  PVR::CPVRManager::GetInstance().SetWakeupCommand();
-  PVR::CPVRManager::GetInstance().OnSleep();
+  CServiceBroker::GetPVRManager().OnSleep();
   g_application.SaveFileState(true);
   g_application.StopPlaying();
   g_application.StopShutdownTimer();
@@ -276,7 +275,7 @@ void CPowerManager::OnWake()
   // reset out timers
   g_application.ResetShutdownTimers();
 
-  CGUIDialogBusy* dialog = (CGUIDialogBusy*)g_windowManager.GetWindow(WINDOW_DIALOG_BUSY);
+  CGUIDialogBusy* dialog = g_windowManager.GetWindow<CGUIDialogBusy>();
   if (dialog)
     dialog->Close(true); // force close. no closing animation, sound etc at this early stage
 
@@ -301,7 +300,7 @@ void CPowerManager::OnWake()
   g_application.UpdateLibraries();
   g_weatherManager.Refresh();
 
-  PVR::CPVRManager::GetInstance().OnWake();
+  CServiceBroker::GetPVRManager().OnWake();
   CAnnouncementManager::GetInstance().Announce(System, "xbmc", "OnWake");
 }
 

@@ -99,10 +99,8 @@
 
 #include "input/KeyboardLayoutManager.h"
 
-#if HAVE_SDL_VERSION == 1
+#ifdef HAS_SDL
 #include <SDL/SDL.h>
-#elif HAVE_SDL_VERSION == 2
-#include <SDL2/SDL.h>
 #endif
 
 #ifdef HAS_UPNP
@@ -209,9 +207,9 @@
 #endif
 
 #if defined(TARGET_ANDROID)
+#include <androidjni/Build.h>
 #include "platform/android/activity/XBMCApp.h"
 #include "platform/android/activity/AndroidFeatures.h"
-#include "platform/android/jni/Build.h"
 #endif
 
 #ifdef TARGET_WINDOWS
@@ -425,6 +423,9 @@ bool CApplication::SetupNetwork()
 
 bool CApplication::Create()
 {
+  // Grab a handle to our thread to be used later in identifying the render thread.
+  m_threadID = CThread::GetCurrentThreadId();
+
   m_ServiceManager.reset(new CServiceManager());
   if (!m_ServiceManager->Init1())
   {
@@ -439,6 +440,7 @@ bool CApplication::Create()
   CApplicationMessenger::GetInstance().RegisterReceiver(this);
   CApplicationMessenger::GetInstance().RegisterReceiver(&g_playlistPlayer);
   CApplicationMessenger::GetInstance().RegisterReceiver(&g_infoManager);
+  CApplicationMessenger::GetInstance().SetGUIThread(m_threadID);
 
   for (int i = RES_HDTV_1080i; i <= RES_PAL60_16x9; i++)
   {
@@ -451,8 +453,6 @@ bool CApplication::Create()
   tzset();   // Initialize timezone information variables
 #endif
 
-  // Grab a handle to our thread to be used later in identifying the render thread.
-  m_threadID = CThread::GetCurrentThreadId();
 
   //! @todo - move to CPlatformXXX
   #if defined(TARGET_POSIX)
@@ -653,8 +653,7 @@ bool CApplication::Create()
   m_replayGainSettings.iPreAmp = m_ServiceManager->GetSettings().GetInt(CSettings::SETTING_MUSICPLAYER_REPLAYGAINPREAMP);
   m_replayGainSettings.iNoGainPreAmp = m_ServiceManager->GetSettings().GetInt(CSettings::SETTING_MUSICPLAYER_REPLAYGAINNOGAINPREAMP);
 
-  // Create the Mouse, Keyboard, Remote, and Joystick devices
-  // Initialize after loading settings to get joystick deadzone setting
+  // Create the Mouse, Keyboard and Remote
   CInputManager::GetInstance().InitializeInputs();
 
   // load the keyboard layouts
@@ -1093,10 +1092,6 @@ bool CApplication::Initialize()
     StringUtils::Format(g_localizeStrings.Get(178).c_str(), g_sysinfo.GetAppName().c_str()),
     "special://xbmc/media/icon256x256.png", EventLevel::Basic)));
 
-#if !defined(TARGET_DARWIN_IOS)
-  g_peripherals.Initialise();
-#endif
-
   getNetwork().WaitForNet();
 
   // Load curl so curl_global_init gets called before any service threads
@@ -1340,8 +1335,6 @@ void CApplication::StopServices()
   CLog::Log(LOGNOTICE, "stop dvd detect media");
   m_DetectDVDType.StopThread();
 #endif
-
-  g_peripherals.Clear();
 }
 
 void CApplication::OnSettingChanged(const CSetting *setting)
@@ -1706,7 +1699,7 @@ bool CApplication::LoadSkin(const std::string& skinID)
     g_windowManager.ActivateWindow(currentWindow);
     for (unsigned int i = 0; i < currentModelessWindows.size(); i++)
     {
-      CGUIDialog *dialog = (CGUIDialog *)g_windowManager.GetWindow(currentModelessWindows[i]);
+      CGUIDialog *dialog = g_windowManager.GetDialog(currentModelessWindows[i]);
       if (dialog)
         dialog->Open();
     }
@@ -2027,7 +2020,7 @@ bool CApplication::OnAction(const CAction &action)
   if (action.GetID() == ACTION_BUILT_IN_FUNCTION)
   {
     if (!CBuiltins::GetInstance().IsSystemPowerdownCommand(action.GetName()) ||
-        g_PVRManager.CanSystemPowerdown())
+        CServiceBroker::GetPVRManager().CanSystemPowerdown())
     {
       CBuiltins::GetInstance().Execute(action.GetName());
       m_navigationTimer.StartZero();
@@ -2125,7 +2118,7 @@ bool CApplication::OnAction(const CAction &action)
   }
 
   // Now check with the player if action can be handled.
-  bool bIsPlayingPVRChannel = (g_PVRManager.IsStarted() && g_application.CurrentFileItem().IsPVRChannel());
+  bool bIsPlayingPVRChannel = (CServiceBroker::GetPVRManager().IsStarted() && g_application.CurrentFileItem().IsPVRChannel());
   if (g_windowManager.GetActiveWindow() == WINDOW_FULLSCREEN_VIDEO ||
       (g_windowManager.GetActiveWindow() == WINDOW_VISUALISATION && bIsPlayingPVRChannel) ||
       ((g_windowManager.GetActiveWindow() == WINDOW_DIALOG_VIDEO_OSD || (g_windowManager.GetActiveWindow() == WINDOW_DIALOG_MUSIC_OSD && bIsPlayingPVRChannel)) &&
@@ -2283,7 +2276,7 @@ bool CApplication::OnAction(const CAction &action)
     }
   }
 
-  if (g_peripherals.OnAction(action))
+  if (CServiceBroker::GetPeripherals().OnAction(action))
     return true;
 
   if (action.GetID() == ACTION_MUTE)
@@ -2515,7 +2508,7 @@ void CApplication::OnApplicationMessage(ThreadMessage* pMsg)
 
   case TMSG_PICTURE_SHOW:
   {
-    CGUIWindowSlideShow *pSlideShow = static_cast<CGUIWindowSlideShow *>(g_windowManager.GetWindow(WINDOW_SLIDESHOW));
+    CGUIWindowSlideShow *pSlideShow = g_windowManager.GetWindow<CGUIWindowSlideShow>();
     if (!pSlideShow) return;
 
     // stop playing file
@@ -2564,7 +2557,7 @@ void CApplication::OnApplicationMessage(ThreadMessage* pMsg)
 
   case TMSG_PICTURE_SLIDESHOW:
   {
-    CGUIWindowSlideShow *pSlideShow = static_cast<CGUIWindowSlideShow *>(g_windowManager.GetWindow(WINDOW_SLIDESHOW));
+    CGUIWindowSlideShow *pSlideShow = g_windowManager.GetWindow<CGUIWindowSlideShow>();
     if (!pSlideShow) return;
 
     if (g_application.m_pPlayer->IsPlayingVideo())
@@ -2673,7 +2666,7 @@ void CApplication::FrameMove(bool processEvents, bool processGUI)
     {
       g_graphicsContext.Lock();
       // check if there are notifications to display
-      CGUIDialogKaiToast *toast = (CGUIDialogKaiToast *)g_windowManager.GetWindow(WINDOW_DIALOG_KAI_TOAST);
+      CGUIDialogKaiToast *toast = g_windowManager.GetWindow<CGUIDialogKaiToast>();
       if (toast && toast->DoWork())
       {
         if (!toast->IsDialogRunning())
@@ -2860,6 +2853,9 @@ void CApplication::Stop(int exitCode)
       g_SkinInfo->SaveSettings();
 
     m_bStop = true;
+    // Add this here to keep the same ordering behaviour for now
+    // Needs cleaning up
+    CApplicationMessenger::GetInstance().Stop();
     m_AppFocused = false;
     m_ExitCode = exitCode;
     CLog::Log(LOGNOTICE, "stop all");
@@ -4107,7 +4103,7 @@ void CApplication::CheckShutdown()
       || m_musicInfoScanner->IsScanning()
       || CVideoLibraryQueue::GetInstance().IsRunning()
       || g_windowManager.IsWindowActive(WINDOW_DIALOG_PROGRESS) // progress dialog is onscreen
-      || !g_PVRManager.CanSystemPowerdown(false))
+      || !CServiceBroker::GetPVRManager().CanSystemPowerdown(false))
   {
     m_shutdownTimer.StartZero();
     return;
@@ -4385,7 +4381,7 @@ bool CApplication::ExecuteXBMCAction(std::string actionStr, const CGUIListItemPt
   if (CBuiltins::GetInstance().HasCommand(actionStr))
   {
     if (!CBuiltins::GetInstance().IsSystemPowerdownCommand(actionStr) ||
-        g_PVRManager.CanSystemPowerdown())
+        CServiceBroker::GetPVRManager().CanSystemPowerdown())
       CBuiltins::GetInstance().Execute(actionStr);
   }
   else
@@ -4683,7 +4679,7 @@ CFileItem& CApplication::CurrentUnstackedItem()
 
 void CApplication::ShowVolumeBar(const CAction *action)
 {
-  CGUIDialog *volumeBar = (CGUIDialog *)g_windowManager.GetWindow(WINDOW_DIALOG_VOLUME_BAR);
+  CGUIDialog *volumeBar = g_windowManager.GetDialog(WINDOW_DIALOG_VOLUME_BAR);
   if (volumeBar)
   {
     volumeBar->Open();
@@ -4694,7 +4690,7 @@ void CApplication::ShowVolumeBar(const CAction *action)
 
 bool CApplication::IsMuted() const
 {
-  if (g_peripherals.IsMuted())
+  if (CServiceBroker::GetPeripherals().IsMuted())
     return true;
   return m_ServiceManager->GetActiveAE().IsMuted();
 }
@@ -4718,7 +4714,7 @@ void CApplication::SetMute(bool mute)
 
 void CApplication::Mute()
 {
-  if (g_peripherals.Mute())
+  if (CServiceBroker::GetPeripherals().Mute())
     return;
 
   m_ServiceManager->GetActiveAE().SetMute(true);
@@ -4728,7 +4724,7 @@ void CApplication::Mute()
 
 void CApplication::UnMute()
 {
-  if (g_peripherals.UnMute())
+  if (CServiceBroker::GetPeripherals().UnMute())
     return;
 
   m_ServiceManager->GetActiveAE().SetMute(false);
@@ -4949,7 +4945,7 @@ bool CApplication::SwitchToFullScreen(bool force /* = false */)
   // if playing from the video info window, close it first!
   if (g_windowManager.HasModalDialog() && g_windowManager.GetTopMostModalDialogID() == WINDOW_DIALOG_VIDEO_INFO)
   {
-    CGUIDialogVideoInfo* pDialog = (CGUIDialogVideoInfo*)g_windowManager.GetWindow(WINDOW_DIALOG_VIDEO_INFO);
+    CGUIDialogVideoInfo* pDialog = g_windowManager.GetWindow<CGUIDialogVideoInfo>();
     if (pDialog) pDialog->Close(true);
   }
 

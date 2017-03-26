@@ -56,6 +56,11 @@ namespace GAME
   class CGameServices;
 }
 
+namespace PERIPHERALS
+{
+  class CPeripherals;
+}
+
 class CServiceBroker
 {
 public:
@@ -72,5 +77,6 @@ public:
   static PLAYLIST::CPlayListPlayer& GetPlaylistPlayer();
   static CSettings& GetSettings();
   static GAME::CGameServices& GetGameServices();
+  static PERIPHERALS::CPeripherals& GetPeripherals();
   static bool IsBinaryAddonCacheUp();
 };

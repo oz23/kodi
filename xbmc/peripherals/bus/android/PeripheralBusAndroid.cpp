@@ -26,7 +26,7 @@
 #include "peripherals/addons/PeripheralAddonTranslator.h"
 #include "peripherals/devices/PeripheralJoystick.h"
 #include "platform/android/activity/XBMCApp.h"
-#include "platform/android/jni/View.h"
+#include "androidjni/View.h"
 #include "threads/SingleLock.h"
 #include "utils/log.h"
 #include "utils/StringUtils.h"
@@ -36,7 +36,7 @@ using namespace PERIPHERALS;
 
 static const std::string DeviceLocationPrefix = "android/inputdevice/";
 
-CPeripheralBusAndroid::CPeripheralBusAndroid(CPeripherals *manager) :
+CPeripheralBusAndroid::CPeripheralBusAndroid(CPeripherals& manager) :
     CPeripheralBus("PeripBusAndroid", manager, PERIPHERAL_BUS_ANDROID)
 {
   // we don't need polling as we get notified through the IInputDeviceCallbacks interface

@@ -2335,18 +2335,18 @@ const infomap mediacontainer[] = {{ "hasfiles",         CONTAINER_HASFILES },
 ///     Number of items in the container or grouplist with given id excluding parent folder item. If no id is
 ///     specified it grabs the current container.
 ///   }
-///   \table_row3{   <b>`Container(id).ActualItems`</b>,
-///                  \anchor Container_ActualItems
+///   \table_row3{   <b>`Container(id).NumAllItems`</b>,
+///                  \anchor Container_NumAllItems
 ///                  _boolean_,
-///     Number of items in the container or grouplist with given id including parent folder item. If no id is
+///     Number of all items in the container or grouplist with given id including parent folder item. If no id is
 ///     specified it grabs the current container.
 ///   }
 ///   }
-///   \table_row3{   <b>`Container(id).NonFolderItems`</b>,
-///                  \anchor Container_NonFolderItems
+///   \table_row3{   <b>`Container(id).NumNonFolderItems`</b>,
+///                  \anchor Container_NumNonFolderItems
 ///                  _boolean_,
 ///     Number of items in the container or grouplist with given id excluding all folder items (example: pvr
-///     recordings folders, parent folder). If no id is specified it grabs the current container.
+///     recordings folders, parent ".." folder). If no id is specified it grabs the current container.
 ///   }
 ///   \table_row3{   <b>`Container(id).CurrentPage`</b>,
 ///                  \anchor Container_CurrentPage
@@ -2406,8 +2406,8 @@ const infomap container_bools[] ={{ "onnext",           CONTAINER_MOVE_NEXT },
                                   { "onscrollprevious", CONTAINER_SCROLL_PREVIOUS },
                                   { "numpages",         CONTAINER_NUM_PAGES },
                                   { "numitems",         CONTAINER_NUM_ITEMS },
-                                  { "actualitems",      CONTAINER_ACTUAL_ITEMS },
-                                  { "nonfolderitems",   CONTAINER_NONFOLDER_ITEMS },
+                                  { "numnonfolderitems", CONTAINER_NUM_NONFOLDER_ITEMS },
+                                  { "numallitems",      CONTAINER_NUM_ALL_ITEMS },
                                   { "currentpage",      CONTAINER_CURRENT_PAGE },
                                   { "scrolling",        CONTAINER_SCROLLING },
                                   { "hasnext",          CONTAINER_HAS_NEXT },
@@ -5934,7 +5934,7 @@ std::string CGUIInfoManager::GetLabel(int info, int contextWindow, std::string *
   case PVR_RADIO_NEXT_RECORDING_CHANNEL:
   case PVR_RADIO_NEXT_RECORDING_CHAN_ICO:
   case PVR_RADIO_NEXT_RECORDING_DATETIME:
-    g_PVRManager.TranslateCharInfo(info, strLabel);
+    CServiceBroker::GetPVRManager().TranslateCharInfo(info, strLabel);
     break;
   case PVR_CHANNEL_NUMBER_INPUT:
     strLabel = CPVRGUIActions::GetInstance().GetChannelNumberInputHandler().GetChannelNumberAsString();
@@ -6419,8 +6419,8 @@ std::string CGUIInfoManager::GetLabel(int info, int contextWindow, std::string *
     break;
   case CONTAINER_NUM_PAGES:
   case CONTAINER_NUM_ITEMS:
-  case CONTAINER_ACTUAL_ITEMS:
-  case CONTAINER_NONFOLDER_ITEMS:
+  case CONTAINER_NUM_NONFOLDER_ITEMS:
+  case CONTAINER_NUM_ALL_ITEMS:
   case CONTAINER_CURRENT_ITEM:
   case CONTAINER_CURRENT_PAGE:
     return GetMultiInfoLabel(GUIInfo(info), contextWindow);
@@ -6800,7 +6800,7 @@ bool CGUIInfoManager::GetInt(int &value, int info, int contextWindow, const CGUI
       }
     case SYSTEM_PROGRESS_BAR:
       {
-        CGUIDialogProgress *bar = (CGUIDialogProgress *)g_windowManager.GetWindow(WINDOW_DIALOG_PROGRESS);
+        CGUIDialogProgress *bar = g_windowManager.GetWindow<CGUIDialogProgress>();
         if (bar && bar->IsDialogRunning())
           value = bar->GetPercentage();
         return true;
@@ -6819,7 +6819,7 @@ bool CGUIInfoManager::GetInt(int &value, int info, int contextWindow, const CGUI
     case PVR_ACTUAL_STREAM_SNR_PROGR:
     case PVR_BACKEND_DISKSPACE_PROGR:
     case PVR_TIMESHIFT_PROGRESS:
-      value = g_PVRManager.TranslateIntInfo(info);
+      value = CServiceBroker::GetPVRManager().TranslateIntInfo(info);
       return true;
     case SYSTEM_BATTERY_LEVEL:
       value = g_powerManager.BatteryLevel();
@@ -7029,7 +7029,7 @@ bool CGUIInfoManager::GetBool(int condition1, int contextWindow, const CGUIListI
   else if (condition == WEATHER_IS_FETCHED)
     bReturn = g_weatherManager.IsFetched();
   else if (condition >= PVR_CONDITIONS_START && condition <= PVR_CONDITIONS_END)
-    bReturn = g_PVRManager.TranslateBoolInfo(condition);
+    bReturn = CServiceBroker::GetPVRManager().TranslateBoolInfo(condition);
   else if (condition >= ADSP_CONDITIONS_START && condition <= ADSP_CONDITIONS_END)
     bReturn = CServiceBroker::GetADSP().TranslateBoolInfo(condition);
   else if (condition == SYSTEM_INTERNET_STATE)
@@ -7039,8 +7039,8 @@ bool CGUIInfoManager::GetBool(int condition1, int contextWindow, const CGUIListI
   }
   else if (condition == SYSTEM_HAS_INPUT_HIDDEN)
   {
-    CGUIDialogNumeric *pNumeric = (CGUIDialogNumeric *)g_windowManager.GetWindow(WINDOW_DIALOG_NUMERIC);
-    CGUIDialogKeyboardGeneric *pKeyboard = (CGUIDialogKeyboardGeneric*)g_windowManager.GetWindow(WINDOW_DIALOG_KEYBOARD);
+    CGUIDialogNumeric *pNumeric = g_windowManager.GetWindow<CGUIDialogNumeric>();
+    CGUIDialogKeyboardGeneric *pKeyboard = g_windowManager.GetWindow<CGUIDialogKeyboardGeneric>();
 
     if (pNumeric && pNumeric->IsActive())
       bReturn = pNumeric->IsInputHidden();
@@ -7129,22 +7129,22 @@ bool CGUIInfoManager::GetBool(int condition1, int contextWindow, const CGUIListI
   }
   else if (condition == SLIDESHOW_ISPAUSED)
   {
-    CGUIWindowSlideShow *slideShow = (CGUIWindowSlideShow *)g_windowManager.GetWindow(WINDOW_SLIDESHOW);
+    CGUIWindowSlideShow *slideShow = g_windowManager.GetWindow<CGUIWindowSlideShow>();
     bReturn = (slideShow && slideShow->IsPaused());
   }
   else if (condition == SLIDESHOW_ISRANDOM)
   {
-    CGUIWindowSlideShow *slideShow = (CGUIWindowSlideShow *)g_windowManager.GetWindow(WINDOW_SLIDESHOW);
+    CGUIWindowSlideShow *slideShow = g_windowManager.GetWindow<CGUIWindowSlideShow>();
     bReturn = (slideShow && slideShow->IsShuffled());
   }
   else if (condition == SLIDESHOW_ISACTIVE)
   {
-    CGUIWindowSlideShow *slideShow = (CGUIWindowSlideShow *)g_windowManager.GetWindow(WINDOW_SLIDESHOW);
+    CGUIWindowSlideShow *slideShow = g_windowManager.GetWindow<CGUIWindowSlideShow>();
     bReturn = (slideShow && slideShow->InSlideShow());
   }
   else if (condition == SLIDESHOW_ISVIDEO)
   {
-    CGUIWindowSlideShow *slideShow = (CGUIWindowSlideShow *)g_windowManager.GetWindow(WINDOW_SLIDESHOW);
+    CGUIWindowSlideShow *slideShow = g_windowManager.GetWindow<CGUIWindowSlideShow>();
     bReturn = (slideShow && slideShow->GetCurrentSlide() && slideShow->GetCurrentSlide()->IsVideo());
   }
   else if (g_application.m_pPlayer->IsPlaying())
@@ -7237,7 +7237,7 @@ bool CGUIInfoManager::GetBool(int condition1, int contextWindow, const CGUIListI
     break;
     case PLAYER_SEEKBAR:
       {
-        CGUIDialog *seekBar = (CGUIDialog*)g_windowManager.GetWindow(WINDOW_DIALOG_SEEK_BAR);
+        CGUIDialog *seekBar = g_windowManager.GetDialog(WINDOW_DIALOG_SEEK_BAR);
         bReturn = seekBar ? seekBar->IsDialogRunning() : false;
       }
     break;
@@ -8011,8 +8011,8 @@ std::string CGUIInfoManager::GetMultiInfoLabel(const GUIInfo &info, int contextW
   else if (info.m_info == CONTAINER_NUM_PAGES || info.m_info == CONTAINER_CURRENT_PAGE ||
            info.m_info == CONTAINER_NUM_ITEMS || info.m_info == CONTAINER_POSITION ||
            info.m_info == CONTAINER_ROW || info.m_info == CONTAINER_COLUMN ||
-           info.m_info == CONTAINER_CURRENT_ITEM || info.m_info == CONTAINER_ACTUAL_ITEMS ||
-           info.m_info == CONTAINER_NONFOLDER_ITEMS)
+           info.m_info == CONTAINER_CURRENT_ITEM || info.m_info == CONTAINER_NUM_ALL_ITEMS ||
+           info.m_info == CONTAINER_NUM_NONFOLDER_ITEMS)
   {
     const CGUIControl *control = NULL;
     if (info.GetData1())
@@ -8702,7 +8702,7 @@ std::string CGUIInfoManager::GetMusicTagLabel(int info, const CFileItem *item)
   case MUSICPLAYER_CHANNEL_GROUP:
     {
       if (m_currentFile->HasPVRChannelInfoTag() && m_currentFile->GetPVRChannelInfoTag()->IsRadio())
-        return g_PVRManager.GetPlayingGroup(true)->GroupName();
+        return CServiceBroker::GetPVRManager().GetPlayingGroup(true)->GroupName();
     }
     break;
   case MUSICPLAYER_PLAYCOUNT:
@@ -8847,7 +8847,7 @@ std::string CGUIInfoManager::GetVideoLabel(int item)
     case VIDEOPLAYER_CHANNEL_GROUP:
       {
         if (tag && !tag->IsRadio())
-          return g_PVRManager.GetPlayingTVGroupName();
+          return CServiceBroker::GetPVRManager().GetPlayingTVGroupName();
       }
     }
   }
@@ -9027,7 +9027,7 @@ std::string CGUIInfoManager::GetVideoLabel(int item)
             case VIDEOPLAYER_CHANNEL_GROUP:
             {
               if (!tag->IsRadio())
-                return g_PVRManager.GetPlayingTVGroupName();
+                return CServiceBroker::GetPVRManager().GetPlayingTVGroupName();
               break;
             }
             default:
@@ -9428,7 +9428,7 @@ void CGUIInfoManager::UpdateAVInfo()
       m_videoInfo = video;
       m_audioInfo = audio;
 
-      m_isPvrChannelPreview = g_PVRManager.IsChannelPreview();
+      m_isPvrChannelPreview = CServiceBroker::GetPVRManager().IsChannelPreview();
     }
   }
 }
@@ -10629,7 +10629,7 @@ bool CGUIInfoManager::GetItemBool(const CGUIListItem *item, int condition) const
     const CFileItem *pItem = (const CFileItem *)item;
     if (condition == LISTITEM_ISRECORDING)
     {
-      if (!g_PVRManager.IsStarted())
+      if (!CServiceBroker::GetPVRManager().IsStarted())
         return false;
 
       if (pItem->HasPVRChannelInfoTag())
@@ -10655,7 +10655,7 @@ bool CGUIInfoManager::GetItemBool(const CGUIListItem *item, int condition) const
     }
     else if (condition == LISTITEM_INPROGRESS)
     {
-      if (!g_PVRManager.IsStarted())
+      if (!CServiceBroker::GetPVRManager().IsStarted())
         return false;
 
       if (pItem->HasEPGInfoTag())
@@ -10779,7 +10779,7 @@ std::string CGUIInfoManager::GetPictureLabel(int info)
     return GetItemLabel(m_currentSlide, LISTITEM_DATE);
   else if (info == SLIDE_INDEX)
   {
-    CGUIWindowSlideShow *slideshow = (CGUIWindowSlideShow *)g_windowManager.GetWindow(WINDOW_SLIDESHOW);
+    CGUIWindowSlideShow *slideshow = g_windowManager.GetWindow<CGUIWindowSlideShow>();
     if (slideshow && slideshow->NumSlides())
     {
       return StringUtils::Format("%d/%d", slideshow->CurrentSlide(), slideshow->NumSlides());

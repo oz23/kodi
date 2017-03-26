@@ -27,11 +27,12 @@
 #include <memory>
 #include <atomic>
 
+#include <androidjni/Surface.h>
+
 #include "DVDVideoCodec.h"
 #include "DVDStreamInfo.h"
 #include "threads/Thread.h"
 #include "threads/SingleLock.h"
-#include "platform/android/jni/Surface.h"
 #include "guilib/Geometry.h"
 
 class CJNISurface;

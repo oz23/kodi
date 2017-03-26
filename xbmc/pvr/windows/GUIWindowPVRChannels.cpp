@@ -28,6 +28,7 @@
 #include "guilib/GUIRadioButtonControl.h"
 #include "guilib/GUIWindowManager.h"
 #include "input/Key.h"
+#include "ServiceBroker.h"
 #include "threads/SingleLock.h"
 #include "utils/StringUtils.h"
 #include "utils/Variant.h"
@@ -107,7 +108,7 @@ void CGUIWindowPVRChannels::UpdateButtons(void)
   CGUIRadioButtonControl *btnShowHidden = (CGUIRadioButtonControl*) GetControl(CONTROL_BTNSHOWHIDDEN);
   if (btnShowHidden)
   {
-    btnShowHidden->SetVisible(g_PVRChannelGroups->GetGroupAll(m_bRadio)->GetNumHiddenChannels() > 0);
+    btnShowHidden->SetVisible(CServiceBroker::GetPVRManager().ChannelGroups()->GetGroupAll(m_bRadio)->GetNumHiddenChannels() > 0);
     btnShowHidden->SetSelected(m_bShowHiddenChannels);
   }
 
@@ -294,7 +295,7 @@ void CGUIWindowPVRChannels::UpdateEpg(const CFileItemPtr &item)
 
 void CGUIWindowPVRChannels::ShowChannelManager()
 {
-  CGUIDialogPVRChannelManager *dialog = (CGUIDialogPVRChannelManager *)g_windowManager.GetWindow(WINDOW_DIALOG_PVR_CHANNEL_MANAGER);
+  CGUIDialogPVRChannelManager *dialog = g_windowManager.GetWindow<CGUIDialogPVRChannelManager>();
   if (dialog)
     dialog->Open();
 }
@@ -302,7 +303,7 @@ void CGUIWindowPVRChannels::ShowChannelManager()
 void CGUIWindowPVRChannels::ShowGroupManager(void)
 {
   /* Load group manager dialog */
-  CGUIDialogPVRGroupManager* pDlgInfo = (CGUIDialogPVRGroupManager*)g_windowManager.GetWindow(WINDOW_DIALOG_PVR_GROUP_MANAGER);
+  CGUIDialogPVRGroupManager* pDlgInfo = g_windowManager.GetWindow<CGUIDialogPVRGroupManager>();
   if (!pDlgInfo)
     return;
 
