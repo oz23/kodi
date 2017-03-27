@@ -1525,16 +1525,17 @@ void CVideoPlayer::Process()
         m_OmxPlayerState.bOmxSentEOFs = true;
       }
 
-      if(m_CurrentAudio.inited)
-        m_VideoPlayerAudio->SendMessage(new CDVDMsg(CDVDMsg::GENERAL_EOF));
-      if(m_CurrentVideo.inited)
-        m_VideoPlayerVideo->SendMessage(new CDVDMsg(CDVDMsg::GENERAL_EOF));
-      if(m_CurrentSubtitle.inited)
-        m_VideoPlayerSubtitle->SendMessage(new CDVDMsg(CDVDMsg::GENERAL_EOF));
-      if(m_CurrentTeletext.inited)
-        m_VideoPlayerTeletext->SendMessage(new CDVDMsg(CDVDMsg::GENERAL_EOF));
-      if(m_CurrentRadioRDS.inited)
-        m_VideoPlayerRadioRDS->SendMessage(new CDVDMsg(CDVDMsg::GENERAL_EOF));
+      if (m_CurrentVideo.inited)
+      {
+        m_VideoPlayerVideo->SendMessage(new CDVDMsg(CDVDMsg::VIDEO_DRAIN));
+      }
+
+      { // TODO: only used by OMXPlayer, find better solution
+        if (m_CurrentAudio.inited)
+          m_VideoPlayerAudio->SendMessage(new CDVDMsg(CDVDMsg::GENERAL_EOF));
+        if (m_CurrentVideo.inited)
+          m_VideoPlayerVideo->SendMessage(new CDVDMsg(CDVDMsg::GENERAL_EOF));
+      }
 
       m_CurrentAudio.inited = false;
       m_CurrentVideo.inited = false;
