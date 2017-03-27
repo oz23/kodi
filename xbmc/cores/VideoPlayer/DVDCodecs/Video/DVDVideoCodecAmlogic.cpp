@@ -414,6 +414,9 @@ void CDVDVideoCodecAmlogic::SetCodecControl(int flags)
       m_videobuffer.iFlags |= DVP_FLAG_DROPPED;
     else
       m_videobuffer.iFlags &= ~DVP_FLAG_DROPPED;
+
+    if (m_Codec)
+      m_Codec->SetDrain((flags & DVD_CODEC_CTRL_DRAIN) != 0);
   }
 }
 

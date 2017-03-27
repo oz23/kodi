@@ -1367,6 +1367,7 @@ int CAMLCodec::GetAmlDuration() const
 bool CAMLCodec::OpenDecoder(CDVDStreamInfo &hints)
 {
   m_speed = DVD_PLAYSPEED_NORMAL;
+  m_drain = false;
   m_cur_pts = INT64_0;
   m_dst_rect.SetRect(0, 0, 0, 0);
   m_zoom = -1;
@@ -1887,6 +1888,8 @@ int CAMLCodec::DequeueBuffer()
   //Driver change from 10 to 0ms latency, throttle here
   std::chrono::time_point<std::chrono::system_clock> now(std::chrono::system_clock::now());
 
+  unsigned int waitTime(10);
+DRAIN:
   if (m_amlVideoFile->IOControl(VIDIOC_DQBUF, &vbuf) < 0)
   {
     if (errno != EAGAIN)
@@ -1894,8 +1897,14 @@ int CAMLCodec::DequeueBuffer()
 
     std::chrono::milliseconds elapsed(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - now).count());
 
-    if (elapsed < std::chrono::milliseconds(10))
-      std::this_thread::sleep_for(std::chrono::milliseconds(10) - elapsed);
+    if (elapsed < std::chrono::milliseconds(waitTime))
+      std::this_thread::sleep_for(std::chrono::milliseconds(waitTime) - elapsed);
+
+    if (m_drain && elapsed < std::chrono::milliseconds(100))
+    {
+      waitTime += 10;
+      goto DRAIN;
+    }
 
     return -errno;
   }
@@ -1943,7 +1952,7 @@ CDVDVideoCodec::VCReturn CAMLCodec::GetPicture(DVDVideoPicture *pDvdVideoPicture
     return CDVDVideoCodec::VC_ERROR;
 
   float timesize(GetTimeSize());
-  if(timesize < 1.0)
+  if(!m_drain && timesize < 1.0)
     return CDVDVideoCodec::VC_BUFFER;
 
   if (DequeueBuffer() == 0)
@@ -1961,6 +1970,8 @@ CDVDVideoCodec::VCReturn CAMLCodec::GetPicture(DVDVideoPicture *pDvdVideoPicture
 
     return CDVDVideoCodec::VC_PICTURE;
   }
+  else if (m_drain)
+    return CDVDVideoCodec::VC_EOF;
   else
     usleep(5000);
 
