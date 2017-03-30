@@ -264,7 +264,7 @@ void CVideoPlayerAudio::Process()
     if (onlyPrioMsgs)
     {
       priority = 1;
-      timeout = 1;
+      timeout = 0;
     }
 
     MsgQueueReturnCode ret = m_messageQueue.Get(&pMsg, timeout, priority);
