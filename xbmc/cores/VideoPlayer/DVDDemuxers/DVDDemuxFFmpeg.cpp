@@ -1921,8 +1921,11 @@ void CDVDDemuxFFmpeg::ParsePacket(AVPacket *pkt)
                                                               pkt->data, pkt->size);
             parser->second->m_codecCtx->extradata = nullptr;
             parser->second->m_codecCtx->extradata_size = 0;
-            st->codecpar->width = parser->second->m_parserCtx->width;
-            st->codecpar->height = parser->second->m_parserCtx->height;
+            if (st->codecpar->codec_id != AV_CODEC_ID_VC1)
+            {
+              st->codecpar->width = parser->second->m_parserCtx->width;
+              st->codecpar->height = parser->second->m_parserCtx->height;
+            }
           }
         }
       }
