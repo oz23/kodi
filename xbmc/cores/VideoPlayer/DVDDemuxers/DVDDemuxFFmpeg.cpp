@@ -1903,7 +1903,7 @@ void CDVDDemuxFFmpeg::ParsePacket(AVPacket *pkt)
         st->codecpar->extradata = (uint8_t*)av_malloc(i + FF_INPUT_BUFFER_PADDING_SIZE);
         if (st->codecpar->extradata)
         {
-          CLog::Log(LOGDEBUG, "CDVDDemuxFFmpeg::Read() fetching extradata, extradata_size(%d)", i);
+          CLog::Log(LOGDEBUG, "CDVDDemuxFFmpeg::ParsePacket() fetching extradata, extradata_size(%d)", i);
           st->codecpar->extradata_size = i;
           memcpy(st->codecpar->extradata, pkt->data, i);
           memset(st->codecpar->extradata + i, 0, FF_INPUT_BUFFER_PADDING_SIZE);
@@ -1921,10 +1921,15 @@ void CDVDDemuxFFmpeg::ParsePacket(AVPacket *pkt)
                                                               pkt->data, pkt->size);
             parser->second->m_codecCtx->extradata = nullptr;
             parser->second->m_codecCtx->extradata_size = 0;
-            if (st->codecpar->codec_id != AV_CODEC_ID_VC1)
+
+            if (parser->second->m_parserCtx->width != 0)
             {
               st->codecpar->width = parser->second->m_parserCtx->width;
               st->codecpar->height = parser->second->m_parserCtx->height;
+            }
+            else
+            {
+              CLog::Log(LOGERROR, "CDVDDemuxFFmpeg::ParsePacket() invalid width/height");
             }
           }
         }
