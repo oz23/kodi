@@ -25,7 +25,8 @@
 #include "utils/log.h"
 
 #include "cores/AudioEngine/Utils/AEUtil.h"
-//#include "cores/AudioEngine/AEFactory.h"
+#include "ServiceBroker.h"
+#include "cores/AudioEngine/Interfaces/AE.h"
 #include "settings/Settings.h"
 #include "linux/RBP.h"
 
@@ -98,9 +99,9 @@ bool COMXAudioCodecOMX::Open(CDVDStreamInfo &hints)
 #if 0
   if (hints.codec == AV_CODEC_ID_TRUEHD)
   {
-    if (CAEFactory::HasStereoAudioChannelCount())
+    if (CServiceBroker::GetActiveAE().HasStereoAudioChannelCount())
       m_pCodecContext->request_channel_layout = AV_CH_LAYOUT_STEREO;
-    else if (!CAEFactory::HasHDAudioChannelCount())
+    else if (!CServiceBroker::GetActiveAE().HasHDAudioChannelCount())
       m_pCodecContext->request_channel_layout = AV_CH_LAYOUT_5POINT1;
   }
 #endif
@@ -241,9 +242,9 @@ int COMXAudioCodecOMX::GetData(BYTE** dst, double &dts, double &pts)
     {
       m_iSampleFormat = m_pCodecContext->sample_fmt;
       m_pConvert = swr_alloc_set_opts(NULL,
-                      av_get_default_channel_layout(m_pCodecContext->channels), 
+                      av_get_default_channel_layout(m_pCodecContext->channels),
                       m_desiredSampleFormat, m_pCodecContext->sample_rate,
-                      av_get_default_channel_layout(m_pCodecContext->channels), 
+                      av_get_default_channel_layout(m_pCodecContext->channels),
                       m_pCodecContext->sample_fmt, m_pCodecContext->sample_rate,
                       0, NULL);
 

@@ -245,10 +245,10 @@ namespace KodiAPI
         CLog::Log(LOGERROR, "Audio DSP - %s - invalid sound play data", __FUNCTION__);
         return AE_DSP_CH_INVALID;
       }
-      
+
       return CActiveAEDSP::GetDSPChannel(((IAESound*)handle)->GetChannel());
     }
-    
+
     void CAddonCallbacksADSP::ADSPSoundPlay_SetVolume(void *addonData, ADSPHANDLE handle, float volume)
     {
       CActiveAEDSPAddon *addon = GetAudioDSPAddon(addonData);
@@ -257,10 +257,10 @@ namespace KodiAPI
         CLog::Log(LOGERROR, "Audio DSP - %s - invalid sound play data", __FUNCTION__);
         return;
       }
-      
+
       ((IAESound*)handle)->SetVolume(volume);
     }
-    
+
     float CAddonCallbacksADSP::ADSPSoundPlay_GetVolume(void *addonData, ADSPHANDLE handle)
     {
       CActiveAEDSPAddon *addon = GetAudioDSPAddon(addonData);
@@ -269,9 +269,9 @@ namespace KodiAPI
         CLog::Log(LOGERROR, "Audio DSP - %s - invalid sound play data", __FUNCTION__);
         return 0.0f;
       }
-      
+
       return ((IAESound*)handle)->GetVolume();
     }
-    
+
   } /* namespace AudioDSP */
 } /* namespace KodiAPI */

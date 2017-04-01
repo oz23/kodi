@@ -21,7 +21,6 @@
 #include "system.h"
 #include "threads/SingleLock.h"
 #include "utils/log.h"
-
 #include "cores/AudioEngine/Utils/AEUtil.h"
 #include "cores/AudioEngine/AEResampleFactory.h"
 
@@ -29,7 +28,6 @@
 #include "ActiveAEStream.h"
 
 using namespace ActiveAE;
-
 
 CActiveAEStream::CActiveAEStream(AEAudioFormat *format, unsigned int streamid, CActiveAE *ae)
 {

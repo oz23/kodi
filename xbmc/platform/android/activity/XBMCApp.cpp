@@ -61,7 +61,6 @@
 
 #include "AndroidKey.h"
 #include "settings/AdvancedSettings.h"
-#include "cores/AudioEngine/AEFactory.h"
 #include "Application.h"
 #include "AppParamParser.h"
 #include "messaging/ApplicationMessenger.h"
@@ -69,6 +68,8 @@
 #include "settings/DisplaySettings.h"
 #include "guilib/GraphicContext.h"
 #include "guilib/GUIWindowManager.h"
+#include "cores/AudioEngine/Interfaces/AE.h"
+#include "ServiceBroker.h"
 #include "platform/android/activity/IInputDeviceCallbacks.h"
 #include "platform/android/activity/IInputDeviceEventHandler.h"
 #include "input/Key.h"
@@ -84,7 +85,6 @@
 #include "platform/XbmcContext.h"
 #include "windowing/XBMC_events.h"
 #include "input/XBMC_keysym.h"
-
 
 #define GIGABYTES       1073741824
 

@@ -86,7 +86,7 @@ void CPowerManager::Initialize()
   std::unique_ptr<IPowerSyscall> currPowerManager;
   int bestCount = -1;
   int currCount = -1;
-  
+
   std::list< std::pair< std::function<bool()>,
                         std::function<IPowerSyscall*()> > > powerManagers =
   {

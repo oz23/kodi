@@ -38,7 +38,8 @@
 #include "settings/MediaSettings.h"
 #include "settings/Settings.h"
 #include "guilib/LocalizeStrings.h"
-//#include "cores/AudioEngine/AEFactory.h"
+#include "ServiceBroker.h"
+#include "cores/AudioEngine/Interfaces/AE.h"
 #include "Util.h"
 #include <algorithm>
 #include <cassert>
@@ -94,16 +95,23 @@ COMXAudio::COMXAudio() :
   m_failed_eos      (false  ),
   m_output          (AESINKPI_UNKNOWN)
 {
-  //CAEFactory::Suspend();
-  //while (!CAEFactory::IsSuspended())
-  //  Sleep(10);
+  // magic value used when omxplayer is playing - want sink to be disabled
+  AEAudioFormat m_format;
+  m_format.m_dataFormat = AE_FMT_RAW;
+  m_format.m_streamInfo.m_type = CAEStreamInfo::STREAM_TYPE_AC3;
+  m_format.m_streamInfo.m_sampleRate = 16000;
+  m_format.m_streamInfo.m_channels = 2;
+  m_format.m_sampleRate = 16000;
+  m_format.m_frameSize = 1;
+  m_pAudioStream = CServiceBroker::GetActiveAE().MakeStream(m_format);
 }
 
 COMXAudio::~COMXAudio()
 {
   Deinitialize();
 
-  //CAEFactory::Resume();
+  if (m_pAudioStream)
+    CServiceBroker::GetActiveAE().FreeStream(m_pAudioStream);
 }
 
 bool COMXAudio::PortSettingsChanged()
@@ -829,7 +837,7 @@ bool COMXAudio::Initialize(AEAudioFormat format, OMXClock *clock, CDVDStreamInfo
   }
 
   omx_err = m_omx_decoder.AllocInputBuffers();
-  if(omx_err != OMX_ErrorNone) 
+  if(omx_err != OMX_ErrorNone)
   {
     CLog::Log(LOGERROR, "COMXAudio::Initialize - Error alloc buffers 0x%08x", omx_err);
     return false;
@@ -865,7 +873,7 @@ bool COMXAudio::Initialize(AEAudioFormat format, OMXClock *clock, CDVDStreamInfo
       m_omx_decoder.DecoderEmptyBufferDone(m_omx_decoder.GetComponent(), omx_buffer);
       return false;
     }
-  } 
+  }
 
   /* return on decoder error so m_Initialized stays false */
   if(m_omx_decoder.BadState())

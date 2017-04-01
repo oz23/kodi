@@ -49,7 +49,7 @@ CRetroPlayerAudio::CRetroPlayerAudio(CProcessInfo& processInfo) :
 
 CRetroPlayerAudio::~CRetroPlayerAudio()
 {
-  CloseStream(); 
+  CloseStream();
 }
 
 unsigned int CRetroPlayerAudio::NormalizeSamplerate(unsigned int samplerate) const

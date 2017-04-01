@@ -19,7 +19,6 @@
  */
 
 #include "cores/AudioEngine/Interfaces/AESound.h"
-
 #include "ActiveAE.h"
 #include "ActiveAESound.h"
 #include "utils/log.h"

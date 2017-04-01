@@ -380,7 +380,7 @@ static void CopyUserDataIfNeeded(const std::string &strPath, const std::string &
     destPath = URIUtils::AddFileToFolder(strPath, file);
   else
     destPath = URIUtils::AddFileToFolder(strPath, destname);
-  
+
   if (!CFile::Exists(destPath))
   {
     // need to copy it across
@@ -435,7 +435,7 @@ bool CApplication::Create()
   SetupNetwork();
   Preflight();
 
-  // here we register all global classes for the CApplicationMessenger, 
+  // here we register all global classes for the CApplicationMessenger,
   // after that we can send messages to the corresponding modules
   CApplicationMessenger::GetInstance().RegisterReceiver(this);
   CApplicationMessenger::GetInstance().RegisterReceiver(&g_playlistPlayer);
@@ -459,7 +459,7 @@ bool CApplication::Create()
     // set special://envhome
     CSpecialProtocol::SetEnvHomePath(getenv("HOME"));
   #endif
-    
+
   // only the InitDirectories* for the current platform should return true
   bool inited = InitDirectoriesLinux();
   if (!inited)
@@ -471,7 +471,7 @@ bool CApplication::Create()
   CopyUserDataIfNeeded("special://masterprofile/", "RssFeeds.xml");
   CopyUserDataIfNeeded("special://masterprofile/", "favourites.xml");
   CopyUserDataIfNeeded("special://masterprofile/", "Lircmap.xml");
-  
+
   //! @todo - move to CPlatformXXX
   #ifdef TARGET_DARWIN_IOS
     CopyUserDataIfNeeded("special://masterprofile/", "iOS/sources.xml", "sources.xml");
@@ -501,7 +501,7 @@ bool CApplication::Create()
   buildType = "Unknown";
 #endif
   std::string specialVersion;
-  
+
   //! @todo - move to CPlatformXXX
 #if defined(TARGET_RASPBERRY_PI)
   specialVersion = " (version for Raspberry Pi)";
@@ -530,7 +530,7 @@ bool CApplication::Create()
     CLog::Log(LOGNOTICE, "Host CPU: %s, %d core%s available", cpuModel.c_str(), g_cpuInfo.getCPUCount(), (g_cpuInfo.getCPUCount() == 1) ? "" : "s");
   else
     CLog::Log(LOGNOTICE, "%d CPU core%s available", g_cpuInfo.getCPUCount(), (g_cpuInfo.getCPUCount() == 1) ? "" : "s");
-  
+
   //! @todo - move to CPlatformXXX ???
 #if defined(TARGET_WINDOWS)
   CLog::Log(LOGNOTICE, "%s", CWIN32Util::GetResInfoString().c_str());
@@ -594,7 +594,7 @@ bool CApplication::Create()
   g_powerManager.Initialize();
 
   // Load the AudioEngine before settings as they need to query the engine
-  if(!m_ServiceManager->CreateAudioEngine())
+  if (!m_ServiceManager->CreateAudioEngine())
   {
     CLog::Log(LOGFATAL, "CApplication::Create: Failed to load an AudioEngine");
     return false;
@@ -1417,7 +1417,7 @@ void CApplication::OnSettingChanged(const CSetting *setting)
 
     if (settingId == CSettings::SETTING_AUDIOOUTPUT_GUISOUNDMODE)
     {
-      m_ServiceManager->GetActiveAE().SetSoundMode(((CSettingInt*)setting)->GetValue());
+      m_ServiceManager->GetActiveAE().SetSoundMode((static_cast<const CSettingInt*>(setting))->GetValue());
     }
     // this tells player whether to open an audio stream passthrough or PCM
     // if this is changed, audio stream has to be reopened
@@ -1496,7 +1496,7 @@ bool CApplication::OnSettingUpdate(CSetting* &setting, const char *oldSettingId,
     CSettingString *audioDevice = (CSettingString*)setting;
     // Gotham and older didn't enumerate audio devices per stream on osx
     // add stream0 per default which should be ok for all old settings.
-    if (!StringUtils::EqualsNoCase(audioDevice->GetValue(), "DARWINOSX:default") && 
+    if (!StringUtils::EqualsNoCase(audioDevice->GetValue(), "DARWINOSX:default") &&
         StringUtils::FindWords(audioDevice->GetValue().c_str(), ":stream") == std::string::npos)
     {
       std::string newSetting = audioDevice->GetValue();
@@ -1537,7 +1537,7 @@ void CApplication::ReloadSkin(bool confirm/*=false*/)
        user as to whether they want to keep the current skin. */
     if (confirm && m_confirmSkinChange)
     {
-      if (HELPERS::ShowYesNoDialogText(CVariant{13123}, CVariant{13111}, CVariant{""}, CVariant{""}, 10000) != 
+      if (HELPERS::ShowYesNoDialogText(CVariant{13123}, CVariant{13111}, CVariant{""}, CVariant{""}, 10000) !=
         DialogResponse::YES)
       {
         m_confirmSkinChange = false;
@@ -1971,8 +1971,8 @@ bool CApplication::OnAction(const CAction &action)
   if (action.IsMouse())
     CInputManager::GetInstance().SetMouseActive(true);
 
-  
-  if (action.GetID() == ACTION_CREATE_EPISODE_BOOKMARK)   
+
+  if (action.GetID() == ACTION_CREATE_EPISODE_BOOKMARK)
   {
     CGUIDialogVideoBookmarks::OnAddEpisodeBookmark();
   }
@@ -1980,7 +1980,7 @@ bool CApplication::OnAction(const CAction &action)
   {
     CGUIDialogVideoBookmarks::OnAddBookmark();
   }
-  
+
   // The action PLAYPAUSE behaves as ACTION_PAUSE if we are currently
   // playing or ACTION_PLAYER_PLAY if we are seeking (FF/RW) or not playing.
   if (action.GetID() == ACTION_PLAYER_PLAYPAUSE)
@@ -2009,7 +2009,7 @@ bool CApplication::OnAction(const CAction &action)
   // notify action listeners
   if (NotifyActionListeners(action))
     return true;
-  
+
   // screenshot : take a screenshot :)
   if (action.GetID() == ACTION_TAKE_SCREENSHOT)
   {
@@ -2221,7 +2221,7 @@ bool CApplication::OnAction(const CAction &action)
         int iSpeed = 1 << iPower;
         if (iSpeed != 1 && action.GetID() == ACTION_ANALOG_REWIND)
           iSpeed = -iSpeed;
-        g_application.m_pPlayer->SetPlaySpeed((float)iSpeed);
+        g_application.m_pPlayer->SetPlaySpeed(static_cast<float>(iSpeed));
         if (iSpeed == 1)
           CLog::Log(LOGDEBUG,"Resetting playspeed");
         return true;
@@ -2369,7 +2369,7 @@ void CApplication::OnApplicationMessage(ThreadMessage* pMsg)
   case TMSG_QUIT:
     Stop(EXITCODE_QUIT);
     break;
-  
+
   case TMSG_SHUTDOWN:
     HandleShutdownMessage();
     break;
@@ -2401,7 +2401,7 @@ void CApplication::OnApplicationMessage(ThreadMessage* pMsg)
   case TMSG_INHIBITIDLESHUTDOWN:
     InhibitIdleShutdown(pMsg->param1 != 0);
     break;
-  
+
   case TMSG_ACTIVATESCREENSAVER:
     ActivateScreenSaver();
     break;
@@ -2784,7 +2784,7 @@ bool CApplication::Cleanup()
 #ifdef HAS_DVD_DRIVE
     CLibcdio::ReleaseInstance();
 #endif
-#endif 
+#endif
 #if defined(TARGET_ANDROID)
     // enable for all platforms once it's safe
     g_sectionLoader.UnloadAll();
@@ -2997,7 +2997,7 @@ bool CApplication::PlayMedia(const CFileItem& item, const std::string &player, i
   }
   else if (item.IsPVR())
   {
-    return CPVRGUIActions::GetInstance().PlayMedia(CFileItemPtr(new CFileItem(item)));
+    return CServiceBroker::GetPVRManager().GUIActions()->PlayMedia(CFileItemPtr(new CFileItem(item)));
   }
 
   CURL path(item.GetPath());
@@ -3083,7 +3083,7 @@ PlayBackRet CApplication::PlayStack(const CFileItem& item, bool bRestart)
   else
   {
     LoadVideoSettings(item);
-    
+
     // see if we have the info in the database
     //! @todo If user changes the time speed (FPS via framerate conversion stuff)
     //!       then these times will be wrong.
@@ -3365,7 +3365,7 @@ PlayBackRet CApplication::PlayFile(CFileItem item, const std::string& player, bo
     CSingleLock lock(m_playStateMutex);
     // tell system we are starting a file
     m_bPlaybackStarting = true;
-    
+
     // for playing a new item, previous playing item's callback may already
     // pushed some delay message into the threadmessage list, they are not
     // expected be processed after or during the new item playback starting.
@@ -3696,7 +3696,7 @@ void CApplication::SaveFileState(bool bForeground /* = false */)
       m_progressTrackingPlayCountUpdate,
       CMediaSettings::GetInstance().GetCurrentVideoSettings(),
       CMediaSettings::GetInstance().GetCurrentAudioSettings());
-  
+
   if (bForeground)
   {
     // Run job in the foreground to make sure it finishes
@@ -4053,16 +4053,13 @@ void CApplication::ActivateScreenSaver(bool forceType /*= false */)
 
   // disable screensaver lock from the login screen
   m_iScreenSaveLock = g_windowManager.GetActiveWindow() == WINDOW_LOGIN_SCREEN ? 1 : 0;
-
   // set to Dim in the case of a dialog on screen or playing video
   if (!forceType && (g_windowManager.HasModalDialog() ||
-      (m_pPlayer->IsPlayingVideo() && m_ServiceManager->GetSettings().GetBool(CSettings::SETTING_SCREENSAVER_USEDIMONPAUSE)) ||
-      CPVRGUIActions::GetInstance().IsRunningChannelScan()))
+                     (m_pPlayer->IsPlayingVideo() && m_ServiceManager->GetSettings().GetBool(CSettings::SETTING_SCREENSAVER_USEDIMONPAUSE)) ||
+                     CServiceBroker::GetPVRManager().GUIActions()->IsRunningChannelScan()))
     m_screensaverIdInUse = "screensaver.xbmc.builtin.dim";
   else // Get Screensaver Mode
     m_screensaverIdInUse = m_ServiceManager->GetSettings().GetString(CSettings::SETTING_SCREENSAVER_MODE);
-
-  CAnnouncementManager::GetInstance().Announce(GUI, "xbmc", "OnScreensaverActivated");
 
   if (m_screensaverIdInUse == "screensaver.xbmc.builtin.dim" ||
       m_screensaverIdInUse == "screensaver.xbmc.builtin.black")
@@ -4186,7 +4183,7 @@ bool CApplication::OnMessage(CGUIMessage& message)
 
       // Update our infoManager with the new details etc.
       if (m_nextPlaylistItem >= 0)
-      { 
+      {
         // playing an item which is not in the list - player might be stopped already
         // so do nothing
         if (playList.size() <= m_nextPlaylistItem)
@@ -4758,7 +4755,7 @@ float CApplication::GetVolume(bool percentage /* = true */) const
     // converts the hardware volume to a percentage
     return m_volumeLevel * 100.0f;
   }
-  
+
   return m_volumeLevel;
 }
 
@@ -5193,7 +5190,7 @@ void CApplication::CloseNetworkShares()
 #if defined(HAS_FILESYSTEM_SMB) && !defined(TARGET_WINDOWS)
   smb.Deinit();
 #endif
-  
+
 #ifdef HAS_FILESYSTEM_NFS
   gNfsConnection.Deinit();
 #endif
@@ -5230,6 +5227,6 @@ bool CApplication::NotifyActionListeners(const CAction &action) const
     if ((*it)->OnAction(action))
       return true;
   }
-  
+
   return false;
 }

@@ -221,8 +221,6 @@ cmake_install.cmake
 /system/EasyHook64.dll
 /system/libcurl.dll
 /system/libeay32.dll
-/system/librtmp.dll
-/system/libexif.dll
 /system/ssh.dll
 /system/sqlite3.dll
 /system/libnfs.dll
@@ -474,12 +472,6 @@ cmake_install.cmake
 
 #/lib/win32/ffmpeg
 /lib/win32/ffmpeg/
-
-# /lib/libexif
-/lib/libexif/Makefile
-/lib/libexif/Debug (DLL)
-/lib/libexif/Release (DLL)
-/lib/libexif/libexif.lib
 
 /lib/libUPnP/Makefile
 

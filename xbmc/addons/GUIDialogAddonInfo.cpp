@@ -89,15 +89,6 @@ bool CGUIDialogAddonInfo::OnMessage(CGUIMessage& message)
       }
       if (iControl == CONTROL_BTN_INSTALL)
       {
-        if (m_localAddon)
-        {
-          if (m_localAddon->IsType(ADDON_ADSPDLL) && CServiceBroker::GetADSP().IsProcessing())
-          {
-            CGUIDialogOK::ShowAndGetInput(24137, 0, 24138, 0);
-            return true;
-          }
-        }
-
         if (!m_localAddon)
         {
           OnInstall();
@@ -486,7 +477,7 @@ bool CGUIDialogAddonInfo::ShowForItem(const CFileItemPtr& item)
   if (!dialog->SetItem(item))
     return false;
 
-  dialog->Open(); 
+  dialog->Open();
   return true;
 }
 
