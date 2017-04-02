@@ -55,7 +55,7 @@ public:
   virtual ~CDecoder();
   virtual bool Open(AVCodecContext* avctx, AVCodecContext* mainctx, const enum AVPixelFormat, unsigned int surfaces);
   virtual CDVDVideoCodec::VCReturn Decode(AVCodecContext* avctx, AVFrame* frame);
-  virtual bool GetPicture(AVCodecContext* avctx, DVDVideoPicture* picture);
+  virtual bool GetPicture(AVCodecContext* avctx, VideoPicture* picture);
   virtual CDVDVideoCodec::VCReturn Check(AVCodecContext* avctx);
   virtual void Close();
   virtual const std::string Name() { return "mmal"; }

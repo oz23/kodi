@@ -100,8 +100,8 @@ protected:
   virtual void Process() override;
   bool ProcessDecoderOutput(double &frametime, double &pts);
 
-  int OutputPicture(const DVDVideoPicture* src, double pts);
-  void ProcessOverlays(DVDVideoPicture* pSource, double pts);
+  int OutputPicture(const VideoPicture* src, double pts);
+  void ProcessOverlays(VideoPicture* pSource, double pts);
   void OpenStream(CDVDStreamInfo &hint, CDVDVideoCodec* codec);
 
   void ResetFrameRateCalc();
@@ -139,10 +139,10 @@ protected:
   CDVDMessageQueue& m_messageParent;
   CDVDStreamInfo m_hints;
   CDVDVideoCodec* m_pVideoCodec;
-  DVDVideoPicture* m_pTempOverlayPicture;
+  VideoPicture* m_pTempOverlayPicture;
   CPtsTracker m_ptsTracker;
   std::list<DVDMessageListItem> m_packets;
   CDroppingStats m_droppingStats;
   CRenderManager& m_renderManager;
-  DVDVideoPicture m_picture;
+  VideoPicture m_picture;
 };

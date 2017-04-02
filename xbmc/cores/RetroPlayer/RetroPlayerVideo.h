@@ -28,7 +28,7 @@ class CDVDClock;
 class CPixelConverter;
 class CProcessInfo;
 class CRenderManager;
-struct DVDVideoPicture;
+struct VideoPicture;
 
 namespace GAME
 {
@@ -53,9 +53,9 @@ namespace GAME
     */
 
   private:
-    bool Configure(DVDVideoPicture& picture);
-    bool GetPicture(const uint8_t* data, unsigned int size, DVDVideoPicture& picture);
-    void SendPicture(DVDVideoPicture& picture);
+    bool Configure(VideoPicture& picture);
+    bool GetPicture(const uint8_t* data, unsigned int size, VideoPicture& picture);
+    void SendPicture(VideoPicture& picture);
 
     // Construction parameters
     CRenderManager& m_renderManager;

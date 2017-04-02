@@ -92,7 +92,7 @@ int CRendererAML::GetImage(YV12Image *image, int source, bool readonly)
   return source;
 }
 
-void CRendererAML::AddVideoPictureHW(DVDVideoPicture &picture, int index)
+void CRendererAML::AddVideoPictureHW(VideoPicture &picture, int index)
 {
   BUFFER &buf = m_buffers[index];
   if (picture.amlcodec)

@@ -48,7 +48,7 @@
 class CBaseTexture;
 class CMMALBuffer;
 
-struct DVDVideoPicture;
+struct VideoPicture;
 
 class CMMALPool : public std::enable_shared_from_this<CMMALPool>
 {
@@ -105,7 +105,7 @@ public:
   virtual void         Reset(); /* resets renderer after seek for example */
   virtual void         Flush();
   virtual bool         IsConfigured() { return m_bConfigured; }
-  virtual void         AddVideoPictureHW(DVDVideoPicture& pic, int index);
+  virtual void         AddVideoPictureHW(VideoPicture& pic, int index);
   virtual CRenderInfo GetRenderInfo();
 
   virtual bool         SupportsMultiPassRendering() { return false; };

@@ -727,7 +727,7 @@ void CMMALVideo::SetSpeed(int iSpeed)
   m_speed = iSpeed;
 }
 
-CDVDVideoCodec::VCReturn CMMALVideo::GetPicture(DVDVideoPicture* pDvdVideoPicture)
+CDVDVideoCodec::VCReturn CMMALVideo::GetPicture(VideoPicture* pVideoPicture)
 {
   CSingleLock lock(m_sharedSection);
   MMAL_STATUS_T status;
@@ -809,40 +809,40 @@ CDVDVideoCodec::VCReturn CMMALVideo::GetPicture(DVDVideoPicture* pDvdVideoPictur
 
   if (ret == VC_PICTURE)
   {
-    ClearPicture(pDvdVideoPicture);
+    ClearPicture(pVideoPicture);
     assert(buffer && buffer->mmal_buffer);
-    memset(pDvdVideoPicture, 0, sizeof *pDvdVideoPicture);
-    pDvdVideoPicture->format = RENDER_FMT_MMAL;
-    pDvdVideoPicture->MMALBuffer = buffer;
-    pDvdVideoPicture->color_range  = 0;
-    pDvdVideoPicture->color_matrix = 4;
-    pDvdVideoPicture->iWidth  = buffer->m_width ? buffer->m_width : m_decoded_width;
-    pDvdVideoPicture->iHeight = buffer->m_height ? buffer->m_height : m_decoded_height;
-    pDvdVideoPicture->iDisplayWidth  = pDvdVideoPicture->iWidth;
-    pDvdVideoPicture->iDisplayHeight = pDvdVideoPicture->iHeight;
-    //CLog::Log(LOGDEBUG, "%s::%s -  %dx%d %dx%d %dx%d %dx%d %f,%f", CLASSNAME, __func__, pDvdVideoPicture->iWidth, pDvdVideoPicture->iHeight, pDvdVideoPicture->iDisplayWidth, pDvdVideoPicture->iDisplayHeight, m_decoded_width, m_decoded_height, buffer->m_width, buffer->m_height, buffer->m_aspect_ratio, m_hints.aspect);
+    memset(pVideoPicture, 0, sizeof *pVideoPicture);
+    pVideoPicture->format = RENDER_FMT_MMAL;
+    pVideoPicture->MMALBuffer = buffer;
+    pVideoPicture->color_range  = 0;
+    pVideoPicture->color_matrix = 4;
+    pVideoPicture->iWidth  = buffer->m_width ? buffer->m_width : m_decoded_width;
+    pVideoPicture->iHeight = buffer->m_height ? buffer->m_height : m_decoded_height;
+    pVideoPicture->iDisplayWidth  = pVideoPicture->iWidth;
+    pVideoPicture->iDisplayHeight = pVideoPicture->iHeight;
+    //CLog::Log(LOGDEBUG, "%s::%s -  %dx%d %dx%d %dx%d %dx%d %f,%f", CLASSNAME, __func__, pVideoPicture->iWidth, pVideoPicture->iHeight, pVideoPicture->iDisplayWidth, pVideoPicture->iDisplayHeight, m_decoded_width, m_decoded_height, buffer->m_width, buffer->m_height, buffer->m_aspect_ratio, m_hints.aspect);
 
     if (buffer->m_aspect_ratio > 0.0)
     {
-      pDvdVideoPicture->iDisplayWidth  = ((int)lrint(pDvdVideoPicture->iHeight * buffer->m_aspect_ratio)) & -3;
-      if (pDvdVideoPicture->iDisplayWidth > pDvdVideoPicture->iWidth)
+      pVideoPicture->iDisplayWidth  = ((int)lrint(pVideoPicture->iHeight * buffer->m_aspect_ratio)) & -3;
+      if (pVideoPicture->iDisplayWidth > pVideoPicture->iWidth)
       {
-        pDvdVideoPicture->iDisplayWidth  = pDvdVideoPicture->iWidth;
-        pDvdVideoPicture->iDisplayHeight = ((int)lrint(pDvdVideoPicture->iWidth / buffer->m_aspect_ratio)) & -3;
+        pVideoPicture->iDisplayWidth  = pVideoPicture->iWidth;
+        pVideoPicture->iDisplayHeight = ((int)lrint(pVideoPicture->iWidth / buffer->m_aspect_ratio)) & -3;
       }
     }
 
     // timestamp is in microseconds
-    pDvdVideoPicture->dts = buffer->mmal_buffer->dts == MMAL_TIME_UNKNOWN ? DVD_NOPTS_VALUE : buffer->mmal_buffer->dts;
-    pDvdVideoPicture->pts = buffer->mmal_buffer->pts == MMAL_TIME_UNKNOWN ? DVD_NOPTS_VALUE : buffer->mmal_buffer->pts;
+    pVideoPicture->dts = buffer->mmal_buffer->dts == MMAL_TIME_UNKNOWN ? DVD_NOPTS_VALUE : buffer->mmal_buffer->dts;
+    pVideoPicture->pts = buffer->mmal_buffer->pts == MMAL_TIME_UNKNOWN ? DVD_NOPTS_VALUE : buffer->mmal_buffer->pts;
 
-    pDvdVideoPicture->iFlags  = DVP_FLAG_ALLOCATED;
+    pVideoPicture->iFlags  = DVP_FLAG_ALLOCATED;
     if (buffer->mmal_buffer->flags & MMAL_BUFFER_HEADER_FLAG_USER3)
-      pDvdVideoPicture->iFlags |= DVP_FLAG_DROPPED;
+      pVideoPicture->iFlags |= DVP_FLAG_DROPPED;
     if (g_advancedSettings.CanLogComponent(LOGVIDEO))
       CLog::Log(LOGINFO, "%s::%s dts:%.3f pts:%.3f flags:%x:%x MMALBuffer:%p mmal_buffer:%p", CLASSNAME, __func__,
-          pDvdVideoPicture->dts == DVD_NOPTS_VALUE ? 0.0 : pDvdVideoPicture->dts*1e-6, pDvdVideoPicture->pts == DVD_NOPTS_VALUE ? 0.0 : pDvdVideoPicture->pts*1e-6,
-          pDvdVideoPicture->iFlags, buffer->mmal_buffer->flags, pDvdVideoPicture->MMALBuffer, pDvdVideoPicture->MMALBuffer->mmal_buffer);
+          pVideoPicture->dts == DVD_NOPTS_VALUE ? 0.0 : pVideoPicture->dts*1e-6, pVideoPicture->pts == DVD_NOPTS_VALUE ? 0.0 : pVideoPicture->pts*1e-6,
+          pVideoPicture->iFlags, buffer->mmal_buffer->flags, pVideoPicture->MMALBuffer, pVideoPicture->MMALBuffer->mmal_buffer);
     assert(!(buffer->mmal_buffer->flags & MMAL_BUFFER_HEADER_FLAG_DECODEONLY));
     buffer->mmal_buffer->flags &= ~MMAL_BUFFER_HEADER_FLAG_USER3;
     buffer->m_stills = m_hints.stills;
@@ -854,16 +854,16 @@ CDVDVideoCodec::VCReturn CMMALVideo::GetPicture(DVDVideoPicture* pDvdVideoPictur
   return ret;
 }
 
-bool CMMALVideo::ClearPicture(DVDVideoPicture* pDvdVideoPicture)
+bool CMMALVideo::ClearPicture(VideoPicture* pVideoPicture)
 {
   CSingleLock lock(m_sharedSection);
-  if (pDvdVideoPicture->format == RENDER_FMT_MMAL)
+  if (pVideoPicture->format == RENDER_FMT_MMAL)
   {
     if (VERBOSE && g_advancedSettings.CanLogComponent(LOGVIDEO))
-      CLog::Log(LOGDEBUG, "%s::%s - %p (%p)", CLASSNAME, __func__, pDvdVideoPicture->MMALBuffer, pDvdVideoPicture->MMALBuffer->mmal_buffer);
-    SAFE_RELEASE(pDvdVideoPicture->MMALBuffer);
+      CLog::Log(LOGDEBUG, "%s::%s - %p (%p)", CLASSNAME, __func__, pVideoPicture->MMALBuffer, pVideoPicture->MMALBuffer->mmal_buffer);
+    SAFE_RELEASE(pVideoPicture->MMALBuffer);
   }
-  memset(pDvdVideoPicture, 0, sizeof *pDvdVideoPicture);
+  memset(pVideoPicture, 0, sizeof *pVideoPicture);
   return true;
 }
 

@@ -226,9 +226,9 @@ bool CDVDVideoCodecAmlogic::Open(CDVDStreamInfo &hints, CDVDCodecOptions &option
     goto FAIL;
   }
 
-  // allocate a dummy DVDVideoPicture buffer.
+  // allocate a dummy VideoPicture buffer.
   // first make sure all properties are reset.
-  memset(&m_videobuffer, 0, sizeof(DVDVideoPicture));
+  memset(&m_videobuffer, 0, sizeof(VideoPicture));
 
   m_videobuffer.dts = DVD_NOPTS_VALUE;
   m_videobuffer.pts = DVD_NOPTS_VALUE;
@@ -358,14 +358,14 @@ void CDVDVideoCodecAmlogic::Reset(void)
     m_bitstream->ResetStartDecode();
 }
 
-CDVDVideoCodec::VCReturn CDVDVideoCodecAmlogic::GetPicture(DVDVideoPicture* pDvdVideoPicture)
+CDVDVideoCodec::VCReturn CDVDVideoCodecAmlogic::GetPicture(VideoPicture* pVideoPicture)
 {
   if (!m_Codec)
     return VC_ERROR;
 
   VCReturn retVal = m_Codec->GetPicture(&m_videobuffer);
 
-  *pDvdVideoPicture = m_videobuffer;
+  *pVideoPicture = m_videobuffer;
 
   CDVDAmlogicInfo* info = new CDVDAmlogicInfo(this, m_Codec, 
    m_Codec->GetOMXPts(), m_Codec->GetAmlDuration(), m_Codec->GetBufferIndex());
@@ -375,30 +375,30 @@ CDVDVideoCodec::VCReturn CDVDVideoCodecAmlogic::GetPicture(DVDVideoPicture* pDvd
     m_inflight.insert(info);
   }
 
-  pDvdVideoPicture->amlcodec = info->Retain();
+  pVideoPicture->amlcodec = info->Retain();
 
   // check for mpeg2 aspect ratio changes
-  if (m_mpeg2_sequence && pDvdVideoPicture->pts >= m_mpeg2_sequence_pts)
+  if (m_mpeg2_sequence && pVideoPicture->pts >= m_mpeg2_sequence_pts)
     m_aspect_ratio = m_mpeg2_sequence->ratio;
 
-  pDvdVideoPicture->iDisplayWidth  = pDvdVideoPicture->iWidth;
-  pDvdVideoPicture->iDisplayHeight = pDvdVideoPicture->iHeight;
+  pVideoPicture->iDisplayWidth  = pVideoPicture->iWidth;
+  pVideoPicture->iDisplayHeight = pVideoPicture->iHeight;
   if (m_aspect_ratio > 1.0 && !m_hints.forced_aspect)
   {
-    pDvdVideoPicture->iDisplayWidth  = ((int)lrint(pDvdVideoPicture->iHeight * m_aspect_ratio)) & ~3;
-    if (pDvdVideoPicture->iDisplayWidth > pDvdVideoPicture->iWidth)
+    pVideoPicture->iDisplayWidth  = ((int)lrint(pVideoPicture->iHeight * m_aspect_ratio)) & ~3;
+    if (pVideoPicture->iDisplayWidth > pVideoPicture->iWidth)
     {
-      pDvdVideoPicture->iDisplayWidth  = pDvdVideoPicture->iWidth;
-      pDvdVideoPicture->iDisplayHeight = ((int)lrint(pDvdVideoPicture->iWidth / m_aspect_ratio)) & ~3;
+      pVideoPicture->iDisplayWidth  = pVideoPicture->iWidth;
+      pVideoPicture->iDisplayHeight = ((int)lrint(pVideoPicture->iWidth / m_aspect_ratio)) & ~3;
     }
   }
 
   return retVal;
 }
 
-bool CDVDVideoCodecAmlogic::ClearPicture(DVDVideoPicture *pDvdVideoPicture)
+bool CDVDVideoCodecAmlogic::ClearPicture(VideoPicture *pVideoPicture)
 {
-  SAFE_RELEASE(pDvdVideoPicture->amlcodec);
+  SAFE_RELEASE(pVideoPicture->amlcodec);
   return true;
 }
 

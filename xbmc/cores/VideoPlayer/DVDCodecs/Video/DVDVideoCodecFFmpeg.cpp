@@ -511,7 +511,7 @@ bool CDVDVideoCodecFFmpeg::AddData(const DemuxPacket &packet)
   return true;
 }
 
-CDVDVideoCodec::VCReturn CDVDVideoCodecFFmpeg::GetPicture(DVDVideoPicture* pDvdVideoPicture)
+CDVDVideoCodec::VCReturn CDVDVideoCodecFFmpeg::GetPicture(VideoPicture* pVideoPicture)
 {
   if (m_eof)
   {
@@ -527,7 +527,7 @@ CDVDVideoCodec::VCReturn CDVDVideoCodecFFmpeg::GetPicture(DVDVideoPicture* pDvdV
     CDVDVideoCodec::VCReturn ret = m_pHardware->Decode(m_pCodecContext, nullptr);
     if (ret == VC_PICTURE)
     {
-      if (m_pHardware->GetPicture(m_pCodecContext, pDvdVideoPicture))
+      if (m_pHardware->GetPicture(m_pCodecContext, pVideoPicture))
         return VC_PICTURE;
       else
         return VC_ERROR;
@@ -542,7 +542,7 @@ CDVDVideoCodec::VCReturn CDVDVideoCodecFFmpeg::GetPicture(DVDVideoPicture* pDvdV
     CDVDVideoCodec::VCReturn ret = FilterProcess(nullptr);
     if (ret == VC_PICTURE)
     {
-      if (!SetPictureParams(pDvdVideoPicture))
+      if (!SetPictureParams(pVideoPicture))
         return VC_ERROR;
       return VC_PICTURE;
     }
@@ -583,7 +583,7 @@ CDVDVideoCodec::VCReturn CDVDVideoCodecFFmpeg::GetPicture(DVDVideoPicture* pDvdV
       int ret = m_pHardware->Decode(m_pCodecContext, nullptr);
       if (ret == VC_PICTURE)
       {
-        if (m_pHardware->GetPicture(m_pCodecContext, pDvdVideoPicture))
+        if (m_pHardware->GetPicture(m_pCodecContext, pVideoPicture))
           return VC_PICTURE;
         else
           return VC_ERROR;
@@ -600,7 +600,7 @@ CDVDVideoCodec::VCReturn CDVDVideoCodecFFmpeg::GetPicture(DVDVideoPicture* pDvdV
       int ret = FilterProcess(nullptr);
       if (ret == VC_PICTURE)
       {
-        if (!SetPictureParams(pDvdVideoPicture))
+        if (!SetPictureParams(pVideoPicture))
           return VC_ERROR;
         else
           return VC_PICTURE;
@@ -685,7 +685,7 @@ CDVDVideoCodec::VCReturn CDVDVideoCodecFFmpeg::GetPicture(DVDVideoPicture* pDvdV
     }
     else if (ret == VC_PICTURE)
     {
-      if (m_pHardware->GetPicture(m_pCodecContext, pDvdVideoPicture))
+      if (m_pHardware->GetPicture(m_pCodecContext, pVideoPicture))
         return VC_PICTURE;
       else
         return VC_ERROR;
@@ -738,7 +738,7 @@ CDVDVideoCodec::VCReturn CDVDVideoCodecFFmpeg::GetPicture(DVDVideoPicture* pDvdV
       av_frame_move_ref(m_pFrame, m_pDecodedFrame);
     }
 
-    if (!SetPictureParams(pDvdVideoPicture))
+    if (!SetPictureParams(pVideoPicture))
       return VC_ERROR;
     else
       return VC_PICTURE;
@@ -747,29 +747,29 @@ CDVDVideoCodec::VCReturn CDVDVideoCodecFFmpeg::GetPicture(DVDVideoPicture* pDvdV
   return VC_NONE;
 }
 
-bool CDVDVideoCodecFFmpeg::SetPictureParams(DVDVideoPicture* pDvdVideoPicture)
+bool CDVDVideoCodecFFmpeg::SetPictureParams(VideoPicture* pVideoPicture)
 {
-  if (!GetPictureCommon(pDvdVideoPicture))
+  if (!GetPictureCommon(pVideoPicture))
     return false;
 
   for (int i = 0; i < 4; i++)
-    pDvdVideoPicture->data[i] = m_pFrame->data[i];
+    pVideoPicture->data[i] = m_pFrame->data[i];
   for (int i = 0; i < 4; i++)
-    pDvdVideoPicture->iLineSize[i] = m_pFrame->linesize[i];
+    pVideoPicture->iLineSize[i] = m_pFrame->linesize[i];
 
-  pDvdVideoPicture->iFlags |= pDvdVideoPicture->data[0] ? 0 : DVP_FLAG_DROPPED;
-  pDvdVideoPicture->extended_format = 0;
+  pVideoPicture->iFlags |= pVideoPicture->data[0] ? 0 : DVP_FLAG_DROPPED;
+  pVideoPicture->hwPic = nullptr;
 
   AVPixelFormat pix_fmt;
   pix_fmt = (AVPixelFormat)m_pFrame->format;
 
-  pDvdVideoPicture->format = CDVDCodecUtils::EFormatFromPixfmt(pix_fmt);
+  pVideoPicture->format = CDVDCodecUtils::EFormatFromPixfmt(pix_fmt);
 
   if (CMediaSettings::GetInstance().GetCurrentVideoSettings().m_PostProcess)
   {
     m_postProc.SetType(g_advancedSettings.m_videoPPFFmpegPostProc, false);
-    if (m_postProc.Process(pDvdVideoPicture))
-      m_postProc.GetPicture(pDvdVideoPicture);
+    if (m_postProc.Process(pVideoPicture))
+      m_postProc.GetPicture(pVideoPicture);
   }
 
   return true;
@@ -803,22 +803,22 @@ void CDVDVideoCodecFFmpeg::Reopen()
   }
 }
 
-bool CDVDVideoCodecFFmpeg::GetPictureCommon(DVDVideoPicture* pDvdVideoPicture)
+bool CDVDVideoCodecFFmpeg::GetPictureCommon(VideoPicture* pVideoPicture)
 {
   if (!m_pFrame)
     return false;
 
-  pDvdVideoPicture->iWidth = m_pFrame->width;
-  pDvdVideoPicture->iHeight = m_pFrame->height;
+  pVideoPicture->iWidth = m_pFrame->width;
+  pVideoPicture->iHeight = m_pFrame->height;
 
   /* crop of 10 pixels if demuxer asked it */
-  if(m_pCodecContext->coded_width  && m_pCodecContext->coded_width  < (int)pDvdVideoPicture->iWidth
-                                   && m_pCodecContext->coded_width  > (int)pDvdVideoPicture->iWidth  - 10)
-    pDvdVideoPicture->iWidth = m_pCodecContext->coded_width;
+  if(m_pCodecContext->coded_width  && m_pCodecContext->coded_width  < (int)pVideoPicture->iWidth
+                                   && m_pCodecContext->coded_width  > (int)pVideoPicture->iWidth  - 10)
+    pVideoPicture->iWidth = m_pCodecContext->coded_width;
 
-  if(m_pCodecContext->coded_height && m_pCodecContext->coded_height < (int)pDvdVideoPicture->iHeight
-                                   && m_pCodecContext->coded_height > (int)pDvdVideoPicture->iHeight - 10)
-    pDvdVideoPicture->iHeight = m_pCodecContext->coded_height;
+  if(m_pCodecContext->coded_height && m_pCodecContext->coded_height < (int)pVideoPicture->iHeight
+                                   && m_pCodecContext->coded_height > (int)pVideoPicture->iHeight - 10)
+    pVideoPicture->iHeight = m_pCodecContext->coded_height;
 
   double aspect_ratio;
 
@@ -828,10 +828,10 @@ bool CDVDVideoCodecFFmpeg::GetPictureCommon(DVDVideoPicture* pDvdVideoPicture)
   if (pixel_aspect.num == 0)
     aspect_ratio = 0;
   else
-    aspect_ratio = av_q2d(pixel_aspect) * pDvdVideoPicture->iWidth / pDvdVideoPicture->iHeight;
+    aspect_ratio = av_q2d(pixel_aspect) * pVideoPicture->iWidth / pVideoPicture->iHeight;
 
   if (aspect_ratio <= 0.0)
-    aspect_ratio = (float)pDvdVideoPicture->iWidth / (float)pDvdVideoPicture->iHeight;
+    aspect_ratio = (float)pVideoPicture->iWidth / (float)pVideoPicture->iHeight;
 
   if (m_DAR != aspect_ratio)
   {
@@ -840,92 +840,92 @@ bool CDVDVideoCodecFFmpeg::GetPictureCommon(DVDVideoPicture* pDvdVideoPicture)
   }
 
   /* XXX: we suppose the screen has a 1.0 pixel ratio */ // CDVDVideo will compensate it.
-  pDvdVideoPicture->iDisplayHeight = pDvdVideoPicture->iHeight;
-  pDvdVideoPicture->iDisplayWidth  = ((int)RINT(pDvdVideoPicture->iHeight * aspect_ratio)) & -3;
-  if (pDvdVideoPicture->iDisplayWidth > pDvdVideoPicture->iWidth)
+  pVideoPicture->iDisplayHeight = pVideoPicture->iHeight;
+  pVideoPicture->iDisplayWidth  = ((int)RINT(pVideoPicture->iHeight * aspect_ratio)) & -3;
+  if (pVideoPicture->iDisplayWidth > pVideoPicture->iWidth)
   {
-    pDvdVideoPicture->iDisplayWidth  = pDvdVideoPicture->iWidth;
-    pDvdVideoPicture->iDisplayHeight = ((int)RINT(pDvdVideoPicture->iWidth / aspect_ratio)) & -3;
+    pVideoPicture->iDisplayWidth  = pVideoPicture->iWidth;
+    pVideoPicture->iDisplayHeight = ((int)RINT(pVideoPicture->iWidth / aspect_ratio)) & -3;
   }
 
 
-  pDvdVideoPicture->pts = DVD_NOPTS_VALUE;
+  pVideoPicture->pts = DVD_NOPTS_VALUE;
 
   AVDictionaryEntry * entry = av_dict_get(av_frame_get_metadata(m_pFrame), "stereo_mode", NULL, 0);
   if(entry && entry->value)
   {
-    strncpy(pDvdVideoPicture->stereo_mode, (const char*)entry->value, sizeof(pDvdVideoPicture->stereo_mode));
-    pDvdVideoPicture->stereo_mode[sizeof(pDvdVideoPicture->stereo_mode)-1] = '\0';
+    strncpy(pVideoPicture->stereo_mode, (const char*)entry->value, sizeof(pVideoPicture->stereo_mode));
+    pVideoPicture->stereo_mode[sizeof(pVideoPicture->stereo_mode)-1] = '\0';
   }
 
-  pDvdVideoPicture->iRepeatPicture = 0.5 * m_pFrame->repeat_pict;
-  pDvdVideoPicture->iFlags = DVP_FLAG_ALLOCATED;
-  pDvdVideoPicture->iFlags |= m_pFrame->interlaced_frame ? DVP_FLAG_INTERLACED : 0;
-  pDvdVideoPicture->iFlags |= m_pFrame->top_field_first ? DVP_FLAG_TOP_FIELD_FIRST: 0;
+  pVideoPicture->iRepeatPicture = 0.5 * m_pFrame->repeat_pict;
+  pVideoPicture->iFlags = DVP_FLAG_ALLOCATED;
+  pVideoPicture->iFlags |= m_pFrame->interlaced_frame ? DVP_FLAG_INTERLACED : 0;
+  pVideoPicture->iFlags |= m_pFrame->top_field_first ? DVP_FLAG_TOP_FIELD_FIRST: 0;
 
   if (m_codecControlFlags & DVD_CODEC_CTRL_DROP)
-    pDvdVideoPicture->iFlags |= DVP_FLAG_DROPPED;
+    pVideoPicture->iFlags |= DVP_FLAG_DROPPED;
 
-  pDvdVideoPicture->chroma_position = m_pCodecContext->chroma_sample_location;
-  pDvdVideoPicture->color_primaries = m_pCodecContext->color_primaries;
-  pDvdVideoPicture->color_transfer = m_pCodecContext->color_trc;
-  pDvdVideoPicture->color_matrix = m_pCodecContext->colorspace;
+  pVideoPicture->chroma_position = m_pCodecContext->chroma_sample_location;
+  pVideoPicture->color_primaries = m_pCodecContext->color_primaries;
+  pVideoPicture->color_transfer = m_pCodecContext->color_trc;
+  pVideoPicture->color_matrix = m_pCodecContext->colorspace;
   if(m_pCodecContext->color_range == AVCOL_RANGE_JPEG
   || m_pCodecContext->pix_fmt     == AV_PIX_FMT_YUVJ420P)
-    pDvdVideoPicture->color_range = 1;
+    pVideoPicture->color_range = 1;
   else
-    pDvdVideoPicture->color_range = 0;
+    pVideoPicture->color_range = 0;
 
   int qscale_type;
-  pDvdVideoPicture->qp_table = av_frame_get_qp_table(m_pFrame, &pDvdVideoPicture->qstride, &qscale_type);
+  pVideoPicture->qp_table = av_frame_get_qp_table(m_pFrame, &pVideoPicture->qstride, &qscale_type);
 
   switch (qscale_type)
   {
   case FF_QSCALE_TYPE_MPEG1:
-    pDvdVideoPicture->qscale_type = DVP_QSCALE_MPEG1;
+    pVideoPicture->qscale_type = DVP_QSCALE_MPEG1;
     break;
   case FF_QSCALE_TYPE_MPEG2:
-    pDvdVideoPicture->qscale_type = DVP_QSCALE_MPEG2;
+    pVideoPicture->qscale_type = DVP_QSCALE_MPEG2;
     break;
   case FF_QSCALE_TYPE_H264:
-    pDvdVideoPicture->qscale_type = DVP_QSCALE_H264;
+    pVideoPicture->qscale_type = DVP_QSCALE_H264;
     break;
   default:
-    pDvdVideoPicture->qscale_type = DVP_QSCALE_UNKNOWN;
+    pVideoPicture->qscale_type = DVP_QSCALE_UNKNOWN;
   }
 
-  if (pDvdVideoPicture->iRepeatPicture)
-    pDvdVideoPicture->dts = DVD_NOPTS_VALUE;
+  if (pVideoPicture->iRepeatPicture)
+    pVideoPicture->dts = DVD_NOPTS_VALUE;
   else
-    pDvdVideoPicture->dts = m_dts;
+    pVideoPicture->dts = m_dts;
 
   m_dts = DVD_NOPTS_VALUE;
 
   int64_t bpts = av_frame_get_best_effort_timestamp(m_pFrame);
   if (bpts != AV_NOPTS_VALUE)
   {
-    pDvdVideoPicture->pts = (double)bpts * DVD_TIME_BASE / AV_TIME_BASE;
-    if (pDvdVideoPicture->pts == m_decoderPts)
+    pVideoPicture->pts = (double)bpts * DVD_TIME_BASE / AV_TIME_BASE;
+    if (pVideoPicture->pts == m_decoderPts)
     {
-      pDvdVideoPicture->iRepeatPicture = -0.5;
-      pDvdVideoPicture->pts = DVD_NOPTS_VALUE;
-      pDvdVideoPicture->dts = DVD_NOPTS_VALUE;
+      pVideoPicture->iRepeatPicture = -0.5;
+      pVideoPicture->pts = DVD_NOPTS_VALUE;
+      pVideoPicture->dts = DVD_NOPTS_VALUE;
     }
   }
   else
-    pDvdVideoPicture->pts = DVD_NOPTS_VALUE;
+    pVideoPicture->pts = DVD_NOPTS_VALUE;
 
-  if (pDvdVideoPicture->pts != DVD_NOPTS_VALUE)
-    m_decoderPts = pDvdVideoPicture->pts;
+  if (pVideoPicture->pts != DVD_NOPTS_VALUE)
+    m_decoderPts = pVideoPicture->pts;
 
   if (m_requestSkipDeint)
   {
-    pDvdVideoPicture->iFlags |= DVD_CODEC_CTRL_SKIPDEINT;
+    pVideoPicture->iFlags |= DVD_CODEC_CTRL_SKIPDEINT;
     m_skippedDeint++;
   }
 
   m_requestSkipDeint = false;
-  pDvdVideoPicture->iFlags |= m_codecControlFlags;
+  pVideoPicture->iFlags |= m_codecControlFlags;
 
   return true;
 }

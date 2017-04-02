@@ -753,8 +753,8 @@ void OMXPlayerVideo::ResolutionUpdateCallBack(uint32_t width, uint32_t height, f
   CLog::Log(LOGDEBUG,"%s - change configuration. video:%dx%d. framerate: %4.2f. %dx%d format: BYPASS",
       __FUNCTION__, video_width, video_height, m_fFrameRate, iDisplayWidth, iDisplayHeight);
 
-  DVDVideoPicture picture;
-  memset(&picture, 0, sizeof(DVDVideoPicture));
+  VideoPicture picture;
+  memset(&picture, 0, sizeof(VideoPicture));
 
   picture.iWidth = width;
   picture.iHeight = height;

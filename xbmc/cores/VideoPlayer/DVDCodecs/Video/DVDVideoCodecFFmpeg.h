@@ -46,7 +46,7 @@ public:
   virtual bool AddData(const DemuxPacket &packet) override;
   virtual void Reset() override;
   virtual void Reopen() override;
-  virtual CDVDVideoCodec::VCReturn GetPicture(DVDVideoPicture* pDvdVideoPicture) override;
+  virtual CDVDVideoCodec::VCReturn GetPicture(VideoPicture* pVideoPicture) override;
   virtual const char* GetName() override { return m_name.c_str(); }; // m_name is never changed after open
   virtual unsigned GetConvergeCount() override;
   virtual unsigned GetAllowedReferences() override;
@@ -54,7 +54,7 @@ public:
   virtual void SetCodecControl(int flags) override;
 
   virtual IHardwareDecoder* GetHWAccel() override;
-  virtual bool GetPictureCommon(DVDVideoPicture* pDvdVideoPicture) override;
+  virtual bool GetPictureCommon(VideoPicture* pVideoPicture) override;
 
 protected:
   void Dispose();
@@ -65,7 +65,7 @@ protected:
   CDVDVideoCodec::VCReturn FilterProcess(AVFrame* frame);
   void SetFilters();
   void UpdateName();
-  bool SetPictureParams(DVDVideoPicture* pDvdVideoPicture);
+  bool SetPictureParams(VideoPicture* pVideoPicture);
 
   IHardwareDecoder* CreateVideoDecoderHW(AVPixelFormat pixfmt, CProcessInfo &processInfo);
   bool HasHardware() { return m_pHardware != nullptr; };

@@ -96,8 +96,8 @@ public:
   virtual bool Open(CDVDStreamInfo &hints, CDVDCodecOptions &options);
   virtual bool AddData(const DemuxPacket &packet);
   virtual void Reset(void);
-  virtual CDVDVideoCodec::VCReturn GetPicture(DVDVideoPicture *pDvdVideoPicture);
-  virtual bool ClearPicture(DVDVideoPicture* pDvdVideoPicture);
+  virtual CDVDVideoCodec::VCReturn GetPicture(VideoPicture *pVideoPicture);
+  virtual bool ClearPicture(VideoPicture* pVideoPicture);
   virtual unsigned GetAllowedReferences() { return 4; }
   virtual const char* GetName(void) { return m_pFormatName ? m_pFormatName:"mmal-xxx"; }
   virtual bool GetCodecStats(double &pts, int &droppedPics);

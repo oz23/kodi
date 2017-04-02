@@ -109,7 +109,7 @@ bool CRetroPlayerVideo::OpenEncodedStream(AVCodecID codec)
 
 void CRetroPlayerVideo::AddData(const uint8_t* data, unsigned int size)
 {
-  DVDVideoPicture picture = { };
+  VideoPicture picture = { };
 
   if (GetPicture(data, size, picture))
   {
@@ -131,7 +131,7 @@ void CRetroPlayerVideo::CloseStream()
   m_pixelConverter.reset();
 }
 
-bool CRetroPlayerVideo::Configure(DVDVideoPicture& picture)
+bool CRetroPlayerVideo::Configure(VideoPicture& picture)
 {
   if (!m_bConfigured)
   {
@@ -160,7 +160,7 @@ bool CRetroPlayerVideo::Configure(DVDVideoPicture& picture)
   return m_bConfigured;
 }
 
-bool CRetroPlayerVideo::GetPicture(const uint8_t* data, unsigned int size, DVDVideoPicture& picture)
+bool CRetroPlayerVideo::GetPicture(const uint8_t* data, unsigned int size, VideoPicture& picture)
 {
   bool bHasPicture = false;
 
@@ -187,7 +187,7 @@ bool CRetroPlayerVideo::GetPicture(const uint8_t* data, unsigned int size, DVDVi
   return bHasPicture;
 }
 
-void CRetroPlayerVideo::SendPicture(DVDVideoPicture& picture)
+void CRetroPlayerVideo::SendPicture(VideoPicture& picture)
 {
   std::atomic_bool bAbortOutput(false); //! @todo
 

@@ -100,8 +100,8 @@ public:
   virtual bool AddData(const DemuxPacket &packet) override;
   virtual void Reset() override;
   virtual bool Reconfigure(CDVDStreamInfo &hints) override;
-  virtual VCReturn GetPicture(DVDVideoPicture* pDvdVideoPicture) override;
-  virtual bool ClearPicture(DVDVideoPicture* pDvdVideoPicture) override;
+  virtual VCReturn GetPicture(VideoPicture* pVideoPicture) override;
+  virtual bool ClearPicture(VideoPicture* pVideoPicture) override;
   virtual const char* GetName() override { return m_formatname.c_str(); };
   virtual void SetCodecControl(int flags) override;
   virtual unsigned GetAllowedReferences() override;
@@ -149,7 +149,7 @@ protected:
   static std::atomic<bool> m_InstanceGuard;
 
   CBitstreamConverter *m_bitstream;
-  DVDVideoPicture m_videobuffer;
+  VideoPicture m_videobuffer;
 
   int             m_indexInputBuffer;
   bool            m_render_sw;
