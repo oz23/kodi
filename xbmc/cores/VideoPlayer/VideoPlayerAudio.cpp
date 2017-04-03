@@ -89,7 +89,7 @@ CVideoPlayerAudio::~CVideoPlayerAudio()
   // CloseStream(true);
 }
 
-bool CVideoPlayerAudio::OpenStream(CDVDStreamInfo &hints)
+bool CVideoPlayerAudio::OpenStream(CDVDStreamInfo hints)
 {
   m_processInfo.ResetAudioCodecInfo();
 

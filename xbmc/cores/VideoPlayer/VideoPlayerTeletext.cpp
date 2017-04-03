@@ -118,7 +118,7 @@ bool CDVDTeletextData::CheckStream(CDVDStreamInfo &hints)
   return false;
 }
 
-bool CDVDTeletextData::OpenStream(CDVDStreamInfo &hints)
+bool CDVDTeletextData::OpenStream(CDVDStreamInfo hints)
 {
   CloseStream(true);
 

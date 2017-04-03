@@ -117,8 +117,13 @@ double CVideoPlayerVideo::GetOutputDelay()
     return time;
 }
 
-bool CVideoPlayerVideo::OpenStream(CDVDStreamInfo &hint)
+bool CVideoPlayerVideo::OpenStream(CDVDStreamInfo hint)
 {
+  if (m_pVideoCodec && !m_processInfo.IsVideoHwDecoder())
+  {
+    hint.codecOptions |= CODEC_ALLOW_FALLBACK;
+  }
+
   m_processInfo.ResetVideoCodecInfo();
 
   CRenderInfo info;

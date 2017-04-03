@@ -41,7 +41,7 @@ public:
   CVideoPlayerAudio(CDVDClock* pClock, CDVDMessageQueue& parent, CProcessInfo &processInfo);
   virtual ~CVideoPlayerAudio();
 
-  bool OpenStream(CDVDStreamInfo &hints);
+  bool OpenStream(CDVDStreamInfo hints);
   void CloseStream(bool bWaitForBuffers);
 
   void SetSpeed(int speed);

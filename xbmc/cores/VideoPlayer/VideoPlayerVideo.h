@@ -66,7 +66,7 @@ public:
                  CProcessInfo &processInfo);
   virtual ~CVideoPlayerVideo();
 
-  bool OpenStream(CDVDStreamInfo &hint) override;
+  bool OpenStream(CDVDStreamInfo hint) override;
   void CloseStream(bool bWaitForBuffers) override;
   void Flush(bool sync) override;
   bool AcceptsData() const override;
