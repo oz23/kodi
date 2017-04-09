@@ -177,7 +177,7 @@ void CPeripheralBusAddon::ProcessEvents(void)
     addon->ProcessEvents();
 }
 
-bool CPeripheralBusAddon::EnableButtonMapping()
+void CPeripheralBusAddon::EnableButtonMapping()
 {
   using namespace ADDON;
 
@@ -186,12 +186,10 @@ bool CPeripheralBusAddon::EnableButtonMapping()
   AddonInfoPtr dummy;
   if (!GetAddonWithButtonMap(dummy))
   {
-    AddonInfos addons;
-    CAddonMgr::GetInstance().GetDisabledAddonInfos(addons, ADDON_PERIPHERALDLL);
-    return PromptEnableAddons(addons);
+    AddonInfos disabledAddons;
+    CAddonMgr::GetInstance().GetDisabledAddonInfos(disabledAddons, ADDON_PERIPHERALDLL);
+    PromptEnableAddons(disabledAddons);
   }
-
-  return true;
 }
 
 void CPeripheralBusAddon::PowerOff(const std::string& strLocation)
@@ -460,7 +458,7 @@ void CPeripheralBusAddon::UpdateAddons(void)
   }
 }
 
-bool CPeripheralBusAddon::PromptEnableAddons(const ADDON::AddonInfos& disabledAddons)
+void CPeripheralBusAddon::PromptEnableAddons(const ADDON::AddonInfos& disabledAddons)
 {
   using namespace ADDON;
   using namespace MESSAGING::HELPERS;
@@ -489,7 +487,4 @@ bool CPeripheralBusAddon::PromptEnableAddons(const ADDON::AddonInfos& disabledAd
         CAddonMgr::GetInstance().EnableAddon(addonInfo->ID());
     }
   }
-
-  AddonInfoPtr dummy;
-  return GetAddonWithButtonMap(dummy);
 }

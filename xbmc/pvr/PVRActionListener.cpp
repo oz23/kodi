@@ -47,6 +47,7 @@ CPVRActionListener::CPVRActionListener()
     CSettings::SETTING_PVRMANAGER_CHANNELSCAN,
     CSettings::SETTING_PVRMENU_SEARCHICONS,
     CSettings::SETTING_PVRCLIENT_MENUHOOK,
+    CSettings::SETTING_EPG_DAYSTODISPLAY
   });
 }
 
@@ -119,8 +120,8 @@ bool CPVRActionListener::OnAction(const CAction &action)
 
         int iRemote = bIsJumpSMS ? action.GetID() - (ACTION_JUMP_SMS2 - REMOTE_2) : action.GetID();
         CServiceBroker::GetPVRManager().GUIActions()->GetChannelNumberInputHandler().AppendChannelNumberDigit(iRemote - REMOTE_0);
+        return true;
       }
-      return true;
     }
     break;
   }
@@ -145,6 +146,10 @@ void CPVRActionListener::OnSettingChanged(const CSetting *setting)
       else
         dynamic_cast<CSettingBool*>(const_cast<CSetting*>(setting))->SetValue(false);
     }
+  }
+  else if (settingId == CSettings::SETTING_EPG_DAYSTODISPLAY)
+  {
+    CServiceBroker::GetPVRManager().Clients()->SetEPGTimeFrame(static_cast<const CSettingInt*>(setting)->GetValue());
   }
 }
 

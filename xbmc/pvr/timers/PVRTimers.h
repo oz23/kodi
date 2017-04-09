@@ -24,6 +24,7 @@
 #include <vector>
 
 #include "addons/kodi-addon-dev-kit/include/kodi/xbmc_pvr_types.h"
+#include "pvr/PVRSettings.h"
 #include "PVRTimerInfoTag.h"
 #include "utils/Observer.h"
 #include "XBDateTime.h"
@@ -72,6 +73,8 @@ namespace PVR
     const MapTags& GetTags() const { return m_tags; }
 
   protected:
+    void InsertTimer(const CPVRTimerInfoTagPtr &newTimer);
+
     CCriticalSection m_critSection;
     unsigned int m_iLastId;
     MapTags m_tags;
@@ -301,6 +304,7 @@ namespace PVR
     int AmountActiveRecordings(const TimerKind &eKind) const;
 
     bool m_bIsUpdating;
+    CPVRSettings m_settings;
   };
 
   class CPVRTimersPath
