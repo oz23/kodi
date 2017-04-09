@@ -465,8 +465,8 @@ void CInputStreamAddon::UpdateStreams()
     }
     else if (stream.m_streamType == INPUTSTREAM_INFO::TYPE_SUBTITLE)
     {
-      //! @todo needs identifier in INPUTSTREAM_INFO
-      continue;
+      CDemuxStreamSubtitle *subtitleStream = new CDemuxStreamSubtitle();
+      demuxStream = subtitleStream;
     }
     else
       continue;
