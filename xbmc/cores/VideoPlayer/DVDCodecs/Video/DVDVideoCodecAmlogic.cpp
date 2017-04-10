@@ -238,7 +238,7 @@ bool CDVDVideoCodecAmlogic::Open(CDVDStreamInfo &hints, CDVDCodecOptions &option
   m_videobuffer.iFlags  = DVP_FLAG_ALLOCATED;
   m_videobuffer.iWidth  = m_hints.width;
   m_videobuffer.iHeight = m_hints.height;
-  m_videobuffer.amlcodec = NULL;
+  m_videobuffer.hwPic = NULL;
 
   m_videobuffer.iDisplayWidth  = m_videobuffer.iWidth;
   m_videobuffer.iDisplayHeight = m_videobuffer.iHeight;
@@ -375,7 +375,7 @@ CDVDVideoCodec::VCReturn CDVDVideoCodecAmlogic::GetPicture(VideoPicture* pVideoP
     m_inflight.insert(info);
   }
 
-  pVideoPicture->amlcodec = info->Retain();
+  pVideoPicture->hwPic = info->Retain();
 
   // check for mpeg2 aspect ratio changes
   if (m_mpeg2_sequence && pVideoPicture->pts >= m_mpeg2_sequence_pts)
@@ -398,7 +398,11 @@ CDVDVideoCodec::VCReturn CDVDVideoCodecAmlogic::GetPicture(VideoPicture* pVideoP
 
 bool CDVDVideoCodecAmlogic::ClearPicture(VideoPicture *pVideoPicture)
 {
-  SAFE_RELEASE(pVideoPicture->amlcodec);
+  if (pVideoPicture->hwPic)
+  {
+    static_cast<CDVDAmlogicInfo*>(pVideoPicture->hwPic)->Release();
+    pVideoPicture->hwPic = nullptr;
+  }
   return true;
 }
 
