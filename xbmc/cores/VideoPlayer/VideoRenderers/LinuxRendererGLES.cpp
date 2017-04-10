@@ -158,7 +158,7 @@ bool CLinuxRendererGLES::ValidateRenderTarget()
   return false;
 }
 
-bool CLinuxRendererGLES::Configure(unsigned int width, unsigned int height, unsigned int d_width, unsigned int d_height, float fps, unsigned flags, ERenderFormat format, unsigned extended_format, unsigned int orientation)
+bool CLinuxRendererGLES::Configure(unsigned int width, unsigned int height, unsigned int d_width, unsigned int d_height, float fps, unsigned flags, ERenderFormat format, void* hwPic, unsigned int orientation)
 {
   m_sourceWidth = width;
   m_sourceHeight = height;
@@ -613,8 +613,9 @@ void CLinuxRendererGLES::LoadShaders(int field)
           // create regular scan shader
           CLog::Log(LOGNOTICE, "GL: Selecting Single Pass YUV 2 RGB shader");
 
-          m_pYUVProgShader = new YUV2RGBProgressiveShader(false, m_iFlags, m_format);
-          m_pYUVBobShader = new YUV2RGBBobShader(false, m_iFlags, m_format);
+          EShaderFormat shaderFormat = GetShaderFormat(m_format);
+          m_pYUVProgShader = new YUV2RGBProgressiveShader(false, m_iFlags, shaderFormat);
+          m_pYUVBobShader = new YUV2RGBBobShader(false, m_iFlags, shaderFormat);
           if ((m_pYUVProgShader && m_pYUVProgShader->CompileAndLink())
               && (m_pYUVBobShader && m_pYUVBobShader->CompileAndLink()))
           {
