@@ -398,8 +398,11 @@ CDVDVideoCodec::VCReturn CDVDVideoCodecAmlogic::GetPicture(VideoPicture* pVideoP
 
 bool CDVDVideoCodecAmlogic::ClearPicture(VideoPicture *pVideoPicture)
 {
-  static_cast<CDVDAmlogicInfo*>(pVideoPicture->hwPic)->Release();
-  pVideoPicture->hwPic = nullptr;
+  if (pVideoPicture->hwPic)
+  {
+    static_cast<CDVDAmlogicInfo*>(pVideoPicture->hwPic)->Release();
+    pVideoPicture->hwPic = nullptr;
+  }
   return true;
 }
 
