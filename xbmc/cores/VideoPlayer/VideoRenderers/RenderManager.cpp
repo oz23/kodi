@@ -1133,39 +1133,7 @@ int CRenderManager::AddVideoPicture(VideoPicture& pic)
   if (!m_pRenderer)
     return -1;
 
-  YuvImage image;
-  if (m_pRenderer->GetImage(&image, index) < 0)
-    return -1;
-
-  if(pic.format == RENDER_FMT_VDPAU
-  || pic.format == RENDER_FMT_CVBREF
-  || pic.format == RENDER_FMT_VAAPI
-  || pic.format == RENDER_FMT_MEDIACODEC
-  || pic.format == RENDER_FMT_MEDIACODECSURFACE
-  || pic.format == RENDER_FMT_AML
-  || pic.format == RENDER_FMT_IMXMAP
-  || pic.format == RENDER_FMT_MMAL
-  || m_pRenderer->IsPictureHW(pic))
-  {
-    m_pRenderer->AddVideoPictureHW(pic, index);
-  }
-  else if(pic.format == RENDER_FMT_YUV420P
-       || pic.format == RENDER_FMT_YUV420P10
-       || pic.format == RENDER_FMT_YUV420P16)
-  {
-    CDVDCodecUtils::CopyPicture(&image, &pic);
-  }
-  else if(pic.format == RENDER_FMT_NV12)
-  {
-    CDVDCodecUtils::CopyNV12Picture(&image, &pic);
-  }
-  else if(pic.format == RENDER_FMT_YUYV422
-       || pic.format == RENDER_FMT_UYVY422)
-  {
-    CDVDCodecUtils::CopyYUV422PackedPicture(&image, &pic);
-  }
-
-  m_pRenderer->ReleaseImage(index, false);
+  m_pRenderer->AddVideoPicture(pic, index);
 
   return index;
 }
