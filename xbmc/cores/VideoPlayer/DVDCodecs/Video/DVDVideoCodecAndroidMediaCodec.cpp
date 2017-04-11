@@ -33,8 +33,10 @@
 #include <androidjni/MediaFormat.h>
 #include <androidjni/MediaCodecList.h>
 #include <androidjni/MediaCodecInfo.h>
+#include <androidjni/MediaCodecCryptoInfo.h>
 #include <androidjni/Surface.h>
 #include <androidjni/SurfaceTexture.h>
+#include <androidjni/UUID.h>
 
 #include "Application.h"
 #include "ServiceBroker.h"
@@ -711,7 +713,7 @@ void CDVDVideoCodecAndroidMediaCodec::Dispose()
   m_videobuffer.iFlags = 0;
   // m_videobuffer.mediacodec is unioned with m_videobuffer.data[0]
   // so be very careful when and how you touch it.
-  m_videobuffer.mediacodec = NULL;
+  m_videobuffer.hwPic = NULL;
 
   if (m_codec)
   {
@@ -888,7 +890,7 @@ void CDVDVideoCodecAndroidMediaCodec::Reset()
     // Invalidate our local VideoPicture bits
     m_videobuffer.pts = DVD_NOPTS_VALUE;
     if (!m_render_sw)
-      m_videobuffer.mediacodec = NULL;
+      m_videobuffer.hwPic = NULL;
 
     m_indexInputBuffer = -1;
     m_checkForPicture = false;
@@ -918,7 +920,7 @@ CDVDVideoCodec::VCReturn CDVDVideoCodecAndroidMediaCodec::GetPicture(VideoPictur
       // Invalidate our local VideoPicture bits
       m_videobuffer.pts = DVD_NOPTS_VALUE;
       if (!m_render_sw)
-        m_videobuffer.mediacodec = NULL;
+        m_videobuffer.hwPic = NULL;
 
       if (g_advancedSettings.CanLogComponent(LOGVIDEO))
         CLog::Log(LOGDEBUG, "CDVDVideoCodecAndroidMediaCodec::GetPicture pts:%0.4lf", pVideoPicture->pts);
@@ -958,8 +960,8 @@ CDVDVideoCodec::VCReturn CDVDVideoCodecAndroidMediaCodec::GetPicture(VideoPictur
 
 bool CDVDVideoCodecAndroidMediaCodec::ClearPicture(VideoPicture* pVideoPicture)
 {
-  if (pVideoPicture->format == RENDER_FMT_MEDIACODEC || pVideoPicture->format == RENDER_FMT_MEDIACODECSURFACE)
-    SAFE_RELEASE(pVideoPicture->mediacodec);
+  if (pVideoPicture->hwPic && (pVideoPicture->format == RENDER_FMT_MEDIACODEC || pVideoPicture->format == RENDER_FMT_MEDIACODECSURFACE))
+    static_cast<CDVDMediaCodecInfo*>(pVideoPicture->hwPic)->Release();
   memset(pVideoPicture, 0x00, sizeof(VideoPicture));
 
   return true;
@@ -1143,7 +1145,7 @@ int CDVDVideoCodecAndroidMediaCodec::GetOutputPicture(void)
         xbmc_jnienv()->ExceptionClear();
         return -2;
       }
-      m_videobuffer.mediacodec = nullptr;
+      m_videobuffer.hwPic = nullptr;
       return 1;
     }
 
@@ -1159,8 +1161,8 @@ int CDVDVideoCodecAndroidMediaCodec::GetOutputPicture(void)
         m_inflight.push_back(
           new CDVDMediaCodecInfo(index, m_textureId, m_codec, m_surfaceTexture, m_frameAvailable)
         );
-      m_videobuffer.mediacodec = m_inflight[i]->Retain();
-      m_videobuffer.mediacodec->Validate(true);
+      m_videobuffer.hwPic = m_inflight[i]->Retain();
+      static_cast<CDVDMediaCodecInfo*>(m_videobuffer.hwPic)->Validate(true);
     }
     else
     {

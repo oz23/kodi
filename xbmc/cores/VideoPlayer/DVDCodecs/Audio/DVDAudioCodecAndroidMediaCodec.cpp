@@ -33,16 +33,16 @@
 #include "settings/AdvancedSettings.h"
 #include "cores/VideoPlayer/DVDDemuxers/DemuxCrypto.h"
 
-#include "platform/android/jni/ByteBuffer.h"
-#include "platform/android/jni/MediaCodec.h"
-#include "platform/android/jni/MediaCrypto.h"
-#include "platform/android/jni/MediaFormat.h"
-#include "platform/android/jni/MediaCodecList.h"
-#include "platform/android/jni/MediaCodecInfo.h"
-#include "platform/android/jni/MediaCodecCryptoInfo.h"
+#include <androidjni/ByteBuffer.h>
+#include <androidjni/MediaCodec.h>
+#include <androidjni/MediaCrypto.h>
+#include <androidjni/MediaFormat.h>
+#include <androidjni/MediaCodecList.h>
+#include <androidjni/MediaCodecInfo.h>
+#include <androidjni/MediaCodecCryptoInfo.h>
 #include "platform/android/activity/AndroidFeatures.h"
-#include "platform/android/jni/UUID.h"
-#include "platform/android/jni/Surface.h"
+#include <androidjni/UUID.h>
+#include <androidjni/Surface.h>
 
 #include "utils/StringUtils.h"
 
