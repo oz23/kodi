@@ -50,9 +50,9 @@ void CRendererMediaCodecSurface::AddVideoPictureHW(VideoPicture &picture, int in
 #endif
 
   YUVBUFFER &buf = m_buffers[index];
-  if (picture.mediacodec)
+  if (picture.hwPic)
   {
-    buf.hwDec = picture.mediacodec->Retain();
+    buf.hwDec = static_cast<CDVDMediaCodecInfo*>(picture.hwPic)->Retain();
 #ifdef DEBUG_VERBOSE
     mindex = ((CDVDMediaCodecInfo *)buf.hwDec)->GetIndex();
 #endif
