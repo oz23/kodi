@@ -10677,7 +10677,19 @@ msgctxt "#19296"
 msgid "No PVR add-on enabled"
 msgstr ""
 
-#empty strings from id 19297 to 19498
+#. 'timeline' label used in pvr guide window
+#: addons/skin.estuary/xml/MyPVRGuide.xml
+msgctxt "#19297"
+msgid "Vertical"
+msgstr ""
+
+#. 'timeline' label used in pvr guide window
+#: addons/skin.estuary/xml/MyPVRGuide.xml
+msgctxt "#19298"
+msgid "Horizontal"
+msgstr ""
+
+#empty strings from id 19299 to 19498
 
 #. label for epg genre value
 #: xbmc/epg/Epg.cpp
@@ -12863,7 +12875,7 @@ msgstr ""
 
 #: system/settings/settings.xml
 msgctxt "#20433"
-msgid "Extract thumbnails and video information"
+msgid "Extract video information from files"
 msgstr ""
 
 #: xbmc/dialogs/GUIDialogSmartPlaylistRule.cpp
@@ -17699,7 +17711,7 @@ msgstr ""
 #. Description of setting with label #20433 "Extract thumbnails and video information"
 #: system/settings/settings.xml
 msgctxt "#36178"
-msgid "Extract thumbnails and metadata information such as codec and aspect ratio from videos."
+msgid "Extract metadata information such as codec and aspect ratio from videos."
 msgstr ""
 
 #. Description of setting with label #20419 "Replace file names with library titles"
@@ -17711,7 +17723,7 @@ msgstr ""
 #. Description of setting with label #20433 "Extract thumbnails and video information"
 #: system/settings/settings.xml
 msgctxt "#36180"
-msgid "Extract thumbnails and information, such as codecs and aspect ratio, to display in library mode."
+msgid "Extract thumbnails to display in library mode."
 msgstr ""
 
 #: system/settings/settings.xml
@@ -20438,4 +20450,8 @@ msgstr ""
 #: xbmc/music/windows/GUIWindowMusicBase.cpp
 msgctxt "#39016"
 msgid "Resume audiobook"
+msgstr ""
+
+msgctxt "#38190"
+msgid "Extract thumbnails from video files"
 msgstr ""
