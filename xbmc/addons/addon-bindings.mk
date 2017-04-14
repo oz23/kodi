@@ -1,8 +1,8 @@
 # Please also update bindings in ../../cmake/scripts/linux/Install.cmake
-# TODO: Cleanup file after autotools is gone
+# Keep this in alphabetical order
 
-BINDINGS =xbmc/cores/VideoPlayer/DVDDemuxers/DVDDemuxPacket.h
-BINDINGS+=xbmc/cores/VideoPlayer/DVDDemuxers/DemuxCrypto.h
-BINDINGS+=xbmc/cores/AudioEngine/Utils/AEChannelData.h
-BINDINGS+=xbmc/filesystem/IFileTypes.h
-BINDINGS+=xbmc/input/XBMC_vkeys.h
+xbmc/cores/VideoPlayer/DVDDemuxers/DVDDemuxPacket.h
+xbmc/cores/VideoPlayer/DVDDemuxers/DemuxCrypto.h
+xbmc/cores/AudioEngine/Utils/AEChannelData.h
+xbmc/filesystem/IFileTypes.h
+xbmc/input/XBMC_vkeys.h
