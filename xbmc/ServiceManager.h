@@ -56,6 +56,7 @@ class XBPython;
 class CDataCacheCore;
 class CSettings;
 class IAE;
+class CFavouritesService;
 
 namespace GAME
 {
@@ -102,6 +103,7 @@ public:
   int init_level = 0;
 
   CSettings& GetSettings();
+  CFavouritesService& GetFavouritesService();
 
 protected:
   struct delete_dataCacheCore
@@ -117,6 +119,11 @@ protected:
   struct delete_activeAE
   {
     void operator()(ActiveAE::CActiveAE *p) const;
+  };
+
+  struct delete_favouritesService
+  {
+    void operator()(CFavouritesService *p) const;
   };
 
   std::unique_ptr<ADDON::CAddonMgr> m_addonMgr;
@@ -136,4 +143,5 @@ protected:
   std::unique_ptr<CSettings> m_settings;
   std::unique_ptr<GAME::CGameServices> m_gameServices;
   std::unique_ptr<PERIPHERALS::CPeripherals> m_peripherals;
+  std::unique_ptr<CFavouritesService, delete_favouritesService> m_favouritesService;
 };

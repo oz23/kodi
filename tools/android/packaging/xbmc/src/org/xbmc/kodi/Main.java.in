@@ -31,6 +31,7 @@ public class Main extends NativeActivity implements Choreographer.FrameCallback
   private Intent mNewIntent = null;
 
   native void _onNewIntent(Intent intent);
+  native void _onActivityResult(int requestCode, int resultCode, Intent resultData);
   native void _doFrame(long frameTimeNanos);
 
   private Runnable leanbackUpdateRunnable = new Runnable()
@@ -46,7 +47,7 @@ public class Main extends NativeActivity implements Choreographer.FrameCallback
           mJsonRPC.updateLeanback(Main.this);
         }
       }.start();
-      handler.postDelayed(this, 60*60*1000);
+      handler.postDelayed(this, XBMCProperties.getIntProperty("xbmc.leanbackrefresh", 60*60) * 1000);
     }
   };
 
@@ -136,7 +137,13 @@ public class Main extends NativeActivity implements Choreographer.FrameCallback
     mSettingsContentObserver = new XBMCSettingsContentObserver(this, handler);
     getApplicationContext().getContentResolver().registerContentObserver(android.provider.Settings.System.CONTENT_URI, true, mSettingsContentObserver );
 
-    mJsonRPC = new XBMCJsonRPC();
+    if (getPackageManager().hasSystemFeature("android.software.leanback"))
+    {
+      // Leanback
+      mJsonRPC = new XBMCJsonRPC();
+      handler.removeCallbacks(leanbackUpdateRunnable);
+      handler.postDelayed(leanbackUpdateRunnable, 30*1000);
+    }
 
     // register the InputDeviceListener implementation
     mInputDeviceListener = new XBMCInputDeviceListener();
@@ -214,13 +221,6 @@ public class Main extends NativeActivity implements Choreographer.FrameCallback
               | API_SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
     }
 
-    if (getPackageManager().hasSystemFeature("android.software.leanback"))
-    {
-      // Leanback
-      handler.removeCallbacks(leanbackUpdateRunnable);
-      handler.postDelayed(leanbackUpdateRunnable, 10*1000);
-    }
-
     // New intent ?
     if (mNewIntent != null)
     {
@@ -247,6 +247,14 @@ public class Main extends NativeActivity implements Choreographer.FrameCallback
     super.onPause();
   }
   
+  @Override
+  public void onActivityResult(int requestCode, int resultCode,
+      Intent resultData)
+  {
+    _onActivityResult(requestCode, resultCode, resultData);
+  }
+
+  @Override
   public void onDestroy()
   {
     // unregister the InputDeviceListener implementation

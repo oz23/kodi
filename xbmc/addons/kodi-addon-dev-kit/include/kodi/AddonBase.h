@@ -26,9 +26,7 @@
 #include <string>
 #include <vector>
 
-#ifdef TARGET_WINDOWS
-#include <windows.h>
-#else
+#ifndef TARGET_WINDOWS
 #ifndef __cdecl
 #define __cdecl
 #endif
@@ -98,25 +96,25 @@ typedef enum ADDON_STATUS
 
 //==============================================================================
 /// @todo remove start with ADDON_* after old way on libXBMC_addon.h is removed
-/// 
+///
 typedef enum AddonLog
 {
-  /// 
+  ///
   ADDON_LOG_DEBUG = 0,
 
-  /// 
+  ///
   ADDON_LOG_INFO = 1,
 
-  /// 
+  ///
   ADDON_LOG_NOTICE = 2,
 
-  /// 
+  ///
   ADDON_LOG_WARNING = 3,
 
-  /// 
+  ///
   ADDON_LOG_ERROR = 4,
 
-  /// 
+  ///
   ADDON_LOG_SEVERE = 5,
 
   ///
@@ -252,7 +250,7 @@ public:
 
 //==============================================================================
 namespace kodi {
-/// 
+///
 class CSettingValue
 {
 public:
@@ -364,7 +362,7 @@ public:
 
 //==============================================================================
 namespace kodi {
-/// 
+///
 inline std::string GetAddonPath()
 {
   char* str = ::kodi::addon::CAddonBase::m_interface->toKodi.get_addon_path(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase);
@@ -377,7 +375,7 @@ inline std::string GetAddonPath()
 
 //==============================================================================
 namespace kodi {
-/// 
+///
 inline std::string GetBaseUserPath()
 {
   char* str = ::kodi::addon::CAddonBase::m_interface->toKodi.get_base_user_path(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase);
@@ -390,7 +388,7 @@ inline std::string GetBaseUserPath()
 
 //==============================================================================
 namespace kodi {
-/// 
+///
 inline std::string GetLibPath()
 {
   return ::kodi::addon::CAddonBase::m_interface->libBasePath;
@@ -400,7 +398,7 @@ inline std::string GetLibPath()
 
 //==============================================================================
 namespace kodi {
-/// 
+///
 inline void Log(const AddonLog loglevel, const char* format, ...)
 {
   char buffer[16384];

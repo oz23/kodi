@@ -22,10 +22,11 @@
 #include <map>
 
 #include "XBDateTime.h"
-#include "settings/lib/ISettingCallback.h"
 #include "threads/CriticalSection.h"
 #include "threads/Thread.h"
 #include "utils/Observer.h"
+
+#include "pvr/PVRSettings.h"
 
 #include "Epg.h"
 #include "EpgDatabase.h"
@@ -33,44 +34,34 @@
 class CFileItemList;
 class CGUIDialogProgressBarHandle;
 
-namespace EPG
+namespace PVR
 {
-  #define g_EpgContainer CEpgContainer::GetInstance()
-
   struct SUpdateRequest
   {
     int clientID;
     unsigned int channelID;
   };
 
-  class CEpgContainer : public Observer,
-                        public Observable,
-                        public ISettingCallback,
-                        private CThread
+  class CPVREpgContainer : public Observer, public Observable, private CThread
   {
-    friend class CEpgDatabase;
+    friend class CPVREpgDatabase;
 
   public:
     /*!
      * @brief Create a new EPG table container.
      */
-    CEpgContainer(void);
+    CPVREpgContainer(void);
 
     /*!
      * @brief Destroy this instance.
      */
-    virtual ~CEpgContainer(void);
-
-    /*!
-     * @return An instance of this singleton.
-     */
-    static CEpgContainer &GetInstance();
+    virtual ~CPVREpgContainer(void);
 
     /*!
      * @brief Get a pointer to the database instance.
      * @return A pointer to the database instance.
      */
-    CEpgDatabase *GetDatabase(void) { return &m_database; }
+    CPVREpgDatabase *GetDatabase(void) { return &m_database; }
 
     /*!
      * @brief Start the EPG update thread.
@@ -112,7 +103,7 @@ namespace EPG
      * @param bDeleteFromDatabase Delete this table from the database too if true.
      * @return
      */
-    bool DeleteEpg(const CEpg &epg, bool bDeleteFromDatabase = false);
+    bool DeleteEpg(const CPVREpg &epg, bool bDeleteFromDatabase = false);
 
     /*!
      * @brief Process a notification from an observable.
@@ -121,9 +112,7 @@ namespace EPG
      */
     virtual void Notify(const Observable &obs, const ObservableMessage msg) override;
 
-    virtual void OnSettingChanged(const CSetting *setting) override;
-
-    CEpgPtr CreateChannelEpg(const PVR::CPVRChannelPtr &channel);
+    CPVREpgPtr CreateChannelEpg(const PVR::CPVRChannelPtr &channel);
 
     /*!
      * @brief Get all EPG tables and apply a filter.
@@ -131,7 +120,7 @@ namespace EPG
      * @param filter The filter to apply.
      * @return The amount of entries that were added.
      */
-    int GetEPGSearch(CFileItemList &results, const CEpgSearchFilter &filter);
+    int GetEPGSearch(CFileItemList &results, const CPVREpgSearchFilter &filter);
 
     /*!
      * @brief Get the start time of the first entry.
@@ -150,7 +139,7 @@ namespace EPG
      * @param iEpgId The database ID of the table.
      * @return The table or NULL if it wasn't found.
      */
-    CEpgPtr GetById(int iEpgId) const;
+    CPVREpgPtr GetById(int iEpgId) const;
 
     /*!
      * @brief Get the EPG event with the given event id
@@ -158,14 +147,14 @@ namespace EPG
      * @param iBroadcastId The event id to get
      * @return The requested event, or an empty tag when not found
      */
-    CEpgInfoTagPtr GetTagById(const PVR::CPVRChannelPtr &channel, unsigned int iBroadcastId) const;
+    CPVREpgInfoTagPtr GetTagById(const PVR::CPVRChannelPtr &channel, unsigned int iBroadcastId) const;
 
     /*!
      * @brief Get the EPG events matching the given timer
      * @param timer The timer to get the matching events for.
      * @return The matching events, or an empty vector when no matching tag was found
      */
-    std::vector<CEpgInfoTagPtr> GetEpgTagsForTimer(const PVR::CPVRTimerInfoTagPtr &timer) const;
+    std::vector<CPVREpgInfoTagPtr> GetEpgTagsForTimer(const PVR::CPVRTimerInfoTagPtr &timer) const;
 
     /*!
      * @brief Notify EPG table observers when the currently active tag changed.
@@ -201,7 +190,7 @@ namespace EPG
     /*!
      * @return True to not to store EPG entries in the database.
      */
-    bool IgnoreDB(void) const { return m_bIgnoreDbForClient; }
+    bool IgnoreDB() const;
 
     /*!
      * @brief Wait for an EPG update to finish.
@@ -269,14 +258,7 @@ namespace EPG
 
     void InsertFromDatabase(int iEpgID, const std::string &strName, const std::string &strScraperName);
 
-    CEpgDatabase m_database;           /*!< the EPG database */
-
-    /** @name Configuration */
-    //@{
-    bool         m_bIgnoreDbForClient; /*!< don't save the EPG data in the database */
-    int          m_iDisplayTime;       /*!< hours of EPG data to fetch */
-    int          m_iUpdateTime;        /*!< update the full EPG after this period */
-    //@}
+    CPVREpgDatabase m_database; /*!< the EPG database */
 
     /** @name Class state properties */
     //@{
@@ -302,5 +284,6 @@ namespace EPG
 
   private:
     bool m_bUpdateNotificationPending; /*!< true while an epg updated notification to observers is pending. */
+    CPVRSettings m_settings;
   };
 }

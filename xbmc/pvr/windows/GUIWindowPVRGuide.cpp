@@ -18,12 +18,12 @@
  *
  */
 
+#include "GUIWindowPVRGuide.h"
+
 #include "ContextMenuManager.h"
 #include "dialogs/GUIDialogBusy.h"
-#include "epg/GUIEPGGridContainer.h"
 #include "GUIUserMessages.h"
 #include "ServiceBroker.h"
-#include "epg/EpgContainer.h"
 #include "view/GUIViewState.h"
 #include "input/Key.h"
 #include "messaging/ApplicationMessenger.h"
@@ -32,16 +32,16 @@
 #include "threads/SingleLock.h"
 #include "utils/log.h"
 #include "utils/StringUtils.h"
+
 #include "pvr/PVRGUIActions.h"
 #include "pvr/PVRManager.h"
 #include "pvr/addons/PVRClients.h"
 #include "pvr/channels/PVRChannelGroupsContainer.h"
+#include "pvr/epg/EpgContainer.h"
 #include "pvr/timers/PVRTimers.h"
-
-#include "GUIWindowPVRGuide.h"
+#include "pvr/windows/GUIEPGGridContainer.h"
 
 using namespace PVR;
-using namespace EPG;
 
 CGUIWindowPVRGuide::CGUIWindowPVRGuide(bool bRadio) :
   CGUIWindowPVRBase(bRadio, bRadio ? WINDOW_RADIO_GUIDE : WINDOW_TV_GUIDE, "MyPVRGuide.xml"),
@@ -49,12 +49,12 @@ CGUIWindowPVRGuide::CGUIWindowPVRGuide(bool bRadio) :
   m_bChannelSelectionRestored(false)
 {
   m_bRefreshTimelineItems = false;
-  g_EpgContainer.RegisterObserver(this);
+  CServiceBroker::GetPVRManager().EpgContainer().RegisterObserver(this);
 }
 
 CGUIWindowPVRGuide::~CGUIWindowPVRGuide(void)
 {
-  g_EpgContainer.UnregisterObserver(this);
+  CServiceBroker::GetPVRManager().EpgContainer().UnregisterObserver(this);
 
   m_bRefreshTimelineItems = false;
   StopRefreshTimelineItemsThread();
@@ -309,7 +309,7 @@ bool CGUIWindowPVRGuide::OnMessage(CGUIMessage& message)
                   break;
                 case EPG_SELECT_ACTION_SMART_SELECT:
                 {
-                  const CEpgInfoTagPtr tag(pItem->GetEPGInfoTag());
+                  const CPVREpgInfoTagPtr tag(pItem->GetEPGInfoTag());
                   if (tag)
                   {
                     const CDateTime start(tag->StartAsUTC());
@@ -562,7 +562,7 @@ void CGUIWindowPVRGuide::OnInputDone()
   {
     for (const CFileItemPtr event : m_vecItems->GetList())
     {
-      const CEpgInfoTagPtr tag(event->GetEPGInfoTag());
+      const CPVREpgInfoTagPtr tag(event->GetEPGInfoTag());
       if (tag->HasPVRChannel() && tag->PVRChannelNumber() == iChannelNumber)
       {
         CGUIEPGGridContainer* epgGridContainer = GetGridControl();
@@ -582,6 +582,14 @@ CPVRRefreshTimelineItemsThread::CPVRRefreshTimelineItemsThread(CGUIWindowPVRGuid
   m_ready(true),
   m_done(false)
 {
+}
+
+CPVRRefreshTimelineItemsThread::~CPVRRefreshTimelineItemsThread()
+{
+  // Note: CThread dtor will also call StopThread(true), but if thread worker function exits that
+  //       late, it might access member variables of this which are already destroyed. Thus, stop
+  //       the thread worker here and synchronously, while all members of this are still alive.
+  StopThread(true);
 }
 
 void CPVRRefreshTimelineItemsThread::Stop()

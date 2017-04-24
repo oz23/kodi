@@ -50,6 +50,7 @@ class XBPython;
 class CDataCacheCore;
 class CSettings;
 class IAE;
+class CFavouritesService;
 
 namespace GAME
 {
@@ -78,5 +79,6 @@ public:
   static CSettings& GetSettings();
   static GAME::CGameServices& GetGameServices();
   static PERIPHERALS::CPeripherals& GetPeripherals();
+  static CFavouritesService& GetFavouritesService();
   static bool IsBinaryAddonCacheUp();
 };
