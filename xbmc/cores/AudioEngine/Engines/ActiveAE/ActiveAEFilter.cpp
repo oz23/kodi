@@ -280,7 +280,7 @@ int CActiveAEFilter::ProcessFilter(uint8_t **dst_buffer, int dst_samples, uint8_
       return -1;
     }
 
-    m_SamplesOut = m_pOutFrame->pts;
+    m_SamplesOut = outFrame->pts;
 
     if (m_needConvert)
     {
