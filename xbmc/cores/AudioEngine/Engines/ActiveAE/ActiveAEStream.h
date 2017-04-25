@@ -45,7 +45,7 @@ public:
   {
     m_buffer = 0.0f;
     m_lastError = 0.0;
-    m_count  = 0;
+    m_count = 0;
     m_timer.Set(interval);
   }
 
@@ -74,6 +74,7 @@ public:
   void Correction(double correction)
   {
     m_lastError += correction;
+    m_buffer += correction * m_count;
   }
 
 protected:
