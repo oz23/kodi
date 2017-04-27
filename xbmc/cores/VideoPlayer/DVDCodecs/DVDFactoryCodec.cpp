@@ -45,6 +45,7 @@
 #include "settings/AdvancedSettings.h"
 #include "settings/Settings.h"
 #include "settings/VideoSettings.h"
+#include "threads/SingleLock.h"
 #include "utils/StringUtils.h"
 
 
@@ -54,8 +55,12 @@
 // Video
 //------------------------------------------------------------------------------
 
+CCriticalSection videoCodecSection;
+
 CDVDVideoCodec* CDVDFactoryCodec::CreateVideoCodec(CDVDStreamInfo &hint, CProcessInfo &processInfo, const CRenderInfo &info)
 {
+  CSingleLock lock(videoCodecSection);
+
   std::unique_ptr<CDVDVideoCodec> pCodec;
   CDVDCodecOptions options;
 
