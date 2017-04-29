@@ -65,4 +65,3 @@ public:
   int level;
 };
 
-#define FFMPEG_FILE_BUFFER_SIZE   131072 // default reading size for ffmpeg
