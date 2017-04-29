@@ -329,10 +329,6 @@ cmake_install.cmake
 /tools/TexturePacker/Makefile
 /tools/TexturePacker/*.dll
 
-# /tools/buildsteps/win32
-/tools/buildsteps/win32/1
-/tools/buildsteps/win32/4
-
 # /userdata/
 /userdata/Database
 /userdata/playlists

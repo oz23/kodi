@@ -642,6 +642,15 @@ void CGUIWindowVideoNav::LoadVideoInfo(CFileItemList &items, CVideoDatabase &dat
       if (!pItem->m_bIsFolder && !fetchedPlayCounts)
       {
         database.GetPlayCounts(items.GetPath(), items);
+        // for addons if playcount is still -1 set it to zero
+        if (items.IsPlugin())
+        {
+          for (auto pFI : items)
+          {
+            if (pFI->GetVideoInfoTag()->GetPlayCount() == -1)
+              pFI->GetVideoInfoTag()->SetPlayCount(0);
+          }
+        }
         fetchedPlayCounts = true;
       }
       
@@ -832,7 +841,7 @@ void CGUIWindowVideoNav::OnDeleteItem(CFileItemPtr pItem)
   else if (StringUtils::StartsWithNoCase(pItem->GetPath(), "videodb://movies/sets/") &&
            pItem->GetPath().size() > 22 && pItem->m_bIsFolder)
   {
-    CGUIDialogYesNo* pDialog = g_windowManager.GetWindow<CGUIDialogYesNo>();
+    CGUIDialogYesNo* pDialog = g_windowManager.GetWindow<CGUIDialogYesNo>(WINDOW_DIALOG_YES_NO);
     pDialog->SetHeading(CVariant{432});
     std::string strLabel = StringUtils::Format(g_localizeStrings.Get(433).c_str(),pItem->GetLabel().c_str());
     pDialog->SetLine(1, CVariant{std::move(strLabel)});
@@ -853,7 +862,7 @@ void CGUIWindowVideoNav::OnDeleteItem(CFileItemPtr pItem)
   }
   else if (m_vecItems->GetContent() == "tags" && pItem->m_bIsFolder)
   {
-    CGUIDialogYesNo* pDialog = g_windowManager.GetWindow<CGUIDialogYesNo>();
+    CGUIDialogYesNo* pDialog = g_windowManager.GetWindow<CGUIDialogYesNo>(WINDOW_DIALOG_YES_NO);
     pDialog->SetHeading(CVariant{432});
     pDialog->SetLine(1, CVariant{ StringUtils::Format(g_localizeStrings.Get(433).c_str(), pItem->GetLabel().c_str()) });
     pDialog->SetLine(2, CVariant{""});

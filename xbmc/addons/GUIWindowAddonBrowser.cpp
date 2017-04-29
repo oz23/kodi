@@ -377,7 +377,7 @@ int CGUIWindowAddonBrowser::SelectAddonID(const std::vector<ADDON::TYPE> &types,
   if (showInstallable)
     showMore = false;
 
-  CGUIDialogSelect *dialog = g_windowManager.GetWindow<CGUIDialogSelect>();
+  CGUIDialogSelect *dialog = g_windowManager.GetWindow<CGUIDialogSelect>(WINDOW_DIALOG_SELECT);
   if (!dialog)
     return -1;
 
