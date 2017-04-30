@@ -721,8 +721,17 @@ void CActiveAEBufferPoolAtempo::SetTempo(float tempo)
   else if (tempo < 0.5)
     tempo = 0.5;
 
-  if (tempo != m_tempo)
+  if (tempo == m_tempo)
+    return;
+
+  if (m_pTempoFilter->IsActive() && tempo != 1.0)
+  {
+    m_pTempoFilter->SetTempo(tempo);
+  }
+  else
+  {
     m_changeFilter = true;
+  }
 
   m_tempo = tempo;
 }

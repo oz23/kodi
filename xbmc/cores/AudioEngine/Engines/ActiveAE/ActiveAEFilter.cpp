@@ -68,17 +68,31 @@ bool CActiveAEFilter::SetTempo(float tempo)
     return true;
   }
 
-  if (!CreateFilterGraph())
-    return false;
-
-  if (!CreateAtempoFilter())
+  if (!IsActive())
   {
-    CloseFilter();
-    return false;
-  }
+    if (!CreateFilterGraph())
+      return false;
 
-  m_SamplesIn = 0;
-  m_SamplesOut = 0;
+    if (!CreateAtempoFilter())
+    {
+      CloseFilter();
+      return false;
+    }
+
+    m_SamplesIn = 0;
+    m_SamplesOut = 0;
+  }
+  else
+  {
+    std::string args =  StringUtils::Format("%f", m_tempo);
+    int ret = m_pFilterCtxAtempo->filter->process_command(m_pFilterCtxAtempo, "tempo", args.c_str(), nullptr, 0, 0);
+    if (ret < 0)
+    {
+      CLog::Log(LOGERROR, "CActiveAEFilter::SetTempo - error processing command");
+      CloseFilter();
+      return false;
+    }
+  }
   return true;
 }
 
