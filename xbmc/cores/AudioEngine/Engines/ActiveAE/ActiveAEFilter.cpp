@@ -364,6 +364,9 @@ bool CActiveAEFilter::IsActive()
 
 int CActiveAEFilter::GetBufferedSamples()
 {
+  if (!IsActive())
+    return 0;
+
   int64_t samples = m_SamplesIn - (m_SamplesOut * m_tempo);
   if (m_hasData)
   {
