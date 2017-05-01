@@ -360,10 +360,12 @@ bool CActiveAEFilter::IsActive()
 
 int CActiveAEFilter::GetBufferedSamples()
 {
-  int ret = m_SamplesIn - (m_SamplesOut * m_tempo);
+  int64_t samples = m_SamplesIn - (m_SamplesOut * m_tempo);
   if (m_hasData)
   {
-    ret += (m_pOutFrame->nb_samples - m_sampleOffset);
+    samples += (m_pOutFrame->nb_samples - m_sampleOffset);
   }
-  return ret;
+  if (samples < 0)
+    samples = 0;
+  return static_cast<int>(samples);
 }
