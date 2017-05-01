@@ -61,6 +61,8 @@ void CActiveAEFilter::Init(AVSampleFormat fmt, int sampleRate, uint64_t channelL
 
 bool CActiveAEFilter::SetTempo(float tempo)
 {
+  int bufferSamples = GetBufferedSamples();
+
   m_tempo = tempo;
   if (m_tempo == 1.0)
   {
@@ -92,6 +94,8 @@ bool CActiveAEFilter::SetTempo(float tempo)
       CloseFilter();
       return false;
     }
+    m_SamplesIn = bufferSamples;
+    m_SamplesOut = 0;
   }
   return true;
 }
