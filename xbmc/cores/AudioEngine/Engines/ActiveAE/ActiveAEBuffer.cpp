@@ -685,7 +685,10 @@ void CActiveAEBufferPoolAtempo::Flush()
     m_outputSamples.pop_front();
   }
   if (m_pTempoFilter)
-    ChangeFilter();
+  {
+    m_pTempoFilter->CloseFilter();
+    m_pTempoFilter->SetTempo(m_tempo);
+  }
 }
 
 float CActiveAEBufferPoolAtempo::GetDelay()
