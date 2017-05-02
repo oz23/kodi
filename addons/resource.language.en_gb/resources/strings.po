@@ -15233,8 +15233,9 @@ msgstr ""
 
 #. The label in the add-ons dll class to report about outdated add-on api version
 #: xbmc/addons/AddonDll.cpp
-msgctxt "#24803"
-msgid "Using incompatible API version for type '%s'.\nKodi API version = '%s', add-on API version '%s'\n\nPlease check for updates or contact developer of add-on."
+msgctxt "#29803"
+msgid "Incompatible API version for type '%s'. Kodi: '%s', add-on: '%s'."
+msgstr ""
 
 #empty strings from id 29804 to 29899
 

@@ -22,6 +22,8 @@
 
 #include "AddonStatusHandler.h"
 #include "addons/kodi-addon-dev-kit/include/kodi/AddonBase.h"
+#include "events/EventLog.h"
+#include "events/NotificationEvent.h"
 #include "guilib/GUIWindowManager.h"
 #include "dialogs/GUIDialogOK.h"
 #include "utils/URIUtils.h"
@@ -245,7 +247,7 @@ ADDON_STATUS CAddonDll::Create(int type, void* funcTable, void* info)
     if (!CheckAPIVersion(id))
       return ADDON_STATUS_PERMANENT_FAILURE;
   }
-  
+
   /* Load add-on function table (written by add-on itself) */
   m_pDll->GetAddon(funcTable);
 
@@ -411,13 +413,13 @@ bool CAddonDll::CheckAPIVersion(int type)
                             kodi::addon::GetTypeName(type),
                             kodiVersion,
                             addonVersion);
-
-    std::string heading = StringUtils::Format("%s: %s", CAddonInfo::TranslateType(MainType(), true).c_str(), Name().c_str());
-    std::string text = StringUtils::Format(g_localizeStrings.Get(24803).c_str(),
+ 
+    std::string text = StringUtils::Format(g_localizeStrings.Get(29803).c_str(),
                                            kodi::addon::GetTypeName(type),
                                            kodiVersion,
                                            addonVersion);
-    CGUIDialogOK::ShowAndGetInput(CVariant{heading}, CVariant{text});
+    CEventLog::GetInstance().AddWithNotification(EventPtr(new CNotificationEvent(Name(), text, EventLevel::Error)));
+
     return false;
   }
 

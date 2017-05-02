@@ -1,6 +1,6 @@
 #pragma once
 /*
- *      Copyright (C) 2016 Team KODI
+ *      Copyright (C) 2016-2017 Team KODI
  *      http://kodi.tv
  *
  *  This Program is free software; you can redistribute it and/or modify
@@ -40,6 +40,7 @@
 
 #define ADDON_GLOBAL_VERSION_MAIN                     "1.0.0"
 #define ADDON_GLOBAL_VERSION_GUI                      "5.11.1"
+#define ADDON_GLOBAL_VERSION_GUI_MIN                  "5.10.0"
 
 #define ADDON_INSTANCE_VERSION_ADSP                   "0.1.10"
 #define ADDON_INSTANCE_VERSION_AUDIODECODER           "1.0.1"
@@ -50,14 +51,15 @@
 #define ADDON_INSTANCE_VERSION_PERIPHERAL             "1.3.1"
 #define ADDON_INSTANCE_VERSION_PVR                    "5.2.3"
 #define ADDON_INSTANCE_VERSION_SCREENSAVER            "1.0.2"
+#define ADDON_INSTANCE_VERSION_VFS                    "1.0.0"
 #define ADDON_INSTANCE_VERSION_VISUALIZATION          "1.0.2"
 
-/*
- * The currently used types for Kodi add-ons
- *
- * @note For add of new types take a new number on end. To change
- * existing numbers can be make problems on already compiled add-ons.
- */
+///
+/// The currently used types for Kodi add-ons
+///
+/// @note For add of new types take a new number on end. To change
+/// existing numbers can be make problems on already compiled add-ons.
+///
 typedef enum ADDON_TYPE
 {
   /* addon global parts */
@@ -86,14 +88,14 @@ namespace kodi {
 namespace addon {
 #endif
 
-/*
- * This is used from Kodi to get the active version of add-on parts.
- * It is compiled in add-on and also in Kodi itself, with this can be Kodi
- * compare the version from him with them on add-on.
- *
- * @param[in] type The with 'enum ADDON_TYPE' type to ask
- * @return version The current version of asked type
- */
+///
+/// This is used from Kodi to get the active version of add-on parts.
+/// It is compiled in add-on and also in Kodi itself, with this can be Kodi
+/// compare the version from him with them on add-on.
+///
+/// @param[in] type The with 'enum ADDON_TYPE' type to ask
+/// @return version The current version of asked type
+///
 inline const char* GetTypeVersion(int type)
 {
   switch (type)
@@ -123,19 +125,21 @@ inline const char* GetTypeVersion(int type)
       return ADDON_INSTANCE_VERSION_PVR;
     case ADDON_INSTANCE_SCREENSAVER:
       return ADDON_INSTANCE_VERSION_SCREENSAVER;
+    case ADDON_INSTANCE_VFS:
+      return ADDON_INSTANCE_VERSION_VFS;
     case ADDON_INSTANCE_VISUALIZATION:
       return ADDON_INSTANCE_VERSION_VISUALIZATION;
   }
   return "0.0.0";
 }
 
-/*
- * Function used internally on add-on and in Kodi itself to get name
- * about given type.
- *
- * @param[in] instanceType The with 'enum ADDON_TYPE' type to ask
- * @return Name of the asked instance type
- */
+///
+/// Function used internally on add-on and in Kodi itself to get name
+/// about given type.
+///
+/// @param[in] instanceType The with 'enum ADDON_TYPE' type to ask
+/// @return Name of the asked instance type
+///
 inline const char* GetTypeName(int type)
 {
   switch (type)
@@ -156,7 +160,7 @@ inline const char* GetTypeName(int type)
     case ADDON_INSTANCE_GAME:
       return "Game";
     case ADDON_INSTANCE_IMAGEDECODER:
-      return "ImageDecocer";
+      return "ImageDecoder";
     case ADDON_INSTANCE_INPUTSTREAM:
       return "Inputstream";
     case ADDON_INSTANCE_PERIPHERAL:
@@ -171,15 +175,15 @@ inline const char* GetTypeName(int type)
   return "unknown";
 }
 
-/*
- * Function used internally on add-on and in Kodi itself to get id number
- * about given type name.
- *
- * @param[in] instanceType The with name type to ask
- * @return Id number of the asked instance type
- *
- * @warning String must be lower case here!
- */
+///
+/// Function used internally on add-on and in Kodi itself to get id number
+/// about given type name.
+///
+/// @param[in] instanceType The with name type to ask
+/// @return Id number of the asked instance type
+///
+/// @warning String must be lower case here!
+///
 inline int GetTypeId(const char* name)
 {
   if (name)
@@ -206,6 +210,8 @@ inline int GetTypeId(const char* name)
       return ADDON_INSTANCE_PVR;
     else if (strcmp(name, "screensaver") == 0)
       return ADDON_INSTANCE_SCREENSAVER;
+    else if (strcmp(name, "vfs") == 0)
+      return ADDON_INSTANCE_VFS;
     else if (strcmp(name, "visualization") == 0)
       return ADDON_INSTANCE_VISUALIZATION;
   }
