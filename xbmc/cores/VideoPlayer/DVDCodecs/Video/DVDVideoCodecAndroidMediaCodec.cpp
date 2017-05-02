@@ -38,11 +38,12 @@
 #include "ServiceBroker.h"
 #include "messaging/ApplicationMessenger.h"
 #include "TimingConstants.h"
+
 #include "utils/BitstreamConverter.h"
 #include "utils/BitstreamWriter.h"
-
 #include "utils/CPUInfo.h"
 #include "utils/log.h"
+
 #include "settings/AdvancedSettings.h"
 #include "platform/android/activity/XBMCApp.h"
 #include "cores/VideoPlayer/VideoRenderers/RenderManager.h"
@@ -247,6 +248,9 @@ void CDVDMediaCodecInfo::ReleaseOutputBuffer(bool render)
     if (m_frameready)
       m_frameready->Reset();
 
+  if (g_advancedSettings.CanLogComponent(LOGVIDEO))
+     CLog::Log(LOGERROR, "CDVDMediaCodecInfo::ReleaseOutputBuffer index(%d), render(%d)", m_index, render);
+
   media_status_t mstat = AMediaCodec_releaseOutputBuffer(m_codec, m_index, render);
   m_isReleased = true;
 
@@ -354,6 +358,7 @@ CDVDVideoCodecAndroidMediaCodec::CDVDVideoCodecAndroidMediaCodec(CProcessInfo &p
 , m_bitstream(nullptr)
 , m_render_sw(false)
 , m_render_surface(surface_render)
+, m_mpeg2_sequence(nullptr)
 {
   memset(&m_videobuffer, 0x00, sizeof(VideoPicture));
 }
@@ -367,6 +372,11 @@ CDVDVideoCodecAndroidMediaCodec::~CDVDVideoCodecAndroidMediaCodec()
   {
     AMediaCrypto_delete(m_crypto);
     m_crypto = nullptr;
+  }
+  if (m_mpeg2_sequence)
+  {
+    delete (m_mpeg2_sequence);
+    m_mpeg2_sequence = nullptr;
   }
 }
 
@@ -429,6 +439,12 @@ bool CDVDVideoCodecAndroidMediaCodec::Open(CDVDStreamInfo &hints, CDVDCodecOptio
   {
     case AV_CODEC_ID_MPEG2VIDEO:
       m_mime = "video/mpeg2";
+      m_mpeg2_sequence = new mpeg2_sequence;
+      m_mpeg2_sequence->width  = m_hints.width;
+      m_mpeg2_sequence->height = m_hints.height;
+      m_mpeg2_sequence->ratio  = m_hints.aspect;
+      m_mpeg2_sequence->fps_scale = m_hints.fpsscale;
+      m_mpeg2_sequence->fps_rate = m_hints.fpsrate;
       m_formatname = "amc-mpeg2";
       break;
     case AV_CODEC_ID_MPEG4:
@@ -788,6 +804,18 @@ bool CDVDVideoCodecAndroidMediaCodec::AddData(const DemuxPacket &packet)
       if (!(m_state == MEDIACODEC_STATE_FLUSHED || m_state == MEDIACODEC_STATE_RUNNING))
         CLog::Log(LOGERROR, "CDVDVideoCodecAndroidMediaCodec::AddData: Wrong state (%d)", m_state);
 
+      if (m_mpeg2_sequence && CBitstreamConverter::mpeg2_sequence_header(pData, iSize, m_mpeg2_sequence))
+      {
+        m_hints.fpsrate = m_mpeg2_sequence->fps_rate;
+        m_hints.fpsscale = m_mpeg2_sequence->fps_scale;
+        m_hints.width    = m_mpeg2_sequence->width;
+        m_hints.height   = m_mpeg2_sequence->height;
+        m_hints.aspect   = m_mpeg2_sequence->ratio;
+
+        m_processInfo.SetVideoFps(static_cast<float>(m_hints.fpsrate) / m_hints.fpsscale);
+        m_processInfo.SetVideoDAR(m_hints.aspect);
+      }
+
       // we have an input buffer, fill it.
       if (pData && m_bitstream)
       {
@@ -925,11 +953,15 @@ CDVDVideoCodec::VCReturn CDVDVideoCodecAndroidMediaCodec::GetPicture(VideoPictur
 
       // Invalidate our local VideoPicture bits
       m_videobuffer.pts = DVD_NOPTS_VALUE;
+      int index(-1);
       if (!m_render_sw)
+      {
+        index = static_cast<CDVDMediaCodecInfo *>(m_videobuffer.hwPic)->GetIndex();
         m_videobuffer.hwPic = NULL;
+      }
 
       if (g_advancedSettings.CanLogComponent(LOGVIDEO))
-        CLog::Log(LOGDEBUG, "CDVDVideoCodecAndroidMediaCodec::GetPicture pts:%0.4lf", pVideoPicture->pts);
+        CLog::Log(LOGDEBUG, "CDVDVideoCodecAndroidMediaCodec::GetPicture index: %d pts:%0.4lf", index, pVideoPicture->pts);
 
       return VC_PICTURE;
     }
