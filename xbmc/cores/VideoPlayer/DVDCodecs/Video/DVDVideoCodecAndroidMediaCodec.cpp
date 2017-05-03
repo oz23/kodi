@@ -217,7 +217,11 @@ long CDVDMediaCodecInfo::Release()
   if (count == 1)
     ReleaseOutputBuffer(false);
   if (count == 0)
+  {
+    if (g_advancedSettings.CanLogComponent(LOGVIDEO))
+      CLog::Log(LOGDEBUG, "CDVDMediaCodecInfo::ReleaseOutputBuffer Delete long(%X), index(%d)", (size_t)this, m_index);
     delete this;
+  }
 
   return count;
 }
@@ -352,9 +356,9 @@ CDVDVideoCodecAndroidMediaCodec::CDVDVideoCodecAndroidMediaCodec(CProcessInfo &p
 , m_formatname("mediacodec")
 , m_opened(false)
 , m_checkForPicture(false)
-, m_surface(nullptr)
-, m_textureId(0)
 , m_crypto(nullptr)
+, m_textureId(0)
+, m_surface(nullptr)
 , m_bitstream(nullptr)
 , m_render_sw(false)
 , m_render_surface(surface_render)
@@ -365,7 +369,6 @@ CDVDVideoCodecAndroidMediaCodec::CDVDVideoCodecAndroidMediaCodec(CProcessInfo &p
 
 CDVDVideoCodecAndroidMediaCodec::~CDVDVideoCodecAndroidMediaCodec()
 {
-  CLog::Log(LOGDEBUG, "CDVDMediaCodecInfo::Dtor");
   Dispose();
 
   if (m_crypto)
@@ -616,7 +619,7 @@ bool CDVDVideoCodecAndroidMediaCodec::Open(CDVDStreamInfo &hints, CDVDCodecOptio
   m_codec = nullptr;
   m_colorFormat = -1;
   num_codecs = CJNIMediaCodecList::getCodecCount();
-  needSecureDecoder = AMediaCrypto_requiresSecureDecoderComponent(m_mime.c_str());
+  needSecureDecoder = m_crypto && AMediaCrypto_requiresSecureDecoderComponent(m_mime.c_str());
 
   for (int i = 0; i < num_codecs; i++)
   {
@@ -785,7 +788,7 @@ bool CDVDVideoCodecAndroidMediaCodec::AddData(const DemuxPacket &packet)
     pts = DVD_NOPTS_VALUE;
 
   uint8_t *pData(packet.pData);
-  int iSize(packet.iSize);
+  size_t iSize(packet.iSize);
 
   if (m_state == MEDIACODEC_STATE_ENDOFSTREAM)
   {
@@ -994,15 +997,6 @@ CDVDVideoCodec::VCReturn CDVDVideoCodecAndroidMediaCodec::GetPicture(VideoPictur
   }
 
   return VC_NONE;
-}
-
-bool CDVDVideoCodecAndroidMediaCodec::ClearPicture(VideoPicture* pVideoPicture)
-{
-  if (pVideoPicture->hwPic && (pVideoPicture->format == RENDER_FMT_MEDIACODEC || pVideoPicture->format == RENDER_FMT_MEDIACODECSURFACE))
-    static_cast<CDVDMediaCodecInfo*>(pVideoPicture->hwPic)->Release();
-  memset(pVideoPicture, 0x00, sizeof(VideoPicture));
-
-  return true;
 }
 
 void CDVDVideoCodecAndroidMediaCodec::SetCodecControl(int flags)
