@@ -180,16 +180,6 @@ public:
 
   /*
    * returns true if successfull
-   * the data is cleared to zero
-   */ 
-  virtual bool ClearPicture(VideoPicture* pVideoPicture)
-  {
-    memset(pVideoPicture, 0, sizeof(VideoPicture));
-    return true;
-  }
-
-  /*
-   * returns true if successfull
    * the data is valid until the next Decode call
    * userdata can be anything, for now we use it for closed captioning
    */

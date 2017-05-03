@@ -430,8 +430,6 @@ public:
 
   // Methods from CDVDVideoCodec which require overrides
   virtual bool          Open(CDVDStreamInfo &hints, CDVDCodecOptions &options);
-  virtual bool          ClearPicture(VideoPicture *pVideoPicture);
-
   virtual int           Decode(BYTE *pData, int iSize, double dts, double pts)  { return m_IMXCodec->Decode(pData, iSize, dts, pts); }
 
   virtual void          Reset()                                                 { m_IMXCodec->Reset(); }

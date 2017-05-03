@@ -97,7 +97,6 @@ public:
   virtual bool AddData(const DemuxPacket &packet);
   virtual void Reset(void);
   virtual CDVDVideoCodec::VCReturn GetPicture(VideoPicture *pVideoPicture);
-  virtual bool ClearPicture(VideoPicture* pVideoPicture);
   virtual unsigned GetAllowedReferences() { return 4; }
   virtual const char* GetName(void) { return m_pFormatName ? m_pFormatName:"mmal-xxx"; }
   virtual bool GetCodecStats(double &pts, int &droppedPics);
@@ -132,6 +131,7 @@ protected:
   bool Initialize( const std::string &decoder_name);
   void PortSettingsChanged(MMAL_PORT_T *port, MMAL_BUFFER_HEADER_T *buffer);
   bool SendCodecConfigData();
+  bool ClearPicture(VideoPicture* pVideoPicture);
 
   CDVDStreamInfo    m_hints;
   float             m_fps;

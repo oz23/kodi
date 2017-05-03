@@ -101,7 +101,6 @@ public:
   int  Decode(uint8_t *pData, int iSize, double dts, double pts);
   void Reset(void);
   int GetPicture(VideoPicture *pVideoPicture);
-  bool ClearPicture(VideoPicture *pVideoPicture);
   void ReleaseBuffer(OpenMaxVideoBuffer *buffer);
   void SetDropState(bool bDrop);
 protected:
