@@ -355,10 +355,12 @@ CDVDVideoCodecAndroidMediaCodec::CDVDVideoCodecAndroidMediaCodec(CProcessInfo &p
 : CDVDVideoCodec(processInfo)
 , m_formatname("mediacodec")
 , m_opened(false)
-, m_useTimeSize(false)
 , m_crypto(nullptr)
 , m_textureId(0)
 , m_surface(nullptr)
+, m_OutputDuration(0)
+, m_fpsDuration(0)
+, m_lastPTS(-1)
 , m_bitstream(nullptr)
 , m_render_sw(false)
 , m_render_surface(surface_render)
@@ -677,8 +679,6 @@ bool CDVDVideoCodecAndroidMediaCodec::Open(CDVDStreamInfo &hints, CDVDCodecOptio
     goto FAIL;
   }
 
-  m_useTimeSize = m_codecname.find("amlogic") != std::string::npos;
-
   // blacklist of devices that cannot surface render.
   m_render_sw = CanSurfaceRenderBlackList(m_codecname) || g_advancedSettings.m_mediacodecForceSoftwareRendering;
   if (m_render_sw)
@@ -719,6 +719,8 @@ bool CDVDVideoCodecAndroidMediaCodec::Open(CDVDStreamInfo &hints, CDVDCodecOptio
   m_processInfo.SetVideoDimensions(m_hints.width, m_hints.height);
   m_processInfo.SetVideoDeintMethod("hardware");
   m_processInfo.SetVideoDAR(m_hints.aspect);
+
+  UpdateFpsDuration();
 
   return true;
 
@@ -826,8 +828,8 @@ bool CDVDVideoCodecAndroidMediaCodec::AddData(const DemuxPacket &packet)
         m_hints.height   = m_mpeg2_sequence->height;
         m_hints.aspect   = m_mpeg2_sequence->ratio;
 
-        m_processInfo.SetVideoFps(static_cast<float>(m_hints.fpsrate) / m_hints.fpsscale);
         m_processInfo.SetVideoDAR(m_hints.aspect);
+        UpdateFpsDuration();
       }
 
       // we have an input buffer, fill it.
@@ -911,22 +913,7 @@ bool CDVDVideoCodecAndroidMediaCodec::AddData(const DemuxPacket &packet)
       }
       m_indexInputBuffer = -1;
       if (mstat != AMEDIA_OK)
-      {
         CLog::Log(LOGERROR, "CDVDVideoCodecAndroidMediaCodec::AddData error(%d)", mstat);
-      }
-      else
-      {
-        if (m_useTimeSize)
-        {
-          if(dts == DVD_NOPTS_VALUE)
-            m_useTimeSize = false;
-          else if (iSize < 20 && !m_timeSizeQueue.empty())
-          //Do not include still-frames as they are ignored by driver
-            m_timeSizeQueue.back().second++;
-          else if (iSize >= 20)
-            m_timeSizeQueue.push_back(std::pair<uint64_t, uint32_t>(static_cast<uint64_t>(dts),1));
-        }
-      }
     }
     else
       return false;
@@ -973,9 +960,7 @@ CDVDVideoCodec::VCReturn CDVDVideoCodecAndroidMediaCodec::GetPicture(VideoPictur
 
   ReleasePrevFrame();
 
-  float timesize(GetTimeSize());
-
-  if ( timesize >= 1.0 || (m_codecControlFlags & DVD_CODEC_CTRL_DRAIN)!=0)
+  if (m_OutputDuration < m_fpsDuration || (m_codecControlFlags & DVD_CODEC_CTRL_DRAIN)!=0)
   {
     int retgp = GetOutputPicture();
     if (retgp > 0)
@@ -993,7 +978,7 @@ CDVDVideoCodec::VCReturn CDVDVideoCodecAndroidMediaCodec::GetPicture(VideoPictur
       }
 
       if (g_advancedSettings.CanLogComponent(LOGVIDEO))
-        CLog::Log(LOGDEBUG, "CDVDVideoCodecAndroidMediaCodec::GetPicture index: %d, timeSize: %0.2f, pts:%0.4lf", index, timesize, pVideoPicture->pts);
+        CLog::Log(LOGDEBUG, "CDVDVideoCodecAndroidMediaCodec::GetPicture index: %d, pts:%0.4lf", index, pVideoPicture->pts);
 
       return VC_PICTURE;
     }
@@ -1004,19 +989,18 @@ CDVDVideoCodec::VCReturn CDVDVideoCodecAndroidMediaCodec::GetPicture(VideoPictur
       return VC_EOF;
     }
   }
+  else
+    m_OutputDuration = 0;
 
-  if ( timesize < 1.2 && (m_codecControlFlags & DVD_CODEC_CTRL_DRAIN)==0)
+  // try to fetch an input buffer
+  if (m_indexInputBuffer < 0)
+    m_indexInputBuffer = AMediaCodec_dequeueInputBuffer(m_codec, 5000 /*timout*/);
+
+  if (m_indexInputBuffer >= 0)
   {
-    // try to fetch an input buffer
-    if (m_indexInputBuffer < 0)
-      m_indexInputBuffer = AMediaCodec_dequeueInputBuffer(m_codec, 5000 /*timout*/);
-
-    if (m_indexInputBuffer >= 0)
-    {
-      if (g_advancedSettings.CanLogComponent(LOGVIDEO))
-        CLog::Log(LOGDEBUG, "CDVDVideoCodecAndroidMediaCodec::GetPicture VC_BUFFER timeSize: %0.2f", timesize);
-      return VC_BUFFER;
-    }
+    if (g_advancedSettings.CanLogComponent(LOGVIDEO))
+      CLog::Log(LOGDEBUG, "CDVDVideoCodecAndroidMediaCodec::GetPicture VC_BUFFER");
+    return VC_BUFFER;
   }
   return VC_NONE;
 }
@@ -1050,7 +1034,9 @@ void CDVDVideoCodecAndroidMediaCodec::FlushInternal()
     return;
 
   ReleasePrevFrame();
-  m_timeSizeQueue.clear();
+
+  m_OutputDuration = 0;
+  m_lastPTS = -1;
 
   for (size_t i = 0; i < m_inflight.size(); i++)
   {
@@ -1142,9 +1128,9 @@ int CDVDVideoCodecAndroidMediaCodec::GetOutputPicture(void)
     if (pts != AV_NOPTS_VALUE)
     {
       m_videobuffer.pts = pts;
-      if (m_useTimeSize)
-        while (m_timeSizeQueue.front().first < static_cast<uint64_t>(pts))
-          m_timeSizeQueue.pop_front();
+      if (m_lastPTS >= 0 && pts > m_lastPTS)
+        m_OutputDuration += pts - m_lastPTS;
+      m_lastPTS = pts;
     }
 
     if (m_codecControlFlags & DVD_CODEC_CTRL_DROP)
@@ -1516,17 +1502,14 @@ void CDVDVideoCodecAndroidMediaCodec::ReleaseSurfaceTexture(void)
   }
 }
 
-float CDVDVideoCodecAndroidMediaCodec::GetTimeSize()
+void CDVDVideoCodecAndroidMediaCodec::UpdateFpsDuration()
 {
-  if (m_useTimeSize)
-  {
-    if (m_timeSizeQueue.size() < 2)
-      return 0.0;
-    int duration = (m_timeSizeQueue[1].first -  m_timeSizeQueue[0].first) /  m_timeSizeQueue[0].second;
-    if(duration < 1000) // Error in DTS
-      duration = 50000;
-    return static_cast<float>(m_timeSizeQueue.size() * duration) / DVD_TIME_BASE;
-  }
+  if (m_hints.fpsrate > 0 && m_hints.fpsscale > 0)
+    m_fpsDuration = static_cast<uint32_t>(static_cast<uint64_t>(DVD_TIME_BASE) * m_hints.fpsscale /  m_hints.fpsrate);
   else
-   return 1.0;
+    m_fpsDuration = 1;
+
+  m_processInfo.SetVideoFps(static_cast<float>(m_hints.fpsrate) / m_hints.fpsscale);
+
+  CLog::Log(LOGDEBUG, "CDVDVideoCodecAndroidMediaCodec::UpdateFpsDuration fpsRate:%u fpsscale:%u, fpsDur:%u", m_hints.fpsrate, m_hints.fpsscale, m_fpsDuration);
 }
