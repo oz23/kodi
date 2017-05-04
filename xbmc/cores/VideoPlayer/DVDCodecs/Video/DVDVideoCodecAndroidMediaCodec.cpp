@@ -355,7 +355,7 @@ CDVDVideoCodecAndroidMediaCodec::CDVDVideoCodecAndroidMediaCodec(CProcessInfo &p
 : CDVDVideoCodec(processInfo)
 , m_formatname("mediacodec")
 , m_opened(false)
-, m_checkForPicture(false)
+, m_useTimeSize(false)
 , m_crypto(nullptr)
 , m_textureId(0)
 , m_surface(nullptr)
@@ -420,7 +420,6 @@ bool CDVDVideoCodecAndroidMediaCodec::Open(CDVDStreamInfo &hints, CDVDCodecOptio
     goto FAIL;
 
   m_render_surface = CServiceBroker::GetSettings().GetBool(CSettings::SETTING_VIDEOPLAYER_USEMEDIACODECSURFACE);
-  m_drop = false;
   m_state = MEDIACODEC_STATE_UNINITIALIZED;
   m_noPictureLoop = 0;
   m_codecControlFlags = 0;
@@ -678,6 +677,8 @@ bool CDVDVideoCodecAndroidMediaCodec::Open(CDVDStreamInfo &hints, CDVDCodecOptio
     goto FAIL;
   }
 
+  m_useTimeSize = m_codecname.find("amlogic") != std::string::npos;
+
   // blacklist of devices that cannot surface render.
   m_render_sw = CanSurfaceRenderBlackList(m_codecname) || g_advancedSettings.m_mediacodecForceSoftwareRendering;
   if (m_render_sw)
@@ -885,6 +886,7 @@ bool CDVDVideoCodecAndroidMediaCodec::AddData(const DemuxPacket &packet)
         }
       }
 
+
       // Translate from VideoPlayer dts/pts to MediaCodec pts,
       // pts WILL get re-ordered by MediaCodec if needed.
       // Do not try to pass pts as a unioned double/int64_t,
@@ -909,7 +911,22 @@ bool CDVDVideoCodecAndroidMediaCodec::AddData(const DemuxPacket &packet)
       }
       m_indexInputBuffer = -1;
       if (mstat != AMEDIA_OK)
+      {
         CLog::Log(LOGERROR, "CDVDVideoCodecAndroidMediaCodec::AddData error(%d)", mstat);
+      }
+      else
+      {
+        if (m_useTimeSize)
+        {
+          if(dts == DVD_NOPTS_VALUE)
+            m_useTimeSize = false;
+          else if (iSize < 20 && !m_timeSizeQueue.empty())
+          //Do not include still-frames as they are ignored by driver
+            m_timeSizeQueue.back().second++;
+          else if (iSize >= 20)
+            m_timeSizeQueue.push_back(std::pair<uint64_t, uint32_t>(static_cast<uint64_t>(dts),1));
+        }
+      }
     }
     else
       return false;
@@ -940,7 +957,6 @@ void CDVDVideoCodecAndroidMediaCodec::Reset()
       m_videobuffer.hwPic = NULL;
 
     m_indexInputBuffer = -1;
-    m_checkForPicture = false;
   }
 }
 
@@ -957,12 +973,13 @@ CDVDVideoCodec::VCReturn CDVDVideoCodecAndroidMediaCodec::GetPicture(VideoPictur
 
   ReleasePrevFrame();
 
-  if (m_checkForPicture)
+  float timesize(GetTimeSize());
+
+  if ( timesize >= 1.0 || (m_codecControlFlags & DVD_CODEC_CTRL_DRAIN)!=0)
   {
     int retgp = GetOutputPicture();
     if (retgp > 0)
     {
-      m_checkForPicture = false;
       m_noPictureLoop = 0;
       *pVideoPicture = m_videobuffer;
 
@@ -976,7 +993,7 @@ CDVDVideoCodec::VCReturn CDVDVideoCodecAndroidMediaCodec::GetPicture(VideoPictur
       }
 
       if (g_advancedSettings.CanLogComponent(LOGVIDEO))
-        CLog::Log(LOGDEBUG, "CDVDVideoCodecAndroidMediaCodec::GetPicture index: %d pts:%0.4lf", index, pVideoPicture->pts);
+        CLog::Log(LOGDEBUG, "CDVDVideoCodecAndroidMediaCodec::GetPicture index: %d, timeSize: %0.2f, pts:%0.4lf", index, timesize, pVideoPicture->pts);
 
       return VC_PICTURE;
     }
@@ -984,30 +1001,23 @@ CDVDVideoCodec::VCReturn CDVDVideoCodecAndroidMediaCodec::GetPicture(VideoPictur
     {
       m_state = MEDIACODEC_STATE_ENDOFSTREAM;
       m_noPictureLoop = 0;
-      return VC_NONE;
+      return VC_EOF;
     }
   }
 
-  m_checkForPicture = true;
-
-  // try to fetch an input buffer
-  if (m_indexInputBuffer < 0)
-    m_indexInputBuffer = AMediaCodec_dequeueInputBuffer(m_codec, 5000 /*timout*/);
-
-  if (xbmc_jnienv()->ExceptionCheck())
+  if ( timesize < 1.2 && (m_codecControlFlags & DVD_CODEC_CTRL_DRAIN)==0)
   {
-    CLog::Log(LOGERROR, "CDVDVideoCodecAndroidMediaCodec::Decode ExceptionCheck");
-    xbmc_jnienv()->ExceptionDescribe();
-    xbmc_jnienv()->ExceptionClear();
-    return VC_ERROR;
-  }
-  else if (m_indexInputBuffer >= 0)
-  {
-    if (g_advancedSettings.CanLogComponent(LOGVIDEO))
-      CLog::Log(LOGDEBUG, "CDVDVideoCodecAndroidMediaCodec::GetPicture VC_BUFFER");
-    return VC_BUFFER;
-  }
+    // try to fetch an input buffer
+    if (m_indexInputBuffer < 0)
+      m_indexInputBuffer = AMediaCodec_dequeueInputBuffer(m_codec, 5000 /*timout*/);
 
+    if (m_indexInputBuffer >= 0)
+    {
+      if (g_advancedSettings.CanLogComponent(LOGVIDEO))
+        CLog::Log(LOGDEBUG, "CDVDVideoCodecAndroidMediaCodec::GetPicture VC_BUFFER timeSize: %0.2f", timesize);
+      return VC_BUFFER;
+    }
+  }
   return VC_NONE;
 }
 
@@ -1019,9 +1029,7 @@ void CDVDVideoCodecAndroidMediaCodec::SetCodecControl(int flags)
       CLog::Log(LOGDEBUG, "%s %x->%x",  __func__, m_codecControlFlags, flags);
     m_codecControlFlags = flags;
 
-    m_drop = (flags & DVD_CODEC_CTRL_DROP) != 0;
-
-    if (m_drop)
+    if (m_codecControlFlags & DVD_CODEC_CTRL_DROP)
       m_videobuffer.iFlags |= DVP_FLAG_DROPPED;
     else
       m_videobuffer.iFlags &= ~DVP_FLAG_DROPPED;
@@ -1042,6 +1050,7 @@ void CDVDVideoCodecAndroidMediaCodec::FlushInternal()
     return;
 
   ReleasePrevFrame();
+  m_timeSizeQueue.clear();
 
   for (size_t i = 0; i < m_inflight.size(); i++)
   {
@@ -1131,9 +1140,14 @@ int CDVDVideoCodecAndroidMediaCodec::GetOutputPicture(void)
     m_videobuffer.dts = DVD_NOPTS_VALUE;
     m_videobuffer.pts = DVD_NOPTS_VALUE;
     if (pts != AV_NOPTS_VALUE)
+    {
       m_videobuffer.pts = pts;
+      if (m_useTimeSize)
+        while (m_timeSizeQueue.front().first < static_cast<uint64_t>(pts))
+          m_timeSizeQueue.pop_front();
+    }
 
-    if (m_drop)
+    if (m_codecControlFlags & DVD_CODEC_CTRL_DROP)
     {
       AMediaCodec_releaseOutputBuffer(m_codec, index, false);
       m_videobuffer.hwPic = nullptr;
@@ -1500,4 +1514,19 @@ void CDVDVideoCodecAndroidMediaCodec::ReleaseSurfaceTexture(void)
     glDeleteTextures(1, &texture_id);
     m_textureId = 0;
   }
+}
+
+float CDVDVideoCodecAndroidMediaCodec::GetTimeSize()
+{
+  if (m_useTimeSize)
+  {
+    if (m_timeSizeQueue.size() < 2)
+      return 0.0;
+    int duration = (m_timeSizeQueue[1].first -  m_timeSizeQueue[0].first) /  m_timeSizeQueue[0].second;
+    if(duration < 1000) // Error in DTS
+      duration = 50000;
+    return static_cast<float>(m_timeSizeQueue.size() * duration) / DVD_TIME_BASE;
+  }
+  else
+   return 1.0;
 }
