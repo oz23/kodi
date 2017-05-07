@@ -366,10 +366,11 @@ bool CGUIControlListSetting::OnClick()
     return false;
 
   CFileItemList options;
-  if (!GetItems(m_pSetting, options) || options.Size() <= 1)
-    return false;
-
   const CSettingControlList *control = static_cast<const CSettingControlList*>(m_pSetting->GetControl());
+  if (!GetItems(m_pSetting, options) ||
+      options.Size() <= 0 ||
+     (!control->CanMultiSelect() && options.Size() <= 1))
+    return false;
   
   dialog->Reset();
   dialog->SetHeading(CVariant{g_localizeStrings.Get(m_pSetting->GetLabel())});
@@ -454,8 +455,12 @@ void CGUIControlListSetting::Update(bool updateDisplayOnly /* = false */)
 
   m_pButton->SetLabel2(label2);
 
-  // disable the control if it has less than two items
-  if (!m_pButton->IsDisabled() && options.Size() <= 1)
+  // disable the control if
+  // * there are no items to be chosen
+  // * only one value can be chosen and there are less than two items available
+  if (!m_pButton->IsDisabled() &&
+     (options.Size() <= 0 ||
+     (!control->CanMultiSelect() && options.Size() <= 1)))
     m_pButton->SetEnabled(false);
 }
 
@@ -585,6 +590,9 @@ bool CGUIControlButtonSetting::OnClick()
     CGUIDialogSlider::ShowAndGetInput(g_localizeStrings.Get(sliderControl->GetHeading()), value, min, step, max, this, NULL);
     SetValid(true);
   }
+
+  // update the displayed value
+  Update();
 
   return IsValid();
 }
@@ -787,7 +795,10 @@ void CGUIControlEditSetting::Update(bool updateDisplayOnly /* = false */)
 
   CGUIControlBaseSetting::Update();
 
-  m_pEdit->SetLabel2(m_pSetting->ToString());
+  const CSettingControlEdit* control = static_cast<const CSettingControlEdit*>(m_pSetting->GetControl());
+
+  if (!control->IsHidden() && control->GetFormat() != "md5")
+    m_pEdit->SetLabel2(m_pSetting->ToString());
 }
 
 bool CGUIControlEditSetting::InputValidation(const std::string &input, void *data)
