@@ -965,7 +965,6 @@ CDVDVideoCodec::VCReturn CDVDVideoCodecAndroidMediaCodec::GetPicture(VideoPictur
     int retgp = GetOutputPicture();
     if (retgp > 0)
     {
-      m_noPictureLoop = 0;
       *pVideoPicture = m_videobuffer;
 
       // Invalidate our local VideoPicture bits
@@ -982,10 +981,10 @@ CDVDVideoCodec::VCReturn CDVDVideoCodecAndroidMediaCodec::GetPicture(VideoPictur
 
       return VC_PICTURE;
     }
-    else if (retgp == -1 || ((m_codecControlFlags & DVD_CODEC_CTRL_DRAIN)!=0 && ++m_noPictureLoop == 10))  // EOS
+    else if (retgp == -1 || ((m_codecControlFlags & DVD_CODEC_CTRL_DRAIN) != 0 && ++m_noPictureLoop >= 10))  // EOS
     {
+      CLog::Log(LOGDEBUG, "CDVDVideoCodecAndroidMediaCodec::GetPicture: VC_EOF");
       m_state = MEDIACODEC_STATE_ENDOFSTREAM;
-      m_noPictureLoop = 0;
       return VC_EOF;
     }
   }
@@ -1120,7 +1119,7 @@ int CDVDVideoCodecAndroidMediaCodec::GetOutputPicture(void)
 {
   int rtn = 0;
 
-  int64_t timeout_us = 10000;
+  int64_t timeout_us = (m_lastPTS >=0 && (m_codecControlFlags & DVD_CODEC_CTRL_DRAIN) == 0 && m_processInfo.GetLevelVQ() < 10) ? 250000 : 10000;
   AMediaCodecBufferInfo bufferInfo;
   ssize_t index = AMediaCodec_dequeueOutputBuffer(m_codec, &bufferInfo, timeout_us);
   if (index >= 0)
@@ -1131,8 +1130,10 @@ int CDVDVideoCodecAndroidMediaCodec::GetOutputPicture(void)
     if (pts != AV_NOPTS_VALUE)
     {
       m_videobuffer.pts = pts;
+      unsigned int divisor(m_processInfo.GetLevelVQ() < 10 ? 1 : 0);
+
       if (m_lastPTS >= 0 && pts > m_lastPTS)
-        m_OutputDuration += pts - m_lastPTS;
+        m_OutputDuration += (pts - m_lastPTS) >> divisor;
       m_lastPTS = pts;
     }
 
