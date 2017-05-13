@@ -125,7 +125,12 @@ bool CVideoPlayerVideo::OpenStream(CDVDStreamInfo hint)
   if (hint.flags & AV_DISPOSITION_ATTACHED_PIC)
     return false;
   if (hint.extrasize == 0)
-    return false;
+  {
+    // codecs with no extradata
+    if (hint.codec != AV_CODEC_ID_MJPEG &&
+        hint.codec != AV_CODEC_ID_MSMPEG4V3)
+     return false;
+  }
 
   CLog::Log(LOGNOTICE, "Creating video codec with codec id: %i", hint.codec);
 
