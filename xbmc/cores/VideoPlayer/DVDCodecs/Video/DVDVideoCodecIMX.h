@@ -29,6 +29,7 @@
 #include "DVDVideoCodec.h"
 #include "DVDStreamInfo.h"
 #include "guilib/DispResource.h"
+#include "DVDClock.h"
 #include "cores/VideoPlayer/DVDDemuxers/DVDDemuxPacket.h"
 
 #include <linux/ipu.h>
@@ -298,7 +299,7 @@ public:
 
   void                  WaitStartup()                           { m_loaded.Wait(); }
 
-  bool                  GetPicture(VideoPicture *pVideoPicture);
+  bool                  GetPicture(DVDVideoPicture *pDvdVideoPicture);
 
   bool                  GetCodecStats(double &pts, int &droppedFrames, int &skippedPics);
   void                  SetCodecControl(int flags);
@@ -430,12 +431,13 @@ public:
 
   // Methods from CDVDVideoCodec which require overrides
   virtual bool          Open(CDVDStreamInfo &hints, CDVDCodecOptions &options);
+
   virtual int           Decode(BYTE *pData, int iSize, double dts, double pts)  { return m_IMXCodec->Decode(pData, iSize, dts, pts); }
 
   virtual void          Reset()                                                 { m_IMXCodec->Reset(); }
   virtual const char*   GetName()                                               { return (const char*)m_pFormatName.c_str(); }
 
-  virtual bool          GetPicture(VideoPicture *pVideoPicture)           { return m_IMXCodec->GetPicture(pVideoPicture); }
+  virtual bool          GetPicture(DVDVideoPicture *pDvdVideoPicture)           { return m_IMXCodec->GetPicture(pDvdVideoPicture); }
   virtual void          SetDropState(bool bDrop)                                { m_IMXCodec->SetDropState(bDrop); }
   virtual unsigned      GetAllowedReferences();
 

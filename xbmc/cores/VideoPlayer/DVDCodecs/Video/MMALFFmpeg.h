@@ -22,6 +22,7 @@
 
 #include <memory>
 #include <queue>
+#include "DVDCodecs/Video/DVDVideoCodecFFmpeg.h"
 #include "libavcodec/avcodec.h"
 #include "MMALCodec.h"
 
@@ -53,14 +54,13 @@ class CDecoder
 public:
   CDecoder(CProcessInfo& processInfo, CDVDStreamInfo &hints);
   virtual ~CDecoder();
-  virtual bool Open(AVCodecContext* avctx, AVCodecContext* mainctx, const enum AVPixelFormat, unsigned int surfaces);
-  virtual CDVDVideoCodec::VCReturn Decode(AVCodecContext* avctx, AVFrame* frame);
-  virtual bool GetPicture(AVCodecContext* avctx, VideoPicture* picture);
-  virtual CDVDVideoCodec::VCReturn Check(AVCodecContext* avctx);
-  virtual void Close();
-  virtual const std::string Name() { return "mmal"; }
-  virtual unsigned GetAllowedReferences();
-  virtual long Release();
+  virtual bool Open(AVCodecContext* avctx, AVCodecContext* mainctx, const enum AVPixelFormat, unsigned int surfaces) override;
+  virtual CDVDVideoCodec::VCReturn Decode(AVCodecContext* avctx, AVFrame* frame) override;
+  virtual bool GetPicture(AVCodecContext* avctx, VideoPicture* picture) override;
+  virtual CDVDVideoCodec::VCReturn Check(AVCodecContext* avctx) override;
+  virtual const std::string Name() override { return "mmal"; }
+  virtual unsigned GetAllowedReferences() override;
+  virtual long Release() override;
 
   static void FFReleaseBuffer(void *opaque, uint8_t *data);
   static int FFGetBuffer(AVCodecContext *avctx, AVFrame *pic, int flags);

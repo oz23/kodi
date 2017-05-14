@@ -37,7 +37,7 @@ public:
   virtual bool Open(AVPixelFormat pixfmt, AVPixelFormat target, unsigned int width, unsigned int height) override;
   virtual void Dispose() override;
   virtual bool Decode(const uint8_t* pData, unsigned int size) override;
-  virtual void GetPicture(VideoPicture& VideoPicture) override;
+  virtual void GetPicture(VideoPicture& dvdVideoPicture) override;
 
 private:
   /*!

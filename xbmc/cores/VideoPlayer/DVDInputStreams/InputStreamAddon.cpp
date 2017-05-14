@@ -370,7 +370,7 @@ bool CInputStreamAddon::SeekTime(double time, bool backward, double* startpts)
 
   if ((m_caps.m_mask & INPUTSTREAM_CAPABILITIES::SUPPORTSIPOSTIME) != 0)
   {
-    if (!PosTime(time))
+    if (!PosTime(static_cast<int>(time)))
       return false;
 
     FlushDemux();

@@ -414,14 +414,14 @@ bool CBitstreamConverter::Open(enum AVCodecID codec, uint8_t *in_extradata, int 
             // are valid, setup to convert 3 byte NAL sizes to 4 byte.
             in_extradata[4] = 0xFF;
             m_convert_3byteTo4byteNALSize = true;
-           
+
             m_extradata = (uint8_t *)av_malloc(in_extrasize);
             memcpy(m_extradata, in_extradata, in_extrasize);
             m_extrasize = in_extrasize;
             return true;
           }
         }
-        // valid avcC atom 
+        // valid avcC atom
         m_extradata = (uint8_t*)av_malloc(in_extrasize);
         memcpy(m_extradata, in_extradata, in_extrasize);
         m_extrasize = in_extrasize;
@@ -525,7 +525,7 @@ void CBitstreamConverter::Close(void)
 bool CBitstreamConverter::Convert(uint8_t *pData, int iSize)
 {
   if (m_convertBuffer)
-  {  
+  {
     av_free(m_convertBuffer);
     m_convertBuffer = NULL;
   }
@@ -575,7 +575,7 @@ bool CBitstreamConverter::Convert(uint8_t *pData, int iSize)
       {
         m_inputSize = iSize;
         m_inputBuffer = pData;
-  
+
         if (m_convert_bytestream)
         {
           if(m_convertBuffer)
@@ -935,7 +935,7 @@ bool CBitstreamConverter::BitstreamConvert(uint8_t* pData, int iSize, uint8_t **
 
     if (!m_start_decode && (unit_type == nal_sps || IsIDR(unit_type) || (unit_type == nal_sei && has_sei_recovery_point(buf, buf + nal_size))))
       m_start_decode = true;
-    
+
     // prepend only to the first access unit of an IDR picture, if no sps/pps already present
     if (m_sps_pps_context.first_idr && IsIDR(unit_type) && !m_sps_pps_context.idr_sps_pps_seen)
     {

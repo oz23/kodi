@@ -342,7 +342,7 @@ bool CDXVAContext::GetInputAndTarget(int codec, bool bHighBitdepth, GUID &inGuid
 
     for (unsigned i = 0; i < m_input_count && outFormat == DXGI_FORMAT_UNKNOWN; i++)
     {
-      bool supported = IsEqualGUID(m_input_list[i], *mode->guid);
+      bool supported = IsEqualGUID(m_input_list[i], *mode->guid) != 0;
       if (codec == AV_CODEC_ID_HEVC)
       {
         if (bHighBitdepth && !IsEqualGUID(m_input_list[i], D3D11_DECODER_PROFILE_HEVC_VLD_MAIN10))
@@ -963,6 +963,7 @@ CDVDVideoCodec::VCReturn CDecoder::Decode(AVCodecContext* avctx, AVFrame* frame)
       SAFE_RELEASE(m_presentPicture);
       m_presentPicture = new CRenderPicture(m_surface_context);
       m_presentPicture->view = reinterpret_cast<ID3D11View*>(frame->data[3]);
+      m_presentPicture->format = m_format.OutputFormat;
       m_surface_context->MarkRender(m_presentPicture->view);
       return CDVDVideoCodec::VC_PICTURE;
     }
@@ -975,10 +976,9 @@ CDVDVideoCodec::VCReturn CDecoder::Decode(AVCodecContext* avctx, AVFrame* frame)
 
 bool CDecoder::GetPicture(AVCodecContext* avctx, VideoPicture* picture)
 {
-  ((ICallbackHWAccel*)avctx->opaque)->GetPictureCommon(picture);
+  static_cast<ICallbackHWAccel*>(avctx->opaque)->GetPictureCommon(picture);
   CSingleLock lock(m_section);
 
-  m_presentPicture->extFormat = (unsigned int)m_format.OutputFormat;
   picture->hwPic = m_presentPicture;
   picture->format = RENDER_FMT_DXVA;
 

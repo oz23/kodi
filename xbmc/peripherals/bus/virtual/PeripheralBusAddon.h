@@ -96,6 +96,9 @@ namespace PERIPHERALS
 
     void PromptEnableAddons(const ADDON::AddonInfos& disabledAddons);
 
+    // Helper function
+    static PeripheralAddonVector GetEnabledAddons();
+
     PeripheralAddonVector m_addons;
     PeripheralAddonVector m_failedAddons;
     CCriticalSection      m_critSection;

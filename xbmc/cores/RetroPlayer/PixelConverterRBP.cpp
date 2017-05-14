@@ -19,7 +19,7 @@
  */
 
 #include "PixelConverterRBP.h"
-#include "cores/VideoPlayer/TimingConstants.h"
+#include "cores/VideoPlayer/DVDClock.h"
 #include "cores/VideoPlayer/VideoRenderers/HwDecRender/MMALRenderer.h"
 #include "linux/RBP.h"
 #include "utils/log.h"
@@ -137,7 +137,7 @@ bool CPixelConverterRBP::Decode(const uint8_t* pData, unsigned int size)
     return false;
   }
 
-  MMAL::CMMALYUVBuffer *omvb = (MMAL::CMMALYUVBuffer *)m_buf->MMALBuffer;
+  MMAL::CMMALYUVBuffer *omvb = static_cast<MMAL::CMMALYUVBuffer*>(m_buf->hwPic);
 
   const int stride = size / m_height;
 
@@ -151,13 +151,13 @@ bool CPixelConverterRBP::Decode(const uint8_t* pData, unsigned int size)
   return true;
 }
 
-void CPixelConverterRBP::GetPicture(VideoPicture& VideoPicture)
+void CPixelConverterRBP::GetPicture(VideoPicture& dvdVideoPicture)
 {
-  CPixelConverter::GetPicture(VideoPicture);
+  CPixelConverter::GetPicture(dvdVideoPicture);
 
-  VideoPicture.MMALBuffer = m_buf->MMALBuffer;
+  dvdVideoPicture.hwPic = m_buf->hwPic;
 
-  MMAL::CMMALYUVBuffer *omvb = (MMAL::CMMALYUVBuffer *)m_buf->MMALBuffer;
+  MMAL::CMMALYUVBuffer *omvb = static_cast<MMAL::CMMALYUVBuffer*>(m_buf->hwPic);
 
   // need to flush ARM cache so GPU can see it
   omvb->gmem->Flush();
@@ -195,7 +195,7 @@ VideoPicture* CPixelConverterRBP::AllocatePicture(int iWidth, int iHeight)
 
   if (pPicture)
   {
-    pPicture->MMALBuffer = omvb;
+    pPicture->hwPic = static_cast<void*>(omvb);
     pPicture->iWidth = iWidth;
     pPicture->iHeight = iHeight;
   }
@@ -207,9 +207,11 @@ void CPixelConverterRBP::FreePicture(VideoPicture* pPicture)
 {
   if (pPicture)
   {
-    if (pPicture->MMALBuffer)
-      pPicture->MMALBuffer->Release();
-
+    if (pPicture->hwPic)
+    {
+      MMAL::CMMALYUVBuffer *omvb = static_cast<MMAL::CMMALYUVBuffer*>(m_buf->hwPic);
+      omvb->Release();
+    }
     delete pPicture;
   }
   else

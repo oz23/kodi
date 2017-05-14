@@ -145,6 +145,7 @@ bool CLinuxRendererGLES::ValidateRenderTarget()
       DeleteTexture(i);
 
      // create the yuv textures
+    UpdateVideoFilter();
     LoadShaders();
     if (m_renderMethod < 0)
       return false;
@@ -589,6 +590,8 @@ void CLinuxRendererGLES::UpdateVideoFilter()
 
 void CLinuxRendererGLES::LoadShaders(int field)
 {
+  m_reloadShaders = 0;
+
   if (!LoadShadersHook())
   {
     int requestedMethod = CServiceBroker::GetSettings().GetInt(CSettings::SETTING_VIDEOPLAYER_RENDERMETHOD);
@@ -823,7 +826,6 @@ void CLinuxRendererGLES::RenderSinglePass(int index, int field)
 
   if (m_reloadShaders)
   {
-    m_reloadShaders = 0;
     LoadShaders(field);
   }
 

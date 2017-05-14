@@ -22,9 +22,13 @@
 #include "RetroPlayerDefines.h"
 #include "PixelConverter.h"
 #include "PixelConverterRBP.h"
+#include "cores/VideoPlayer/DVDCodecs/Video/DVDVideoCodec.h"
 #include "cores/VideoPlayer/DVDCodecs/DVDCodecUtils.h"
+#include "cores/VideoPlayer/DVDCodecs/DVDFactoryCodec.h"
+#include "cores/VideoPlayer/DVDDemuxers/DVDDemux.h"
 #include "cores/VideoPlayer/VideoRenderers/RenderFlags.h"
 #include "cores/VideoPlayer/VideoRenderers/RenderManager.h"
+#include "cores/VideoPlayer/DVDStreamInfo.h"
 #include "utils/log.h"
 
 #include <atomic> //! @todo
@@ -80,7 +84,6 @@ bool CRetroPlayerVideo::OpenPixelStream(AVPixelFormat pixfmt, unsigned int width
 
 bool CRetroPlayerVideo::OpenEncodedStream(AVCodecID codec)
 {
-  /*
   CDemuxStreamVideo videoStream;
 
   // Stream
@@ -89,7 +92,6 @@ bool CRetroPlayerVideo::OpenEncodedStream(AVCodecID codec)
   videoStream.type = STREAM_VIDEO;
   videoStream.source = STREAM_SOURCE_DEMUX;
   videoStream.realtime = true;
-  */
 
   // Video
   //! @todo Needed?
@@ -102,8 +104,10 @@ bool CRetroPlayerVideo::OpenEncodedStream(AVCodecID codec)
   videoStream.iOrientation = orientationDeg;
   */
 
-  //! @todo
+  CDVDStreamInfo hint(videoStream);
+  //m_pVideoCodec.reset(CDVDFactoryCodec::CreateVideoCodec(hint, m_processInfo, m_renderManager.GetRenderInfo()));
 
+  //return m_pVideoCodec.get() != nullptr;
   return false;
 }
 
@@ -129,6 +133,7 @@ void CRetroPlayerVideo::CloseStream()
 {
   m_renderManager.Flush();
   m_pixelConverter.reset();
+  //m_pVideoCodec.reset();
 }
 
 bool CRetroPlayerVideo::Configure(VideoPicture& picture)
@@ -183,6 +188,22 @@ bool CRetroPlayerVideo::GetPicture(const uint8_t* data, unsigned int size, Video
       }
     }
   }
+//  else if (m_pVideoCodec)
+//  {
+//    DemuxPacket packet(const_cast<uint8_t*>(data), size, DVD_NOPTS_VALUE, DVD_NOPTS_VALUE);
+//    if (m_pVideoCodec->AddData(packet))
+//    {
+//      CDVDVideoCodec::VCReturn ret = m_pVideoCodec->GetPicture(&picture);
+//      if (ret == CDVDVideoCodec::VC_PICTURE)
+//      {
+//        // Drop frame if requested by the decoder
+//        const bool bDropped = (picture.iFlags & DVP_FLAG_DROPPED) != 0;
+//
+//        if (!bDropped)
+//          bHasPicture = true;
+//      }
+//    }
+//  }
 
   return bHasPicture;
 }

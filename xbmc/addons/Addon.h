@@ -172,7 +172,14 @@ public:
 
   const AddonInfoPtr AddonInfo() const { return m_addonInfo; }
 
+  /*! \brief Utility function to get the default value of a given setting
+   \param setting The XML setting
+   \return The default value for the setting, or empty if no default / unknown
+   */
+  virtual std::string GetDefaultValue(const TiXmlElement *setting) const;
+
 protected:
+
   /*! \brief Load the user settings
    \return true if user settings exist, false otherwise
    \sa LoadSettings, SaveSettings, HasSettings, HasUserSettings, GetSetting, UpdateSetting
@@ -213,4 +220,3 @@ private:
 };
 
 }; /* namespace ADDON */
-

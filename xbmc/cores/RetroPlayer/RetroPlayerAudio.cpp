@@ -28,15 +28,11 @@
 #include "cores/VideoPlayer/DVDCodecs/Audio/DVDAudioCodec.h"
 #include "cores/VideoPlayer/DVDCodecs/DVDFactoryCodec.h"
 #include "cores/VideoPlayer/DVDDemuxers/DVDDemux.h"
-#include "cores/VideoPlayer/TimingConstants.h"
+#include "cores/VideoPlayer/DVDClock.h"
 #include "cores/VideoPlayer/DVDStreamInfo.h"
 #include "cores/VideoPlayer/Process/ProcessInfo.h"
 #include "threads/Thread.h"
 #include "utils/log.h"
-
-extern "C" {
-#include "libavcodec/avcodec.h"
-}
 
 using namespace GAME;
 
@@ -124,7 +120,7 @@ bool CRetroPlayerAudio::OpenEncodedStream(AVCodecID codec, unsigned int samplera
   audioStream.iChannelLayout = CAEUtil::GetAVChannelLayout(channelLayout);
 
   CDVDStreamInfo hint(audioStream);
-  // m_pAudioCodec.reset(CDVDFactoryCodec::CreateAudioCodec(hint, m_processInfo, false, true));
+  m_pAudioCodec.reset(CDVDFactoryCodec::CreateAudioCodec(hint, m_processInfo, false, false, CAEStreamInfo::STREAM_TYPE_NULL));
 
   if (!m_pAudioCodec)
   {
@@ -141,8 +137,8 @@ void CRetroPlayerAudio::AddData(const uint8_t* data, unsigned int size)
   {
     if (m_pAudioCodec)
     {
-      // FIXME
-      int consumed = m_pAudioCodec->AddData(DemuxPacket(const_cast<uint8_t*>(data), size, DVD_NOPTS_VALUE, DVD_NOPTS_VALUE));
+      DemuxPacket packet(const_cast<uint8_t*>(data), size, DVD_NOPTS_VALUE, DVD_NOPTS_VALUE);
+      int consumed = m_pAudioCodec->AddData(packet);
       if (consumed < 0)
       {
         CLog::Log(LOGERROR, "CRetroPlayerAudio::AddData - Decode Error (%d)", consumed);

@@ -56,7 +56,6 @@ protected:
   CAEChannelInfo GetChannelMap();
   int GetBitRate() override;
   void BuildChannelMap();
-  void ConvertToFloat();
 
   AEAudioFormat m_format;
   AVCodecContext* m_pCodecContext;
@@ -68,4 +67,3 @@ protected:
   int m_channels;
   uint64_t m_layout;
 };
-

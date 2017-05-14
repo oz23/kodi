@@ -55,7 +55,7 @@ public:
 
   /*!
    * \brief Get the results of processing the pixels
-   * \param VideoPicture a container for the resulting pixel data
+   * \param dvdVideoPicture a container for the resulting pixel data
    */
-  virtual void GetPicture(VideoPicture& VideoPicture) = 0;
+  virtual void GetPicture(VideoPicture& dvdVideoPicture) = 0;
 };

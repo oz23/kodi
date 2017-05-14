@@ -53,7 +53,7 @@ CBaseRenderer::CBaseRenderer()
     m_rotatedDestCoords[i].x = 0;
     m_rotatedDestCoords[i].y = 0;
     m_savedRotatedDestCoords[i].x = 0;
-    m_savedRotatedDestCoords[i].y = 0;    
+    m_savedRotatedDestCoords[i].y = 0;
   }
 }
 
@@ -110,21 +110,21 @@ inline void CBaseRenderer::ReorderDrawPoints()
   }
 
 
-  int diffX = 0;
-  int diffY = 0;
-  int centerX = 0;
-  int centerY = 0;
-  
+  float diffX = 0.0f;
+  float diffY = 0.0f;
+  float centerX = 0.0f;
+  float centerY = 0.0f;
+
   if (changeAspect)// we are either rotating by 90 or 270 degrees which inverts aspect ratio
   {
-    int newWidth = m_destRect.Height(); // new width is old height
-    int newHeight = m_destRect.Width(); // new height is old width
-    int diffWidth = newWidth - m_destRect.Width(); // difference between old and new width
-    int diffHeight = newHeight - m_destRect.Height(); // difference between old and new height
+    float newWidth = m_destRect.Height(); // new width is old height
+    float newHeight = m_destRect.Width(); // new height is old width
+    float diffWidth = newWidth - m_destRect.Width(); // difference between old and new width
+    float diffHeight = newHeight - m_destRect.Height(); // difference between old and new height
 
     // if the new width is bigger then the old or
     // the new height is bigger then the old - we need to scale down
-    if (diffWidth > 0 || diffHeight > 0 )
+    if (diffWidth > 0.0f || diffHeight > 0.0f)
     {
       float aspectRatio = GetAspectRatio();
       // scale to fit screen width because
@@ -141,10 +141,10 @@ inline void CBaseRenderer::ReorderDrawPoints()
         newWidth /= aspectRatio;
       }
     }
-    
+
     // calculate the center point of the view
-    centerX = m_viewRect.x1 + m_viewRect.Width() / 2;
-    centerY = m_viewRect.y1 + m_viewRect.Height() / 2;
+    centerX = m_viewRect.x1 + m_viewRect.Width() / 2.0f;
+    centerY = m_viewRect.y1 + m_viewRect.Height() / 2.0f;
 
     // calculate the number of pixels we need to go in each
     // x direction from the center point
@@ -152,7 +152,7 @@ inline void CBaseRenderer::ReorderDrawPoints()
     // calculate the number of pixels we need to go in each
     // y direction from the center point
     diffY = newHeight / 2;
-    
+
   }
 
   for (int destIdx=0, srcIdx=pointOffset; destIdx < 4; destIdx++)
@@ -196,13 +196,13 @@ void CBaseRenderer::saveRotatedCoords()
 void CBaseRenderer::syncDestRectToRotatedPoints()
 {
   m_rotatedDestCoords[0].x = m_destRect.x1;
-  m_rotatedDestCoords[0].y = m_destRect.y1;  
+  m_rotatedDestCoords[0].y = m_destRect.y1;
   m_rotatedDestCoords[1].x = m_destRect.x2;
   m_rotatedDestCoords[1].y = m_destRect.y1;
   m_rotatedDestCoords[2].x = m_destRect.x2;
-  m_rotatedDestCoords[2].y = m_destRect.y2;  
+  m_rotatedDestCoords[2].y = m_destRect.y2;
   m_rotatedDestCoords[3].x = m_destRect.x1;
-  m_rotatedDestCoords[3].y = m_destRect.y2; 
+  m_rotatedDestCoords[3].y = m_destRect.y2;
 }
 
 void CBaseRenderer::restoreRotatedCoords()
@@ -444,7 +444,7 @@ EShaderFormat CBaseRenderer::GetShaderFormat(ERenderFormat renderFormat)
   else if (m_format == RENDER_FMT_UYVY422)
     ret = SHADER_UYVY;
   else
-    CLog::Log(LOGERROR, "CLinuxRendererGL::GetShaderFormat - unsupported format %d", renderFormat);
+    CLog::Log(LOGERROR, "CBaseRenderer::GetShaderFormat - unsupported format %d", renderFormat);
 
   return ret;
 }

@@ -66,7 +66,7 @@ CWinRenderer::CWinRenderer()
 
   m_colorShader = nullptr;
   m_scalerShader = nullptr;
-  m_extended_format = 0;
+  m_dxva_format = DXGI_FORMAT_UNKNOWN;
 
   m_iRequestedMethod = RENDER_METHOD_AUTO;
 
@@ -127,7 +127,7 @@ bool CWinRenderer::ConfigChanged(void *hwPic)
   if (m_format == RENDER_FMT_DXVA)
   {
     DXVA::CRenderPicture *dxvaPic = static_cast<DXVA::CRenderPicture*>(hwPic);
-    if (dxvaPic->extFormat != m_extended_format)
+    if (dxvaPic->format != m_dxva_format)
       return true;
   }
 
@@ -162,7 +162,7 @@ void CWinRenderer::SelectRenderMethod()
   {
     CLog::Log(LOGNOTICE, "D3D: rendering method forced to DXVA processor");
     m_renderMethod = RENDER_DXVA;
-    if (!m_processor || !m_processor->Open(m_sourceWidth, m_sourceHeight, m_iFlags, m_format, m_extended_format))
+    if (!m_processor || !m_processor->Open(m_sourceWidth, m_sourceHeight, m_iFlags, m_format, m_dxva_format))
     {
       CLog::Log(LOGNOTICE, "D3D: unable to open DXVA processor");
       if (m_processor)  
@@ -177,7 +177,7 @@ void CWinRenderer::SelectRenderMethod()
     switch(m_iRequestedMethod)
     {
       case RENDER_METHOD_DXVA:
-        if (!m_processor || !m_processor->Open(m_sourceWidth, m_sourceHeight, m_iFlags, m_format, m_extended_format))
+        if (!m_processor || !m_processor->Open(m_sourceWidth, m_sourceHeight, m_iFlags, m_format, m_dxva_format))
         {
           CLog::Log(LOGNOTICE, "D3D: unable to open DXVA processor");
           if (m_processor)
@@ -238,7 +238,7 @@ bool CWinRenderer::Configure(unsigned int width, unsigned int height, unsigned i
   m_iFlags = flags;
   m_format = format;
   if (format == RENDER_FMT_DXVA)
-    m_extended_format = dxvaPic->extFormat;
+    m_dxva_format = dxvaPic->format;
 
   // calculate the input frame aspect ratio
   CalculateFrameAspectRatio(d_width, d_height);
@@ -731,7 +731,7 @@ void CWinRenderer::RenderSW()
     CLog::Log(LOGERROR, __FUNCTION__" - failed to lock swtarget texture into memory");
 
   uint8_t *dst[] = { (uint8_t*)destlr.pData, 0, 0, 0 };
-  int dstStride[] = { destlr.RowPitch, 0, 0, 0 };
+  int dstStride[] = { static_cast<int>(destlr.RowPitch), 0, 0, 0 };
 
   sws_scale(m_sw_scale_ctx, src, srcStride, 0, m_sourceHeight, dst, dstStride);
 
@@ -902,8 +902,8 @@ void CWinRenderer::RenderHW(DWORD flags)
                        static_cast<float>(m_IntermediateTarget.GetHeight()));
   if (m_capture)
   {
-    target.x2 = m_capture->GetWidth();
-    target.y2 = m_capture->GetHeight();
+    target.x2 = static_cast<float>(m_capture->GetWidth());
+    target.y2 = static_cast<float>(m_capture->GetHeight());
   }
   CWIN32Util::CropSource(src, dst, target, m_renderOrientation);
 
@@ -939,7 +939,10 @@ void CWinRenderer::RenderHW(DWORD flags)
 
       g_Windowing.GetViewPort(oldViewPort);
       g_Windowing.SetViewPort(bbSize);
-      g_Windowing.SetCameraPosition(CPoint(bbSize.Width() / 2.f, bbSize.Height() / 2.f), bbSize.Width(), bbSize.Height(), 0.f);
+      g_Windowing.SetCameraPosition(CPoint(bbSize.Width() / 2.f, bbSize.Height() / 2.f),
+                                    static_cast<int>(bbSize.Width()),
+                                    static_cast<int>(bbSize.Height()),
+                                    0.f);
     }
 
     // render frame
@@ -1113,7 +1116,7 @@ CRenderInfo CWinRenderer::GetRenderInfo()
   if (m_renderMethod == RENDER_DXVA && m_processor)
   {
     info.optimal_buffer_size = m_processor->Size();
-    if (m_extended_format != RENDER_FMT_DXVA)
+    if (m_format != RENDER_FMT_DXVA)
       info.m_deintMethods.push_back(VS_INTERLACEMETHOD_DXVA_AUTO);
   }
   else

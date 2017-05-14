@@ -34,7 +34,7 @@ public:
   virtual bool Open(CDVDStreamInfo &hints, CDVDCodecOptions &options);
   virtual int  Decode(uint8_t *pData, int iSize, double dts, double pts);
   virtual void Reset(void);
-  virtual bool GetPicture(VideoPicture *pVideoPicture);
+  virtual bool GetPicture(DVDVideoPicture *pDvdVideoPicture);
   virtual void SetDropState(bool bDrop);
   virtual const char* GetName(void) { return (const char*)m_pFormatName; }
   
@@ -42,7 +42,7 @@ protected:
   void Dispose(void);
   const char        *m_pFormatName;
   COpenMaxVideo     *m_omx_decoder;
-  VideoPicture   m_videobuffer;
+  DVDVideoPicture   m_videobuffer;
 
   // bitstream to bytestream (Annex B) conversion support.
   bool bitstream_convert_init(void *in_extradata, int in_extrasize);
