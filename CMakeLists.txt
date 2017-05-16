@@ -76,34 +76,6 @@ endif()
 
 core_find_git_rev(APP_SCMID FULL)
 
-# add-on xml's
-# find all folders conains a addon.xml.in
-file(GLOB ADDON_XML_IN_FILE ${CMAKE_SOURCE_DIR}/addons/*/addon.xml.in)
-foreach(loop_var ${ADDON_XML_IN_FILE})
-  list(GET loop_var 0 xml_name)
-
-  string(REPLACE "/addon.xml.in" "" xml_name ${xml_name})
-  string(REPLACE "${CORE_SOURCE_DIR}/" "" xml_name ${xml_name})
-
-  list(APPEND ADDON_XML_DEPENDS "${CORE_SOURCE_DIR}/${xml_name}/addon.xml.in")
-  list(APPEND ADDON_XML_OUTPUTS "${CMAKE_BINARY_DIR}/${xml_name}/addon.xml")
-
-  # Read content of add-on folder to have on install
-  file(GLOB ADDON_FILES "${CORE_SOURCE_DIR}/${xml_name}/*")
-  foreach(loop_var ${ADDON_FILES})
-    if(loop_var MATCHES "addon.xml.in")
-      string(REPLACE "addon.xml.in" "addon.xml" loop_var ${loop_var})
-    endif()
-
-    list(GET loop_var 0 file_name)
-    string(REPLACE "${CORE_SOURCE_DIR}/" "" file_name ${file_name})
-    list(APPEND ADDON_INSTALL_DATA "${file_name}")
-
-    unset(file_name)
-  endforeach()
-  unset(xml_name)
-endforeach()
-
 # Dynamically loaded libraries built with the project
 add_custom_target(${APP_NAME_LC}-libraries)
 set(LIBRARY_FILES "" CACHE STRING "" FORCE)
