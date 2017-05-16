@@ -276,6 +276,11 @@ elseif(CORE_SYSTEM_NAME STREQUAL rbpi)
   core_require_dep(MMAL)
 endif()
 
+# find all folders containing addon.xml.in
+# used to define ADDON_XML_OUTPUTS, ADDON_XML_DEPENDS and ADDON_INSTALL_DATA
+# Function defined in ./cmake/scripts/common/Macros.cmake
+find_addon_xml_in_files()
+
 # Compile Info
 add_custom_command(OUTPUT ${CORE_BUILD_DIR}/xbmc/CompileInfo.cpp
                           ${ADDON_XML_OUTPUTS}

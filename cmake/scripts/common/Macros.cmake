@@ -619,7 +619,7 @@ endfunction()
 #   APP_ADDON_API - the addon API version in the form of 16.9.702
 #   FILE_VERSION - file version in the form of 16,9,702,0 - Windows only
 #
-# About for addon's set variables see defines in "versions.h"
+# Set various variables defined in "versions.h"
 macro(core_find_versions)
   # kodi-addons project also calls this macro and uses CORE_SOURCE_DIR
   # to point to core base dir
@@ -647,12 +647,12 @@ macro(core_find_versions)
   endif()
   string(REPLACE "." "," FILE_VERSION ${APP_ADDON_API}.0)
 
-  # Set defines used on addon.xml.in and readed from versions.h
-  # To set versions about add-on parts automatic
-  # This part is near equal with them on "AddonHelpers.cmake", except the place of versions.h
+  # Set defines used in addon.xml.in and read from versions.h to set add-on
+  # version parts automatically
+  # This part is nearly identical to "AddonHelpers.cmake", except location of versions.h
   file(STRINGS ${CORE_SOURCE_DIR}/xbmc/addons/kodi-addon-dev-kit/include/kodi/versions.h BIN_ADDON_PARTS)
   foreach(loop_var ${BIN_ADDON_PARTS})
-    string(FIND "${loop_var}" "#define" matchres)
+    string(FIND "${loop_var}" "#define ADDON_" matchres)
     if("${matchres}" EQUAL 0)
       string(REGEX MATCHALL "[A-Z0-9._]+|[A-Z0-9._]+$" loop_var "${loop_var}")
       list(GET loop_var 0 include_name)
@@ -672,3 +672,33 @@ macro(core_find_versions)
   endif()
 endmacro()
 
+# add-on xml's
+# find all folders containing addon.xml.in and used to define
+# ADDON_XML_OUTPUTS, ADDON_XML_DEPENDS and ADDON_INSTALL_DATA
+function(find_addon_xml_in_files)
+  file(GLOB ADDON_XML_IN_FILE ${CMAKE_SOURCE_DIR}/addons/*/addon.xml.in)
+  foreach(loop_var ${ADDON_XML_IN_FILE})
+    list(GET loop_var 0 xml_name)
+
+    string(REPLACE "/addon.xml.in" "" xml_name ${xml_name})
+    string(REPLACE "${CORE_SOURCE_DIR}/" "" xml_name ${xml_name})
+
+    list(APPEND ADDON_XML_DEPENDS "${CORE_SOURCE_DIR}/${xml_name}/addon.xml.in")
+    list(APPEND ADDON_XML_OUTPUTS "${CMAKE_BINARY_DIR}/${xml_name}/addon.xml")
+
+    # Read content of add-on folder to have on install
+    file(GLOB ADDON_FILES "${CORE_SOURCE_DIR}/${xml_name}/*")
+    foreach(loop_var ${ADDON_FILES})
+      if(loop_var MATCHES "addon.xml.in")
+        string(REPLACE "addon.xml.in" "addon.xml" loop_var ${loop_var})
+      endif()
+
+      list(GET loop_var 0 file_name)
+      string(REPLACE "${CORE_SOURCE_DIR}/" "" file_name ${file_name})
+      list(APPEND ADDON_INSTALL_DATA "${file_name}")
+
+      unset(file_name)
+    endforeach()
+    unset(xml_name)
+  endforeach()
+endfunction()

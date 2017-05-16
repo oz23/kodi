@@ -31,6 +31,7 @@
 #include "ContextMenuManager.h"
 #include "ServiceBroker.h"
 #include "events/AddonManagementEvent.h"
+#include "events/NotificationEvent.h"
 #include "events/EventLog.h"
 #include "filesystem/Directory.h"
 #include "filesystem/File.h"

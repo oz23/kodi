@@ -4,9 +4,6 @@
   version="1.0.0"
   name="AAC encoder"
   provider-name="spiff">
-  <requires>
-    <import addon="kodi.instance.audioencoder" version="1.0.0"/>
-  </requires>
   <extension
     point="kodi.audioencoder"
     extension=".m4a"

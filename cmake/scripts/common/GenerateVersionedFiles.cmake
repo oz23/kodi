@@ -1,8 +1,6 @@
 include(${CORE_SOURCE_DIR}/cmake/scripts/common/Macros.cmake)
 
 core_find_versions()
-file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/addons/xbmc.addon)
-file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/addons/kodi.global.gui)
 
 # configure_file without dependency tracking
 # configure_file would register additional file dependencies that interfere
@@ -16,7 +14,7 @@ endfunction()
 # add-on xml's
 file(GLOB ADDON_XML_IN_FILE ${CORE_SOURCE_DIR}/addons/*/addon.xml.in)
 foreach(loop_var ${ADDON_XML_IN_FILE})
-  # prevent 'xbmc.json', becomes done from 'xbmc/interfaces/json-rpc/schema/CMakeLists.txt'.
+  # prevent 'xbmc.json'; will be obtained from 'xbmc/interfaces/json-rpc/schema/CMakeLists.txt'.
   if(loop_var MATCHES "xbmc.json")
     continue()
   endif()
@@ -30,9 +28,7 @@ foreach(loop_var ${ADDON_XML_IN_FILE})
   # copy everything except addon.xml.in to build folder
   file(COPY "${source_dir}" DESTINATION "${CMAKE_BINARY_DIR}/addons" REGEX ".xml.in" EXCLUDE)
 
-  file(READ "${source_dir}/addon.xml.in" file_content)
-  string(CONFIGURE "${file_content}" file_content @ONLY)
-  file(WRITE "${dest_dir}/addon.xml" "${file_content}")
+  configure_file(${source_dir}/addon.xml.in ${dest_dir}/addon.xml @ONLY)
 
   unset(source_dir)
   unset(dest_dir)

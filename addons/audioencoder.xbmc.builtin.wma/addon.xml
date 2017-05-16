@@ -4,9 +4,6 @@
   version="1.0.0"
   name="WMA encoder"
   provider-name="spiff">
-  <requires>
-    <import addon="kodi.instance.audioencoder" version="1.0.0"/>
-  </requires>
   <extension
     point="kodi.audioencoder"
     extension=".wma"

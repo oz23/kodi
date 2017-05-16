@@ -403,22 +403,31 @@ void CAddonDll::Destroy()
 bool CAddonDll::CheckAPIVersion(int type)
 {
   /* check the API version */
-  const char* kodiVersion = kodi::addon::GetTypeVersion(type);
-  const char* addonVersion = m_pDll->GetAddonTypeVersion(type);
+  AddonVersion kodiMinVersion(kodi::addon::GetTypeMinVersion(type));
+  AddonVersion addonVersion(m_pDll->GetAddonTypeVersion(type));
 
-  if (AddonVersion(addonVersion) != AddonVersion(kodiVersion))
+  /* Check the global usage from addon
+   * if not used from addon becomes "0.0.0" returned
+   */
+  if (type <= ADDON_GLOBAL_MAX && addonVersion == AddonVersion("0.0.0"))
+    return true;
+
+  /* If a instance (not global) version becomes checked must be the version
+   * present.
+   */
+fprintf(stderr, "---->kodiMinVersion: %s\n", kodiMinVersion.asString().c_str());
+fprintf(stderr, "---->addonVersion  : %s\n", addonVersion.asString().c_str());
+fprintf(stderr, "---->kodiVersion   : %s\n", AddonVersion(kodi::addon::GetTypeVersion(type)).asString().c_str());
+  if (kodiMinVersion > addonVersion ||
+      addonVersion > AddonVersion(kodi::addon::GetTypeVersion(type)))
   {
-    CLog::Log(LOGERROR, "Add-on '%s' is using an incompatible API version for type '%s'. Kodi API version = '%s', add-on API version '%s'",
+    CLog::Log(LOGERROR, "Add-on '%s' is using an incompatible API version for type '%s'. Kodi API min version = '%s', add-on API version '%s'",
                             Name().c_str(),
                             kodi::addon::GetTypeName(type),
-                            kodiVersion,
-                            addonVersion);
- 
-    std::string text = StringUtils::Format(g_localizeStrings.Get(29803).c_str(),
-                                           kodi::addon::GetTypeName(type),
-                                           kodiVersion,
-                                           addonVersion);
-    CEventLog::GetInstance().AddWithNotification(EventPtr(new CNotificationEvent(Name(), text, EventLevel::Error)));
+                            kodiMinVersion.asString().c_str(),
+                            addonVersion.asString().c_str());
+
+    CEventLog::GetInstance().AddWithNotification(EventPtr(new CNotificationEvent(Name(), 24152, EventLevel::Error)));
 
     return false;
   }
