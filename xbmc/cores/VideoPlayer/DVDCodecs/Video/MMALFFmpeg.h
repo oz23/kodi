@@ -40,11 +40,14 @@ class CGPUPool;
 class CMMALYUVBuffer : public CMMALBuffer
 {
 public:
-  CMMALYUVBuffer(std::shared_ptr<CMMALPool> pool, uint32_t mmal_encoding, uint32_t width, uint32_t height, uint32_t aligned_width, uint32_t aligned_height, uint32_t size);
+  CMMALYUVBuffer(int id);
   virtual ~CMMALYUVBuffer();
-
-  CGPUMEM *gmem;
-private:
+  virtual void GetPlanes(uint8_t*(&planes)[YuvImage::MAX_PLANES]);
+  virtual void GetStrides(int(&strides)[YuvImage::MAX_PLANES]);
+  CGPUMEM *Allocate(int size, void *opaque) { m_gmem = new CGPUMEM(size, true); if (m_gmem) m_gmem->m_opaque = opaque; return m_gmem; }
+  CGPUMEM *GetMem() { return m_gmem; }
+protected:
+  CGPUMEM *m_gmem = nullptr;
 };
 
 class CDecoder
@@ -61,6 +64,7 @@ public:
   virtual unsigned GetAllowedReferences() override;
   virtual long Release() override;
 
+  static void AlignedSize(AVCodecContext *avctx, int &width, int &height);
   static void FFReleaseBuffer(void *opaque, uint8_t *data);
   static int FFGetBuffer(AVCodecContext *avctx, AVFrame *pic, int flags);
 
@@ -71,7 +75,7 @@ protected:
   std::shared_ptr<CMMALPool> m_pool;
   enum AVPixelFormat m_fmt;
   CDVDStreamInfo m_hints;
-  CGPUMEM *m_gmem;
+  CMMALYUVBuffer *m_renderBuffer = nullptr;
 };
 
 };
