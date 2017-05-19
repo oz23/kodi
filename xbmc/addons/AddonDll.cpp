@@ -415,9 +415,6 @@ bool CAddonDll::CheckAPIVersion(int type)
   /* If a instance (not global) version becomes checked must be the version
    * present.
    */
-fprintf(stderr, "---->kodiMinVersion: %s\n", kodiMinVersion.asString().c_str());
-fprintf(stderr, "---->addonVersion  : %s\n", addonVersion.asString().c_str());
-fprintf(stderr, "---->kodiVersion   : %s\n", AddonVersion(kodi::addon::GetTypeVersion(type)).asString().c_str());
   if (kodiMinVersion > addonVersion ||
       addonVersion > AddonVersion(kodi::addon::GetTypeVersion(type)))
   {
