@@ -40,6 +40,8 @@
 
 extern "C" {
 #include "libavutil/avutil.h"
+#include "libavutil/hwcontext.h"
+#include "libavutil/hwcontext_vaapi.h"
 #include "libavutil/opt.h"
 #include "libavfilter/buffersink.h"
 #include "libavfilter/buffersrc.h"
@@ -515,7 +517,6 @@ CDecoder::CDecoder(CProcessInfo& processInfo) :
   m_vaapiConfigured = false;
   m_DisplayState = VAAPI_OPEN;
   m_vaapiConfig.context = 0;
-  m_vaapiConfig.contextId = VA_INVALID_ID;
   m_vaapiConfig.configId = VA_INVALID_ID;
   m_vaapiConfig.processInfo = &m_processInfo;
   m_avctx = NULL;
@@ -675,13 +676,28 @@ bool CDecoder::Open(AVCodecContext* avctx, AVCodecContext* mainctx, const enum A
     return false;
   }
 
-  avctx->hwaccel_context = &m_hwContext;
+  AVBufferRef *deviceRef =  av_hwdevice_ctx_alloc(AV_HWDEVICE_TYPE_VAAPI);
+  AVHWDeviceContext *deviceCtx = (AVHWDeviceContext*)deviceRef->data;
+  AVVAAPIDeviceContext *vaapiDeviceCtx = (AVVAAPIDeviceContext*)deviceCtx->hwctx;
+  AVBufferRef *framesRef = av_hwframe_ctx_alloc(deviceRef);
+  AVHWFramesContext *framesCtx = (AVHWFramesContext*)framesRef->data;
+  AVVAAPIFramesContext *vaapiFramesCtx = (AVVAAPIFramesContext*)framesCtx->hwctx;
+
+  vaapiDeviceCtx->display = m_vaapiConfig.dpy;
+  vaapiDeviceCtx->driver_quirks = AV_VAAPI_DRIVER_QUIRK_RENDER_PARAM_BUFFERS;
+  vaapiFramesCtx->nb_attributes = 0;
+  vaapiFramesCtx->nb_surfaces = m_videoSurfaces.Size();
+  VASurfaceID *surfaceIds = (VASurfaceID*)av_malloc(vaapiFramesCtx->nb_surfaces *  sizeof(VASurfaceID));
+  for (int i=0; i<vaapiFramesCtx->nb_surfaces; ++i)
+    surfaceIds[i] = m_videoSurfaces.GetAtIndex(i);
+  vaapiFramesCtx->surface_ids = surfaceIds;
+  framesCtx->format = AV_PIX_FMT_VAAPI;
+  framesCtx->width  = avctx->coded_width;
+  framesCtx->height = avctx->coded_height;
+
+  avctx->hw_frames_ctx = framesRef;
   avctx->get_buffer2 = CDecoder::FFGetBuffer;
   avctx->slice_flags = SLICE_FLAG_CODED_ORDER|SLICE_FLAG_ALLOW_FIELD;
-
-  mainctx->hwaccel_context = &m_hwContext;
-  mainctx->get_buffer2 = CDecoder::FFGetBuffer;
-  mainctx->slice_flags = SLICE_FLAG_CODED_ORDER|SLICE_FLAG_ALLOW_FIELD;
 
   m_avctx = mainctx;
   return true;
@@ -1054,8 +1070,6 @@ bool CDecoder::CheckSuccess(VAStatus status)
 
 bool CDecoder::ConfigVAAPI()
 {
-  memset(&m_hwContext, 0, sizeof(vaapi_context));
-
   m_vaapiConfig.dpy = m_vaapiConfig.context->GetDisplay();
   m_vaapiConfig.attrib = m_vaapiConfig.context->GetAttrib(m_vaapiConfig.profile);
   if ((m_vaapiConfig.attrib.value & (VA_RT_FORMAT_YUV420 | VA_RT_FORMAT_YUV420_10BPP)) == 0)
@@ -1070,6 +1084,13 @@ bool CDecoder::ConfigVAAPI()
     return false;
 
   // create surfaces
+  VASurfaceAttrib attribs[1], *attrib;
+  attrib = attribs;
+  attrib->flags = VA_SURFACE_ATTRIB_SETTABLE;
+  attrib->type = VASurfaceAttribPixelFormat;
+  attrib->value.type = VAGenericValueTypeInteger;
+  attrib->value.value.i = VA_FOURCC_NV12;
+
   VASurfaceID surfaces[32];
   unsigned int format = VA_RT_FORMAT_YUV420;
   if (m_vaapiConfig.profile == VAProfileHEVCMain10)
@@ -1081,27 +1102,13 @@ bool CDecoder::ConfigVAAPI()
                                      m_vaapiConfig.surfaceHeight,
                                      surfaces,
                                      nb_surfaces,
-                                     NULL, 0)))
+                                     attribs, 1)))
   {
     return false;
   }
   for (int i=0; i<nb_surfaces; i++)
   {
     m_videoSurfaces.AddSurface(surfaces[i]);
-  }
-
-  // create vaapi decoder context
-  if (!CheckSuccess(vaCreateContext(m_vaapiConfig.dpy,
-                                    m_vaapiConfig.configId,
-                                    m_vaapiConfig.surfaceWidth,
-                                    m_vaapiConfig.surfaceHeight,
-                                    VA_PROGRESSIVE,
-                                    surfaces,
-                                    nb_surfaces,
-                                    &m_vaapiConfig.contextId)))
-  {
-    m_vaapiConfig.contextId = VA_INVALID_ID;
-    return false;
   }
 
   // initialize output
@@ -1134,10 +1141,6 @@ bool CDecoder::ConfigVAAPI()
     return false;
   }
 
-  m_hwContext.config_id = m_vaapiConfig.configId;
-  m_hwContext.context_id = m_vaapiConfig.contextId;
-  m_hwContext.display = m_vaapiConfig.dpy;
-
   m_inMsgEvent.Reset();
   m_vaapiConfigured = true;
   m_ErrorCount = 0;
@@ -1150,16 +1153,9 @@ void CDecoder::FiniVAAPIOutput()
   if (!m_vaapiConfigured)
     return;
 
-  memset(&m_hwContext, 0, sizeof(vaapi_context));
-
   // uninit output
   m_vaapiOutput.Dispose();
   m_vaapiConfigured = false;
-
-  // destroy decoder context
-  if (m_vaapiConfig.contextId != VA_INVALID_ID)
-    CheckSuccess(vaDestroyContext(m_vaapiConfig.dpy, m_vaapiConfig.contextId));
-  m_vaapiConfig.contextId = VA_INVALID_ID;
 
   // destroy surfaces
   if (g_advancedSettings.CanLogComponent(LOGVIDEO))
@@ -3552,9 +3548,9 @@ bool CFFmpegPostproc::Filter(CVaapiProcessedPicture &outPic)
 
   outPic.source = CVaapiProcessedPicture::FFMPEG_SRC;
 
-  if(outPic.frame->pkt_pts != AV_NOPTS_VALUE)
+  if(outPic.frame->pts != AV_NOPTS_VALUE)
   {
-    outPic.DVDPic.pts = (double)outPic.frame->pkt_pts * DVD_TIME_BASE / AV_TIME_BASE;
+    outPic.DVDPic.pts = (double)outPic.frame->pts * DVD_TIME_BASE / AV_TIME_BASE;
   }
   else
     outPic.DVDPic.pts = DVD_NOPTS_VALUE;

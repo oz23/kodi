@@ -40,7 +40,6 @@
 
 extern "C" {
 #include "libavutil/avutil.h"
-#include "libavcodec/vaapi.h"
 #include "libavfilter/avfilter.h"
 }
 
@@ -113,7 +112,6 @@ struct CVaapiConfig
   int outHeight;
   AVRational aspect;
   VAConfigID configId;
-  VAContextID contextId;
   CVaapiBufferStats *stats;
   CDecoder *vaapi;
   int upscale;
@@ -460,7 +458,6 @@ protected:
   bool m_vaapiConfigured;
   CVaapiConfig  m_vaapiConfig;
   CVideoSurfaces m_videoSurfaces;
-  vaapi_context m_hwContext;
   AVCodecContext* m_avctx;
   int m_getBufferError;
 
