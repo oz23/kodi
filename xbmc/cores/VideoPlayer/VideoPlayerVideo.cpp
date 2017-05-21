@@ -126,10 +126,16 @@ bool CVideoPlayerVideo::OpenStream(CDVDStreamInfo hint)
     return false;
   if (hint.extrasize == 0)
   {
-    // codecs with no extradata
-    if (hint.codec != AV_CODEC_ID_MJPEG &&
-        hint.codec != AV_CODEC_ID_MSMPEG4V3)
-     return false;
+    // codecs which require extradata
+    if (hint.codec == AV_CODEC_ID_MPEG1VIDEO ||
+        hint.codec == AV_CODEC_ID_MPEG2VIDEO ||
+        hint.codec == AV_CODEC_ID_MPEG2VIDEO_XVMC ||
+        hint.codec == AV_CODEC_ID_H264 ||
+        hint.codec == AV_CODEC_ID_HEVC ||
+        hint.codec == AV_CODEC_ID_MPEG4 ||
+        hint.codec == AV_CODEC_ID_WMV3 ||
+        hint.codec == AV_CODEC_ID_VC1)
+      return false;
   }
 
   CLog::Log(LOGNOTICE, "Creating video codec with codec id: %i", hint.codec);
