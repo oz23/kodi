@@ -147,10 +147,6 @@
 #define HAS_FILESYSTEM_SFTP
 #endif
 
-#if defined(HAVE_X11)
-#define HAS_EGL
-#endif
-
 /****************************************
  * Additional platform specific includes
  ****************************************/
@@ -190,10 +186,6 @@
 #if defined(TARGET_ANDROID)
 #undef HAS_LINUX_EVENTS
 #undef HAS_LIRC
-#endif
-
-#ifdef HAVE_LIBEGL
-#define HAS_EGL
 #endif
 
 // GLES2.0 detected. Dont use GL!
