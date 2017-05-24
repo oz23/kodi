@@ -20,7 +20,6 @@
 
 #pragma once
 
-#if defined(HAVE_X11)
 #include "GLContext.h"
 #include "EGL/egl.h"
 #include "EGL/eglextchromium.h"
@@ -56,5 +55,3 @@ protected:
     uint64_t interval = 0;
   } m_sync;
 };
-
-#endif
