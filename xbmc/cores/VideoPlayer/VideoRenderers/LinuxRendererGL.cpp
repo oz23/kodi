@@ -459,11 +459,7 @@ void CLinuxRendererGL::Reset()
 {
   for(int i=0; i<m_NumYV12Buffers; i++)
   {
-    if (m_buffers[i].videoBuffer)
-    {
-      m_buffers[i].videoBuffer->Release();
-      m_buffers[i].videoBuffer = nullptr;
-    }
+    ReleaseBuffer(i);
   }
 }
 
@@ -1543,11 +1539,7 @@ bool CLinuxRendererGL::CreateTexture(int index)
 
 void CLinuxRendererGL::DeleteTexture(int index)
 {
-  if (m_buffers[index].videoBuffer)
-  {
-    m_buffers[index].videoBuffer->Release();
-    m_buffers[index].videoBuffer = nullptr;
-  }
+  ReleaseBuffer(index);
 
   if (m_format == AV_PIX_FMT_NV12)
     DeleteNV12Texture(index);
