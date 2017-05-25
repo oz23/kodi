@@ -52,6 +52,11 @@ void CVideoBuffer::Release()
   }
 }
 
+AVPixelFormat CVideoBuffer::GetFormat()
+{
+  return m_pixFormat;
+}
+
 bool CVideoBuffer::CopyPicture(YuvImage* pDst, YuvImage *pSrc)
 {
   uint8_t *s = pSrc->plane[0];
