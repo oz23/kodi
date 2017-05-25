@@ -52,7 +52,6 @@ private:
 
   static bool get_frame_buffer(void* kodiInstance, VIDEOCODEC_PICTURE &picture);
 
-  kodi::addon::CInstanceVideoCodec* m_addonInstance;
   AddonInstance_VideoCodec m_struct;
 
   int m_codecFlags;

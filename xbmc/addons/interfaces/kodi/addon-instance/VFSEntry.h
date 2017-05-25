@@ -96,7 +96,6 @@ namespace ADDON
     bool m_directories;       //!< VFS entry can list directories.
     bool m_filedirectories;   //!< VFS entry contains file directories.
 
-    kodi::addon::CInstanceVFS* m_addonInstance;
     AddonInstance_VFSEntry m_struct;
   };
 

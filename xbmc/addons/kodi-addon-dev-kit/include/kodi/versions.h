@@ -42,18 +42,18 @@
  */
 
 
-#define ADDON_GLOBAL_VERSION_MAIN                     "1.0.0"
-#define ADDON_GLOBAL_VERSION_MAIN_MIN                 "1.0.0"
+#define ADDON_GLOBAL_VERSION_MAIN                     "1.0.2"
+#define ADDON_GLOBAL_VERSION_MAIN_MIN                 "1.0.2"
 #define ADDON_GLOBAL_VERSION_MAIN_XML_ID              "kodi.binary.global.main"
-#define ADDON_GLOBAL_VERSION_MAIN_DEPENDS             "xbmc_addon_dll.h" \
+#define ADDON_GLOBAL_VERSION_MAIN_DEPENDS             "AddonBase.h" \
+                                                      "xbmc_addon_dll.h" \
                                                       "xbmc_addon_types.h" \
                                                       "libXBMC_addon.h" \
-                                                      "AddonBase.h" \
                                                       "AudioEngine.h" \
                                                       "Filesystem.h" \
                                                       "General.h" \
                                                       "Network.h"
-
+// @note "addon-instance/Screensaver.h" above must be improved to check only to included directory with "addon-instance"!
 #define ADDON_GLOBAL_VERSION_GUI                      "5.11.1"
 #define ADDON_GLOBAL_VERSION_GUI_MIN                  "5.11.0"
 #define ADDON_GLOBAL_VERSION_GUI_XML_ID               "kodi.binary.global.gui"
@@ -103,15 +103,15 @@
 #define ADDON_INSTANCE_VERSION_AUDIOENCODER_XML_ID    "kodi.binary.instance.audioencoder"
 #define ADDON_INSTANCE_VERSION_AUDIOENCODER_DEPENDS   "addon-instance/AudioEncoder.h"
 
-#define ADDON_INSTANCE_VERSION_GAME                   "1.0.30"
-#define ADDON_INSTANCE_VERSION_GAME_MIN               "1.0.30"
+#define ADDON_INSTANCE_VERSION_GAME                   "1.0.32"
+#define ADDON_INSTANCE_VERSION_GAME_MIN               "1.0.32"
 #define ADDON_INSTANCE_VERSION_GAME_XML_ID            "kodi.binary.instance.game"
 #define ADDON_INSTANCE_VERSION_GAME_DEPENDS           "kodi_game_dll.h" \
                                                       "kodi_game_types.h" \
                                                       "libKODI_game.h"
 
-#define ADDON_INSTANCE_VERSION_IMAGEDECODER           "1.0.0"
-#define ADDON_INSTANCE_VERSION_IMAGEDECODER_MIN       "1.0.0"
+#define ADDON_INSTANCE_VERSION_IMAGEDECODER           "1.0.1"
+#define ADDON_INSTANCE_VERSION_IMAGEDECODER_MIN       "1.0.1"
 #define ADDON_INSTANCE_VERSION_IMAGEDECODER_XML_ID    "kodi.binary.instance.imagedecoder"
 #define ADDON_INSTANCE_VERSION_IMAGEDECODER_DEPENDS   "addon-instance/ImageDecoder.h"
 
@@ -121,22 +121,22 @@
 #define ADDON_INSTANCE_VERSION_INPUTSTREAM_DEPENDS    "addon-instance/Inputstream.h" \
                                                       "StreamCrypto.h"
 
-#define ADDON_INSTANCE_VERSION_PERIPHERAL             "1.3.1"
-#define ADDON_INSTANCE_VERSION_PERIPHERAL_MIN         "1.3.1"
+#define ADDON_INSTANCE_VERSION_PERIPHERAL             "1.3.3"
+#define ADDON_INSTANCE_VERSION_PERIPHERAL_MIN         "1.3.3"
 #define ADDON_INSTANCE_VERSION_PERIPHERAL_XML_ID      "kodi.binary.instance.peripheral"
 #define ADDON_INSTANCE_VERSION_PERIPHERAL_DEPENDS     "addon-instance/Peripheral.h" \
                                                       "addon-instance/PeripheralUtils.h"
 
-#define ADDON_INSTANCE_VERSION_PVR                    "5.2.3"
-#define ADDON_INSTANCE_VERSION_PVR_MIN                "5.2.3"
+#define ADDON_INSTANCE_VERSION_PVR                    "5.2.4"
+#define ADDON_INSTANCE_VERSION_PVR_MIN                "5.2.4"
 #define ADDON_INSTANCE_VERSION_PVR_XML_ID             "kodi.binary.instance.pvr"
 #define ADDON_INSTANCE_VERSION_PVR_DEPENDS            "xbmc_pvr_dll.h" \
                                                       "xbmc_pvr_types.h" \
                                                       "xbmc_epg_types.h" \
                                                       "libXBMC_pvr.h"
 
-#define ADDON_INSTANCE_VERSION_SCREENSAVER            "1.0.2"
-#define ADDON_INSTANCE_VERSION_SCREENSAVER_MIN        "1.0.2"
+#define ADDON_INSTANCE_VERSION_SCREENSAVER            "2.0.0"
+#define ADDON_INSTANCE_VERSION_SCREENSAVER_MIN        "2.0.0"
 #define ADDON_INSTANCE_VERSION_SCREENSAVER_XML_ID     "kodi.binary.instance.screensaver"
 #define ADDON_INSTANCE_VERSION_SCREENSAVER_DEPENDS    "addon-instance/Screensaver.h"
 
@@ -145,13 +145,13 @@
 #define ADDON_INSTANCE_VERSION_VFS_XML_ID             "kodi.binary.instance.vfs"
 #define ADDON_INSTANCE_VERSION_VFS_DEPENDS            "addon-instance/VFS.h"
 
-#define ADDON_INSTANCE_VERSION_VISUALIZATION          "1.0.2"
-#define ADDON_INSTANCE_VERSION_VISUALIZATION_MIN      "1.0.2"
+#define ADDON_INSTANCE_VERSION_VISUALIZATION          "1.0.1"
+#define ADDON_INSTANCE_VERSION_VISUALIZATION_MIN      "1.0.1"
 #define ADDON_INSTANCE_VERSION_VISUALIZATION_XML_ID   "kodi.binary.instance.visualization"
 #define ADDON_INSTANCE_VERSION_VISUALIZATION_DEPENDS  "addon-instance/Visualization.h"
 
-#define ADDON_INSTANCE_VERSION_VIDEOCODEC             "1.0.0"
-#define ADDON_INSTANCE_VERSION_VIDEOCODEC_MIN         "1.0.0"
+#define ADDON_INSTANCE_VERSION_VIDEOCODEC             "1.0.1"
+#define ADDON_INSTANCE_VERSION_VIDEOCODEC_MIN         "1.0.1"
 #define ADDON_INSTANCE_VERSION_VIDEOCODEC_XML_ID      "kodi.binary.instance.videocodec"
 #define ADDON_INSTANCE_VERSION_VIDEOCODEC_DEPENDS     "addon-instance/VideoCodec.h" \
                                                       "StreamCodec.h" \

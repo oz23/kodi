@@ -26,6 +26,8 @@ namespace kodi { namespace addon { class CInstanceScreensaver; }}
 extern "C"
 {
 
+struct AddonInstance_Screensaver;
+
 typedef struct AddonProps_Screensaver
 {
   void *device;
@@ -46,9 +48,10 @@ typedef struct AddonToKodiFuncTable_Screensaver
 
 typedef struct KodiToAddonFuncTable_Screensaver
 {
-  bool (__cdecl* Start) (kodi::addon::CInstanceScreensaver* addonInstance);
-  void (__cdecl* Stop) (kodi::addon::CInstanceScreensaver* addonInstance);
-  void (__cdecl* Render) (kodi::addon::CInstanceScreensaver* addonInstance);
+  kodi::addon::CInstanceScreensaver* addonInstance;
+  bool (__cdecl* Start) (AddonInstance_Screensaver* instance);
+  void (__cdecl* Stop) (AddonInstance_Screensaver* instance);
+  void (__cdecl* Render) (AddonInstance_Screensaver* instance);
 } KodiToAddonFuncTable_Screensaver;
 
 typedef struct AddonInstance_Screensaver
@@ -64,6 +67,7 @@ namespace kodi
 {
 namespace addon
 {
+
   class CInstanceScreensaver : public IAddonInstance
   {
   public:
@@ -109,25 +113,25 @@ namespace addon
         throw std::logic_error("kodi::addon::CInstanceScreensaver: Creation with empty addon structure not allowed, table must be given from Kodi!");
 
       m_instanceData = static_cast<AddonInstance_Screensaver*>(instance);
-
+      m_instanceData->toAddon.addonInstance = this;
       m_instanceData->toAddon.Start = ADDON_Start;
       m_instanceData->toAddon.Stop = ADDON_Stop;
       m_instanceData->toAddon.Render = ADDON_Render;
     }
 
-    inline static bool ADDON_Start(CInstanceScreensaver* addonInstance)
+    inline static bool ADDON_Start(AddonInstance_Screensaver* instance)
     {
-      return addonInstance->Start();
+      return instance->toAddon.addonInstance->Start();
     }
 
-    inline static void ADDON_Stop(CInstanceScreensaver* addonInstance)
+    inline static void ADDON_Stop(AddonInstance_Screensaver* instance)
     {
-      addonInstance->Stop();
+      instance->toAddon.addonInstance->Stop();
     }
 
-    inline static void ADDON_Render(CInstanceScreensaver* addonInstance)
+    inline static void ADDON_Render(AddonInstance_Screensaver* instance)
     {
-      addonInstance->Render();
+      instance->toAddon.addonInstance->Render();
     }
 
     AddonInstance_Screensaver* m_instanceData;

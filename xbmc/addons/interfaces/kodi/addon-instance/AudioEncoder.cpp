@@ -26,16 +26,16 @@ namespace ADDON
 CAudioEncoder::CAudioEncoder(AddonInfoPtr addonInfo)
   : IAddonInstanceHandler(ADDON_AUDIOENCODER, addonInfo)
 {
-  memset(&m_struct, 0, sizeof(m_struct));
+  m_struct = { 0 };
 }
 
 bool CAudioEncoder::Init(AddonToKodiFuncTable_AudioEncoder &callbacks)
 {
   m_struct.toKodi = callbacks;
-  if (!CreateInstance(ADDON_INSTANCE_AUDIOENCODER, &m_struct, reinterpret_cast<KODI_HANDLE*>(&m_addonInstance)) || !m_struct.toAddon.Start)
+  if (!CreateInstance(ADDON_INSTANCE_AUDIOENCODER, &m_struct) || !m_struct.toAddon.Start)
     return false;
 
-  return m_struct.toAddon.Start(m_addonInstance,
+  return m_struct.toAddon.Start(&m_struct,
                                 m_iInChannels,
                                 m_iInSampleRate,
                                 m_iInBitsPerSample,
@@ -53,7 +53,7 @@ bool CAudioEncoder::Init(AddonToKodiFuncTable_AudioEncoder &callbacks)
 int CAudioEncoder::Encode(int nNumBytesRead, uint8_t* pbtStream)
 {
   if (m_struct.toAddon.Encode)
-    return m_struct.toAddon.Encode(m_addonInstance, nNumBytesRead, pbtStream);
+    return m_struct.toAddon.Encode(&m_struct, nNumBytesRead, pbtStream);
   return 0;
 }
 
@@ -61,10 +61,10 @@ bool CAudioEncoder::Close()
 {
   bool ret = false;
   if (m_struct.toAddon.Finish)
-    ret = m_struct.toAddon.Finish(m_addonInstance);
+    ret = m_struct.toAddon.Finish(&m_struct);
 
   DestroyInstance();
-  memset(&m_struct, 0, sizeof(m_struct));
+  m_struct = { 0 };
 
   return ret;
 }

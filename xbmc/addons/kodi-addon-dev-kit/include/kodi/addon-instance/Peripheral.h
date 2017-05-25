@@ -252,6 +252,8 @@ extern "C"
     const char* addon_path;             /*!< @brief path to this add-on */
   } ATTRIBUTE_PACKED AddonProps_Peripheral;
 
+  struct AddonInstance_Peripheral;
+
   typedef struct AddonToKodiFuncTable_Peripheral
   {
     KODI_HANDLE kodiInstance;
@@ -262,32 +264,31 @@ extern "C"
 
   //! @todo Mouse, light gun, multitouch
 
-  /*!
-   * @brief Structure to transfer the methods from kodi_peripheral_dll.h to the frontend
-   */
   typedef struct KodiToAddonFuncTable_Peripheral
   {
-    void (__cdecl* GetCapabilities)(kodi::addon::CInstancePeripheral* addonInstance, PERIPHERAL_CAPABILITIES*);
-    PERIPHERAL_ERROR (__cdecl* PerformDeviceScan)(kodi::addon::CInstancePeripheral* addonInstance, unsigned int*, PERIPHERAL_INFO**);
-    void             (__cdecl* FreeScanResults)(kodi::addon::CInstancePeripheral* addonInstance, unsigned int, PERIPHERAL_INFO*);
-    PERIPHERAL_ERROR (__cdecl* GetEvents)(kodi::addon::CInstancePeripheral* addonInstance, unsigned int*, PERIPHERAL_EVENT**);
-    void             (__cdecl* FreeEvents)(kodi::addon::CInstancePeripheral* addonInstance, unsigned int, PERIPHERAL_EVENT*);
-    bool             (__cdecl* SendEvent)(kodi::addon::CInstancePeripheral* addonInstance, const PERIPHERAL_EVENT*);
+    kodi::addon::CInstancePeripheral* addonInstance;
+
+    void (__cdecl* GetCapabilities)(AddonInstance_Peripheral* addonInstance, PERIPHERAL_CAPABILITIES*);
+    PERIPHERAL_ERROR (__cdecl* PerformDeviceScan)(AddonInstance_Peripheral* addonInstance, unsigned int*, PERIPHERAL_INFO**);
+    void             (__cdecl* FreeScanResults)(AddonInstance_Peripheral* addonInstance, unsigned int, PERIPHERAL_INFO*);
+    PERIPHERAL_ERROR (__cdecl* GetEvents)(AddonInstance_Peripheral* addonInstance, unsigned int*, PERIPHERAL_EVENT**);
+    void             (__cdecl* FreeEvents)(AddonInstance_Peripheral* addonInstance, unsigned int, PERIPHERAL_EVENT*);
+    bool             (__cdecl* SendEvent)(AddonInstance_Peripheral* addonInstance, const PERIPHERAL_EVENT*);
 
     /// @name Joystick operations
     ///{
-    PERIPHERAL_ERROR (__cdecl* GetJoystickInfo)(kodi::addon::CInstancePeripheral* addonInstance, unsigned int, JOYSTICK_INFO*);
-    void             (__cdecl* FreeJoystickInfo)(kodi::addon::CInstancePeripheral* addonInstance, JOYSTICK_INFO*);
-    PERIPHERAL_ERROR (__cdecl* GetFeatures)(kodi::addon::CInstancePeripheral* addonInstance, const JOYSTICK_INFO*, const char*, unsigned int*, JOYSTICK_FEATURE**);
-    void             (__cdecl* FreeFeatures)(kodi::addon::CInstancePeripheral* addonInstance, unsigned int, JOYSTICK_FEATURE*);
-    PERIPHERAL_ERROR (__cdecl* MapFeatures)(kodi::addon::CInstancePeripheral* addonInstance, const JOYSTICK_INFO*, const char*, unsigned int, const JOYSTICK_FEATURE*);
-    PERIPHERAL_ERROR (__cdecl* GetIgnoredPrimitives)(kodi::addon::CInstancePeripheral* addonInstance, const JOYSTICK_INFO*, unsigned int*, JOYSTICK_DRIVER_PRIMITIVE**);
-    void             (__cdecl* FreePrimitives)(kodi::addon::CInstancePeripheral* addonInstance, unsigned int, JOYSTICK_DRIVER_PRIMITIVE*);
-    PERIPHERAL_ERROR (__cdecl* SetIgnoredPrimitives)(kodi::addon::CInstancePeripheral* addonInstance, const JOYSTICK_INFO*, unsigned int, const JOYSTICK_DRIVER_PRIMITIVE*);
-    void             (__cdecl* SaveButtonMap)(kodi::addon::CInstancePeripheral* addonInstance, const JOYSTICK_INFO*);
-    void             (__cdecl* RevertButtonMap)(kodi::addon::CInstancePeripheral* addonInstance, const JOYSTICK_INFO*);
-    void             (__cdecl* ResetButtonMap)(kodi::addon::CInstancePeripheral* addonInstance, const JOYSTICK_INFO*, const char*);
-    void             (__cdecl* PowerOffJoystick)(kodi::addon::CInstancePeripheral* addonInstance, unsigned int);
+    PERIPHERAL_ERROR (__cdecl* GetJoystickInfo)(AddonInstance_Peripheral* addonInstance, unsigned int, JOYSTICK_INFO*);
+    void             (__cdecl* FreeJoystickInfo)(AddonInstance_Peripheral* addonInstance, JOYSTICK_INFO*);
+    PERIPHERAL_ERROR (__cdecl* GetFeatures)(AddonInstance_Peripheral* addonInstance, const JOYSTICK_INFO*, const char*, unsigned int*, JOYSTICK_FEATURE**);
+    void             (__cdecl* FreeFeatures)(AddonInstance_Peripheral* addonInstance, unsigned int, JOYSTICK_FEATURE*);
+    PERIPHERAL_ERROR (__cdecl* MapFeatures)(AddonInstance_Peripheral* addonInstance, const JOYSTICK_INFO*, const char*, unsigned int, const JOYSTICK_FEATURE*);
+    PERIPHERAL_ERROR (__cdecl* GetIgnoredPrimitives)(AddonInstance_Peripheral* addonInstance, const JOYSTICK_INFO*, unsigned int*, JOYSTICK_DRIVER_PRIMITIVE**);
+    void             (__cdecl* FreePrimitives)(AddonInstance_Peripheral* addonInstance, unsigned int, JOYSTICK_DRIVER_PRIMITIVE*);
+    PERIPHERAL_ERROR (__cdecl* SetIgnoredPrimitives)(AddonInstance_Peripheral* addonInstance, const JOYSTICK_INFO*, unsigned int, const JOYSTICK_DRIVER_PRIMITIVE*);
+    void             (__cdecl* SaveButtonMap)(AddonInstance_Peripheral* addonInstance, const JOYSTICK_INFO*);
+    void             (__cdecl* RevertButtonMap)(AddonInstance_Peripheral* addonInstance, const JOYSTICK_INFO*);
+    void             (__cdecl* ResetButtonMap)(AddonInstance_Peripheral* addonInstance, const JOYSTICK_INFO*, const char*);
+    void             (__cdecl* PowerOffJoystick)(AddonInstance_Peripheral* addonInstance, unsigned int);
     ///}
   } KodiToAddonFuncTable_Peripheral;
 
@@ -554,6 +555,7 @@ namespace addon
         throw std::logic_error("kodi::addon::CInstancePeripheral: Creation with empty addon structure not allowed, table must be given from Kodi!");
 
       m_instanceData = static_cast<AddonInstance_Peripheral*>(instance);
+      m_instanceData->toAddon.addonInstance = this;
 
       m_instanceData->toAddon.GetCapabilities = ADDON_GetCapabilities;
       m_instanceData->toAddon.PerformDeviceScan = ADDON_PerformDeviceScan;
@@ -576,101 +578,101 @@ namespace addon
       m_instanceData->toAddon.PowerOffJoystick = ADDON_PowerOffJoystick;
     }
 
-    inline static void ADDON_GetCapabilities(kodi::addon::CInstancePeripheral* addonInstance, PERIPHERAL_CAPABILITIES *pCapabilities)
+    inline static void ADDON_GetCapabilities(AddonInstance_Peripheral* addonInstance, PERIPHERAL_CAPABILITIES *pCapabilities)
     {
-      addonInstance->GetCapabilities(*pCapabilities);
+      addonInstance->toAddon.addonInstance->GetCapabilities(*pCapabilities);
     }
 
-    inline static PERIPHERAL_ERROR ADDON_PerformDeviceScan(kodi::addon::CInstancePeripheral* addonInstance, unsigned int* peripheral_count, PERIPHERAL_INFO** scan_results)
+    inline static PERIPHERAL_ERROR ADDON_PerformDeviceScan(AddonInstance_Peripheral* addonInstance, unsigned int* peripheral_count, PERIPHERAL_INFO** scan_results)
     {
-      return addonInstance->PerformDeviceScan(peripheral_count, scan_results);
+      return addonInstance->toAddon.addonInstance->PerformDeviceScan(peripheral_count, scan_results);
     }
 
-    inline static void ADDON_FreeScanResults(kodi::addon::CInstancePeripheral* addonInstance, unsigned int peripheral_count, PERIPHERAL_INFO* scan_results)
+    inline static void ADDON_FreeScanResults(AddonInstance_Peripheral* addonInstance, unsigned int peripheral_count, PERIPHERAL_INFO* scan_results)
     {
-      addonInstance->FreeScanResults(peripheral_count, scan_results);
+      addonInstance->toAddon.addonInstance->FreeScanResults(peripheral_count, scan_results);
     }
 
-    inline static PERIPHERAL_ERROR ADDON_GetEvents(kodi::addon::CInstancePeripheral* addonInstance, unsigned int* event_count, PERIPHERAL_EVENT** events)
+    inline static PERIPHERAL_ERROR ADDON_GetEvents(AddonInstance_Peripheral* addonInstance, unsigned int* event_count, PERIPHERAL_EVENT** events)
     {
-      return addonInstance->GetEvents(event_count, events);
+      return addonInstance->toAddon.addonInstance->GetEvents(event_count, events);
     }
 
-    inline static void ADDON_FreeEvents(kodi::addon::CInstancePeripheral* addonInstance, unsigned int event_count, PERIPHERAL_EVENT* events)
+    inline static void ADDON_FreeEvents(AddonInstance_Peripheral* addonInstance, unsigned int event_count, PERIPHERAL_EVENT* events)
     {
-      addonInstance->FreeEvents(event_count, events);
+      addonInstance->toAddon.addonInstance->FreeEvents(event_count, events);
     }
 
-    inline static bool ADDON_SendEvent(kodi::addon::CInstancePeripheral* addonInstance, const PERIPHERAL_EVENT* event)
+    inline static bool ADDON_SendEvent(AddonInstance_Peripheral* addonInstance, const PERIPHERAL_EVENT* event)
     {
-      return addonInstance->SendEvent(event);
+      return addonInstance->toAddon.addonInstance->SendEvent(event);
     }
 
     
-    inline static PERIPHERAL_ERROR ADDON_GetJoystickInfo(kodi::addon::CInstancePeripheral* addonInstance, unsigned int index, JOYSTICK_INFO* info)
+    inline static PERIPHERAL_ERROR ADDON_GetJoystickInfo(AddonInstance_Peripheral* addonInstance, unsigned int index, JOYSTICK_INFO* info)
     {
-      return addonInstance->GetJoystickInfo(index, info);
+      return addonInstance->toAddon.addonInstance->GetJoystickInfo(index, info);
     }
 
-    inline static void ADDON_FreeJoystickInfo(kodi::addon::CInstancePeripheral* addonInstance, JOYSTICK_INFO* info)
+    inline static void ADDON_FreeJoystickInfo(AddonInstance_Peripheral* addonInstance, JOYSTICK_INFO* info)
     {
-      addonInstance->FreeJoystickInfo(info);
+      addonInstance->toAddon.addonInstance->FreeJoystickInfo(info);
     }
 
-    inline static PERIPHERAL_ERROR ADDON_GetFeatures(kodi::addon::CInstancePeripheral* addonInstance, const JOYSTICK_INFO* joystick, const char* controller_id,
+    inline static PERIPHERAL_ERROR ADDON_GetFeatures(AddonInstance_Peripheral* addonInstance, const JOYSTICK_INFO* joystick, const char* controller_id,
                                 unsigned int* feature_count, JOYSTICK_FEATURE** features)
     {
-      return addonInstance->GetFeatures(joystick, controller_id, feature_count, features);
+      return addonInstance->toAddon.addonInstance->GetFeatures(joystick, controller_id, feature_count, features);
     }
 
-    inline static void ADDON_FreeFeatures(kodi::addon::CInstancePeripheral* addonInstance, unsigned int feature_count, JOYSTICK_FEATURE* features)
+    inline static void ADDON_FreeFeatures(AddonInstance_Peripheral* addonInstance, unsigned int feature_count, JOYSTICK_FEATURE* features)
     {
-      addonInstance->FreeFeatures(feature_count, features);
+      addonInstance->toAddon.addonInstance->FreeFeatures(feature_count, features);
     }
 
-    inline static PERIPHERAL_ERROR ADDON_MapFeatures(kodi::addon::CInstancePeripheral* addonInstance, const JOYSTICK_INFO* joystick, const char* controller_id,
+    inline static PERIPHERAL_ERROR ADDON_MapFeatures(AddonInstance_Peripheral* addonInstance, const JOYSTICK_INFO* joystick, const char* controller_id,
                                 unsigned int feature_count, const JOYSTICK_FEATURE* features)
     {
-      return addonInstance->MapFeatures(joystick, controller_id, feature_count, features);
+      return addonInstance->toAddon.addonInstance->MapFeatures(joystick, controller_id, feature_count, features);
     }
 
-    inline static PERIPHERAL_ERROR ADDON_GetIgnoredPrimitives(kodi::addon::CInstancePeripheral* addonInstance, const JOYSTICK_INFO* joystick,
+    inline static PERIPHERAL_ERROR ADDON_GetIgnoredPrimitives(AddonInstance_Peripheral* addonInstance, const JOYSTICK_INFO* joystick,
                                           unsigned int* primitive_count,
                                           JOYSTICK_DRIVER_PRIMITIVE** primitives)
     {
-      return addonInstance->GetIgnoredPrimitives(joystick, primitive_count, primitives);
+      return addonInstance->toAddon.addonInstance->GetIgnoredPrimitives(joystick, primitive_count, primitives);
     }
 
-    inline static void ADDON_FreePrimitives(kodi::addon::CInstancePeripheral* addonInstance, unsigned int primitive_count, JOYSTICK_DRIVER_PRIMITIVE* primitives)
+    inline static void ADDON_FreePrimitives(AddonInstance_Peripheral* addonInstance, unsigned int primitive_count, JOYSTICK_DRIVER_PRIMITIVE* primitives)
     {
-      addonInstance->FreePrimitives(primitive_count, primitives);
+      addonInstance->toAddon.addonInstance->FreePrimitives(primitive_count, primitives);
     }
 
-    inline static PERIPHERAL_ERROR ADDON_SetIgnoredPrimitives(kodi::addon::CInstancePeripheral* addonInstance, const JOYSTICK_INFO* joystick,
+    inline static PERIPHERAL_ERROR ADDON_SetIgnoredPrimitives(AddonInstance_Peripheral* addonInstance, const JOYSTICK_INFO* joystick,
                                           unsigned int primitive_count,
                                           const JOYSTICK_DRIVER_PRIMITIVE* primitives)
     {
-      return addonInstance->SetIgnoredPrimitives(joystick, primitive_count, primitives);
+      return addonInstance->toAddon.addonInstance->SetIgnoredPrimitives(joystick, primitive_count, primitives);
     }
 
-    inline static void ADDON_SaveButtonMap(kodi::addon::CInstancePeripheral* addonInstance, const JOYSTICK_INFO* joystick)
+    inline static void ADDON_SaveButtonMap(AddonInstance_Peripheral* addonInstance, const JOYSTICK_INFO* joystick)
     {
-      addonInstance->SaveButtonMap(joystick);
+      addonInstance->toAddon.addonInstance->SaveButtonMap(joystick);
     }
 
-    inline static void ADDON_RevertButtonMap(kodi::addon::CInstancePeripheral* addonInstance, const JOYSTICK_INFO* joystick)
+    inline static void ADDON_RevertButtonMap(AddonInstance_Peripheral* addonInstance, const JOYSTICK_INFO* joystick)
     {
-      addonInstance->RevertButtonMap(joystick);
+      addonInstance->toAddon.addonInstance->RevertButtonMap(joystick);
     }
 
-    inline static void ADDON_ResetButtonMap(kodi::addon::CInstancePeripheral* addonInstance, const JOYSTICK_INFO* joystick, const char* controller_id)
+    inline static void ADDON_ResetButtonMap(AddonInstance_Peripheral* addonInstance, const JOYSTICK_INFO* joystick, const char* controller_id)
     {
-      addonInstance->ResetButtonMap(joystick, controller_id);
+      addonInstance->toAddon.addonInstance->ResetButtonMap(joystick, controller_id);
     }
 
-    inline static void ADDON_PowerOffJoystick(kodi::addon::CInstancePeripheral* addonInstance, unsigned int index)
+    inline static void ADDON_PowerOffJoystick(AddonInstance_Peripheral* addonInstance, unsigned int index)
     {
-      addonInstance->PowerOffJoystick(index);
+      addonInstance->toAddon.addonInstance->PowerOffJoystick(index);
     }
 
     AddonInstance_Peripheral* m_instanceData;

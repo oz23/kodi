@@ -96,11 +96,9 @@ typedef struct AddonToKodiFuncTable_kodi_network
   char* (*dns_lookup)(void* kodiBase, const char* url, bool* ret);
   char* (*url_encode)(void* kodiBase, const char* url);
 } AddonToKodiFuncTable_kodi_network;
-  
+
 typedef struct AddonToKodiFuncTable_kodi
 {
-  bool (*get_setting)(void* kodiBase, const char* settingName, void *settingValue);
-  bool (*set_setting)(void* kodiBase, const char* settingName, const char* settingValue);
   void (*open_settings_dialog)(void* kodiBase);
   char* (*unknown_to_utf8)(void* kodiBase, const char* source, bool& ret, bool failOnBadChar);
   char* (*get_localized_string)(void* kodiBase, long dwCode);

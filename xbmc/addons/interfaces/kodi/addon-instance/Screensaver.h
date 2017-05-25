@@ -41,24 +41,6 @@ private:
   std::string m_profile; /*!< To add-on sended profile path */
 
   AddonInstance_Screensaver m_struct; /*! Interface table who contains function addresses and fixed values */
-  kodi::addon::CInstanceScreensaver* m_addonInstance; /*! class from addon side, @warning not to use on Kodi itself! */
-
-  /*!
-  * @brief Info about kodi::addon::CInstanceScreensaver above
-  *
-  * This class pointer is only be used to store the part of add-on here to have
-  * it on "C" calls to them.
-  *
-  * In normal cases this should not be accessed from Kodi! During development if
-  * add-on and Kodi is compiled with the same can it be used for test purpose.
-  *
-  * Reason to have add-on class and Kodi class complete independent is to prevent
-  * compatibility failures on C++ if compiled on different Versions or different
-  * build types (Debug, Release...), normally it works but it can never guaranted
-  * that addon and Kodi side are compatible!
-  *
-  * Thats why still the "C" interface becomes used.
-  */
 };
 
 } /* namespace ADDON */
