@@ -70,20 +70,24 @@ typedef struct AddonToKodiFuncTable_Visualization /* internal */
   void (__cdecl* transfer_preset) (void* kodiInstance, const char* preset);
 } AddonToKodiFuncTable_Visualization;
 
+struct AddonInstance_Visualization;
+
 typedef struct KodiToAddonFuncTable_Visualization /* internal */
 {
-  bool (__cdecl* Start)(kodi::addon::CInstanceVisualization* addonInstance, int channels, int samplesPerSec, int bitsPerSample, const char* songName);
-  void (__cdecl* Stop)(kodi::addon::CInstanceVisualization* addonInstance);
-  void (__cdecl* AudioData)(kodi::addon::CInstanceVisualization* addonInstance, const float* audioData, int audioDataLength, float *freqData, int freqDataLength);
-  bool (__cdecl* IsDirty) (kodi::addon::CInstanceVisualization* addonInstance);
-  void (__cdecl* Render) (kodi::addon::CInstanceVisualization* addonInstance);
-  void (__cdecl* GetInfo)(kodi::addon::CInstanceVisualization* addonInstance, VIS_INFO *info);
-  bool (__cdecl* OnAction)(kodi::addon::CInstanceVisualization* addonInstance, VIS_ACTION action, const void *param);
-  bool (__cdecl* HasPresets)(kodi::addon::CInstanceVisualization* addonInstance);
-  unsigned int (__cdecl *GetPresets)(kodi::addon::CInstanceVisualization* addonInstance);
-  unsigned int (__cdecl *GetPreset)(kodi::addon::CInstanceVisualization* addonInstance);
-  unsigned int (__cdecl *GetSubModules)(kodi::addon::CInstanceVisualization* addonInstance, char ***modules);
-  bool (__cdecl* IsLocked)(kodi::addon::CInstanceVisualization* addonInstance);
+  kodi::addon::CInstanceVisualization* addonInstance;
+
+  bool (__cdecl* Start)(AddonInstance_Visualization* addonInstance, int channels, int samplesPerSec, int bitsPerSample, const char* songName);
+  void (__cdecl* Stop)(AddonInstance_Visualization* addonInstance);
+  void (__cdecl* AudioData)(AddonInstance_Visualization* addonInstance, const float* audioData, int audioDataLength, float *freqData, int freqDataLength);
+  bool (__cdecl* IsDirty) (AddonInstance_Visualization* addonInstance);
+  void (__cdecl* Render) (AddonInstance_Visualization* addonInstance);
+  void (__cdecl* GetInfo)(AddonInstance_Visualization* addonInstance, VIS_INFO *info);
+  bool (__cdecl* OnAction)(AddonInstance_Visualization* addonInstance, VIS_ACTION action, const void *param);
+  bool (__cdecl* HasPresets)(AddonInstance_Visualization* addonInstance);
+  unsigned int (__cdecl *GetPresets)(AddonInstance_Visualization* addonInstance);
+  unsigned int (__cdecl *GetPreset)(AddonInstance_Visualization* addonInstance);
+  unsigned int (__cdecl *GetSubModules)(AddonInstance_Visualization* addonInstance, char ***modules);
+  bool (__cdecl* IsLocked)(AddonInstance_Visualization* addonInstance);
 } KodiToAddonFuncTable_Visualization;
 
 typedef struct AddonInstance_Visualization /* internal */
@@ -193,7 +197,7 @@ namespace addon
         throw std::logic_error("kodi::addon::CInstanceVisualization: Creation with empty addon structure not allowed, table must be given from Kodi!");
 
       m_instanceData = static_cast<AddonInstance_Visualization*>(instance);
-
+      m_instanceData->toAddon.addonInstance = this;
       m_instanceData->toAddon.Start = ADDON_Start;
       m_instanceData->toAddon.Stop = ADDON_Stop;
       m_instanceData->toAddon.AudioData = ADDON_AudioData;
@@ -206,59 +210,59 @@ namespace addon
       m_instanceData->toAddon.IsLocked = ADDON_IsLocked;
     }
 
-    inline static bool ADDON_Start(CInstanceVisualization* addonInstance, int channels, int samplesPerSec, int bitsPerSample, const char* songName)
+    inline static bool ADDON_Start(AddonInstance_Visualization* addonInstance, int channels, int samplesPerSec, int bitsPerSample, const char* songName)
     {
-      return addonInstance->Start(channels, samplesPerSec, bitsPerSample, songName);
+      return addonInstance->toAddon.addonInstance->Start(channels, samplesPerSec, bitsPerSample, songName);
     }
 
-    inline static void ADDON_Stop(CInstanceVisualization* addonInstance)
+    inline static void ADDON_Stop(AddonInstance_Visualization* addonInstance)
     {
-      addonInstance->Stop();
+      addonInstance->toAddon.addonInstance->Stop();
     }
 
-    inline static void ADDON_AudioData(CInstanceVisualization* addonInstance, const float* audioData, int audioDataLength, float *freqData, int freqDataLength)
+    inline static void ADDON_AudioData(AddonInstance_Visualization* addonInstance, const float* audioData, int audioDataLength, float *freqData, int freqDataLength)
     {
-      addonInstance->AudioData(audioData, audioDataLength, freqData, freqDataLength);
-    }
-    
-    inline static bool ADDON_IsDirty(CInstanceVisualization* addonInstance)
-    {
-      return addonInstance->IsDirty();
+      addonInstance->toAddon.addonInstance->AudioData(audioData, audioDataLength, freqData, freqDataLength);
     }
 
-    inline static void ADDON_Render(CInstanceVisualization* addonInstance)
+    inline static bool ADDON_IsDirty(AddonInstance_Visualization* addonInstance)
     {
-      addonInstance->Render();
+      return addonInstance->toAddon.addonInstance->IsDirty();
     }
 
-    inline static void ADDON_GetInfo(CInstanceVisualization* addonInstance, VIS_INFO *info)
+    inline static void ADDON_Render(AddonInstance_Visualization* addonInstance)
     {
-      addonInstance->GetInfo(info->bWantsFreq, info->iSyncDelay);
+      addonInstance->toAddon.addonInstance->Render();
     }
 
-    inline static bool ADDON_OnAction(CInstanceVisualization* addonInstance, VIS_ACTION action, const void *param)
+    inline static void ADDON_GetInfo(AddonInstance_Visualization* addonInstance, VIS_INFO *info)
+    {
+      addonInstance->toAddon.addonInstance->GetInfo(info->bWantsFreq, info->iSyncDelay);
+    }
+
+    inline static bool ADDON_OnAction(AddonInstance_Visualization* addonInstance, VIS_ACTION action, const void *param)
     {
       switch (action)
       {
         case VIS_ACTION_NEXT_PRESET:
-          return addonInstance->NextPreset();
+          return addonInstance->toAddon.addonInstance->NextPreset();
         case VIS_ACTION_PREV_PRESET:
-          return addonInstance->PrevPreset();
+          return addonInstance->toAddon.addonInstance->PrevPreset();
         case VIS_ACTION_LOAD_PRESET:
-          return addonInstance->LoadPreset(*(int*)param);
+          return addonInstance->toAddon.addonInstance->LoadPreset(*(int*)param);
         case VIS_ACTION_RANDOM_PRESET:
-          return addonInstance->RandomPreset();
+          return addonInstance->toAddon.addonInstance->RandomPreset();
         case VIS_ACTION_LOCK_PRESET:
-          addonInstance->m_presetLockedByUser = !addonInstance->m_presetLockedByUser;
-          return addonInstance->LockPreset(addonInstance->m_presetLockedByUser);
+          addonInstance->toAddon.addonInstance->m_presetLockedByUser = !addonInstance->toAddon.addonInstance->m_presetLockedByUser;
+          return addonInstance->toAddon.addonInstance->LockPreset(addonInstance->toAddon.addonInstance->m_presetLockedByUser);
         case VIS_ACTION_RATE_PRESET_PLUS:
-          return addonInstance->RatePreset(true);
+          return addonInstance->toAddon.addonInstance->RatePreset(true);
         case VIS_ACTION_RATE_PRESET_MINUS:
-          return addonInstance->RatePreset(false);
+          return addonInstance->toAddon.addonInstance->RatePreset(false);
         case VIS_ACTION_UPDATE_ALBUMART:
-          return addonInstance->UpdateAlbumart(static_cast<const char*>(param));
+          return addonInstance->toAddon.addonInstance->UpdateAlbumart(static_cast<const char*>(param));
         case VIS_ACTION_UPDATE_TRACK:
-          return addonInstance->UpdateTrack(*static_cast<const VisTrack*>(param));
+          return addonInstance->toAddon.addonInstance->UpdateTrack(*static_cast<const VisTrack*>(param));
         case VIS_ACTION_NONE:
         default:
           break;
@@ -266,32 +270,32 @@ namespace addon
       return false;
     }
 
-    inline static bool ADDON_HasPresets(CInstanceVisualization* addonInstance)
+    inline static bool ADDON_HasPresets(AddonInstance_Visualization* addonInstance)
     {
-      return addonInstance->HasPresets();
+      return addonInstance->toAddon.addonInstance->HasPresets();
     }
 
-    inline static unsigned int ADDON_GetPresets(CInstanceVisualization* addonInstance)
+    inline static unsigned int ADDON_GetPresets(AddonInstance_Visualization* addonInstance)
     {
-      CInstanceVisualization* addon = addonInstance;
+      AddonInstance_Visualization* addon = addonInstance;
       std::vector<std::string> presets;
-      if (addon->GetPresets(presets))
+      if (addonInstance->toAddon.addonInstance->GetPresets(presets))
       {
         for (auto it : presets)
-          addon->m_instanceData->toKodi.transfer_preset(addon->m_instanceData->toKodi.kodiInstance, it.c_str());
+          addonInstance->toKodi.transfer_preset(addonInstance->toKodi.kodiInstance, it.c_str());
       }
 
       return presets.size();
     }
 
-    inline static unsigned int ADDON_GetPreset(CInstanceVisualization* addonInstance)
+    inline static unsigned int ADDON_GetPreset(AddonInstance_Visualization* addonInstance)
     {
-      return addonInstance->GetPreset();
+      return addonInstance->toAddon.addonInstance->GetPreset();
     }
 
-    inline static bool ADDON_IsLocked(CInstanceVisualization* addonInstance)
+    inline static bool ADDON_IsLocked(AddonInstance_Visualization* addonInstance)
     {
-      return addonInstance->IsLocked();
+      return addonInstance->toAddon.addonInstance->IsLocked();
     }
 
     bool m_presetLockedByUser;

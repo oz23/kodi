@@ -37,16 +37,18 @@ extern "C"
     int64_t (*seek)(void* kodiInstance, int64_t pos, int whence);
   } AddonToKodiFuncTable_AudioEncoder;
 
+  struct AddonInstance_AudioEncoder;
   typedef struct KodiToAddonFuncTable_AudioEncoder
   {
-    bool (__cdecl* Start) (kodi::addon::CInstanceAudioEncoder* addonInstance, int iInChannels, int iInRate, int iInBits,
+    kodi::addon::CInstanceAudioEncoder* addonInstance;
+    bool (__cdecl* Start) (AddonInstance_AudioEncoder* instance, int iInChannels, int iInRate, int iInBits,
                            const char* title, const char* artist,
                            const char* albumartist, const char* album,
                            const char* year, const char* track,
                            const char* genre, const char* comment,
                            int iTrackLength);
-    int  (__cdecl* Encode) (kodi::addon::CInstanceAudioEncoder* addonInstance, int nNumBytesRead, uint8_t* pbtStream);
-    bool (__cdecl* Finish) (kodi::addon::CInstanceAudioEncoder* addonInstance);
+    int  (__cdecl* Encode) (AddonInstance_AudioEncoder* instance, int nNumBytesRead, uint8_t* pbtStream);
+    bool (__cdecl* Finish) (AddonInstance_AudioEncoder* instance);
   } KodiToAddonFuncTable_AudioEncoder;
 
   typedef struct AddonInstance_AudioEncoder
@@ -177,41 +179,41 @@ namespace addon
         throw std::logic_error("kodi::addon::CInstanceAudioEncoder: Creation with empty addon structure not allowed, table must be given from Kodi!");
 
       m_instanceData = static_cast<AddonInstance_AudioEncoder*>(instance);
-
+      m_instanceData->toAddon.addonInstance = this;
       m_instanceData->toAddon.Start = ADDON_Start;
       m_instanceData->toAddon.Encode = ADDON_Encode;
       m_instanceData->toAddon.Finish = ADDON_Finish;
     }
 
-    inline static bool ADDON_Start(CInstanceAudioEncoder* addonInstance, int iInChannels, int iInRate, int iInBits,
+    inline static bool ADDON_Start(AddonInstance_AudioEncoder* instance, int iInChannels, int iInRate, int iInBits,
                      const char* title, const char* artist,
                      const char* albumartist, const char* album,
                      const char* year, const char* track,
                      const char* genre, const char* comment,
                      int iTrackLength)
     {
-      return addonInstance->Start(iInChannels,
-                                  iInRate,
-                                  iInBits,
-                                  title,
-                                  artist,
-                                  albumartist,
-                                  album,
-                                  year,
-                                  track,
-                                  genre,
-                                  comment,
-                                  iTrackLength);
+      return instance->toAddon.addonInstance->Start(iInChannels,
+                                                       iInRate,
+                                                       iInBits,
+                                                       title,
+                                                       artist,
+                                                       albumartist,
+                                                       album,
+                                                       year,
+                                                       track,
+                                                       genre,
+                                                       comment,
+                                                       iTrackLength);
     }
 
-    inline static int ADDON_Encode(CInstanceAudioEncoder* addonInstance, int nNumBytesRead, uint8_t* pbtStream)
+    inline static int ADDON_Encode(AddonInstance_AudioEncoder* instance, int nNumBytesRead, uint8_t* pbtStream)
     {
-      return addonInstance->Encode(nNumBytesRead, pbtStream);
+      return instance->toAddon.addonInstance->Encode(nNumBytesRead, pbtStream);
     }
 
-    inline static bool ADDON_Finish(CInstanceAudioEncoder* addonInstance)
+    inline static bool ADDON_Finish(AddonInstance_AudioEncoder* instance)
     {
-      return addonInstance->Finish();
+      return instance->toAddon.addonInstance->Finish();
     }
 
     AddonInstance_AudioEncoder* m_instanceData;

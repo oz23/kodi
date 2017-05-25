@@ -63,7 +63,6 @@ namespace ADDON
     bool m_tags;
     bool m_tracks;
     const AEChannel* m_channel;
-    kodi::addon::CInstanceAudioDecoder* m_addonInstance;
     AddonInstance_AudioDecoder m_struct;
   };
 

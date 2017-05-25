@@ -44,13 +44,15 @@ extern "C"
     KODI_HANDLE kodiInstance;
   } AddonToKodiFuncTable_ImageDecoder;
 
+  struct AddonInstance_ImageDecoder;
   typedef struct KodiToAddonFuncTable_ImageDecoder
   {
-    bool (__cdecl* LoadImageFromMemory) (kodi::addon::CInstanceImageDecoder* addonInstance,
+    kodi::addon::CInstanceImageDecoder* addonInstance;
+    bool (__cdecl* LoadImageFromMemory) (AddonInstance_ImageDecoder* instance,
                                          unsigned char* buffer, unsigned int bufSize,
                                          unsigned int* width, unsigned int* height);
 
-    bool (__cdecl* Decode) (kodi::addon::CInstanceImageDecoder* addonInstance,
+    bool (__cdecl* Decode) (AddonInstance_ImageDecoder* instance,
                             unsigned char* pixels,
                             unsigned int width, unsigned int height,
                             unsigned int pitch, unsigned int format);
@@ -131,24 +133,24 @@ namespace addon
         throw std::logic_error("kodi::addon::CInstanceImageDecoder: Creation with empty addon structure not allowed, table must be given from Kodi!");
 
       m_instanceData = static_cast<AddonInstance_ImageDecoder*>(instance);
-
+      m_instanceData->toAddon.addonInstance = this;
       m_instanceData->toAddon.LoadImageFromMemory = ADDON_LoadImageFromMemory;
       m_instanceData->toAddon.Decode = ADDON_Decode;
     }
 
-    inline static bool ADDON_LoadImageFromMemory(CInstanceImageDecoder* addonInstance,
+    inline static bool ADDON_LoadImageFromMemory(AddonInstance_ImageDecoder* instance,
                                        unsigned char* buffer, unsigned int bufSize,
                                        unsigned int* width, unsigned int* height)
     {
-      return addonInstance->LoadImageFromMemory(buffer, bufSize, *width, *height);
+      return instance->toAddon.addonInstance->LoadImageFromMemory(buffer, bufSize, *width, *height);
     }
 
-    inline static bool ADDON_Decode(CInstanceImageDecoder* addonInstance,
+    inline static bool ADDON_Decode(AddonInstance_ImageDecoder* instance,
                                     unsigned char* pixels,
                                     unsigned int width, unsigned int height,
                                     unsigned int pitch, unsigned int format)
     {
-      return addonInstance->Decode(pixels, width, height, pitch, static_cast<ImageFormat>(format));
+      return instance->toAddon.addonInstance->Decode(pixels, width, height, pitch, static_cast<ImageFormat>(format));
     }
 
     AddonInstance_ImageDecoder* m_instanceData;

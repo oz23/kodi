@@ -109,25 +109,28 @@ extern "C"
     int dummy;
   } AddonProps_VideoCodec;
 
+  struct AddonInstance_VideoCodec;
   typedef struct KodiToAddonFuncTable_VideoCodec
   {
+    kodi::addon::CInstanceVideoCodec* addonInstance;
+
     //! \brief Opens a codec
-    bool (__cdecl* Open) (kodi::addon::CInstanceVideoCodec* addonInstance, VIDEOCODEC_INITDATA &initData);
+    bool (__cdecl* Open) (AddonInstance_VideoCodec* instance, VIDEOCODEC_INITDATA &initData);
 
     //! \brief Reconfigures a codec
-    bool(__cdecl* Reconfigure) (kodi::addon::CInstanceVideoCodec* addonInstance, VIDEOCODEC_INITDATA &initData);
+    bool(__cdecl* Reconfigure) (AddonInstance_VideoCodec* instance, VIDEOCODEC_INITDATA &initData);
 
     //! \brief Feed codec if requested from GetPicture() (return VC_BUFFER)
-    bool (__cdecl* AddData) (kodi::addon::CInstanceVideoCodec* addonInstance, const DemuxPacket &packet);
+    bool (__cdecl* AddData) (AddonInstance_VideoCodec* instance, const DemuxPacket &packet);
 
     //! \brief Get a decoded picture / request new data
-    VIDEOCODEC_RETVAL (__cdecl* GetPicture) (kodi::addon::CInstanceVideoCodec* addonInstance, VIDEOCODEC_PICTURE &picture);
+    VIDEOCODEC_RETVAL (__cdecl* GetPicture) (AddonInstance_VideoCodec* instance, VIDEOCODEC_PICTURE &picture);
 
     //! \brief Get the name of this video decoder
-    const char *(__cdecl* GetName) (kodi::addon::CInstanceVideoCodec* addonInstance);
+    const char *(__cdecl* GetName) (AddonInstance_VideoCodec* instance);
 
     //! \brief Reset the codec
-    void (__cdecl* Reset)(kodi::addon::CInstanceVideoCodec* addonInstance);
+    void (__cdecl* Reset)(AddonInstance_VideoCodec* instance);
   } KodiToAddonFuncTable_VideoCodec;
 
   typedef struct AddonToKodiFuncTable_VideoCodec
@@ -198,7 +201,7 @@ namespace kodi
           throw std::logic_error("kodi::addon::CInstanceVideoCodec: Creation with empty addon structure not allowed, table must be given from Kodi!");
 
         m_instanceData = static_cast<AddonInstance_VideoCodec*>(instance);
-
+        m_instanceData->toAddon.addonInstance = this;
         m_instanceData->toAddon.Open = ADDON_Open;
         m_instanceData->toAddon.Reconfigure = ADDON_Reconfigure;
         m_instanceData->toAddon.AddData = ADDON_AddData;
@@ -207,34 +210,34 @@ namespace kodi
         m_instanceData->toAddon.Reset = ADDON_Reset;
       }
 
-      inline static bool ADDON_Open(CInstanceVideoCodec* addonInstance, VIDEOCODEC_INITDATA &initData)
+      inline static bool ADDON_Open(AddonInstance_VideoCodec* instance, VIDEOCODEC_INITDATA &initData)
       {
-        return addonInstance->Open(initData);
+        return instance->toAddon.addonInstance->Open(initData);
       }
 
-      inline static bool ADDON_Reconfigure(CInstanceVideoCodec* addonInstance, VIDEOCODEC_INITDATA &initData)
+      inline static bool ADDON_Reconfigure(AddonInstance_VideoCodec* instance, VIDEOCODEC_INITDATA &initData)
       {
-        return addonInstance->Reconfigure(initData);
+        return instance->toAddon.addonInstance->Reconfigure(initData);
       }
 
-      inline static bool ADDON_AddData(CInstanceVideoCodec* addonInstance, const DemuxPacket &packet)
+      inline static bool ADDON_AddData(AddonInstance_VideoCodec* instance, const DemuxPacket &packet)
       {
-        return addonInstance->AddData(packet);
+        return instance->toAddon.addonInstance->AddData(packet);
       }
 
-      inline static VIDEOCODEC_RETVAL ADDON_GetPicture(CInstanceVideoCodec* addonInstance, VIDEOCODEC_PICTURE &picture)
+      inline static VIDEOCODEC_RETVAL ADDON_GetPicture(AddonInstance_VideoCodec* instance, VIDEOCODEC_PICTURE &picture)
       {
-        return addonInstance->GetPicture(picture);
+        return instance->toAddon.addonInstance->GetPicture(picture);
       }
 
-      inline static const char *ADDON_GetName(CInstanceVideoCodec* addonInstance)
+      inline static const char *ADDON_GetName(AddonInstance_VideoCodec* instance)
       {
-        return addonInstance->GetName();
+        return instance->toAddon.addonInstance->GetName();
       }
 
-      inline static void ADDON_Reset(CInstanceVideoCodec* addonInstance)
+      inline static void ADDON_Reset(AddonInstance_VideoCodec* instance)
       {
-        return addonInstance->Reset();
+        return instance->toAddon.addonInstance->Reset();
       }
 
       AddonInstance_VideoCodec* m_instanceData;

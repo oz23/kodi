@@ -45,8 +45,6 @@ namespace ADDON
 void Interface_General::Init(AddonGlobalInterface* addonInterface)
 {
   addonInterface->toKodi.kodi = (AddonToKodiFuncTable_kodi*)malloc(sizeof(AddonToKodiFuncTable_kodi));
-  addonInterface->toKodi.kodi->get_setting = get_setting;
-  addonInterface->toKodi.kodi->set_setting = set_setting;
   addonInterface->toKodi.kodi->open_settings_dialog = open_settings_dialog;
   addonInterface->toKodi.kodi->get_localized_string = get_localized_string;
   addonInterface->toKodi.kodi->unknown_to_utf8 = unknown_to_utf8;

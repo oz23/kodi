@@ -106,7 +106,7 @@ bool CPeripheralAddon::CreateAddon(void)
 
   // Initialise the add-on
   CLog::Log(LOGDEBUG, "PERIPHERAL - %s - creating peripheral add-on instance '%s'", __FUNCTION__, Name().c_str());
-  if (CreateInstance(ADDON_INSTANCE_PERIPHERAL, &m_struct, reinterpret_cast<KODI_HANDLE*>(&m_addonInstance)))
+  if (CreateInstance(ADDON_INSTANCE_PERIPHERAL, &m_struct))
   {
     if (!GetAddonProperties())
     {
@@ -142,7 +142,7 @@ bool CPeripheralAddon::GetAddonProperties(void)
   PERIPHERAL_CAPABILITIES addonCapabilities = { };
 
   // Get the capabilities
-  m_struct.toAddon.GetCapabilities(m_addonInstance, &addonCapabilities);
+  m_struct.toAddon.GetCapabilities(&m_struct, &addonCapabilities);
 
   // Verify capabilities against addon.xml
   if (m_bProvidesJoysticks != addonCapabilities.provides_joysticks)
@@ -341,7 +341,7 @@ bool CPeripheralAddon::PerformDeviceScan(PeripheralScanResults &results)
   PERIPHERAL_INFO*  pScanResults;
   PERIPHERAL_ERROR  retVal;
 
-  LogError(retVal = m_struct.toAddon.PerformDeviceScan(m_addonInstance, &peripheralCount, &pScanResults), "PerformDeviceScan()");
+  LogError(retVal = m_struct.toAddon.PerformDeviceScan(&m_struct, &peripheralCount, &pScanResults), "PerformDeviceScan()");
 
   if (retVal == PERIPHERAL_NO_ERROR)
   {
@@ -371,7 +371,7 @@ bool CPeripheralAddon::PerformDeviceScan(PeripheralScanResults &results)
         results.m_results.push_back(result);
     }
 
-    m_struct.toAddon.FreeScanResults(m_addonInstance, peripheralCount, pScanResults);
+    m_struct.toAddon.FreeScanResults(&m_struct, peripheralCount, pScanResults);
 
     return true;
   }
@@ -392,7 +392,7 @@ bool CPeripheralAddon::ProcessEvents(void)
   unsigned int      eventCount = 0;
   PERIPHERAL_EVENT* pEvents = NULL;
 
-  LogError(retVal = m_struct.toAddon.GetEvents(m_addonInstance, &eventCount, &pEvents), "GetEvents()");
+  LogError(retVal = m_struct.toAddon.GetEvents(&m_struct, &eventCount, &pEvents), "GetEvents()");
   if (retVal == PERIPHERAL_NO_ERROR)
   {
     for (unsigned int i = 0; i < eventCount; i++)
@@ -443,7 +443,7 @@ bool CPeripheralAddon::ProcessEvents(void)
         std::static_pointer_cast<CPeripheralJoystick>(it.second)->ProcessAxisMotions();
     }
 
-    m_struct.toAddon.FreeEvents(m_addonInstance, eventCount, pEvents);
+    m_struct.toAddon.FreeEvents(&m_struct, eventCount, pEvents);
 
     return true;
   }
@@ -465,7 +465,7 @@ bool CPeripheralAddon::SendRumbleEvent(unsigned int peripheralIndex, unsigned in
   eventStruct.driver_index     = driverIndex;
   eventStruct.motor_state      = magnitude;
 
-  return m_struct.toAddon.SendEvent(m_addonInstance, &eventStruct);
+  return m_struct.toAddon.SendEvent(&m_struct, &eventStruct);
 }
 
 bool CPeripheralAddon::GetJoystickProperties(unsigned int index, CPeripheralJoystick& joystick)
@@ -479,13 +479,13 @@ bool CPeripheralAddon::GetJoystickProperties(unsigned int index, CPeripheralJoys
 
   JOYSTICK_INFO joystickStruct;
 
-  LogError(retVal = m_struct.toAddon.GetJoystickInfo(m_addonInstance, index, &joystickStruct), "GetJoystickInfo()");
+  LogError(retVal = m_struct.toAddon.GetJoystickInfo(&m_struct, index, &joystickStruct), "GetJoystickInfo()");
   if (retVal == PERIPHERAL_NO_ERROR)
   {
     kodi::addon::Joystick addonJoystick(joystickStruct);
     SetJoystickInfo(joystick, addonJoystick);
 
-    m_struct.toAddon.FreeJoystickInfo(m_addonInstance, &joystickStruct);
+    m_struct.toAddon.FreeJoystickInfo(&m_struct, &joystickStruct);
 
     return true;
   }
@@ -514,7 +514,7 @@ bool CPeripheralAddon::GetFeatures(const CPeripheral* device,
   unsigned int      featureCount = 0;
   JOYSTICK_FEATURE* pFeatures = NULL;
 
-  LogError(retVal = m_struct.toAddon.GetFeatures(m_addonInstance, &joystickStruct, strControllerId.c_str(),
+  LogError(retVal = m_struct.toAddon.GetFeatures(&m_struct, &joystickStruct, strControllerId.c_str(),
                                            &featureCount, &pFeatures), "GetFeatures()");
 
   kodi::addon::Joystick::FreeStruct(joystickStruct);
@@ -528,7 +528,7 @@ bool CPeripheralAddon::GetFeatures(const CPeripheral* device,
         features[feature.Name()] = std::move(feature);
     }
 
-    m_struct.toAddon.FreeFeatures(m_addonInstance, featureCount, pFeatures);
+    m_struct.toAddon.FreeFeatures(&m_struct, featureCount, pFeatures);
 
     return true;
   }
@@ -557,7 +557,7 @@ bool CPeripheralAddon::MapFeature(const CPeripheral* device,
   JOYSTICK_FEATURE addonFeature;
   feature.ToStruct(addonFeature);
 
-  LogError(retVal = m_struct.toAddon.MapFeatures(m_addonInstance, &joystickStruct, strControllerId.c_str(),
+  LogError(retVal = m_struct.toAddon.MapFeatures(&m_struct, &joystickStruct, strControllerId.c_str(),
                                                  1, &addonFeature), "MapFeatures()");
 
   kodi::addon::Joystick::FreeStruct(joystickStruct);
@@ -584,7 +584,7 @@ bool CPeripheralAddon::GetIgnoredPrimitives(const CPeripheral* device, Primitive
   unsigned int primitiveCount = 0;
   JOYSTICK_DRIVER_PRIMITIVE* pPrimitives = nullptr;
 
-  LogError(retVal = m_struct.toAddon.GetIgnoredPrimitives(m_addonInstance, &joystickStruct, &primitiveCount,
+  LogError(retVal = m_struct.toAddon.GetIgnoredPrimitives(&m_struct, &joystickStruct, &primitiveCount,
                                                       &pPrimitives), "GetIgnoredPrimitives()");
 
   kodi::addon::Joystick::FreeStruct(joystickStruct);
@@ -594,7 +594,7 @@ bool CPeripheralAddon::GetIgnoredPrimitives(const CPeripheral* device, Primitive
     for (unsigned int i = 0; i < primitiveCount; i++)
       primitives.emplace_back(pPrimitives[i]);
 
-    m_struct.toAddon.FreePrimitives(m_addonInstance, primitiveCount, pPrimitives);
+    m_struct.toAddon.FreePrimitives(&m_struct, primitiveCount, pPrimitives);
 
     return true;
   }
@@ -621,7 +621,7 @@ bool CPeripheralAddon::SetIgnoredPrimitives(const CPeripheral* device, const Pri
   JOYSTICK_DRIVER_PRIMITIVE* addonPrimitives = nullptr;
   kodi::addon::DriverPrimitives::ToStructs(primitives, &addonPrimitives);
 
-  LogError(retVal = m_struct.toAddon.SetIgnoredPrimitives(m_addonInstance, &joystickStruct,
+  LogError(retVal = m_struct.toAddon.SetIgnoredPrimitives(&m_struct, &joystickStruct,
         primitives.size(), addonPrimitives), "SetIgnoredPrimitives()");
 
   kodi::addon::Joystick::FreeStruct(joystickStruct);
@@ -642,7 +642,7 @@ void CPeripheralAddon::SaveButtonMap(const CPeripheral* device)
   JOYSTICK_INFO joystickStruct;
   joystickInfo.ToStruct(joystickStruct);
 
-  m_struct.toAddon.SaveButtonMap(m_addonInstance, &joystickStruct);
+  m_struct.toAddon.SaveButtonMap(&m_struct, &joystickStruct);
 
   kodi::addon::Joystick::FreeStruct(joystickStruct);
 
@@ -662,7 +662,7 @@ void CPeripheralAddon::RevertButtonMap(const CPeripheral* device)
   JOYSTICK_INFO joystickStruct;
   joystickInfo.ToStruct(joystickStruct);
 
-  m_struct.toAddon.RevertButtonMap(m_addonInstance, &joystickStruct);
+  m_struct.toAddon.RevertButtonMap(&m_struct, &joystickStruct);
 
   kodi::addon::Joystick::FreeStruct(joystickStruct);
 }
@@ -678,7 +678,7 @@ void CPeripheralAddon::ResetButtonMap(const CPeripheral* device, const std::stri
   JOYSTICK_INFO joystickStruct;
   joystickInfo.ToStruct(joystickStruct);
 
-  m_struct.toAddon.ResetButtonMap(m_addonInstance, &joystickStruct, strControllerId.c_str());
+  m_struct.toAddon.ResetButtonMap(&m_struct, &joystickStruct, strControllerId.c_str());
 
   kodi::addon::Joystick::FreeStruct(joystickStruct);
 
@@ -691,7 +691,7 @@ void CPeripheralAddon::PowerOffJoystick(unsigned int index)
   if (!HasFeature(FEATURE_JOYSTICK))
     return;
 
-  m_struct.toAddon.PowerOffJoystick(m_addonInstance, index);
+  m_struct.toAddon.PowerOffJoystick(&m_struct, index);
 }
 
 void CPeripheralAddon::RegisterButtonMap(CPeripheral* device, IButtonMap* buttonMap)

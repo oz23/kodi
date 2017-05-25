@@ -43,7 +43,6 @@ namespace ADDON
                 unsigned int format);
 
   protected:
-    kodi::addon::CInstanceImageDecoder* m_addonInstance;
     AddonInstance_ImageDecoder m_struct;
   };
 

@@ -34,8 +34,6 @@ extern "C" {
   {
     return kodi::addon::GetTypeVersion(type);
   }
-  __declspec(dllexport) ADDON_STATUS ADDON_CreateInstance(int instanceType, const char* instanceID, KODI_HANDLE instance, KODI_HANDLE* addonInstance);
-  __declspec(dllexport) void ADDON_DestroyInstance(int instanceType, KODI_HANDLE instance);
 
 #ifdef __cplusplus
 };

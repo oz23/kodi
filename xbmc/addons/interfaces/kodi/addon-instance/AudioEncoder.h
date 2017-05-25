@@ -36,7 +36,6 @@ namespace ADDON
 
   private:
     ADDON::AddonDllPtr m_addon;
-    kodi::addon::CInstanceAudioEncoder* m_addonInstance;
     AddonInstance_AudioEncoder m_struct;
   };
 

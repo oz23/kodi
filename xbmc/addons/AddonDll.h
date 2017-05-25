@@ -23,7 +23,6 @@
 #include "DllAddon.h"
 #include "AddonManager.h"
 #include "addons/interfaces/AddonInterfaces.h"
-#include "addons/kodi-addon-dev-kit/include/kodi/versions.h"
 #include "utils/XMLUtils.h"
 
 namespace ADDON
@@ -45,13 +44,31 @@ namespace ADDON
     // addon settings
     virtual void SaveSettings();
 
-    ADDON_STATUS Create(KODI_HANDLE firstKodiInstance);
-    ADDON_STATUS Create(int type, void* funcTable, void* info);
+    ADDON_STATUS Create(ADDON_TYPE type, void* funcTable, void* info);
     void Destroy();
 
     bool DllLoaded(void) const;
 
-    ADDON_STATUS CreateInstance(int instanceType, const std::string& instanceID, KODI_HANDLE instance, KODI_HANDLE* addonInstance, KODI_HANDLE parentInstance = nullptr);
+    /*!
+     * @brief Function to create a addon instance class
+     *
+     * @param[in] instanceType The wanted instance type class to open on addon
+     * @param[in] instanceID The from Kodi used ID string of active instance
+     * @param[in] instance Pointer where the interface functions from addon
+     *                     becomes stored during his instance creation.
+     * @param[in] parentInstance In case the instance class is related to another
+     *                           addon instance class becomes with the pointer
+     *                           given to addon. Is optional and most addon types
+     *                           not use it.
+     * @return The status of addon after the creation.
+     */
+    ADDON_STATUS CreateInstance(ADDON_TYPE instanceType, const std::string& instanceID, KODI_HANDLE instance, KODI_HANDLE parentInstance = nullptr);
+
+    /*!
+     * @brief Function to destroy a on addon created instance class
+     *
+     * @param[in] instanceID The from Kodi used ID string of active instance
+     */
     void DestroyInstance(const std::string& instanceID);
 
     virtual void UpdateSettings(std::map<std::string, std::string>& settings);
@@ -64,14 +81,31 @@ namespace ADDON
     std::string m_parentLib;
 
   private:
+    /*!
+     * @brief Main addon creation call function
+     *
+     * This becomes called only one time before a addon instance becomes created.
+     * If another instance becomes requested is this Create no more used. To see
+     * like a "int main()" on exe.
+     *
+     * @param[in] firstKodiInstance The first instance who becomes used.
+     *                              In case addon supports only one instance
+     *                              and not multiple together can addon use
+     *                              only one complete class for everything.
+     *                              This is used then to interact on interface.
+     * @return The status of addon after the creation.
+     */
+    ADDON_STATUS Create(KODI_HANDLE firstKodiInstance);
+
+    bool CheckAPIVersion(int type);
+
     DllAddon* m_pDll;
     bool m_initialized;
     bool LoadDll();
     bool m_needsavedsettings;
-    std::map<std::string, std::pair<int, KODI_HANDLE>> m_usedInstances;
+    std::map<std::string, std::pair<ADDON_TYPE, KODI_HANDLE>> m_usedInstances;
 
     virtual ADDON_STATUS TransferSettings();
-    bool CheckAPIVersion(int type);
 
     static void AddOnStatusCallback(void *userData, const ADDON_STATUS status, const char* msg);
     static bool AddOnGetSetting(void *userData, const char *settingName, void *settingValue);
@@ -80,15 +114,24 @@ namespace ADDON
 
     /// addon to kodi basic callbacks below
     //@{
+
+    /*!
+     * This structure, which is fixed to the addon headers, makes use of the at
+     * least supposed parts for the interface.
+     * This structure is defined in:
+     * /xbmc/addons/kodi-addon-dev-kit/include/kodi/AddonBase.h
+     */
     AddonGlobalInterface m_interface;
 
     inline bool InitInterface(KODI_HANDLE firstKodiInstance);
     inline void DeInitInterface();
 
-    static char* get_addon_path(void* kodiInstance);
-    static char* get_base_user_path(void* kodiInstance);
-    static void addon_log_msg(void* kodiInstance, const int addonLogLevel, const char* strMessage);
-    static void free_string(void* kodiInstance, char* str);
+    static char* get_addon_path(void* kodiBase);
+    static char* get_base_user_path(void* kodiBase);
+    static void addon_log_msg(void* kodiBase, const int addonLogLevel, const char* strMessage);
+    static bool get_setting(void* kodiBase, const char* settingName, void* settingValue);
+    static bool set_setting(void* kodiBase, const char* settingName, const char* settingValue);
+    static void free_string(void* kodiBase, char* str);
     //@}
   };
 
@@ -112,7 +155,7 @@ namespace ADDON
 
     const AddonInfoPtr& AddonInfo() { return m_addonInfo; }
 
-    bool CreateInstance(int instanceType, KODI_HANDLE instance, KODI_HANDLE* addonInstance);
+    bool CreateInstance(ADDON_TYPE instanceType, KODI_HANDLE instance);
     void DestroyInstance();
     const AddonDllPtr& Addon() { return m_addon; }
 
