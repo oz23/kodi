@@ -16,7 +16,7 @@
 
   ;Name and file
   Name "${APP_NAME}"
-  OutFile "${APP_NAME}Setup-${app_revision}-${app_branch}.exe"
+  OutFile "${APP_NAME}Setup-${app_revision}-${app_branch}-${TARGET_ARCHITECTURE}.exe"
 
   ;Default installation folder
 !ifdef x64
@@ -236,9 +236,11 @@ SectionEnd
 !include /nonfatal "audioencoder-addons.nsi"
 !include /nonfatal "audiodsp-addons.nsi"
 !include /nonfatal "game-addons.nsi"
+!include /nonfatal "imagedecoder-addons.nsi"
 !include /nonfatal "inputstream-addons.nsi"
 !include /nonfatal "pvr-addons.nsi"
 !include /nonfatal "screensaver-addons.nsi"
+!include /nonfatal "vfs-addons.nsi"
 !include /nonfatal "visualization-addons.nsi"
 
 ;--------------------------------
@@ -303,7 +305,9 @@ Section "Uninstall"
   
   ;Un-install User Data if option is checked, otherwise skip
   ${If} $UnPageProfileCheckbox_State == ${BST_CHECKED}
+    SetShellVarContext current
     RMDir /r "$APPDATA\${APP_NAME}\"
+    SetShellVarContext all
     RMDir /r "$INSTDIR\portable_data\"
   ${EndIf}
   RMDir "$INSTDIR"

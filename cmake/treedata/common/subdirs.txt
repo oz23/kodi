@@ -2,10 +2,7 @@ xbmc                                            xbmc
 xbmc/addons                                     addons
 xbmc/addons/interfaces                          addonsBinaryInterfaces
 xbmc/addons/interfaces/Addon                    addonCallbacks_Addon
-xbmc/addons/interfaces/AudioDSP                 addonCallbacks_AudioDSP
-xbmc/addons/interfaces/Game                     addonCallbacks_Game
 xbmc/addons/interfaces/GUI                      addonCallbacks_GUI
-xbmc/addons/interfaces/PVR                      addonCallbacks_PVR
 xbmc/addons/interfaces/kodi                     addonInterface_kodi
 xbmc/addons/interfaces/kodi/addon-instance      addonInterface_kodi_addon_instance
 xbmc/addons/interfaces/kodi/gui                 addonInterface_kodi_gui

@@ -42,7 +42,6 @@
 #include "threads/SingleLock.h"
 #include "utils/log.h"
 #include "utils/StringUtils.h"
-#include "ServiceBroker.h"
 
 #include <algorithm>
 #include <string.h>
@@ -80,17 +79,17 @@ CPeripheralAddon::~CPeripheralAddon(void)
 void CPeripheralAddon::ResetProperties(void)
 {
   // Initialise members
-  m_strUserPath        = CSpecialProtocol::TranslatePath(Profile());
-  m_strClientPath      = CSpecialProtocol::TranslatePath(Path());
+  m_strUserPath = CSpecialProtocol::TranslatePath(Profile());
+  m_strClientPath = CSpecialProtocol::TranslatePath(Path());
 
   memset(&m_struct, 0, sizeof(m_struct));
-
   m_struct.props.user_path = m_strUserPath.c_str();
   m_struct.props.addon_path = m_strClientPath.c_str();
+
   m_struct.toKodi.kodiInstance = this;
-  m_struct.toKodi.TriggerScan = trigger_scan;
-  m_struct.toKodi.RefreshButtonMaps = refresh_button_maps;
-  m_struct.toKodi.FeatureCount = feature_count;
+  m_struct.toKodi.FeatureCount = cb_feature_count;
+  m_struct.toKodi.RefreshButtonMaps = cb_refresh_button_maps;
+  m_struct.toKodi.TriggerScan = cb_trigger_scan;
 }
 
 bool CPeripheralAddon::CreateAddon(void)
@@ -341,6 +340,8 @@ bool CPeripheralAddon::PerformDeviceScan(PeripheralScanResults &results)
   PERIPHERAL_INFO*  pScanResults;
   PERIPHERAL_ERROR  retVal;
 
+  CSharedLock lock(m_dllSection);
+
   LogError(retVal = m_struct.toAddon.PerformDeviceScan(&m_struct, &peripheralCount, &pScanResults), "PerformDeviceScan()");
 
   if (retVal == PERIPHERAL_NO_ERROR)
@@ -515,7 +516,7 @@ bool CPeripheralAddon::GetFeatures(const CPeripheral* device,
   JOYSTICK_FEATURE* pFeatures = NULL;
 
   LogError(retVal = m_struct.toAddon.GetFeatures(&m_struct, &joystickStruct, strControllerId.c_str(),
-                                           &featureCount, &pFeatures), "GetFeatures()");
+                                                 &featureCount, &pFeatures), "GetFeatures()");
 
   kodi::addon::Joystick::FreeStruct(joystickStruct);
 
@@ -691,7 +692,13 @@ void CPeripheralAddon::PowerOffJoystick(unsigned int index)
   if (!HasFeature(FEATURE_JOYSTICK))
     return;
 
-  m_struct.toAddon.PowerOffJoystick(&m_struct, index);
+  if (!SupportsFeature(FEATURE_POWER_OFF))
+    return;
+
+  CSharedLock lock(m_dllSection);
+
+  if (m_struct.toAddon.PowerOffJoystick)
+    m_struct.toAddon.PowerOffJoystick(&m_struct, index);
 }
 
 void CPeripheralAddon::RegisterButtonMap(CPeripheral* device, IButtonMap* buttonMap)
@@ -817,25 +824,20 @@ std::string CPeripheralAddon::GetProvider(PeripheralType type)
   return "";
 }
 
-void CPeripheralAddon::trigger_scan(void* kodiInstance)
+void CPeripheralAddon::cb_trigger_scan(void* kodiInstance)
 {
-  // g_peripherals.TriggerDeviceScan(PERIPHERAL_BUS_ADDON);
+  CServiceBroker::GetPeripherals().TriggerDeviceScan(PERIPHERAL_BUS_ADDON);
 }
 
-void CPeripheralAddon::refresh_button_maps(void* kodiInstance, const char* deviceName, const char* controllerId)
+void CPeripheralAddon::cb_refresh_button_maps(void* kodiInstance, const char* deviceName, const char* controllerId)
 {
-  CPeripheralAddon* instance = static_cast<CPeripheralAddon*>(kodiInstance);
-  if (!instance || !deviceName || !controllerId)
-  {
-    CLog::Log(LOGERROR, "kodi::gui::DialogOK:%s - invalid data (instance='%p', deviceName='%p', controllerId='%p')",
-                                        __FUNCTION__, instance, deviceName, controllerId);
+  if (!kodiInstance)
     return;
-  }
 
-  instance->RefreshButtonMaps(deviceName);
+  static_cast<CPeripheralAddon*>(kodiInstance)->RefreshButtonMaps(deviceName ? deviceName : "");
 }
 
-unsigned int CPeripheralAddon::feature_count(void* kodiInstance, const char* controllerId, JOYSTICK_FEATURE_TYPE type)
+unsigned int CPeripheralAddon::cb_feature_count(void* kodiInstance, const char* controllerId, JOYSTICK_FEATURE_TYPE type)
 {
   using namespace GAME;
 

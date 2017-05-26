@@ -43,7 +43,7 @@ namespace ADDON
                 unsigned int format);
 
   protected:
-    AddonInstance_ImageDecoder m_struct;
+    AddonInstance_ImageDecoder m_struct = {};
   };
 
 } /*namespace ADDON*/

@@ -60,17 +60,14 @@ namespace ADDON
     \*/
     static void*        PVRLib_RegisterMe              (void* addonData);
     static void         PVRLib_UnRegisterMe            (void* addonData, void* cbTable);
-    void*               PVRLib_GetHelper()            { return m_helperPVR; }
     /*\_________________________________________________________________________
     \*/
     static void*        ADSPLib_RegisterMe             (void* addonData);
     static void         ADSPLib_UnRegisterMe           (void* addonData, void* cbTable);
-    void*               GetHelperADSP()               { return m_helperADSP; }
     /*\_________________________________________________________________________
     \*/
     static void*        GameLib_RegisterMe             (void *addonData);
     static void         GameLib_UnRegisterMe           (void *addonData, void* cbTable);
-    void*               GetHelperGame()               { return m_helperGame; }
     /*
      * API level independent functions for Kodi
      */
@@ -82,9 +79,6 @@ namespace ADDON
 
     void*     m_helperAddOn;
     void*     m_helperGUI;
-    void*     m_helperPVR;
-    void*     m_helperADSP;
-    void*     m_helperGame;
   };
 
 } /* namespace ADDON */

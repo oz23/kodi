@@ -19,8 +19,8 @@
  *
  */
 
-#include "addons/kodi-addon-dev-kit/include/kodi/addon-instance/Screensaver.h"
 #include "addons/AddonDll.h"
+#include "addons/kodi-addon-dev-kit/include/kodi/addon-instance/Screensaver.h"
 
 namespace ADDON
 {
@@ -40,7 +40,7 @@ private:
   std::string m_presets; /*!< To add-on sended preset path */
   std::string m_profile; /*!< To add-on sended profile path */
 
-  AddonInstance_Screensaver m_struct; /*! Interface table who contains function addresses and fixed values */
+  AddonInstance_Screensaver m_struct;
 };
 
 } /* namespace ADDON */

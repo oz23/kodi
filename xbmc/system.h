@@ -135,6 +135,9 @@
 #ifdef HAVE_LIBPULSE
 #define HAS_PULSEAUDIO
 #endif
+#ifdef HAVE_SNDIO
+#define HAS_SNDIO
+#endif
 #ifdef HAVE_ALSA
 #define HAS_ALSA
 #endif
@@ -200,12 +203,6 @@
 #ifdef HAVE_LIBGLESV2
 #undef HAS_GL
 #define HAS_GLES 2
-#endif
-
-// GLES1.0 detected. Dont use GL!
-#ifdef HAVE_LIBGLES
-#undef HAS_GL
-#define HAS_GLES 1
 #endif
 
 #ifdef HAS_DVD_DRIVE

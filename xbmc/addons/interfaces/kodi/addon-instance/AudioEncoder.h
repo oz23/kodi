@@ -35,7 +35,6 @@ namespace ADDON
     bool Close();
 
   private:
-    ADDON::AddonDllPtr m_addon;
     AddonInstance_AudioEncoder m_struct;
   };
 

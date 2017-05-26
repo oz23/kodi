@@ -44,6 +44,10 @@
   #if defined(HAS_PULSEAUDIO)
     #include "Sinks/AESinkPULSE.h"
   #endif
+  #if defined(HAS_SNDIO)
+    #include "Sinks/AESinkSNDIO.h"
+  #endif
+  #include "Sinks/AESinkOSS.h"
 #else
   #pragma message("NOTICE: No audio sink for target platform.  Audio output will not be available.")
 #endif
@@ -85,6 +89,10 @@ void CAESinkFactory::ParseDevice(std::string &device, std::string &driver)
   #if defined(HAS_PULSEAUDIO)
         driver == "PULSE"       ||
   #endif
+  #if defined(HAS_SNDIO)
+        driver == "SNDIO"       ||
+  #endif
+        driver == "OSS"         ||
 #endif
         driver == "PROFILER"    ||
         driver == "NULL")
@@ -122,7 +130,7 @@ IAESink *CAESinkFactory::TrySink(std::string &driver, std::string &device, AEAud
     sink = new CAESinkDARWINIOS();
 #elif defined(TARGET_DARWIN_OSX)
     sink = new CAESinkDARWINOSX();
-#elif defined(TARGET_LINUX) || defined(TARGET_FREEBSD)
+#elif defined(TARGET_LINUX) || defined(TARGET_FREEBSD) || defined(TARGET_OPENBSD)
  #if defined(HAS_PULSEAUDIO)
     if (driver == "PULSE")
       sink = new CAESinkPULSE();
@@ -130,6 +138,10 @@ IAESink *CAESinkFactory::TrySink(std::string &driver, std::string &device, AEAud
  #if defined(HAS_ALSA)
     if (driver == "ALSA")
       sink = new CAESinkALSA();
+ #endif
+ #if defined(HAS_SNDIO)
+    if (driver == "SNDIO")
+      sink = new CAESinkSNDIO();
  #endif
  #if defined(TARGET_FREEBSD)
     if (driver == "OSS")
@@ -248,6 +260,10 @@ void CAESinkFactory::EnumerateEx(AESinkInfoList &list, bool force)
     if (envSink == "ALSA")
       CAESinkALSA::EnumerateDevicesEx(info.m_deviceInfoList, force);
     #endif
+    #if defined(HAS_SNDIO)
+    if (envSink == "SNDIO")
+        CAESinkSNDIO::EnumerateDevicesEx(info.m_deviceInfoList, force);
+    #endif
     #if defined(TARGET_FREEBSD)
     if (envSink == "OSS")
       CAESinkOSS::EnumerateDevicesEx(info.m_deviceInfoList, force);
@@ -284,6 +300,18 @@ void CAESinkFactory::EnumerateEx(AESinkInfoList &list, bool force)
     return;
   }
   #endif
+
+  #if defined(HAS_SNDIO)
+  info.m_deviceInfoList.clear();
+  info.m_sinkName = "SNDIO";
+  CAESinkSNDIO::EnumerateDevicesEx(info.m_deviceInfoList, force);
+  if(!info.m_deviceInfoList.empty())
+  {
+    list.push_back(info);
+    return;
+  }
+  #endif
+
   #if defined(TARGET_FREEBSD)
   info.m_deviceInfoList.clear();
   info.m_sinkName = "OSS";

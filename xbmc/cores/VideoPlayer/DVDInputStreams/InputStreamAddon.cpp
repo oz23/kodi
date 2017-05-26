@@ -126,9 +126,9 @@ bool CInputStreamAddon::Supports(AddonInfoPtr& addonInfo, const CFileItem &filei
 bool CInputStreamAddon::Open()
 {
   m_struct.toKodi.kodiInstance = this;
-  m_struct.toKodi.FreeDemuxPacket = InputStreamFreeDemuxPacket;
-  m_struct.toKodi.AllocateDemuxPacket = InputStreamAllocateDemuxPacket;
-  m_struct.toKodi.AllocateEncryptedDemuxPacket = InputStreamAllocateEncryptedDemuxPacket;
+  m_struct.toKodi.FreeDemuxPacket = cb_free_demux_packet;
+  m_struct.toKodi.AllocateDemuxPacket = cb_allocate_demux_packet;
+  m_struct.toKodi.AllocateEncryptedDemuxPacket = cb_allocate_encrypted_demux_packet;
   if (!CreateInstance(ADDON_INSTANCE_INPUTSTREAM, &m_struct) || !m_struct.toAddon.Open)
     return false;
 
@@ -543,20 +543,20 @@ int CInputStreamAddon::ConvertVideoCodecProfile(CODEC_PROFILE profile)
 }
 
 /*!
-  * Callbacks from add-on to kodi
-  */
+ * Callbacks from add-on to kodi
+ */
 //@{
-void CInputStreamAddon::InputStreamFreeDemuxPacket(void* kodiInstanceBase, DemuxPacket* pPacket)
-{
-  CDVDDemuxUtils::FreeDemuxPacket(pPacket);
-}
-
-DemuxPacket* CInputStreamAddon::InputStreamAllocateDemuxPacket(void* kodiInstanceBase, int iDataSize)
+DemuxPacket* CInputStreamAddon::cb_allocate_demux_packet(void* kodiInstance, int iDataSize)
 {
   return CDVDDemuxUtils::AllocateDemuxPacket(iDataSize);
 }
 
-DemuxPacket* CInputStreamAddon::InputStreamAllocateEncryptedDemuxPacket(void* kodiInstanceBase, unsigned int iDataSize, unsigned int encryptedSubsampleCount)
+void CInputStreamAddon::cb_free_demux_packet(void* kodiInstance, DemuxPacket* pPacket)
+{
+  CDVDDemuxUtils::FreeDemuxPacket(pPacket);
+}
+
+DemuxPacket* CInputStreamAddon::cb_allocate_encrypted_demux_packet(void* kodiInstance, unsigned int iDataSize, unsigned int encryptedSubsampleCount)
 {
   return CDVDDemuxUtils::AllocateDemuxPacket(iDataSize, encryptedSubsampleCount);
 }

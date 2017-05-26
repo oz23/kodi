@@ -22,15 +22,16 @@
 #include "AddonInterfaces.h"
 
 #include "addons/Addon.h"
+#include "addons/PVRClient.h"
+#include "cores/AudioEngine/Engines/ActiveAE/AudioDSPAddons/ActiveAEDSP.h"
+#include "games/addons/GameClient.h"
 
 #include "addons/interfaces/Addon/AddonCallbacksAddon.h"
-#include "addons/interfaces/AudioDSP/AddonCallbacksAudioDSP.h"
-#include "addons/interfaces/Game/AddonCallbacksGame.h"
 #include "addons/interfaces/GUI/AddonCallbacksGUI.h"
 #include "addons/interfaces/GUI/AddonGUIWindow.h"
-#include "addons/interfaces/PVR/AddonCallbacksPVR.h"
 #include "filesystem/SpecialProtocol.h"
 #include "messaging/ApplicationMessenger.h"
+#include "peripherals/addons/PeripheralAddon.h"
 #include "utils/log.h"
 
 using namespace KODI::MESSAGING;
@@ -42,10 +43,7 @@ CAddonInterfaces::CAddonInterfaces(CAddon* addon)
   : m_callbacks(new AddonCB),
     m_addon(addon),
     m_helperAddOn(nullptr),
-    m_helperGUI(nullptr),
-    m_helperPVR(nullptr),
-    m_helperADSP(nullptr),
-    m_helperGame(nullptr)
+    m_helperGUI(nullptr)
 {
   m_callbacks->libBasePath                  = strdup(CSpecialProtocol::TranslatePath("special://xbmcbinaddons").c_str());
   m_callbacks->addonData                    = this;
@@ -65,10 +63,7 @@ CAddonInterfaces::CAddonInterfaces(CAddon* addon)
 CAddonInterfaces::~CAddonInterfaces()
 {
   delete static_cast<KodiAPI::AddOn::CAddonCallbacksAddon*>(m_helperAddOn);
-  delete static_cast<KodiAPI::PVR::CAddonCallbacksPVR*>(m_helperPVR);
   delete static_cast<KodiAPI::GUI::CAddonCallbacksGUI*>(m_helperGUI);
-  delete static_cast<KodiAPI::AudioDSP::CAddonCallbacksADSP*>(m_helperADSP);
-  delete static_cast<KodiAPI::Game::CAddonCallbacksGame*>(m_helperGame);
 
   free((char*)m_callbacks->libBasePath);
   delete m_callbacks;
@@ -140,21 +135,11 @@ void* CAddonInterfaces::PVRLib_RegisterMe(void *addonData)
     return nullptr;
   }
 
-  addon->m_helperPVR = new KodiAPI::PVR::CAddonCallbacksPVR(addon->m_addon);
-  return static_cast<KodiAPI::PVR::CAddonCallbacksPVR*>(addon->m_helperPVR)->GetCallbacks();
+  return dynamic_cast<PVR::CPVRClient*>(addon->m_addon)->GetInstanceInterface();
 }
 
 void CAddonInterfaces::PVRLib_UnRegisterMe(void *addonData, void *cbTable)
 {
-  CAddonInterfaces* addon = static_cast<CAddonInterfaces*>(addonData);
-  if (addon == nullptr)
-  {
-    CLog::Log(LOGERROR, "CAddonInterfaces - %s - called with a null pointer", __FUNCTION__);
-    return;
-  }
-
-  delete static_cast<KodiAPI::PVR::CAddonCallbacksPVR*>(addon->m_helperPVR);
-  addon->m_helperPVR = nullptr;
 }
 /*\_____________________________________________________________________________
 \*/
@@ -167,21 +152,11 @@ void* CAddonInterfaces::ADSPLib_RegisterMe(void *addonData)
     return nullptr;
   }
 
-  addon->m_helperADSP = new KodiAPI::AudioDSP::CAddonCallbacksADSP(addon->m_addon);
-  return static_cast<KodiAPI::AudioDSP::CAddonCallbacksADSP*>(addon->m_helperADSP)->GetCallbacks();
+  return dynamic_cast<ActiveAE::CActiveAEDSPAddon*>(addon->m_addon)->GetInstanceInterface();
 }
 
 void CAddonInterfaces::ADSPLib_UnRegisterMe(void *addonData, void *cbTable)
 {
-  CAddonInterfaces* addon = static_cast<CAddonInterfaces*>(addonData);
-  if (addon == nullptr)
-  {
-    CLog::Log(LOGERROR, "CAddonInterfaces - %s - called with a null pointer", __FUNCTION__);
-    return;
-  }
-
-  delete static_cast<KodiAPI::AudioDSP::CAddonCallbacksADSP*>(addon->m_helperADSP);
-  addon->m_helperADSP = nullptr;
 }
 /*\_____________________________________________________________________________
 \*/
@@ -194,21 +169,11 @@ void* CAddonInterfaces::GameLib_RegisterMe(void *addonData)
     return nullptr;
   }
 
-  addon->m_helperGame = new KodiAPI::Game::CAddonCallbacksGame(addon->m_addon);
-  return static_cast<KodiAPI::Game::CAddonCallbacksGame*>(addon->m_helperGame)->GetCallbacks();
+  return dynamic_cast<GAME::CGameClient*>(addon->m_addon)->GetInstanceInterface();
 }
 
 void CAddonInterfaces::GameLib_UnRegisterMe(void *addonData, void *cbTable)
 {
-  CAddonInterfaces* addon = static_cast<CAddonInterfaces*>(addonData);
-  if (addon == nullptr)
-  {
-    CLog::Log(LOGERROR, "CAddonInterfaces - %s - called with a null pointer", __FUNCTION__);
-    return;
-  }
-
-  delete static_cast<KodiAPI::Game::CAddonCallbacksGame*>(addon->m_helperGame);
-  addon->m_helperGame = nullptr;
 }
 /*\_____________________________________________________________________________
 \*/

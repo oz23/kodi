@@ -101,6 +101,13 @@ namespace PERIPHERALS
     void UnregisterButtonMap(KODI::JOYSTICK::IButtonMap* buttonMap);
     void RefreshButtonMaps(const std::string& strDeviceName = "");
 
+    /*!
+     * @brief To get the interface table used between addon and kodi
+     * @todo This function becomes removed after old callback library system
+     * is removed.
+     */
+    AddonInstance_Peripheral* GetInstanceInterface() { return &m_struct; }
+
   private:
     // Static function to transfer data from add-on to kodi
     static void trigger_scan(void* kodiInstance);
@@ -136,6 +143,15 @@ namespace PERIPHERALS
     std::string         m_strUserPath;    /*!< @brief translated path to the user profile */
     std::string         m_strClientPath;  /*!< @brief translated path to this add-on */
 
+    /*!
+     * @brief Callback functions from addon to kodi
+     */
+    //@{
+    static void cb_trigger_scan(void* kodiInstance);
+    static void cb_refresh_button_maps(void* kodiInstance, const char* deviceName, const char* controllerId);
+    static unsigned int cb_feature_count(void* kodiInstance, const char* controllerId, JOYSTICK_FEATURE_TYPE type);
+    //@}
+
     /* @brief Add-on properties */
     bool                m_bProvidesJoysticks;
     bool                m_bSupportsJoystickRumble;
@@ -151,8 +167,6 @@ namespace PERIPHERALS
 
     /* @brief Thread synchronization */
     CCriticalSection    m_critSection;
-
-    kodi::addon::CInstancePeripheral* m_addonInstance;
     AddonInstance_Peripheral m_struct;
 
     CSharedSection      m_dllSection;
