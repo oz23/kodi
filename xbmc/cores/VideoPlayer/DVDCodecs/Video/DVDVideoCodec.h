@@ -48,11 +48,18 @@ class CSetting;
 // should be entirely filled by all codecs
 struct VideoPicture
 {
-  double pts; // timestamp in seconds, used in the CVideoPlayer class to keep track of pts
-  double dts;
+  ~VideoPicture()
+  {
+    if (videoBuffer)
+    {
+      videoBuffer->Release();
+    }
+  }
 
   CVideoBuffer *videoBuffer = nullptr;
 
+  double pts; // timestamp in seconds, used in the CVideoPlayer class to keep track of pts
+  double dts;
   unsigned int iFlags;
   double iRepeatPicture;
   double iDuration;
@@ -77,7 +84,6 @@ struct VideoPicture
 #define DVP_FLAG_TOP_FIELD_FIRST    0x00000001
 #define DVP_FLAG_REPEAT_TOP_FIELD   0x00000002  //< Set to indicate that the top field should be repeated
 #define DVP_FLAG_INTERLACED         0x00000008  //< Set to indicate that this frame is interlaced
-
 #define DVP_FLAG_DROPPED            0x00000010  //< indicate that this picture has been dropped in decoder stage, will have no data
 
 #define DVD_CODEC_CTRL_SKIPDEINT    0x01000000  //< request to skip a deinterlacing cycle, if possible
