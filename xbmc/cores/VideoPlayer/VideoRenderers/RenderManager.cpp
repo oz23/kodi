@@ -278,7 +278,7 @@ bool CRenderManager::Configure()
     DeleteRenderer();
   }
 
-  if(!m_pRenderer)
+  if (!m_pRenderer)
   {
     CreateRenderer();
     if (!m_pRenderer)
@@ -306,6 +306,7 @@ bool CRenderManager::Configure()
     m_pRenderer->Update();
 
     m_playerPort->UpdateRenderInfo(info);
+    m_playerPort->UpdareVideoRender(!m_pRenderer->IsGuiLayer());
 
     m_queued.clear();
     m_discard.clear();
@@ -981,6 +982,8 @@ void CRenderManager::Render(bool clear, DWORD flags, DWORD alpha, bool gui)
 
     m_presentevent.notifyAll();
   }
+
+  m_playerPort->UpdareGuiRender(IsGuiLayer());
 }
 
 bool CRenderManager::IsGuiLayer()
