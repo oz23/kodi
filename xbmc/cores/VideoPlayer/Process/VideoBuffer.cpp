@@ -355,6 +355,19 @@ void CVideoBufferManager::RegisterPool(std::shared_ptr<IVideoBufferPool> pool)
   m_pools.push_front(pool);
 }
 
+void CVideoBufferManager::ReleasePools()
+{
+  std::list<std::shared_ptr<IVideoBufferPool>> pools = m_pools;
+  m_pools.clear();
+  std::shared_ptr<IVideoBufferPool> pool = std::make_shared<CVideoBufferPoolSysMem>();
+  RegisterPool(pool);
+
+  for (auto pool : pools)
+  {
+    pool->Released();
+  }
+}
+
 CVideoBuffer* CVideoBufferManager::Get(AVPixelFormat format, int width, int height)
 {
   for (auto pool: m_pools)

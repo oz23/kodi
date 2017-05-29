@@ -56,11 +56,28 @@ class IVideoBufferPool;
 class IVideoBufferPool : public std::enable_shared_from_this<IVideoBufferPool>
 {
 public:
+  // get a free buffer from the pool, sets ref count to 1
   virtual CVideoBuffer* Get() = 0;
+
+  // called by buffer when ref count goes to zero
   virtual void Return(int id) = 0;
-  virtual void Configure(AVPixelFormat format, int width, int height) = 0;
-  virtual bool IsConfigured() = 0;
-  virtual bool IsCompatible(AVPixelFormat format, int width, int height) = 0;
+
+  // required if pool is registered with BufferManager BM call configure
+  // as soon as it knows paramters: pixFmx, width, height
+  virtual void Configure(AVPixelFormat format, int width, int height) {};
+
+  // required if pool is registered with BufferManager
+  virtual bool IsConfigured() { return false;};
+
+  // required if pool is registered with BufferManager
+  // called before Get() to check if buffer pool is suitable
+  virtual bool IsCompatible(AVPixelFormat format, int width, int height) { return false;};
+
+  // callback when BM releases buffer pool. i.e. before a new codec is created
+  // clients can register a new pool on this callback
+  virtual void Released() {};
+
+  // call on Get() before returning buffer to caller
   std::shared_ptr<IVideoBufferPool> GetPtr() { return shared_from_this(); };
 };
 
@@ -137,9 +154,9 @@ class CVideoBufferManager
 public:
   CVideoBufferManager();
   void RegisterPool(std::shared_ptr<IVideoBufferPool> pool);
+  void ReleasePools();
   CVideoBuffer* Get(AVPixelFormat format, int width, int height);
 
 protected:
   std::list<std::shared_ptr<IVideoBufferPool>> m_pools;
-  std::list<std::shared_ptr<IVideoBufferPool>> m_poolsDiscard;
 };

@@ -136,10 +136,6 @@ public:
   virtual void Return(int id) override;
   virtual CVideoBuffer* Get() override;
 
-  virtual void Configure(AVPixelFormat format, int width, int height) override {};
-  virtual bool IsConfigured() override {return true;};
-  virtual bool IsCompatible(AVPixelFormat format, int width, int height) override {return true;};
-
 protected:
   CCriticalSection m_critSection;
   std::vector<CVideoBufferFFmpeg*> m_all;

@@ -173,6 +173,8 @@ void CVideoPlayerVideo::OpenStream(CDVDStreamInfo &hint, CDVDVideoCodec* codec)
 {
   CLog::Log(LOGDEBUG, "CVideoPlayerVideo::OpenStream - open stream with codec id: %i", hint.codec);
 
+  m_processInfo.GetVideoBufferManager().ReleasePools();
+
   //reported fps is usually not completely correct
   if (hint.fpsrate && hint.fpsscale)
   {
