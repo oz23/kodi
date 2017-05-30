@@ -20,6 +20,7 @@
 
 #include "VideoBuffer.h"
 #include "threads/SingleLock.h"
+#include <string.h>
 
 //-----------------------------------------------------------------------------
 // CVideoBuffer

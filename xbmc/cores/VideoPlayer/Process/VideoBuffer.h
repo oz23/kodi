@@ -23,6 +23,7 @@
 #include <atomic>
 #include <deque>
 #include <list>
+#include <memory>
 #include <vector>
 
 extern "C" {
