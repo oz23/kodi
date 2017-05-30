@@ -37,6 +37,7 @@
 #include "VideoSyncDRM.h"
 #include "VideoSyncGLX.h"
 #include "cores/VideoPlayer/DVDCodecs/Video/VAAPI.h"
+#include "cores/VideoPlayer/DVDCodecs/Video/VDPAU.h"
 
 CWinSystemX11GLContext::CWinSystemX11GLContext()
 {
@@ -203,15 +204,17 @@ bool CWinSystemX11GLContext::RefreshGLContext(bool force)
   if (success)
   {
     VAAPI::CDecoder::CheckCaps(static_cast<CGLContextEGL*>(m_pGLContext)->m_eglDisplay);
-    if (VAAPI::CDecoder::IsCapGeneral())
-      return true;
+    return true;
   }
 
   // fallback for vdpau and NVIdia crap
   delete m_pGLContext;
   m_pGLContext = new CGLContextGLX(m_dpy);
   success = m_pGLContext->Refresh(force, m_nScreen, m_glWindow, m_newGlContext);
-
+  if (success)
+  {
+    VDPAU::CDecoder::CheckCaps();
+  }
   return success;
 }
 

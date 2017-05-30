@@ -196,9 +196,12 @@
           <requirement>HAVE_LIBVDPAU</requirement>
           <level>2</level>
           <default>true</default>
+          <dependencies>
+            <dependency type="visible" on="property" name="codecoptionvisible" setting="videoplayer.usevdpau" operator="is">false</dependency>
+          </dependencies>
           <control type="toggle" />
         </setting>
-        <setting id="videoplayer.usevdpaumixer" type="boolean" label="13437" help="36421">
+        <setting id="videoplayer.usevdpaumixer" type="boolean" parent="videoplayer.usevdpau" label="13437" help="36421">
           <requirement>HAVE_LIBVDPAU</requirement>
           <level>2</level>
           <default>true</default>
@@ -206,6 +209,7 @@
             <dependency type="enable">
               <condition setting="videoplayer.usevdpau" operator="is">true</condition> <!-- USE VDPAU -->
             </dependency>
+            <dependency type="visible" on="property" name="codecoptionvisible" setting="videoplayer.usevdpau" operator="is">false</dependency>
           </dependencies>
           <control type="toggle" />
         </setting>
