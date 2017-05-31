@@ -68,7 +68,7 @@ bool Interface_General::open_settings_dialog(void* kodiBase)
 
   // show settings dialog
   AddonInfoPtr addonInfo = CAddonMgr::GetInstance().GetInstalledAddonInfo(addon->ID());
-  CGUIDialogAddonSettings::ShowAndGetInput(addonInfo);
+  return CGUIDialogAddonSettings::ShowAndGetInput(addonInfo);
 }
 
 char* Interface_General::get_localized_string(void* kodiBase, long dwCode)

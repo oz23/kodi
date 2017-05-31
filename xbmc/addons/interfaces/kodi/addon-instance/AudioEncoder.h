@@ -18,7 +18,7 @@
  *
  */
 
-#include "addons/AddonDll.h"
+#include "addons/AddonInstanceHandler.h"
 #include "cdrip/IEncoder.h"
 
 namespace ADDON

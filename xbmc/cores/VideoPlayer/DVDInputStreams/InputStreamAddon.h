@@ -25,7 +25,7 @@
 
 #include "DVDInputStream.h"
 #include "IVideoPlayer.h"
-#include "addons/AddonDll.h"
+#include "addons/AddonInstanceHandler.h"
 #include "addons/AddonProvider.h"
 #include "addons/kodi-addon-dev-kit/include/kodi/addon-instance/Inputstream.h"
 

@@ -54,7 +54,7 @@ using namespace kodi::addon;
 
 CInputStreamAddon::CInputStreamAddon(ADDON::AddonInfoPtr addonInfo, IVideoPlayer* player, const CFileItem& fileitem)
   : CDVDInputStream(DVDSTREAM_TYPE_ADDON, fileitem)
-  , IAddonInstanceHandler(ADDON_INPUTSTREAM, addonInfo)
+  , IAddonInstanceHandler(ADDON_INSTANCE_INPUTSTREAM, addonInfo)
   , m_player(player)
 {
   std::string listitemprops = addonInfo->Type(ADDON_INPUTSTREAM)->GetValue("@listitemprops").asString();
@@ -129,7 +129,7 @@ bool CInputStreamAddon::Open()
   m_struct.toKodi.FreeDemuxPacket = cb_free_demux_packet;
   m_struct.toKodi.AllocateDemuxPacket = cb_allocate_demux_packet;
   m_struct.toKodi.AllocateEncryptedDemuxPacket = cb_allocate_encrypted_demux_packet;
-  if (!CreateInstance(ADDON_INSTANCE_INPUTSTREAM, &m_struct) || !m_struct.toAddon.Open)
+  if (!CreateInstance(&m_struct) || !m_struct.toAddon.Open)
     return false;
 
   INPUTSTREAM props;

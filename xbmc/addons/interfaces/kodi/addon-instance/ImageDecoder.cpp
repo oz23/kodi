@@ -31,7 +31,7 @@ namespace ADDON
 {
 
 CImageDecoder::CImageDecoder(const ADDON::AddonInfoPtr& addonInfo)
-  : IAddonInstanceHandler(ADDON_IMAGEDECODER, addonInfo)
+  : IAddonInstanceHandler(ADDON_INSTANCE_IMAGEDECODER, addonInfo)
 {
   m_struct = { 0 };
 }
@@ -74,7 +74,7 @@ bool CImageDecoder::Create(const std::string& mimetype)
 {
   m_struct.props.mimetype = mimetype.c_str();
   m_struct.toKodi.kodiInstance = this;
-  return CreateInstance(ADDON_INSTANCE_IMAGEDECODER, &m_struct);
+  return CreateInstance(&m_struct);
 }
 
 } /*namespace ADDON*/

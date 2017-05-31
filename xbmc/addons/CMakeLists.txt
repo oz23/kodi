@@ -4,6 +4,7 @@ set(SOURCES Addon.cpp
             AddonDll.cpp
             AddonInfo.cpp
             AddonInstaller.cpp
+            AddonInstanceHandler.cpp
             AddonManager.cpp
             AddonStatusHandler.cpp
             AddonSystemSettings.cpp
@@ -34,6 +35,7 @@ set(HEADERS Addon.h
             AddonDll.h
             AddonInfo.h
             AddonInstaller.h
+            AddonInstanceHandler.h
             AddonManager.h
             AddonProvider.h
             AddonStatusHandler.h

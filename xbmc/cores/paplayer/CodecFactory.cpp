@@ -24,7 +24,7 @@
 #include "VideoPlayerCodec.h"
 #include "utils/StringUtils.h"
 #include "addons/interfaces/kodi/addon-instance/AudioDecoder.h"
-#include "addons/BinaryAddonCache.h"
+#include "addons/AddonInstanceHandler.h"
 #include "ServiceBroker.h"
 
 using namespace ADDON;

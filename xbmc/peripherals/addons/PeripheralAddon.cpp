@@ -60,7 +60,7 @@ using namespace XFILE;
 #endif
 
 CPeripheralAddon::CPeripheralAddon(ADDON::AddonInfoPtr addonInfo)
-  : IAddonInstanceHandler(ADDON::ADDON_PERIPHERALDLL, addonInfo)
+  : IAddonInstanceHandler(ADDON_INSTANCE_PERIPHERAL, addonInfo)
 {
   m_bProvidesJoysticks = addonInfo->Type(ADDON::ADDON_PERIPHERALDLL)->GetValue("@provides_joysticks").asBoolean();
   m_bProvidesButtonMaps = addonInfo->Type(ADDON::ADDON_PERIPHERALDLL)->GetValue("@provides_buttonmaps").asBoolean();
@@ -105,7 +105,7 @@ bool CPeripheralAddon::CreateAddon(void)
 
   // Initialise the add-on
   CLog::Log(LOGDEBUG, "PERIPHERAL - %s - creating peripheral add-on instance '%s'", __FUNCTION__, Name().c_str());
-  if (CreateInstance(ADDON_INSTANCE_PERIPHERAL, &m_struct))
+  if (CreateInstance(&m_struct))
   {
     if (!GetAddonProperties())
     {

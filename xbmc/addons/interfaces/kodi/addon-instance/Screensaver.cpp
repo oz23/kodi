@@ -19,28 +19,22 @@
  */
 
 #include "Screensaver.h"
-
 #include "filesystem/SpecialProtocol.h"
-#include "guilib/GUIWindowManager.h"
+#include "guilib/GraphicContext.h"
+#include "windowing/WindowingFactory.h"
 #include "utils/log.h"
-#ifdef HAS_DX
-#include "windowing/windows/WinSystemWin32DX.h"
-#endif
-
 
 namespace ADDON
 {
 
 CScreenSaver::CScreenSaver(AddonInfoPtr addonInfo)
-  : IAddonInstanceHandler(ADDON_SCREENSAVER, addonInfo)
+  : IAddonInstanceHandler(ADDON_INSTANCE_SCREENSAVER, addonInfo)
 {
-  m_struct = { 0 };
-
-  // Setup new screensaver instance
   m_name = Name();
   m_presets = CSpecialProtocol::TranslatePath(Path());
   m_profile = CSpecialProtocol::TranslatePath(Profile());
 
+  m_struct = {0};
 #ifdef HAS_DX
   m_struct.props.device = g_Windowing.Get3D11Context();
 #else
@@ -54,10 +48,11 @@ CScreenSaver::CScreenSaver(AddonInfoPtr addonInfo)
   m_struct.props.name = m_name.c_str();
   m_struct.props.presets = m_presets.c_str();
   m_struct.props.profile = m_profile.c_str();
+
   m_struct.toKodi.kodiInstance = this;
 
   /* Open the class "kodi::addon::CInstanceScreensaver" on add-on side */
-  if (!CreateInstance(ADDON_INSTANCE_SCREENSAVER, &m_struct))
+  if (!CreateInstance(&m_struct))
     CLog::Log(LOGFATAL, "Screensaver: failed to create instance for '%s' and not usable!", addonInfo->ID().c_str());
 }
 

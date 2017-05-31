@@ -24,7 +24,7 @@ namespace ADDON
 {
 
 CAudioEncoder::CAudioEncoder(AddonInfoPtr addonInfo)
-  : IAddonInstanceHandler(ADDON_AUDIOENCODER, addonInfo)
+  : IAddonInstanceHandler(ADDON_INSTANCE_AUDIOENCODER, addonInfo)
 {
   m_struct = { 0 };
 }
@@ -32,7 +32,7 @@ CAudioEncoder::CAudioEncoder(AddonInfoPtr addonInfo)
 bool CAudioEncoder::Init(AddonToKodiFuncTable_AudioEncoder &callbacks)
 {
   m_struct.toKodi = callbacks;
-  if (!CreateInstance(ADDON_INSTANCE_AUDIOENCODER, &m_struct) || !m_struct.toAddon.Start)
+  if (!CreateInstance(&m_struct) || !m_struct.toAddon.Start)
     return false;
 
   return m_struct.toAddon.Start(&m_struct,

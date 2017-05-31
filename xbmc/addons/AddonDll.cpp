@@ -46,41 +46,41 @@
 namespace ADDON
 {
 
-IAddonInstanceHandler::IAddonInstanceHandler(TYPE type, const std::string& instanceID/* = ""*/)
-  : m_type(type),
-    m_parentInstance(nullptr)
-{
-  m_instanceId = !instanceID.empty() ? instanceID : StringUtils::Format("%p", static_cast<void*>(this));
-}
-
-IAddonInstanceHandler::IAddonInstanceHandler(TYPE type, const AddonInfoPtr& addonInfo, kodi::addon::IAddonInstance* parentInstance/* = nullptr*/, const std::string& instanceID/* = ""*/)
-  : m_type(type),
-    m_parentInstance(parentInstance),
-    m_addonInfo(addonInfo)
-{
-  m_instanceId = !instanceID.empty() ? instanceID : StringUtils::Format("%p", static_cast<void*>(this));
-
-  m_addon = CAddonMgr::GetInstance().GetAddon(addonInfo, this);
-  if (!m_addon)
-    CLog::Log(LOGFATAL, "ADDON::IAddonInstanceHandler: Tried to get add-on '%s' who not available!", addonInfo->ID().c_str());
-}
-
-IAddonInstanceHandler::~IAddonInstanceHandler()
-{
-  if (m_addon)
-    CAddonMgr::GetInstance().ReleaseAddon(m_addon, this);
-}
-
-bool IAddonInstanceHandler::CreateInstance(ADDON_TYPE instanceType, KODI_HANDLE instance)
-{
-  return m_addon->CreateInstance(instanceType, m_instanceId, instance, m_parentInstance) == ADDON_STATUS_OK;
-}
-
-void IAddonInstanceHandler::DestroyInstance()
-{
-  if (m_addon)
-    m_addon->DestroyInstance(m_instanceId);
-}
+// IAddonInstanceHandler::IAddonInstanceHandler(TYPE type, const std::string& instanceID/* = ""*/)
+//   : m_type(type),
+//     m_parentInstance(nullptr)
+// {
+//   m_instanceId = !instanceID.empty() ? instanceID : StringUtils::Format("%p", static_cast<void*>(this));
+// }
+// 
+// IAddonInstanceHandler::IAddonInstanceHandler(TYPE type, const AddonInfoPtr& addonInfo, kodi::addon::IAddonInstance* parentInstance/* = nullptr*/, const std::string& instanceID/* = ""*/)
+//   : m_type(type),
+//     m_parentInstance(parentInstance),
+//     m_addonInfo(addonInfo)
+// {
+//   m_instanceId = !instanceID.empty() ? instanceID : StringUtils::Format("%p", static_cast<void*>(this));
+// 
+//   m_addon = CAddonMgr::GetInstance().GetAddon(addonInfo, this);
+//   if (!m_addon)
+//     CLog::Log(LOGFATAL, "ADDON::IAddonInstanceHandler: Tried to get add-on '%s' who not available!", addonInfo->ID().c_str());
+// }
+// 
+// IAddonInstanceHandler::~IAddonInstanceHandler()
+// {
+//   if (m_addon)
+//     CAddonMgr::GetInstance().ReleaseAddon(m_addon, this);
+// }
+// 
+// bool IAddonInstanceHandler::CreateInstance(ADDON_TYPE instanceType, KODI_HANDLE instance)
+// {
+//   return m_addon->CreateInstance(instanceType, m_instanceId, instance, m_parentInstance) == ADDON_STATUS_OK;
+// }
+// 
+// void IAddonInstanceHandler::DestroyInstance()
+// {
+//   if (m_addon)
+//     m_addon->DestroyInstance(m_instanceId);
+// }
 
 CAddonDll::CAddonDll(AddonInfoPtr props)
   : CAddon(props),

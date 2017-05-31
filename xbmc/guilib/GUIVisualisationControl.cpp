@@ -72,7 +72,7 @@ void CAudioBuffer::Set(const float* psBuffer, int iSize)
 
 CGUIVisualisationControl::CGUIVisualisationControl(int parentID, int controlID, float posX, float posY, float width, float height)
   : CGUIControl(parentID, controlID, posX, posY, width, height),
-    IAddonInstanceHandler(ADDON_VIZ),
+    IAddonInstanceHandler(ADDON_INSTANCE_VISUALIZATION),
     m_callStart(false),
     m_alreadyStarted(false),
     m_attemptedLoad(false),
@@ -85,7 +85,7 @@ CGUIVisualisationControl::CGUIVisualisationControl(int parentID, int controlID, 
 
 CGUIVisualisationControl::CGUIVisualisationControl(const CGUIVisualisationControl &from)
   : CGUIControl(from),
-    IAddonInstanceHandler(ADDON_VIZ),
+    IAddonInstanceHandler(ADDON_INSTANCE_VISUALIZATION),
     m_callStart(false),
     m_alreadyStarted(false),
     m_attemptedLoad(false),

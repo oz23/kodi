@@ -88,7 +88,7 @@ private:
 
 CAddonVideoCodec::CAddonVideoCodec(CProcessInfo &processInfo, ADDON::AddonInfoPtr& addonInfo, kodi::addon::IAddonInstance* parentInstance)
   : CDVDVideoCodec(processInfo),
-    IAddonInstanceHandler(ADDON::ADDON_VIDEOCODEC, addonInfo, parentInstance)
+    IAddonInstanceHandler(ADDON_INSTANCE_VIDEOCODEC, addonInfo, parentInstance)
   , m_displayAspect(0.0f)
   , m_codecFlags(0)
   , m_lastPictureBuffer(nullptr)
@@ -98,7 +98,7 @@ CAddonVideoCodec::CAddonVideoCodec(CProcessInfo &processInfo, ADDON::AddonInfoPt
   m_struct = { 0 };
   m_struct.toKodi.kodiInstance = this;
   m_struct.toKodi.GetFrameBuffer = get_frame_buffer;
-  if (!CreateInstance(ADDON_INSTANCE_VIDEOCODEC, &m_struct) || !m_struct.toAddon.Open)
+  if (!CreateInstance(&m_struct) || !m_struct.toAddon.Open)
   {
     CLog::Log(LOGERROR, "CAddonVideoCodec: Failed to create add-on instance for '%s'", addonInfo->ID().c_str());
     return;

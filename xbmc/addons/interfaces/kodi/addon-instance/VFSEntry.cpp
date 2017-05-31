@@ -122,7 +122,7 @@ class CVFSURLWrapper
 };
 
 CVFSEntry::CVFSEntry(AddonInfoPtr addonInfo)
-  : IAddonInstanceHandler(ADDON_VFS, addonInfo)
+  : IAddonInstanceHandler(ADDON_INSTANCE_VFS, addonInfo)
 {
   m_protocols = Type(ADDON_VFS)->GetValue("@protocols").asString();
   m_extensions = Type(ADDON_VFS)->GetValue("@extensions").asString();
@@ -132,7 +132,7 @@ CVFSEntry::CVFSEntry(AddonInfoPtr addonInfo)
 
   m_struct = { 0 };
   m_struct.toKodi.kodiInstance = this;
-  if (!CreateInstance(ADDON_INSTANCE_VFS, &m_struct))
+  if (!CreateInstance(&m_struct))
     CLog::Log(LOGFATAL, "CVFSEntry - Couldn't create instance on add-on '%s'", addonInfo->Name().c_str());
 }
 

@@ -19,8 +19,8 @@
  *
  */
 
-#include "addons/AddonDll.h"
 #include "addons/kodi-addon-dev-kit/include/kodi/addon-instance/Screensaver.h"
+#include "addons/AddonInstanceHandler.h"
 
 namespace ADDON
 {

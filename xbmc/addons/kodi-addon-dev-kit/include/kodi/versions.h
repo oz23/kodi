@@ -101,6 +101,16 @@
 #define ADDON_GLOBAL_VERSION_NETWORK_XML_ID           "kodi.binary.global.network"
 #define ADDON_GLOBAL_VERSION_NETWORK_DEPENDS          "Network.h"
 
+#define ADDON_GLOBAL_VERSION_FILESYSTEM               "1.0.0"
+#define ADDON_GLOBAL_VERSION_FILESYSTEM_MIN           "1.0.0"
+#define ADDON_GLOBAL_VERSION_FILESYSTEM_XML_ID        "kodi.binary.global.filesystem"
+#define ADDON_GLOBAL_VERSION_FILESYSTEM_DEPENDS       "Filesystem.h"
+
+#define ADDON_GLOBAL_VERSION_NETWORK                  "1.0.0"
+#define ADDON_GLOBAL_VERSION_NETWORK_MIN              "1.0.0"
+#define ADDON_GLOBAL_VERSION_NETWORK_XML_ID           "kodi.binary.global.network"
+#define ADDON_GLOBAL_VERSION_NETWORK_DEPENDS          "Network.h"
+
 #define ADDON_INSTANCE_VERSION_ADSP                   "0.1.10"
 #define ADDON_INSTANCE_VERSION_ADSP_MIN               "0.1.10"
 #define ADDON_INSTANCE_VERSION_ADSP_XML_ID            "kodi.binary.instance.adsp"
@@ -173,10 +183,12 @@
                                                       "StreamCrypto.h"
 
 ///
-/// The currently used types for Kodi add-ons
+/// The currently available instance types for Kodi add-ons
 ///
+/// \internal
 /// @note For add of new types take a new number on end. To change
 /// existing numbers can be make problems on already compiled add-ons.
+/// \endinternal
 ///
 typedef enum ADDON_TYPE
 {
@@ -361,7 +373,7 @@ inline const char* GetTypeMinVersion(int type)
 /// Function used internally on add-on and in Kodi itself to get name
 /// about given type.
 ///
-/// @param[in] instanceType The with 'enum ADDON_TYPE' type to ask
+/// @param[in] type The with 'enum ADDON_TYPE' defined type to ask
 /// @return Name of the asked instance type
 ///
 inline const char* GetTypeName(int type)
@@ -411,7 +423,7 @@ inline const char* GetTypeName(int type)
 /// Function used internally on add-on and in Kodi itself to get id number
 /// about given type name.
 ///
-/// @param[in] instanceType The with name type to ask
+/// @param[in] name The type name string to ask
 /// @return Id number of the asked instance type
 ///
 /// @warning String must be lower case here!

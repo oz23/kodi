@@ -18,7 +18,7 @@
  */
 #pragma once
 
-#include "addons/AddonDll.h"
+#include "addons/AddonInstanceHandler.h"
 #include "addons/kodi-addon-dev-kit/include/kodi/addon-instance/VFS.h"
 #include "filesystem/IFile.h"
 #include "filesystem/IDirectory.h"

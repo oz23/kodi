@@ -51,7 +51,7 @@ namespace ADDON
     static void*        AddOnLib_RegisterMe            (void* addonData);
     static void         AddOnLib_UnRegisterMe          (void* addonData, void* cbTable);
     void*               AddOnLib_GetHelper()          { return m_helperAddOn; }
-    /*\__________________________________________________________________________________________
+    /*\_________________________________________________________________________
     \*/
     static void*        GUILib_RegisterMe              (void* addonData);
     static void         GUILib_UnRegisterMe            (void* addonData, void* cbTable);

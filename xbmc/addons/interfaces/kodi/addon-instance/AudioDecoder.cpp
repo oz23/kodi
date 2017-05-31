@@ -26,7 +26,7 @@ namespace ADDON
 {
 
 CAudioDecoder::CAudioDecoder(AddonInfoPtr addonInfo)
-  : IAddonInstanceHandler(ADDON_AUDIODECODER, addonInfo)
+  : IAddonInstanceHandler(ADDON_INSTANCE_AUDIODECODER, addonInfo)
 {
   m_extension = addonInfo->Type(ADDON_AUDIODECODER)->GetValue("@extension").asString();
   m_mimetype = addonInfo->Type(ADDON_AUDIODECODER)->GetValue("@mimetype").asString();
@@ -45,7 +45,7 @@ CAudioDecoder::~CAudioDecoder()
 bool CAudioDecoder::Create()
 {
   m_struct.toKodi.kodiInstance = this;
-  if (!CreateInstance(ADDON_INSTANCE_AUDIODECODER, &m_struct))
+  if (!CreateInstance(&m_struct))
     return false;
 
   return true;
