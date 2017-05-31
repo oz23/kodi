@@ -23,7 +23,10 @@
 #include "settings/Settings.h"
 #include "settings/lib/Setting.h"
 #include "windowing/WindowingFactory.h"
+
+#if defined (HAVE_LIBVDPAU)
 #include "cores/VideoPlayer/DVDCodecs/Video/VDPAU.h"
+#endif
 
 bool CDVDVideoCodec::IsSettingVisible(const std::string &condition, const std::string &value, const CSetting *setting, void *data)
 {
@@ -34,6 +37,7 @@ bool CDVDVideoCodec::IsSettingVisible(const std::string &condition, const std::s
   // move ifdeffery to platform specific files
   const std::string &settingId = setting->GetId();
 
+#if defined (HAVE_LIBVDPAU)
   if (settingId == CSettings::SETTING_VIDEOPLAYER_USEVDPAU)
   {
     if (VDPAU::CDecoder::IsCapGeneral())
@@ -41,6 +45,7 @@ bool CDVDVideoCodec::IsSettingVisible(const std::string &condition, const std::s
     else
       return false;
   }
+#endif
 
   // check if we are running on nvidia hardware
   std::string gpuvendor = g_Windowing.GetRenderVendor();
