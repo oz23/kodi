@@ -33,12 +33,12 @@ namespace ADDON
 
 void Interface_GUIControlTextBox::Init(AddonGlobalInterface* addonInterface)
 {
-  addonInterface->toKodi.kodi_gui->controlTextBox.SetVisible = SetVisible;
-  addonInterface->toKodi.kodi_gui->controlTextBox.Reset = Reset;
-  addonInterface->toKodi.kodi_gui->controlTextBox.SetText = SetText;
-  addonInterface->toKodi.kodi_gui->controlTextBox.GetText = GetText;
-  addonInterface->toKodi.kodi_gui->controlTextBox.Scroll = Scroll;
-  addonInterface->toKodi.kodi_gui->controlTextBox.SetAutoScrolling = SetAutoScrolling;
+  addonInterface->toKodi->kodi_gui->controlTextBox.SetVisible = SetVisible;
+  addonInterface->toKodi->kodi_gui->controlTextBox.Reset = Reset;
+  addonInterface->toKodi->kodi_gui->controlTextBox.SetText = SetText;
+  addonInterface->toKodi->kodi_gui->controlTextBox.GetText = GetText;
+  addonInterface->toKodi->kodi_gui->controlTextBox.Scroll = Scroll;
+  addonInterface->toKodi->kodi_gui->controlTextBox.SetAutoScrolling = SetAutoScrolling;
 }
 
 void Interface_GUIControlTextBox::SetVisible(void* kodiBase, void* handle, bool visible)

@@ -65,7 +65,7 @@ namespace gui
     ///
     inline void ShowAndGetInput(const std::string& heading, const std::string& text)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->dialogOK.show_and_get_input_single_text(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, heading.c_str(), text.c_str());
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->dialogOK.show_and_get_input_single_text(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, heading.c_str(), text.c_str());
     }
     //--------------------------------------------------------------------------
 
@@ -91,7 +91,7 @@ namespace gui
     ///
     inline void ShowAndGetInput(const std::string& heading, const std::string& line0, const std::string& line1, const std::string& line2)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->dialogOK.show_and_get_input_line_text(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, heading.c_str(), line0.c_str(), line1.c_str(), line2.c_str());
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->dialogOK.show_and_get_input_line_text(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, heading.c_str(), line0.c_str(), line1.c_str(), line2.c_str());
     }
     //--------------------------------------------------------------------------
   }

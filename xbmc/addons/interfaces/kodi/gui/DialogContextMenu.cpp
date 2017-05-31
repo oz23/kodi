@@ -34,7 +34,7 @@ namespace ADDON
 
 void Interface_GUIDialogContextMenu::Init(AddonGlobalInterface* addonInterface)
 {
-  addonInterface->toKodi.kodi_gui->dialogContextMenu.Open = Open;
+  addonInterface->toKodi->kodi_gui->dialogContextMenu.Open = Open;
 }
 
 int Interface_GUIDialogContextMenu::Open(void* kodiBase, const char *heading, const char *entries[], unsigned int size)

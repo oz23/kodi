@@ -89,7 +89,7 @@ namespace gui
     {
       path.resize(1024);
       unsigned int size = (unsigned int)path.capacity();
-      bool ret = ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->dialogFileBrowser.ShowAndGetDirectory(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, shares.c_str(), heading.c_str(), path[0], size, writeOnly);
+      bool ret = ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->dialogFileBrowser.ShowAndGetDirectory(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, shares.c_str(), heading.c_str(), path[0], size, writeOnly);
       path.resize(size);
       path.shrink_to_fit();
       return ret;
@@ -122,7 +122,7 @@ namespace gui
     {
       file.resize(1024);
       unsigned int size = (unsigned int)file.capacity();;
-      bool ret = ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->dialogFileBrowser.ShowAndGetFile(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, shares.c_str(), mask.c_str(), heading.c_str(), file[0], size, useThumbs, useFileDirectories);
+      bool ret = ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->dialogFileBrowser.ShowAndGetFile(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, shares.c_str(), mask.c_str(), heading.c_str(), file[0], size, useThumbs, useFileDirectories);
       file.resize(size);
       file.shrink_to_fit();
       return ret;
@@ -158,7 +158,7 @@ namespace gui
     {
       path.resize(1024);
       unsigned int size = (unsigned int)path.capacity();
-      bool ret = ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->dialogFileBrowser.ShowAndGetFileFromDir(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, directory.c_str(), mask.c_str(), heading.c_str(), path[0], size, useThumbs, useFileDirectories, singleList);
+      bool ret = ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->dialogFileBrowser.ShowAndGetFileFromDir(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, directory.c_str(), mask.c_str(), heading.c_str(), path[0], size, useThumbs, useFileDirectories, singleList);
       path.resize(size);
       path.shrink_to_fit();
       return ret;
@@ -191,12 +191,12 @@ namespace gui
     {
       char** list;
       unsigned int listSize = 0;
-      bool ret = ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->dialogFileBrowser.ShowAndGetFileList(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, shares.c_str(), mask.c_str(), heading.c_str(), list, listSize, useThumbs, useFileDirectories);
+      bool ret = ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->dialogFileBrowser.ShowAndGetFileList(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, shares.c_str(), mask.c_str(), heading.c_str(), list, listSize, useThumbs, useFileDirectories);
       if (ret)
       {
         for (unsigned int i = 0; i < listSize; ++i)
           path.push_back(list[i]);
-        ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->dialogFileBrowser.ClearList(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, list, listSize);
+        ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->dialogFileBrowser.ClearList(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, list, listSize);
       }
       return ret;
     }
@@ -222,7 +222,7 @@ namespace gui
     {
       path.resize(1024);
       unsigned int size = (unsigned int)path.capacity();
-      bool ret = ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->dialogFileBrowser.ShowAndGetSource(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, path[0], size, allowNetworkShares, additionalShare.c_str(), type.c_str());
+      bool ret = ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->dialogFileBrowser.ShowAndGetSource(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, path[0], size, allowNetworkShares, additionalShare.c_str(), type.c_str());
       path.resize(size);
       path.shrink_to_fit();
       return ret;
@@ -247,7 +247,7 @@ namespace gui
     {
       path.resize(1024);
       unsigned int size = (unsigned int)path.capacity();
-      bool ret = ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->dialogFileBrowser.ShowAndGetImage(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, shares.c_str(), heading.c_str(), path[0], size);
+      bool ret = ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->dialogFileBrowser.ShowAndGetImage(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, shares.c_str(), heading.c_str(), path[0], size);
       path.resize(size);
       path.shrink_to_fit();
       return ret;
@@ -272,12 +272,12 @@ namespace gui
     {
       char** list;
       unsigned int listSize = 0;
-      bool ret = ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->dialogFileBrowser.ShowAndGetImageList(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, shares.c_str(), heading.c_str(), list, listSize);
+      bool ret = ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->dialogFileBrowser.ShowAndGetImageList(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, shares.c_str(), heading.c_str(), list, listSize);
       if (ret)
       {
         for (unsigned int i = 0; i < listSize; ++i)
           path.push_back(list[i]);
-        ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->dialogFileBrowser.ClearList(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, list, listSize);
+        ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->dialogFileBrowser.ClearList(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, list, listSize);
       }
       return ret;
     }

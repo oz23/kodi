@@ -61,7 +61,7 @@ namespace gui
       : m_Window(window),
         m_ControlId(controlId)
     {
-      m_ControlHandle = ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->window.GetControl_Slider(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_Window->m_WindowHandle, controlId);
+      m_ControlHandle = ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->window.GetControl_Slider(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_Window->m_WindowHandle, controlId);
       if (!m_ControlHandle)
         kodi::Log(ADDON_LOG_FATAL, "kodi::gui::CControlSlider can't create control class from Kodi !!!");
     }
@@ -84,7 +84,7 @@ namespace gui
     ///
     void SetVisible(bool visible)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->controlSlider.SetVisible(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_ControlHandle, visible);
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlSlider.SetVisible(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ControlHandle, visible);
     }
     //--------------------------------------------------------------------------
 
@@ -97,7 +97,7 @@ namespace gui
     ///
     void SetEnabled(bool enabled)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->controlSlider.SetEnabled(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_ControlHandle, enabled);
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlSlider.SetEnabled(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ControlHandle, enabled);
     }
     //--------------------------------------------------------------------------
 
@@ -108,7 +108,7 @@ namespace gui
     ///
     void Reset()
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->controlSlider.Reset(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_ControlHandle);
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlSlider.Reset(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ControlHandle);
     }
     //--------------------------------------------------------------------------
 
@@ -131,7 +131,7 @@ namespace gui
       std::string text;
       text.resize(1024);
       unsigned int size = (unsigned int)text.capacity();
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->controlSlider.GetDescription(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_ControlHandle, text[0], size);
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlSlider.GetDescription(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ControlHandle, text[0], size);
       text.resize(size);
       text.shrink_to_fit();
       return text;
@@ -159,7 +159,7 @@ namespace gui
     ///
     void SetIntRange(int start, int end)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->controlSlider.SetIntRange(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_ControlHandle, start, end);
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlSlider.SetIntRange(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ControlHandle, start, end);
     }
     //--------------------------------------------------------------------------
 
@@ -177,7 +177,7 @@ namespace gui
     ///
     void SetIntValue(int value)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->controlSlider.SetIntValue(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_ControlHandle, value);
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlSlider.SetIntValue(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ControlHandle, value);
     }
     //--------------------------------------------------------------------------
 
@@ -194,7 +194,7 @@ namespace gui
     ///
     int GetIntValue() const
     {
-      return ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->controlSlider.GetIntValue(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_ControlHandle);
+      return ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlSlider.GetIntValue(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ControlHandle);
     }
     //--------------------------------------------------------------------------
 
@@ -213,7 +213,7 @@ namespace gui
     ///
     void SetIntInterval(int interval)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->controlSlider.SetIntInterval(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_ControlHandle, interval);
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlSlider.SetIntInterval(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ControlHandle, interval);
     }
     //--------------------------------------------------------------------------
 
@@ -230,7 +230,7 @@ namespace gui
     ///
     void SetPercentage(float percent)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->controlSlider.SetPercentage(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_ControlHandle, percent);
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlSlider.SetPercentage(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ControlHandle, percent);
     }
     //--------------------------------------------------------------------------
 
@@ -247,7 +247,7 @@ namespace gui
     ///
     float GetPercentage() const
     {
-      return ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->controlSlider.GetPercentage(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_ControlHandle);
+      return ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlSlider.GetPercentage(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ControlHandle);
     }
     //--------------------------------------------------------------------------
 
@@ -272,7 +272,7 @@ namespace gui
     ///
     void SetFloatRange(float start, float end)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->controlSlider.SetFloatRange(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_ControlHandle, start, end);
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlSlider.SetFloatRange(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ControlHandle, start, end);
     }
     //--------------------------------------------------------------------------
 
@@ -291,7 +291,7 @@ namespace gui
     ///
     void SetFloatValue(float value)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->controlSlider.SetFloatValue(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_ControlHandle, value);
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlSlider.SetFloatValue(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ControlHandle, value);
     }
     //--------------------------------------------------------------------------
 
@@ -304,7 +304,7 @@ namespace gui
     ///
     float GetFloatValue() const
     {
-      return ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->controlSlider.GetFloatValue(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_ControlHandle);
+      return ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlSlider.GetFloatValue(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ControlHandle);
     }
     //--------------------------------------------------------------------------
 
@@ -323,7 +323,7 @@ namespace gui
     ///
     void SetFloatInterval(float interval)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->controlSlider.SetFloatInterval(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_ControlHandle, interval);
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlSlider.SetFloatInterval(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ControlHandle, interval);
     }
     //--------------------------------------------------------------------------
 

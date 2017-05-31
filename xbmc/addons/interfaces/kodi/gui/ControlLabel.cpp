@@ -33,9 +33,9 @@ namespace ADDON
 
 void Interface_GUIControlLabel::Init(AddonGlobalInterface* addonInterface)
 {
-  addonInterface->toKodi.kodi_gui->controlLabel.SetVisible = SetVisible;
-  addonInterface->toKodi.kodi_gui->controlLabel.SetLabel = SetLabel;
-  addonInterface->toKodi.kodi_gui->controlLabel.GetLabel = GetLabel;
+  addonInterface->toKodi->kodi_gui->controlLabel.SetVisible = SetVisible;
+  addonInterface->toKodi->kodi_gui->controlLabel.SetLabel = SetLabel;
+  addonInterface->toKodi->kodi_gui->controlLabel.GetLabel = GetLabel;
 }
 
 void Interface_GUIControlLabel::SetVisible(void* kodiBase, void* handle, bool visible)

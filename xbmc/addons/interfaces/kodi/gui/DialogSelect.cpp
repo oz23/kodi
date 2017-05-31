@@ -34,7 +34,7 @@ extern "C"
 
 void Interface_GUIDialogSelect::Init(AddonGlobalInterface* addonInterface)
 {
-  addonInterface->toKodi.kodi_gui->dialogSelect.Open = Open;
+  addonInterface->toKodi->kodi_gui->dialogSelect.Open = Open;
 }
 
 int Interface_GUIDialogSelect::Open(void* kodiBase, const char *heading, const char *entries[], unsigned int size, int selected, bool autoclose)

@@ -107,7 +107,7 @@ extern "C"
       m_frameSize = 0;
       m_channelCount = 0;
 
-      for (unsigned int ch = 0; ch < AE_CH_MAX; ch++)
+      for (unsigned int ch = 0; ch < AE_CH_MAX; ++ch)
       {
         m_channels[ch] = AE_CH_MAX;
       }
@@ -131,7 +131,7 @@ extern "C"
         return false;
       }
 
-      for (unsigned int ch = 0; ch < AE_CH_MAX; ch++)
+      for (unsigned int ch = 0; ch < AE_CH_MAX; ++ch)
       {
         if (fmt->m_channels[ch] != m_channels[ch])
         {
@@ -154,8 +154,8 @@ extern "C"
    */
   typedef struct AddonToKodiFuncTable_kodi_audioengine
   {
-    AEStreamHandle* (*MakeStream) (AudioEngineFormat format, unsigned int options);
-    void (*FreeStream) (AEStreamHandle *stream);
+    AEStreamHandle* (*MakeStream) (void *kodiBase, AudioEngineFormat format, unsigned int options);
+    void (*FreeStream) (void *kodiBase, AEStreamHandle *stream);
     bool (*GetCurrentSinkFormat) (void *kodiBase, AudioEngineFormat *SinkFormat);
 
     // Audio Engine Stream definitions
@@ -266,10 +266,10 @@ namespace audioengine
     /// ~~~~~~~~~~~~~
     ///
     CAddonAEStream(AudioEngineFormat format, unsigned int options = 0)
-      : m_kodiBase(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase),
-        m_cb(::kodi::addon::CAddonBase::m_interface->toKodi.kodi_audioengine)
+      : m_kodiBase(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase),
+        m_cb(::kodi::addon::CAddonBase::m_interface->toKodi->kodi_audioengine)
     {
-      AEStreamHandle *streamHandle = m_cb->MakeStream(format, options);
+      AEStreamHandle *streamHandle = m_cb->MakeStream(m_kodiBase, format, options);
       if (streamHandle == nullptr)
       {
         kodi::Log(ADDON_LOG_FATAL, "CAddonAEStream: MakeStream failed!");
@@ -281,7 +281,7 @@ namespace audioengine
     {
       if (m_StreamHandle)
       {
-        m_cb->FreeStream(m_StreamHandle);
+        m_cb->FreeStream(m_kodiBase, m_StreamHandle);
         m_StreamHandle = nullptr;
       }
     }
@@ -572,9 +572,9 @@ namespace audioengine
   ///
   inline bool GetCurrentSinkFormat(AudioEngineFormat &format)
   {
-    return ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_audioengine->GetCurrentSinkFormat(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, &format);
+    return ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_audioengine->GetCurrentSinkFormat(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, &format);
   }
   //----------------------------------------------------------------------------
 
-} /* kodi */
 } /* audioengine */
+} /* kodi */

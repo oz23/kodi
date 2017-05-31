@@ -33,14 +33,14 @@ namespace ADDON
 
 void Interface_GUIDialogNumeric::Init(AddonGlobalInterface* addonInterface)
 {
-  addonInterface->toKodi.kodi_gui->dialogNumeric.ShowAndVerifyNewPassword = ShowAndVerifyNewPassword;
-  addonInterface->toKodi.kodi_gui->dialogNumeric.ShowAndVerifyPassword = ShowAndVerifyPassword;
-  addonInterface->toKodi.kodi_gui->dialogNumeric.ShowAndVerifyInput = ShowAndVerifyInput;
-  addonInterface->toKodi.kodi_gui->dialogNumeric.ShowAndGetTime = ShowAndGetTime;
-  addonInterface->toKodi.kodi_gui->dialogNumeric.ShowAndGetDate = ShowAndGetDate;
-  addonInterface->toKodi.kodi_gui->dialogNumeric.ShowAndGetIPAddress = ShowAndGetIPAddress;
-  addonInterface->toKodi.kodi_gui->dialogNumeric.ShowAndGetNumber = ShowAndGetNumber;
-  addonInterface->toKodi.kodi_gui->dialogNumeric.ShowAndGetSeconds = ShowAndGetSeconds;
+  addonInterface->toKodi->kodi_gui->dialogNumeric.ShowAndVerifyNewPassword = ShowAndVerifyNewPassword;
+  addonInterface->toKodi->kodi_gui->dialogNumeric.ShowAndVerifyPassword = ShowAndVerifyPassword;
+  addonInterface->toKodi->kodi_gui->dialogNumeric.ShowAndVerifyInput = ShowAndVerifyInput;
+  addonInterface->toKodi->kodi_gui->dialogNumeric.ShowAndGetTime = ShowAndGetTime;
+  addonInterface->toKodi->kodi_gui->dialogNumeric.ShowAndGetDate = ShowAndGetDate;
+  addonInterface->toKodi->kodi_gui->dialogNumeric.ShowAndGetIPAddress = ShowAndGetIPAddress;
+  addonInterface->toKodi->kodi_gui->dialogNumeric.ShowAndGetNumber = ShowAndGetNumber;
+  addonInterface->toKodi->kodi_gui->dialogNumeric.ShowAndGetSeconds = ShowAndGetSeconds;
 }
 
 bool Interface_GUIDialogNumeric::ShowAndVerifyNewPassword(void* kodiBase, char &newPassword, unsigned int &maxStringSize)

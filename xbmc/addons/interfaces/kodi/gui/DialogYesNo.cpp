@@ -36,9 +36,9 @@ namespace ADDON
 
 void Interface_GUIDialogYesNo::Init(AddonGlobalInterface* addonInterface)
 {
-  addonInterface->toKodi.kodi_gui->dialogYesNo.ShowAndGetInputSingleText = ShowAndGetInputSingleText;
-  addonInterface->toKodi.kodi_gui->dialogYesNo.ShowAndGetInputLineText = ShowAndGetInputLineText;
-  addonInterface->toKodi.kodi_gui->dialogYesNo.ShowAndGetInputLineButtonText = ShowAndGetInputLineButtonText;
+  addonInterface->toKodi->kodi_gui->dialogYesNo.ShowAndGetInputSingleText = ShowAndGetInputSingleText;
+  addonInterface->toKodi->kodi_gui->dialogYesNo.ShowAndGetInputLineText = ShowAndGetInputLineText;
+  addonInterface->toKodi->kodi_gui->dialogYesNo.ShowAndGetInputLineButtonText = ShowAndGetInputLineButtonText;
 }
 
 bool Interface_GUIDialogYesNo::ShowAndGetInputSingleText(void* kodiBase,

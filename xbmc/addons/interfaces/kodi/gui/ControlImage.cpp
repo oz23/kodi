@@ -32,9 +32,9 @@ namespace ADDON
 
 void Interface_GUIControlImage::Init(AddonGlobalInterface* addonInterface)
 {
-  addonInterface->toKodi.kodi_gui->controlImage.SetVisible = SetVisible;
-  addonInterface->toKodi.kodi_gui->controlImage.SetFileName = SetFileName;
-  addonInterface->toKodi.kodi_gui->controlImage.SetColorDiffuse = SetColorDiffuse;
+  addonInterface->toKodi->kodi_gui->controlImage.SetVisible = SetVisible;
+  addonInterface->toKodi->kodi_gui->controlImage.SetFileName = SetFileName;
+  addonInterface->toKodi->kodi_gui->controlImage.SetColorDiffuse = SetColorDiffuse;
 }
 
 void Interface_GUIControlImage::SetVisible(void *kodiBase, void* handle, bool visible)

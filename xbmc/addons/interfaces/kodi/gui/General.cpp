@@ -609,14 +609,14 @@ int GetKodiGUIActionType(int addonAction)
 
 void Interface_GUIGeneral::Init(AddonGlobalInterface* addonInterface)
 {
-  addonInterface->toKodi.kodi_gui = (AddonToKodiFuncTable_kodi_gui*)malloc(sizeof(AddonToKodiFuncTable_kodi_gui));
-  addonInterface->toKodi.kodi_gui->general.lock = lock;
-  addonInterface->toKodi.kodi_gui->general.unlock = unlock;
-  addonInterface->toKodi.kodi_gui->general.get_screen_height = get_screen_height;
-  addonInterface->toKodi.kodi_gui->general.get_screen_width = get_screen_width;
-  addonInterface->toKodi.kodi_gui->general.get_video_resolution = get_video_resolution;
-  addonInterface->toKodi.kodi_gui->general.get_current_window_dialog_id = get_current_window_dialog_id;
-  addonInterface->toKodi.kodi_gui->general.get_current_window_id = get_current_window_id;
+  addonInterface->toKodi->kodi_gui = (AddonToKodiFuncTable_kodi_gui*)malloc(sizeof(AddonToKodiFuncTable_kodi_gui));
+  addonInterface->toKodi->kodi_gui->general.lock = lock;
+  addonInterface->toKodi->kodi_gui->general.unlock = unlock;
+  addonInterface->toKodi->kodi_gui->general.get_screen_height = get_screen_height;
+  addonInterface->toKodi->kodi_gui->general.get_screen_width = get_screen_width;
+  addonInterface->toKodi->kodi_gui->general.get_video_resolution = get_video_resolution;
+  addonInterface->toKodi->kodi_gui->general.get_current_window_dialog_id = get_current_window_dialog_id;
+  addonInterface->toKodi->kodi_gui->general.get_current_window_id = get_current_window_id;
 
   Interface_GUIControlButton::Init(addonInterface);
   Interface_GUIControlEdit::Init(addonInterface);
@@ -647,10 +647,11 @@ void Interface_GUIGeneral::Init(AddonGlobalInterface* addonInterface)
 
 void Interface_GUIGeneral::DeInit(AddonGlobalInterface* addonInterface)
 {
-  if (addonInterface->toKodi.kodi_gui)
+  if (addonInterface->toKodi && /* <-- Safe check, needed so long old addon way is present */
+      addonInterface->toKodi->kodi_gui)
   {
-    free(addonInterface->toKodi.kodi_gui);
-    addonInterface->toKodi.kodi_gui = nullptr;
+    free(addonInterface->toKodi->kodi_gui);
+    addonInterface->toKodi->kodi_gui = nullptr;
   }
 }
 

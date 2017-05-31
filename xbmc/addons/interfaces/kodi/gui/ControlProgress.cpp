@@ -33,9 +33,9 @@ namespace ADDON
 
 void Interface_GUIControlProgress::Init(AddonGlobalInterface* addonInterface)
 {
-  addonInterface->toKodi.kodi_gui->controlProgress.SetVisible = SetVisible;
-  addonInterface->toKodi.kodi_gui->controlProgress.SetPercentage = SetPercentage;
-  addonInterface->toKodi.kodi_gui->controlProgress.GetPercentage = GetPercentage;
+  addonInterface->toKodi->kodi_gui->controlProgress.SetVisible = SetVisible;
+  addonInterface->toKodi->kodi_gui->controlProgress.SetPercentage = SetPercentage;
+  addonInterface->toKodi->kodi_gui->controlProgress.GetPercentage = GetPercentage;
 }
 
 void Interface_GUIControlProgress::SetVisible(void* kodiBase, void* handle, bool visible)

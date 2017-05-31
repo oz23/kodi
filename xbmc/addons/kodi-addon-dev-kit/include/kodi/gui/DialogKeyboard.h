@@ -96,7 +96,7 @@ namespace gui
     {
       text.resize(1024);
       unsigned int size = (unsigned int)text.capacity();
-      bool ret = ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->dialogKeyboard.ShowAndGetInputWithHead(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, text[0], size, heading.c_str(), allowEmptyResult, hiddenInput, autoCloseMs);
+      bool ret = ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->dialogKeyboard.ShowAndGetInputWithHead(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, text[0], size, heading.c_str(), allowEmptyResult, hiddenInput, autoCloseMs);
       text.resize(size);
       text.shrink_to_fit();
       return ret;
@@ -126,7 +126,7 @@ namespace gui
     {
       text.resize(1024);
       unsigned int size = (unsigned int)text.capacity();
-      bool ret = ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->dialogKeyboard.ShowAndGetInput(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, text[0], size, allowEmptyResult, autoCloseMs);
+      bool ret = ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->dialogKeyboard.ShowAndGetInput(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, text[0], size, allowEmptyResult, autoCloseMs);
       text.resize(size);
       text.shrink_to_fit();
       return ret;
@@ -157,7 +157,7 @@ namespace gui
     {
       newPassword.resize(1024);
       unsigned int size = (unsigned int)newPassword.capacity();
-      bool ret = ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->dialogKeyboard.ShowAndGetNewPasswordWithHead(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, newPassword[0], size, heading.c_str(), allowEmptyResult, autoCloseMs);
+      bool ret = ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->dialogKeyboard.ShowAndGetNewPasswordWithHead(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, newPassword[0], size, heading.c_str(), allowEmptyResult, autoCloseMs);
       newPassword.resize(size);
       newPassword.shrink_to_fit();
       return ret;
@@ -184,7 +184,7 @@ namespace gui
     {
       newPassword.resize(1024);
       unsigned int size = (unsigned int)newPassword.capacity();
-      bool ret = ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->dialogKeyboard.ShowAndGetNewPassword(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, newPassword[0], size, autoCloseMs);
+      bool ret = ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->dialogKeyboard.ShowAndGetNewPassword(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, newPassword[0], size, autoCloseMs);
       newPassword.resize(size);
       newPassword.shrink_to_fit();
       return ret;
@@ -273,7 +273,7 @@ namespace gui
     {
       newPassword.resize(1024);
       unsigned int size = (unsigned int)newPassword.capacity();
-      bool ret = ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->dialogKeyboard.ShowAndGetNewPasswordWithHead(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, newPassword[0], size, heading.c_str(), allowEmptyResult, autoCloseMs);
+      bool ret = ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->dialogKeyboard.ShowAndGetNewPasswordWithHead(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, newPassword[0], size, heading.c_str(), allowEmptyResult, autoCloseMs);
       newPassword.resize(size);
       newPassword.shrink_to_fit();
       return ret;
@@ -300,7 +300,7 @@ namespace gui
     {
       newPassword.resize(1024);
       unsigned int size = (unsigned int)newPassword.capacity();
-      bool ret = ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->dialogKeyboard.ShowAndVerifyNewPassword(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, newPassword[0], size, autoCloseMs);
+      bool ret = ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->dialogKeyboard.ShowAndVerifyNewPassword(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, newPassword[0], size, autoCloseMs);
       newPassword.resize(size);
       newPassword.shrink_to_fit();
       return ret;
@@ -332,7 +332,7 @@ namespace gui
     {
       password.resize(1024);
       unsigned int size = (unsigned int)password.capacity();
-      int ret = ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->dialogKeyboard.ShowAndVerifyPassword(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, password[0], size, heading.c_str(), retries, autoCloseMs);
+      int ret = ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->dialogKeyboard.ShowAndVerifyPassword(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, password[0], size, heading.c_str(), retries, autoCloseMs);
       password.resize(size);
       password.shrink_to_fit();
       return ret;
@@ -364,7 +364,7 @@ namespace gui
     {
       text.resize(1024);
       unsigned int size = (unsigned int)text.capacity();
-      bool ret = ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->dialogKeyboard.ShowAndGetFilter(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, text[0], size, searching, autoCloseMs);
+      bool ret = ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->dialogKeyboard.ShowAndGetFilter(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, text[0], size, searching, autoCloseMs);
       text.resize(size);
       text.shrink_to_fit();
       return ret;
@@ -385,7 +385,7 @@ namespace gui
       const std::string&      text,
       bool                    closeKeyboard = false)
     {
-      return ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->dialogKeyboard.SendTextToActiveKeyboard(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, text.c_str(), closeKeyboard);
+      return ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->dialogKeyboard.SendTextToActiveKeyboard(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, text.c_str(), closeKeyboard);
     }
     //--------------------------------------------------------------------------
 
@@ -398,7 +398,7 @@ namespace gui
     ///
     inline bool IsKeyboardActivated()
     {
-      return ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->dialogKeyboard.isKeyboardActivated(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase);
+      return ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->dialogKeyboard.isKeyboardActivated(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase);
     }
     //--------------------------------------------------------------------------
   };

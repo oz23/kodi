@@ -21,7 +21,7 @@
 
 #include "guilib/GUIWindow.h"
 
-namespace ADDON { class CInstanceScreensaver; }
+namespace ADDON { class CScreenSaver; }
 
 class CGUIWindowScreensaver : public CGUIWindow
 {
@@ -37,6 +37,6 @@ protected:
   virtual EVENT_RESULT OnMouseEvent(const CPoint &point, const CMouseEvent &event);
 
 private:
-  ADDON::CInstanceScreensaver* m_addon;
+  ADDON::CScreenSaver* m_addon;
 };
 

@@ -85,12 +85,12 @@ namespace gui
     ///
     CWindow(const std::string& xmlFilename, const std::string& defaultSkin, bool forceFallback, bool asDialog)
     {
-      m_WindowHandle = ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->window.New(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, xmlFilename.c_str(),
+      m_WindowHandle = ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->window.New(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, xmlFilename.c_str(),
                             defaultSkin.c_str(), forceFallback, asDialog);
       if (!m_WindowHandle)
         kodi::Log(ADDON_LOG_FATAL, "kodi::gui::CControlButton can't create window class from Kodi !!!");
 
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->window.SetCallbacks(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_WindowHandle, this,
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->window.SetCallbacks(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_WindowHandle, this,
                                 OnInitCB, OnClickCB, OnFocusCB, OnActionCB);
     }
     //--------------------------------------------------------------------------
@@ -105,7 +105,7 @@ namespace gui
     virtual ~CWindow()
     {
       if (m_WindowHandle)
-        ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->window.Delete(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_WindowHandle);
+        ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->window.Delete(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_WindowHandle);
     }
     //--------------------------------------------------------------------------
 
@@ -126,7 +126,7 @@ namespace gui
     ///
     bool Show()
     {
-      return ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->window.Show(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_WindowHandle);
+      return ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->window.Show(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_WindowHandle);
     }
     //--------------------------------------------------------------------------
 
@@ -140,7 +140,7 @@ namespace gui
     ///
     void Close()
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->window.Close(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_WindowHandle);
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->window.Close(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_WindowHandle);
     }
     //--------------------------------------------------------------------------
 
@@ -151,7 +151,7 @@ namespace gui
     ///
     void DoModal()
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->window.DoModal(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_WindowHandle);
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->window.DoModal(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_WindowHandle);
     }
     //--------------------------------------------------------------------------
 
@@ -168,7 +168,7 @@ namespace gui
     ///
     bool SetFocusId(int iControlId)
     {
-      return ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->window.SetFocusId(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_WindowHandle, iControlId);
+      return ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->window.SetFocusId(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_WindowHandle, iControlId);
     }
     //--------------------------------------------------------------------------
 
@@ -182,7 +182,7 @@ namespace gui
     ///
     int GetFocusId()
     {
-      return ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->window.GetFocusId(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_WindowHandle);
+      return ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->window.GetFocusId(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_WindowHandle);
     }
     //--------------------------------------------------------------------------
 
@@ -197,7 +197,7 @@ namespace gui
     ///
     void SetControlLabel(int controlId, const std::string& label)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->window.SetControlLabel(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_WindowHandle, controlId, label.c_str());
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->window.SetControlLabel(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_WindowHandle, controlId, label.c_str());
     }
     //--------------------------------------------------------------------------
 
@@ -217,7 +217,7 @@ namespace gui
     ///
     void SetProperty(const std::string& key, const std::string& value)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->window.SetProperty(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_WindowHandle, key.c_str(), value.c_str());
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->window.SetProperty(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_WindowHandle, key.c_str(), value.c_str());
     }
     //--------------------------------------------------------------------------
 
@@ -241,7 +241,7 @@ namespace gui
       std::string label;
       label.resize(1024);
       unsigned int size = (unsigned int)label.capacity();
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->window.GetProperty(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_WindowHandle, key.c_str(), label[0], size);
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->window.GetProperty(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_WindowHandle, key.c_str(), label[0], size);
       label.resize(size);
       label.shrink_to_fit();
       return label.c_str();
@@ -259,7 +259,7 @@ namespace gui
     ///
     void SetPropertyInt(const std::string& key, int value)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->window.SetPropertyInt(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_WindowHandle, key.c_str(), value);
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->window.SetPropertyInt(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_WindowHandle, key.c_str(), value);
     }
     //--------------------------------------------------------------------------
 
@@ -273,7 +273,7 @@ namespace gui
     ///
     int GetPropertyInt(const std::string& key) const
     {
-      return ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->window.GetPropertyInt(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_WindowHandle, key.c_str());
+      return ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->window.GetPropertyInt(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_WindowHandle, key.c_str());
     }
     //--------------------------------------------------------------------------
 
@@ -288,7 +288,7 @@ namespace gui
     ///
     void SetPropertyBool(const std::string& key, bool value)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->window.SetPropertyBool(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_WindowHandle, key.c_str(), value);
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->window.SetPropertyBool(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_WindowHandle, key.c_str(), value);
     }
     //--------------------------------------------------------------------------
 
@@ -302,7 +302,7 @@ namespace gui
     ///
     bool GetPropertyBool(const std::string& key) const
     {
-      return ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->window.GetPropertyBool(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_WindowHandle, key.c_str());
+      return ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->window.GetPropertyBool(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_WindowHandle, key.c_str());
     }
     //--------------------------------------------------------------------------
 
@@ -317,7 +317,7 @@ namespace gui
     ///
     void SetPropertyDouble(const std::string& key, double value)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->window.SetPropertyDouble(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_WindowHandle, key.c_str(), value);
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->window.SetPropertyDouble(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_WindowHandle, key.c_str(), value);
     }
     //--------------------------------------------------------------------------
 
@@ -332,7 +332,7 @@ namespace gui
     ///
     double GetPropertyDouble(const std::string& key) const
     {
-      return ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->window.GetPropertyDouble(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_WindowHandle, key.c_str());
+      return ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->window.GetPropertyDouble(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_WindowHandle, key.c_str());
     }
     //--------------------------------------------------------------------------
 
@@ -345,7 +345,7 @@ namespace gui
     ///
     void ClearProperties()
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->window.ClearProperties(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_WindowHandle);
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->window.ClearProperties(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_WindowHandle);
     }
     //--------------------------------------------------------------------------
 
@@ -374,7 +374,7 @@ namespace gui
     ///
     void ClearProperty(const std::string& key)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->window.ClearProperty(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_WindowHandle, key.c_str());
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->window.ClearProperty(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_WindowHandle, key.c_str());
     }
     //--------------------------------------------------------------------------
 
@@ -395,7 +395,7 @@ namespace gui
     ///
     CListItem* AddStringItem(const std::string& name, int itemPosition = -1)
     {
-      GUIHANDLE handle = ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->window.AddStringItem(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_WindowHandle, name.c_str(), itemPosition);
+      GUIHANDLE handle = ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->window.AddStringItem(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_WindowHandle, name.c_str(), itemPosition);
       if (handle)
         return new CListItem(handle);
 
@@ -415,7 +415,7 @@ namespace gui
     ///
     void AddItem(CListItem* item, int itemPosition = -1)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->window.AddItem(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_WindowHandle, item->m_ListItemHandle, itemPosition);
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->window.AddItem(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_WindowHandle, item->m_ListItemHandle, itemPosition);
     }
     //--------------------------------------------------------------------------
 
@@ -429,7 +429,7 @@ namespace gui
     ///
     void RemoveItem(int itemPosition)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->window.RemoveItem(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_WindowHandle, itemPosition);
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->window.RemoveItem(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_WindowHandle, itemPosition);
     }
     //--------------------------------------------------------------------------
 
@@ -445,7 +445,7 @@ namespace gui
     ///
     void RemoveItem(CListItem* item)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->window.RemoveItemFile(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_WindowHandle, item->m_ListItemHandle);
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->window.RemoveItemFile(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_WindowHandle, item->m_ListItemHandle);
     }
     //--------------------------------------------------------------------------
 
@@ -462,7 +462,7 @@ namespace gui
     ///
     CListItem* GetListItem(int listPos)
     {
-      GUIHANDLE handle = ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->window.GetListItem(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_WindowHandle, listPos);
+      GUIHANDLE handle = ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->window.GetListItem(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_WindowHandle, listPos);
       if (handle)
         return new CListItem(handle);
 
@@ -481,7 +481,7 @@ namespace gui
     ///
     void SetCurrentListPosition(int listPos)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->window.SetCurrentListPosition(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_WindowHandle, listPos);
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->window.SetCurrentListPosition(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_WindowHandle, listPos);
     }
     //--------------------------------------------------------------------------
 
@@ -495,7 +495,7 @@ namespace gui
     ///
     int GetCurrentListPosition()
     {
-      return ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->window.GetCurrentListPosition(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_WindowHandle);
+      return ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->window.GetCurrentListPosition(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_WindowHandle);
     }
     //--------------------------------------------------------------------------
 
@@ -509,7 +509,7 @@ namespace gui
     ///
     int GetListSize()
     {
-      return ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->window.GetListSize(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_WindowHandle);
+      return ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->window.GetListSize(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_WindowHandle);
     }
     //--------------------------------------------------------------------------
 
@@ -522,7 +522,7 @@ namespace gui
     ///
     void ClearList()
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->window.ClearList(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_WindowHandle);
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->window.ClearList(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_WindowHandle);
     }
     //--------------------------------------------------------------------------
 
@@ -535,7 +535,7 @@ namespace gui
     ///
     void MarkDirtyRegion()
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->window.MarkDirtyRegion(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_WindowHandle);
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->window.MarkDirtyRegion(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_WindowHandle);
     }
     //--------------------------------------------------------------------------
 
@@ -714,7 +714,7 @@ namespace gui
           return;
       }
 
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->window.SetCallbacks(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_WindowHandle, cbhdl,
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->window.SetCallbacks(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_WindowHandle, cbhdl,
                                 CBOnInit, CBOnFocus, CBOnClick, CBOnAction);
     }
     //--------------------------------------------------------------------------

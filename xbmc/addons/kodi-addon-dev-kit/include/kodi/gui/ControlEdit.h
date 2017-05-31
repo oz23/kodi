@@ -71,7 +71,7 @@ namespace gui
       : m_Window(window),
         m_ControlId(controlId)
     {
-      m_ControlHandle = ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->window.GetControl_Edit(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_Window->m_WindowHandle, controlId);
+      m_ControlHandle = ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->window.GetControl_Edit(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_Window->m_WindowHandle, controlId);
       if (!m_ControlHandle)
         kodi::Log(ADDON_LOG_FATAL, "kodi::gui::CControlEdit can't create control class from Kodi !!!");
     }
@@ -96,7 +96,7 @@ namespace gui
     ///
     void SetVisible(bool visible)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->controlEdit.SetVisible(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_ControlHandle, visible);
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlEdit.SetVisible(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ControlHandle, visible);
     }
     //--------------------------------------------------------------------------
 
@@ -109,7 +109,7 @@ namespace gui
     ///
     void SetEnabled(bool enabled)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->controlEdit.SetEnabled(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_ControlHandle, enabled);
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlEdit.SetEnabled(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ControlHandle, enabled);
     }
     //--------------------------------------------------------------------------
 
@@ -122,7 +122,7 @@ namespace gui
     ///
     void SetLabel(const std::string& label)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->controlEdit.SetLabel(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_ControlHandle, label.c_str());
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlEdit.SetLabel(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ControlHandle, label.c_str());
     }
     //--------------------------------------------------------------------------
 
@@ -138,7 +138,7 @@ namespace gui
       std::string text;
       text.resize(1024);
       unsigned int size = (unsigned int)text.capacity();
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->controlEdit.GetLabel(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_ControlHandle, text[0], size);
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlEdit.GetLabel(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ControlHandle, text[0], size);
       text.resize(size);
       text.shrink_to_fit();
       return text;
@@ -154,7 +154,7 @@ namespace gui
     ///
     void SetText(const std::string& text)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->controlEdit.SetText(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_ControlHandle, text.c_str());
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlEdit.SetText(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ControlHandle, text.c_str());
     }
     //--------------------------------------------------------------------------
 
@@ -170,7 +170,7 @@ namespace gui
       std::string text;
       text.resize(1024);
       unsigned int size = (unsigned int)text.capacity();
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->controlEdit.GetText(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_ControlHandle, text[0], size);
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlEdit.GetText(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ControlHandle, text[0], size);
       text.resize(size);
       text.shrink_to_fit();
       return text;
@@ -186,7 +186,7 @@ namespace gui
     ///
     void SetCursorPosition(unsigned int iPosition)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->controlEdit.SetCursorPosition(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_ControlHandle, iPosition);
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlEdit.SetCursorPosition(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ControlHandle, iPosition);
     }
     //--------------------------------------------------------------------------
 
@@ -199,7 +199,7 @@ namespace gui
     ///
     unsigned int GetCursorPosition()
     {
-      return ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->controlEdit.GetCursorPosition(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_ControlHandle);
+      return ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlEdit.GetCursorPosition(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ControlHandle);
     }
     //--------------------------------------------------------------------------
 
@@ -215,7 +215,7 @@ namespace gui
     ///
     void SetInputType(AddonGUIInputType type, const std::string& heading)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->controlEdit.SetInputType(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_ControlHandle, type, heading.c_str());
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlEdit.SetInputType(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ControlHandle, type, heading.c_str());
     }
     //--------------------------------------------------------------------------
 

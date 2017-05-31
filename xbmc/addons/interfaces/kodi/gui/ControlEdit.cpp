@@ -33,15 +33,15 @@ namespace ADDON
 
 void Interface_GUIControlEdit::Init(AddonGlobalInterface* addonInterface)
 {
-  addonInterface->toKodi.kodi_gui->controlEdit.SetVisible = SetVisible;
-  addonInterface->toKodi.kodi_gui->controlEdit.SetEnabled = SetEnabled;
-  addonInterface->toKodi.kodi_gui->controlEdit.SetLabel = SetLabel;
-  addonInterface->toKodi.kodi_gui->controlEdit.GetLabel = GetLabel;
-  addonInterface->toKodi.kodi_gui->controlEdit.SetText = SetText;
-  addonInterface->toKodi.kodi_gui->controlEdit.GetText = GetText;
-  addonInterface->toKodi.kodi_gui->controlEdit.SetCursorPosition = SetCursorPosition;
-  addonInterface->toKodi.kodi_gui->controlEdit.GetCursorPosition = GetCursorPosition;
-  addonInterface->toKodi.kodi_gui->controlEdit.SetInputType = SetInputType;
+  addonInterface->toKodi->kodi_gui->controlEdit.SetVisible = SetVisible;
+  addonInterface->toKodi->kodi_gui->controlEdit.SetEnabled = SetEnabled;
+  addonInterface->toKodi->kodi_gui->controlEdit.SetLabel = SetLabel;
+  addonInterface->toKodi->kodi_gui->controlEdit.GetLabel = GetLabel;
+  addonInterface->toKodi->kodi_gui->controlEdit.SetText = SetText;
+  addonInterface->toKodi->kodi_gui->controlEdit.GetText = GetText;
+  addonInterface->toKodi->kodi_gui->controlEdit.SetCursorPosition = SetCursorPosition;
+  addonInterface->toKodi->kodi_gui->controlEdit.GetCursorPosition = GetCursorPosition;
+  addonInterface->toKodi->kodi_gui->controlEdit.SetInputType = SetInputType;
 }
 
 void Interface_GUIControlEdit::SetVisible(void* kodiBase, void* handle, bool yesNo)

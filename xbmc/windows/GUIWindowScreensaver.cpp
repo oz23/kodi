@@ -86,7 +86,7 @@ bool CGUIWindowScreensaver::OnMessage(CGUIMessage& message)
       const ADDON::AddonInfoPtr addonInfo = ADDON::CAddonMgr::GetInstance().GetInstalledAddonInfo(CServiceBroker::GetSettings().GetString(CSettings::SETTING_SCREENSAVER_MODE), ADDON::ADDON_SCREENSAVER);
       if (!addonInfo)
         return false;
-      m_addon = new ADDON::CInstanceScreensaver(addonInfo);
+      m_addon = new ADDON::CScreenSaver(addonInfo);
       return m_addon->Start();
     }
 

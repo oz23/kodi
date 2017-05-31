@@ -33,8 +33,8 @@ namespace ADDON
 
 void Interface_GUIControlAddonRendering::Init(AddonGlobalInterface* addonInterface)
 {
-  addonInterface->toKodi.kodi_gui->controlRendering.SetCallbacks = SetCallbacks;
-  addonInterface->toKodi.kodi_gui->controlRendering.Delete = Delete;
+  addonInterface->toKodi->kodi_gui->controlRendering.SetCallbacks = SetCallbacks;
+  addonInterface->toKodi->kodi_gui->controlRendering.Delete = Delete;
 }
 
 void Interface_GUIControlAddonRendering::SetCallbacks(

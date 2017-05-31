@@ -36,11 +36,11 @@
 #include "utils/Variant.h"
 #include "Util.h"
 
-/*
- * Standard addon interface function includes
- */
-#include "addons/interfaces/kodi/General.h"
-#include "addons/interfaces/kodi/AudioEngine.h"
+// Global addon callback handle classes
+#include "addons/interfaces/AudioEngine.h"
+#include "addons/interfaces/Filesystem.h"
+#include "addons/interfaces/General.h"
+#include "addons/interfaces/Network.h"
 #include "addons/interfaces/kodi/gui/General.h"
 
 namespace ADDON
@@ -368,7 +368,7 @@ void CAddonDll::Destroy()
     /* Make sure all instances are destroyed if interface becomes stopped. */
     for (auto it = m_usedInstances.begin(); it != m_usedInstances.end(); ++it)
     {
-      m_interface.toAddon.destroy_instance(it->second.first, it->second.second);
+      m_interface.toAddon->destroy_instance(it->second.first, it->second.second);
       m_usedInstances.erase(it);
     }
 
@@ -406,7 +406,7 @@ ADDON_STATUS CAddonDll::CreateInstance(ADDON_TYPE instanceType, const std::strin
     return ADDON_STATUS_PERMANENT_FAILURE;
 
   KODI_HANDLE addonInstance;
-  status = m_interface.toAddon.create_instance(instanceType, instanceID.c_str(), instance, &addonInstance, parentInstance);
+  status = m_interface.toAddon->create_instance(instanceType, instanceID.c_str(), instance, &addonInstance, parentInstance);
   if (status == ADDON_STATUS_OK)
   {
     m_usedInstances[instanceID] = std::make_pair(instanceType, addonInstance);
@@ -419,7 +419,7 @@ void CAddonDll::DestroyInstance(const std::string& instanceID)
   auto it = m_usedInstances.find(instanceID);
   if (it != m_usedInstances.end())
   {
-    m_interface.toAddon.destroy_instance(it->second.first, it->second.second);
+    m_interface.toAddon->destroy_instance(it->second.first, it->second.second);
     m_usedInstances.erase(it);
   }
 
@@ -544,10 +544,10 @@ ADDON_STATUS CAddonDll::TransferSettings()
 
 void CAddonDll::UpdateSettings(std::map<std::string, std::string>& settings)
 {
-  if (m_interface.toAddon.set_setting)
+  if (m_interface.toAddon->set_setting)
   {
     for (auto it = settings.begin(); it != settings.end(); ++it)
-      m_interface.toAddon.set_setting(it->first.c_str(), it->second.c_str()/*, (std::next(it) == settings.end()) ? true : false*/);
+      m_interface.toAddon->set_setting(it->first.c_str(), it->second.c_str()/*, (std::next(it) == settings.end()) ? true : false*/);
   }
   CAddon::UpdateSettings(settings);
 }
@@ -604,16 +604,26 @@ bool CAddonDll::InitInterface(KODI_HANDLE firstKodiInstance)
   m_interface.globalSingleInstance = nullptr;
   m_interface.firstKodiInstance = firstKodiInstance;
 
-  m_interface.toKodi.kodiBase = this;
-  m_interface.toKodi.get_addon_path = get_addon_path;
-  m_interface.toKodi.get_base_user_path = get_base_user_path;
-  m_interface.toKodi.addon_log_msg = addon_log_msg;
-  m_interface.toKodi.get_setting = get_setting;
-  m_interface.toKodi.set_setting = set_setting;
-  m_interface.toKodi.free_string = free_string;
+  // Create function list from kodi to addon, generated with malloc to have
+  // compatible with other versions
+  m_interface.toKodi = (AddonToKodiFuncTable_Addon*) malloc(sizeof(AddonToKodiFuncTable_Addon));
+  m_interface.toKodi->kodiBase = this;
+  m_interface.toKodi->get_addon_path = get_addon_path;
+  m_interface.toKodi->get_base_user_path = get_base_user_path;
+  m_interface.toKodi->addon_log_msg = addon_log_msg;
+  m_interface.toKodi->get_setting = get_setting;
+  m_interface.toKodi->set_setting = set_setting;
+  m_interface.toKodi->free_string = free_string;
+
+  // Create function list from addon to kodi, generated with calloc to have
+  // compatible with other versions and everything with "0"
+  // Related parts becomes set from addon headers.
+  m_interface.toAddon = (KodiToAddonFuncTable_Addon*) calloc(1, sizeof(KodiToAddonFuncTable_Addon));
 
   Interface_General::Init(&m_interface);
   Interface_AudioEngine::Init(&m_interface);
+  Interface_Filesystem::Init(&m_interface);
+  Interface_Network::Init(&m_interface);
   Interface_GUIGeneral::Init(&m_interface);
 
   return true;
@@ -621,13 +631,19 @@ bool CAddonDll::InitInterface(KODI_HANDLE firstKodiInstance)
 
 void CAddonDll::DeInitInterface()
 {
-  Interface_General::DeInit(&m_interface);
+  Interface_Network::DeInit(&m_interface);
+  Interface_Filesystem::DeInit(&m_interface);
   Interface_AudioEngine::DeInit(&m_interface);
+  Interface_General::DeInit(&m_interface);
   Interface_GUIGeneral::DeInit(&m_interface);
 
   if (m_interface.libBasePath)
     free((char*)m_interface.libBasePath);
-  m_interface.libBasePath = nullptr;
+  if (m_interface.toKodi)
+    free((char*)m_interface.toKodi);
+  if (m_interface.toAddon)
+    free((char*)m_interface.toAddon);
+  m_interface = {0};
 }
 
 char* CAddonDll::get_addon_path(void* kodiBase)

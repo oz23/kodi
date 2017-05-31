@@ -33,6 +33,7 @@ namespace ADDON
   struct Interface_Filesystem
   {
     static void Init(AddonGlobalInterface* addonInterface);
+    static void DeInit(AddonGlobalInterface* addonInterface);
 
     /*!
      * @brief callback functions from add-on to kodi
@@ -57,7 +58,6 @@ namespace ADDON
     static bool delete_file(void* kodiBase, const char *filename);
     static bool rename_file(void* kodiBase, const char *filename, const char *newFileName);
     static bool copy_file(void* kodiBase, const char *filename, const char *dest);
-    static bool file_set_hidden(void* kodiBase, const char *filename, bool hidden);
     static char* get_file_md5(void* kodiBase, const char* filename);
     static char* get_cache_thumb_name(void* kodiBase, const char* filename);
     static char* make_legal_filename(void* kodiBase, const char* filename);
@@ -67,7 +67,7 @@ namespace ADDON
     static void* open_file(void* kodiBase, const char* filename, unsigned int flags);
     static void* open_file_for_write(void* kodiBase, const char* filename, bool overwrite);
     static ssize_t read_file(void* kodiBase, void* file, void* ptr, size_t size);
-    static bool read_file_string(void* kodiBase, void* file, char *szLine, int iLineLength);
+    static bool read_file_string(void* kodiBase, void* file, char *szLine, int lineLength);
     static ssize_t write_file(void* kodiBase, void* file, const void* ptr, size_t size);
     static void flush_file(void* kodiBase, void* file);
     static int64_t seek_file(void* kodiBase, void* file, int64_t position, int whence);

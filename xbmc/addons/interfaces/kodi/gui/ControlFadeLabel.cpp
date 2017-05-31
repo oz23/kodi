@@ -33,11 +33,11 @@ namespace ADDON
 
 void Interface_GUIControlFadeLabel::Init(AddonGlobalInterface* addonInterface)
 {
-  addonInterface->toKodi.kodi_gui->controlFadeLabel.SetVisible = SetVisible;
-  addonInterface->toKodi.kodi_gui->controlFadeLabel.AddLabel = AddLabel;
-  addonInterface->toKodi.kodi_gui->controlFadeLabel.GetLabel = GetLabel;
-  addonInterface->toKodi.kodi_gui->controlFadeLabel.SetScrolling = SetScrolling;
-  addonInterface->toKodi.kodi_gui->controlFadeLabel.Reset = Reset;
+  addonInterface->toKodi->kodi_gui->controlFadeLabel.SetVisible = SetVisible;
+  addonInterface->toKodi->kodi_gui->controlFadeLabel.AddLabel = AddLabel;
+  addonInterface->toKodi->kodi_gui->controlFadeLabel.GetLabel = GetLabel;
+  addonInterface->toKodi->kodi_gui->controlFadeLabel.SetScrolling = SetScrolling;
+  addonInterface->toKodi->kodi_gui->controlFadeLabel.Reset = Reset;
 }
 
 void Interface_GUIControlFadeLabel::SetVisible(void *kodiBase, void* handle, bool visible)

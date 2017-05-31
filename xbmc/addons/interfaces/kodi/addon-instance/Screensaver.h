@@ -25,11 +25,11 @@
 namespace ADDON
 {
 
-class CInstanceScreensaver : public IAddonInstanceHandler
+class CScreenSaver : public IAddonInstanceHandler
 {
 public:
-  CInstanceScreensaver(AddonInfoPtr addonInfo);
-  virtual ~CInstanceScreensaver();
+  CScreenSaver(AddonInfoPtr addonInfo);
+  virtual ~CScreenSaver();
 
   bool Start();
   void Stop();

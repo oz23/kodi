@@ -33,17 +33,17 @@ namespace ADDON
 
 void Interface_GUIDialogExtendedProgress::Init(AddonGlobalInterface* addonInterface)
 {
-  addonInterface->toKodi.kodi_gui->dialogExtendedProgress.New  = New;
-  addonInterface->toKodi.kodi_gui->dialogExtendedProgress.Delete = Delete;
-  addonInterface->toKodi.kodi_gui->dialogExtendedProgress.Title = Title;
-  addonInterface->toKodi.kodi_gui->dialogExtendedProgress.SetTitle = SetTitle;
-  addonInterface->toKodi.kodi_gui->dialogExtendedProgress.Text = Text;
-  addonInterface->toKodi.kodi_gui->dialogExtendedProgress.SetText = SetText;
-  addonInterface->toKodi.kodi_gui->dialogExtendedProgress.IsFinished = IsFinished;
-  addonInterface->toKodi.kodi_gui->dialogExtendedProgress.MarkFinished = MarkFinished;
-  addonInterface->toKodi.kodi_gui->dialogExtendedProgress.Percentage = Percentage;
-  addonInterface->toKodi.kodi_gui->dialogExtendedProgress.SetPercentage = SetPercentage;
-  addonInterface->toKodi.kodi_gui->dialogExtendedProgress.SetProgress = SetProgress;
+  addonInterface->toKodi->kodi_gui->dialogExtendedProgress.New  = New;
+  addonInterface->toKodi->kodi_gui->dialogExtendedProgress.Delete = Delete;
+  addonInterface->toKodi->kodi_gui->dialogExtendedProgress.Title = Title;
+  addonInterface->toKodi->kodi_gui->dialogExtendedProgress.SetTitle = SetTitle;
+  addonInterface->toKodi->kodi_gui->dialogExtendedProgress.Text = Text;
+  addonInterface->toKodi->kodi_gui->dialogExtendedProgress.SetText = SetText;
+  addonInterface->toKodi->kodi_gui->dialogExtendedProgress.IsFinished = IsFinished;
+  addonInterface->toKodi->kodi_gui->dialogExtendedProgress.MarkFinished = MarkFinished;
+  addonInterface->toKodi->kodi_gui->dialogExtendedProgress.Percentage = Percentage;
+  addonInterface->toKodi->kodi_gui->dialogExtendedProgress.SetPercentage = SetPercentage;
+  addonInterface->toKodi->kodi_gui->dialogExtendedProgress.SetProgress = SetProgress;
 }
 
 void* Interface_GUIDialogExtendedProgress::New(void* kodiBase, const char *title)

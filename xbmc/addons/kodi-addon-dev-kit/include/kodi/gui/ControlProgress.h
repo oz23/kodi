@@ -61,7 +61,7 @@ namespace gui
    : m_Window(window),
      m_ControlId(controlId)
   {
-    m_ControlHandle = ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->window.GetControl_Progress(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_Window->m_WindowHandle, controlId);
+    m_ControlHandle = ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->window.GetControl_Progress(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_Window->m_WindowHandle, controlId);
     if (!m_ControlHandle)
       kodi::Log(ADDON_LOG_FATAL, "kodi::gui::CControlProgress can't create control class from Kodi !!!");
   }
@@ -84,7 +84,7 @@ namespace gui
     ///
     void SetVisible(bool visible)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->controlProgress.SetVisible(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_ControlHandle, visible);
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlProgress.SetVisible(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ControlHandle, visible);
     }
     //--------------------------------------------------------------------------
 
@@ -97,7 +97,7 @@ namespace gui
     ///
     void SetPercentage(float percent)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->controlProgress.SetPercentage(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_ControlHandle, percent);
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlProgress.SetPercentage(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ControlHandle, percent);
     }
     //--------------------------------------------------------------------------
 
@@ -110,7 +110,7 @@ namespace gui
     ///
     float GetPercentage() const
     {
-      return ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->controlProgress.GetPercentage(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_ControlHandle);
+      return ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlProgress.GetPercentage(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ControlHandle);
     }
     //--------------------------------------------------------------------------
 

@@ -40,42 +40,53 @@ namespace ADDON
 
 void Interface_Filesystem::Init(AddonGlobalInterface* addonInterface)
 {
-  addonInterface->toKodi.kodi->filesystem.can_open_directory = can_open_directory;
-  addonInterface->toKodi.kodi->filesystem.create_directory = create_directory;
-  addonInterface->toKodi.kodi->filesystem.directory_exists = directory_exists;
-  addonInterface->toKodi.kodi->filesystem.remove_directory = remove_directory;
-  addonInterface->toKodi.kodi->filesystem.get_directory = get_directory;
-  addonInterface->toKodi.kodi->filesystem.free_directory = free_directory;
+  addonInterface->toKodi->kodi_filesystem = static_cast<AddonToKodiFuncTable_kodi_filesystem*>(malloc(sizeof(AddonToKodiFuncTable_kodi_filesystem)));
 
-  addonInterface->toKodi.kodi->filesystem.file_exists = file_exists;
-  addonInterface->toKodi.kodi->filesystem.stat_file = stat_file;
-  addonInterface->toKodi.kodi->filesystem.delete_file = delete_file;
-  addonInterface->toKodi.kodi->filesystem.rename_file = rename_file;
-  addonInterface->toKodi.kodi->filesystem.copy_file = copy_file;
-  addonInterface->toKodi.kodi->filesystem.file_set_hidden = file_set_hidden;
-  addonInterface->toKodi.kodi->filesystem.get_file_md5 = get_file_md5;
-  addonInterface->toKodi.kodi->filesystem.get_cache_thumb_name = get_cache_thumb_name;
-  addonInterface->toKodi.kodi->filesystem.make_legal_filename = make_legal_filename;
-  addonInterface->toKodi.kodi->filesystem.make_legal_path = make_legal_path;
-  addonInterface->toKodi.kodi->filesystem.translate_special_protocol = translate_special_protocol;
+  addonInterface->toKodi->kodi_filesystem->can_open_directory = can_open_directory;
+  addonInterface->toKodi->kodi_filesystem->create_directory = create_directory;
+  addonInterface->toKodi->kodi_filesystem->directory_exists = directory_exists;
+  addonInterface->toKodi->kodi_filesystem->remove_directory = remove_directory;
+  addonInterface->toKodi->kodi_filesystem->get_directory = get_directory;
+  addonInterface->toKodi->kodi_filesystem->free_directory = free_directory;
 
-  addonInterface->toKodi.kodi->filesystem.open_file = open_file;
-  addonInterface->toKodi.kodi->filesystem.open_file_for_write = open_file_for_write;
-  addonInterface->toKodi.kodi->filesystem.read_file = read_file;
-  addonInterface->toKodi.kodi->filesystem.read_file_string = read_file_string;
-  addonInterface->toKodi.kodi->filesystem.write_file = write_file;
-  addonInterface->toKodi.kodi->filesystem.flush_file = flush_file;
-  addonInterface->toKodi.kodi->filesystem.seek_file = seek_file;
-  addonInterface->toKodi.kodi->filesystem.truncate_file = truncate_file;
-  addonInterface->toKodi.kodi->filesystem.get_file_position = get_file_position;
-  addonInterface->toKodi.kodi->filesystem.get_file_length = get_file_length;
-  addonInterface->toKodi.kodi->filesystem.get_file_download_speed = get_file_download_speed;
-  addonInterface->toKodi.kodi->filesystem.close_file = close_file;
-  addonInterface->toKodi.kodi->filesystem.get_file_chunk_size = get_file_chunk_size;
+  addonInterface->toKodi->kodi_filesystem->file_exists = file_exists;
+  addonInterface->toKodi->kodi_filesystem->stat_file = stat_file;
+  addonInterface->toKodi->kodi_filesystem->delete_file = delete_file;
+  addonInterface->toKodi->kodi_filesystem->rename_file = rename_file;
+  addonInterface->toKodi->kodi_filesystem->copy_file = copy_file;
+  addonInterface->toKodi->kodi_filesystem->get_file_md5 = get_file_md5;
+  addonInterface->toKodi->kodi_filesystem->get_cache_thumb_name = get_cache_thumb_name;
+  addonInterface->toKodi->kodi_filesystem->make_legal_filename = make_legal_filename;
+  addonInterface->toKodi->kodi_filesystem->make_legal_path = make_legal_path;
+  addonInterface->toKodi->kodi_filesystem->translate_special_protocol = translate_special_protocol;
 
-  addonInterface->toKodi.kodi->filesystem.curl_create = curl_create;
-  addonInterface->toKodi.kodi->filesystem.curl_add_option = curl_add_option;
-  addonInterface->toKodi.kodi->filesystem.curl_open = curl_open;
+  addonInterface->toKodi->kodi_filesystem->open_file = open_file;
+  addonInterface->toKodi->kodi_filesystem->open_file_for_write = open_file_for_write;
+  addonInterface->toKodi->kodi_filesystem->read_file = read_file;
+  addonInterface->toKodi->kodi_filesystem->read_file_string = read_file_string;
+  addonInterface->toKodi->kodi_filesystem->write_file = write_file;
+  addonInterface->toKodi->kodi_filesystem->flush_file = flush_file;
+  addonInterface->toKodi->kodi_filesystem->seek_file = seek_file;
+  addonInterface->toKodi->kodi_filesystem->truncate_file = truncate_file;
+  addonInterface->toKodi->kodi_filesystem->get_file_position = get_file_position;
+  addonInterface->toKodi->kodi_filesystem->get_file_length = get_file_length;
+  addonInterface->toKodi->kodi_filesystem->get_file_download_speed = get_file_download_speed;
+  addonInterface->toKodi->kodi_filesystem->close_file = close_file;
+  addonInterface->toKodi->kodi_filesystem->get_file_chunk_size = get_file_chunk_size;
+
+  addonInterface->toKodi->kodi_filesystem->curl_create = curl_create;
+  addonInterface->toKodi->kodi_filesystem->curl_add_option = curl_add_option;
+  addonInterface->toKodi->kodi_filesystem->curl_open = curl_open;
+}
+
+void Interface_Filesystem::DeInit(AddonGlobalInterface* addonInterface)
+{
+  if (addonInterface->toKodi && /* <-- needed as long as the old addon way is used */
+      addonInterface->toKodi->kodi_filesystem)
+  {
+    free(addonInterface->toKodi->kodi_filesystem);
+    addonInterface->toKodi->kodi_filesystem = nullptr;
+  }
 }
 
 bool Interface_Filesystem::can_open_directory(void* kodiBase, const char* url)
@@ -134,20 +145,15 @@ bool Interface_Filesystem::remove_directory(void* kodiBase, const char *path)
 }
 
 static void CFileItemListToVFSDirEntries(VFSDirEntry* entries,
-                                         unsigned int num_entries,
                                          const CFileItemList& items)
 {
-  if (!entries)
-    return;
-
-  int toCopy = std::min(num_entries, (unsigned int)items.Size());
-
-  for (int i = 0; i < toCopy; ++i)
+  for (unsigned int i = 0; i < static_cast<unsigned int>(items.Size()); ++i)
   {
     entries[i].label = strdup(items[i]->GetLabel().c_str());
     entries[i].path = strdup(items[i]->GetPath().c_str());
     entries[i].size = items[i]->m_dwSize;
     entries[i].folder = items[i]->m_bIsFolder;
+    items[i]->m_dateTime.GetAsTime(entries[i].date_time);
   }
 }
 
@@ -168,6 +174,7 @@ bool Interface_Filesystem::get_directory(void* kodiBase, const char *path, const
   {
     *num_items = static_cast<unsigned int>(fileItems.Size());
     *items = new VFSDirEntry[fileItems.Size()];
+    CFileItemListToVFSDirEntries(*items, fileItems);
   }
   else
   {
@@ -175,7 +182,6 @@ bool Interface_Filesystem::get_directory(void* kodiBase, const char *path, const
     *items = nullptr;
   }
 
-  CFileItemListToVFSDirEntries(*items, *num_items, fileItems);
   return true;
 }
 
@@ -258,18 +264,6 @@ bool Interface_Filesystem::copy_file(void* kodiBase, const char *filename, const
   return CFile::Copy(filename, dest);
 }
 
-bool Interface_Filesystem::file_set_hidden(void* kodiBase, const char *filename, bool hidden)
-{
-  CAddonDll* addon = static_cast<CAddonDll*>(kodiBase);
-  if (addon == nullptr || filename == nullptr)
-  {
-    CLog::Log(LOGERROR, "Interface_Filesystem::%s - invalid data (addon='%p', filename='%p')", __FUNCTION__, addon, filename);
-    return false;
-  }
-
-  return CFile::SetHidden(filename, hidden);
-}
-    
 char* Interface_Filesystem::get_file_md5(void* kodiBase, const char* filename)
 {
   CAddonDll* addon = static_cast<CAddonDll*>(kodiBase);
@@ -353,7 +347,7 @@ void* Interface_Filesystem::open_file(void* kodiBase, const char* filename, unsi
 
   CFile* file = new CFile;
   if (file->Open(filename, flags))
-    return ((void*)file);
+    return static_cast<void*>(file);
 
   delete file;
   return nullptr;
@@ -367,10 +361,10 @@ void* Interface_Filesystem::open_file_for_write(void* kodiBase, const char* file
     CLog::Log(LOGERROR, "Interface_Filesystem::%s - invalid data (addon='%p', filename='%p')", __FUNCTION__, addon, filename);
     return nullptr;
   }
-  
+
   CFile* file = new CFile;
   if (file->OpenForWrite(filename, overwrite))
-    return ((void*)file);
+    return static_cast<void*>(file);
 
   delete file;
   return nullptr;
@@ -388,7 +382,7 @@ ssize_t Interface_Filesystem::read_file(void* kodiBase, void* file, void* ptr, s
   return static_cast<CFile*>(file)->Read(ptr, size);
 }
 
-bool Interface_Filesystem::read_file_string(void* kodiBase, void* file, char *szLine, int iLineLength)
+bool Interface_Filesystem::read_file_string(void* kodiBase, void* file, char *szLine, int lineLength)
 {
   CAddonDll* addon = static_cast<CAddonDll*>(kodiBase);
   if (addon == nullptr || file == nullptr)
@@ -397,7 +391,7 @@ bool Interface_Filesystem::read_file_string(void* kodiBase, void* file, char *sz
     return false;
   }
 
-  return static_cast<CFile*>(file)->ReadString(szLine, iLineLength);
+  return static_cast<CFile*>(file)->ReadString(szLine, lineLength);
 }
 
 ssize_t Interface_Filesystem::write_file(void* kodiBase, void* file, const void* ptr, size_t size)
@@ -430,7 +424,7 @@ int64_t Interface_Filesystem::seek_file(void* kodiBase, void* file, int64_t posi
   if (addon == nullptr || file == nullptr)
   {
     CLog::Log(LOGERROR, "Interface_Filesystem::%s - invalid data (addon='%p', file='%p')", __FUNCTION__, addon, file);
-    return 0.0f;
+    return -1;
   }
 
   return static_cast<CFile*>(file)->Seek(position, whence);
@@ -442,7 +436,7 @@ int Interface_Filesystem::truncate_file(void* kodiBase, void* file, int64_t size
   if (addon == nullptr || file == nullptr)
   {
     CLog::Log(LOGERROR, "Interface_Filesystem::%s - invalid data (addon='%p', file='%p')", __FUNCTION__, addon, file);
-    return 0.0f;
+    return -1;
   }
 
   return static_cast<CFile*>(file)->Truncate(size);
@@ -454,7 +448,7 @@ int64_t Interface_Filesystem::get_file_position(void* kodiBase, void* file)
   if (addon == nullptr || file == nullptr)
   {
     CLog::Log(LOGERROR, "Interface_Filesystem::%s - invalid data (addon='%p', file='%p')", __FUNCTION__, addon, file);
-    return 0;
+    return -1;
   }
 
   return static_cast<CFile*>(file)->GetPosition();
@@ -466,7 +460,7 @@ int64_t Interface_Filesystem::get_file_length(void* kodiBase, void* file)
   if (addon == nullptr || file == nullptr)
   {
     CLog::Log(LOGERROR, "Interface_Filesystem::%s - invalid data (addon='%p', file='%p')", __FUNCTION__, addon, file);
-    return 0;
+    return -1;
   }
   
   return static_cast<CFile*>(file)->GetLength();
@@ -503,7 +497,7 @@ int Interface_Filesystem::get_file_chunk_size(void* kodiBase, void* file)
   if (addon == nullptr || file == nullptr)
   {
     CLog::Log(LOGERROR, "Interface_VFS::%s - invalid data (addon='%p', file='%p)", __FUNCTION__, addon, file);
-    return 0;
+    return -1;
   }
 
   return static_cast<CFile*>(file)->GetChunkSize();

@@ -68,7 +68,7 @@ namespace gui
     ///
     CDialogProgress()
     {
-      m_DialogHandle = ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->dialogProgress.New(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase);
+      m_DialogHandle = ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->dialogProgress.New(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase);
       if (!m_DialogHandle)
         kodi::Log(ADDON_LOG_FATAL, "kodi::gui::CDialogProgress can't create window class from Kodi !!!");
     }
@@ -82,7 +82,7 @@ namespace gui
     ~CDialogProgress()
     {
       if (m_DialogHandle)
-        ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->dialogProgress.Delete(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_DialogHandle);
+        ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->dialogProgress.Delete(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_DialogHandle);
     }
     //--------------------------------------------------------------------------
 
@@ -93,7 +93,7 @@ namespace gui
     ///
     void Open()
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->dialogProgress.Open(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_DialogHandle);
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->dialogProgress.Open(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_DialogHandle);
     }
     //--------------------------------------------------------------------------
 
@@ -106,7 +106,7 @@ namespace gui
     ///
     void SetHeading(const std::string& heading)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->dialogProgress.SetHeading(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_DialogHandle, heading.c_str());
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->dialogProgress.SetHeading(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_DialogHandle, heading.c_str());
     }
     //--------------------------------------------------------------------------
 
@@ -120,7 +120,7 @@ namespace gui
     ///
     void SetLine(unsigned int iLine, const std::string& line)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->dialogProgress.SetLine(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_DialogHandle, iLine, line.c_str());
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->dialogProgress.SetLine(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_DialogHandle, iLine, line.c_str());
     }
     //--------------------------------------------------------------------------
 
@@ -133,7 +133,7 @@ namespace gui
     ///
     void SetCanCancel(bool canCancel)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->dialogProgress.SetCanCancel(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_DialogHandle, canCancel);
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->dialogProgress.SetCanCancel(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_DialogHandle, canCancel);
     }
     //--------------------------------------------------------------------------
 
@@ -146,7 +146,7 @@ namespace gui
     ///
     bool IsCanceled() const
     {
-      return ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->dialogProgress.IsCanceled(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_DialogHandle);
+      return ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->dialogProgress.IsCanceled(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_DialogHandle);
     }
     //--------------------------------------------------------------------------
 
@@ -159,7 +159,7 @@ namespace gui
     ///
     void SetPercentage(int percentage)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->dialogProgress.SetPercentage(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_DialogHandle, percentage);
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->dialogProgress.SetPercentage(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_DialogHandle, percentage);
     }
     //--------------------------------------------------------------------------
 
@@ -172,7 +172,7 @@ namespace gui
     ///
     int GetPercentage() const
     {
-      return ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->dialogProgress.GetPercentage(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_DialogHandle);
+      return ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->dialogProgress.GetPercentage(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_DialogHandle);
     }
     //--------------------------------------------------------------------------
 
@@ -185,7 +185,7 @@ namespace gui
     ///
     void ShowProgressBar(bool onOff)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->dialogProgress.ShowProgressBar(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_DialogHandle, onOff);
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->dialogProgress.ShowProgressBar(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_DialogHandle, onOff);
     }
     //--------------------------------------------------------------------------
 
@@ -198,7 +198,7 @@ namespace gui
     ///
     void SetProgressMax(int max)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->dialogProgress.SetProgressMax(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_DialogHandle, max);
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->dialogProgress.SetProgressMax(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_DialogHandle, max);
     }
     //--------------------------------------------------------------------------
 
@@ -211,7 +211,7 @@ namespace gui
     ///
     void SetProgressAdvance(int steps=1)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->dialogProgress.SetProgressAdvance(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_DialogHandle, steps);
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->dialogProgress.SetProgressAdvance(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_DialogHandle, steps);
     }
     //--------------------------------------------------------------------------
 
@@ -224,7 +224,7 @@ namespace gui
     ///
     bool Abort()
     {
-      return ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->dialogProgress.Abort(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_DialogHandle);
+      return ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->dialogProgress.Abort(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_DialogHandle);
     }
     //--------------------------------------------------------------------------
 

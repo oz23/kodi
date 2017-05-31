@@ -34,19 +34,19 @@ extern "C"
 
 void Interface_GUIDialogProgress::Init(AddonGlobalInterface* addonInterface)
 {
-  addonInterface->toKodi.kodi_gui->dialogProgress.New = New;
-  addonInterface->toKodi.kodi_gui->dialogProgress.Delete = Delete;
-  addonInterface->toKodi.kodi_gui->dialogProgress.Open = Open;
-  addonInterface->toKodi.kodi_gui->dialogProgress.SetHeading = SetHeading;
-  addonInterface->toKodi.kodi_gui->dialogProgress.SetLine = SetLine;
-  addonInterface->toKodi.kodi_gui->dialogProgress.SetCanCancel = SetCanCancel;
-  addonInterface->toKodi.kodi_gui->dialogProgress.IsCanceled = IsCanceled;
-  addonInterface->toKodi.kodi_gui->dialogProgress.SetPercentage = SetPercentage;
-  addonInterface->toKodi.kodi_gui->dialogProgress.GetPercentage = GetPercentage;
-  addonInterface->toKodi.kodi_gui->dialogProgress.ShowProgressBar = ShowProgressBar;
-  addonInterface->toKodi.kodi_gui->dialogProgress.SetProgressMax = SetProgressMax;
-  addonInterface->toKodi.kodi_gui->dialogProgress.SetProgressAdvance = SetProgressAdvance;
-  addonInterface->toKodi.kodi_gui->dialogProgress.Abort = Abort;
+  addonInterface->toKodi->kodi_gui->dialogProgress.New = New;
+  addonInterface->toKodi->kodi_gui->dialogProgress.Delete = Delete;
+  addonInterface->toKodi->kodi_gui->dialogProgress.Open = Open;
+  addonInterface->toKodi->kodi_gui->dialogProgress.SetHeading = SetHeading;
+  addonInterface->toKodi->kodi_gui->dialogProgress.SetLine = SetLine;
+  addonInterface->toKodi->kodi_gui->dialogProgress.SetCanCancel = SetCanCancel;
+  addonInterface->toKodi->kodi_gui->dialogProgress.IsCanceled = IsCanceled;
+  addonInterface->toKodi->kodi_gui->dialogProgress.SetPercentage = SetPercentage;
+  addonInterface->toKodi->kodi_gui->dialogProgress.GetPercentage = GetPercentage;
+  addonInterface->toKodi->kodi_gui->dialogProgress.ShowProgressBar = ShowProgressBar;
+  addonInterface->toKodi->kodi_gui->dialogProgress.SetProgressMax = SetProgressMax;
+  addonInterface->toKodi->kodi_gui->dialogProgress.SetProgressAdvance = SetProgressAdvance;
+  addonInterface->toKodi->kodi_gui->dialogProgress.Abort = Abort;
 }
 
 void* Interface_GUIDialogProgress::New(void *kodiBase)

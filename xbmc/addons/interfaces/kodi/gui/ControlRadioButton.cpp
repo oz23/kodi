@@ -32,14 +32,14 @@ namespace ADDON
 
 void Interface_GUIControlRadioButton::Init(AddonGlobalInterface* addonInterface)
 {
-  addonInterface->toKodi.kodi_gui->controlRadioButton.SetVisible = SetVisible;
-  addonInterface->toKodi.kodi_gui->controlRadioButton.SetEnabled = SetEnabled;
+  addonInterface->toKodi->kodi_gui->controlRadioButton.SetVisible = SetVisible;
+  addonInterface->toKodi->kodi_gui->controlRadioButton.SetEnabled = SetEnabled;
 
-  addonInterface->toKodi.kodi_gui->controlRadioButton.SetLabel = SetLabel;
-  addonInterface->toKodi.kodi_gui->controlRadioButton.GetLabel = GetLabel;
+  addonInterface->toKodi->kodi_gui->controlRadioButton.SetLabel = SetLabel;
+  addonInterface->toKodi->kodi_gui->controlRadioButton.GetLabel = GetLabel;
 
-  addonInterface->toKodi.kodi_gui->controlRadioButton.SetSelected = SetSelected;
-  addonInterface->toKodi.kodi_gui->controlRadioButton.IsSelected = IsSelected;
+  addonInterface->toKodi->kodi_gui->controlRadioButton.SetSelected = SetSelected;
+  addonInterface->toKodi->kodi_gui->controlRadioButton.IsSelected = IsSelected;
 }
 
 void Interface_GUIControlRadioButton::SetVisible(void* kodiBase, void* handle, bool visible)

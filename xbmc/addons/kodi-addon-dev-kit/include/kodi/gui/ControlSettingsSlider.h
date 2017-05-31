@@ -63,7 +63,7 @@ namespace gui
       : m_Window(window),
         m_ControlId(controlId)
     {
-      m_ControlHandle = ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->window.GetControl_SettingsSlider(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_Window->m_WindowHandle, controlId);
+      m_ControlHandle = ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->window.GetControl_SettingsSlider(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_Window->m_WindowHandle, controlId);
       if (!m_ControlHandle)
         kodi::Log(ADDON_LOG_FATAL, "kodi::gui::CControlSettingsSlider can't create control class from Kodi !!!");
     }
@@ -86,7 +86,7 @@ namespace gui
     ///
     void SetVisible(bool visible)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->controlSettingsSlider.SetVisible(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_ControlHandle, visible);
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlSettingsSlider.SetVisible(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ControlHandle, visible);
     }
     //--------------------------------------------------------------------------
 
@@ -99,7 +99,7 @@ namespace gui
     ///
     void SetEnabled(bool enabled)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->controlSettingsSlider.SetEnabled(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_ControlHandle, enabled);
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlSettingsSlider.SetEnabled(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ControlHandle, enabled);
     }
     //--------------------------------------------------------------------------
 
@@ -112,7 +112,7 @@ namespace gui
     ///
     void SetText(const std::string& text)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->controlSettingsSlider.SetText(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_ControlHandle, text.c_str());
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlSettingsSlider.SetText(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ControlHandle, text.c_str());
     }
     //--------------------------------------------------------------------------
 
@@ -123,7 +123,7 @@ namespace gui
     ///
     void Reset()
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->controlSettingsSlider.Reset(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_ControlHandle);
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlSettingsSlider.Reset(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ControlHandle);
     }
     //--------------------------------------------------------------------------
 
@@ -148,7 +148,7 @@ namespace gui
     ///
     void SetIntRange(int start, int end)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->controlSettingsSlider.SetIntRange(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_ControlHandle, start, end);
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlSettingsSlider.SetIntRange(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ControlHandle, start, end);
     }
     //--------------------------------------------------------------------------
 
@@ -166,7 +166,7 @@ namespace gui
     ///
     void SetIntValue(int value)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->controlSettingsSlider.SetIntValue(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_ControlHandle, value);
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlSettingsSlider.SetIntValue(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ControlHandle, value);
     }
     //--------------------------------------------------------------------------
 
@@ -183,7 +183,7 @@ namespace gui
     ///
     int GetIntValue() const
     {
-      return ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->controlSettingsSlider.GetIntValue(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_ControlHandle);
+      return ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlSettingsSlider.GetIntValue(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ControlHandle);
     }
     //--------------------------------------------------------------------------
 
@@ -202,7 +202,7 @@ namespace gui
     ///
     void SetIntInterval(int interval)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->controlSettingsSlider.SetIntInterval(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_ControlHandle, interval);
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlSettingsSlider.SetIntInterval(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ControlHandle, interval);
     }
     //--------------------------------------------------------------------------
 
@@ -219,7 +219,7 @@ namespace gui
     ///
     void SetPercentage(float percent)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->controlSettingsSlider.SetPercentage(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_ControlHandle, percent);
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlSettingsSlider.SetPercentage(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ControlHandle, percent);
     }
     //--------------------------------------------------------------------------
 
@@ -236,7 +236,7 @@ namespace gui
     ///
     float GetPercentage() const
     {
-      return ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->controlSettingsSlider.GetPercentage(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_ControlHandle);
+      return ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlSettingsSlider.GetPercentage(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ControlHandle);
     }
     //--------------------------------------------------------------------------
 
@@ -261,7 +261,7 @@ namespace gui
     ///
     void SetFloatRange(float start, float end)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->controlSettingsSlider.SetFloatRange(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_ControlHandle, start, end);
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlSettingsSlider.SetFloatRange(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ControlHandle, start, end);
     }
     //--------------------------------------------------------------------------
 
@@ -280,7 +280,7 @@ namespace gui
     ///
     void SetFloatValue(float value)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->controlSettingsSlider.SetFloatValue(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_ControlHandle, value);
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlSettingsSlider.SetFloatValue(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ControlHandle, value);
     }
     //--------------------------------------------------------------------------
 
@@ -293,7 +293,7 @@ namespace gui
     ///
     float GetFloatValue() const
     {
-      return ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->controlSettingsSlider.GetFloatValue(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_ControlHandle);
+      return ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlSettingsSlider.GetFloatValue(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ControlHandle);
     }
     //--------------------------------------------------------------------------
 
@@ -312,7 +312,7 @@ namespace gui
     ///
     void SetFloatInterval(float interval)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->controlSettingsSlider.SetFloatInterval(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_ControlHandle, interval);
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlSettingsSlider.SetFloatInterval(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ControlHandle, interval);
     }
     //--------------------------------------------------------------------------
 

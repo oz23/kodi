@@ -58,7 +58,7 @@ namespace gui
     ///
     CControlImage(CWindow* window, int controlId)
     {
-      m_ControlHandle = ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->window.GetControl_Image(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_Window->m_WindowHandle, controlId);
+      m_ControlHandle = ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->window.GetControl_Image(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_Window->m_WindowHandle, controlId);
       if (!m_ControlHandle)
         kodi::Log(ADDON_LOG_FATAL, "kodi::gui::CControlImage can't create control class from Kodi !!!");
     }
@@ -81,7 +81,7 @@ namespace gui
     ///
     void SetVisible(bool visible)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->controlImage.SetVisible(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_ControlHandle, visible);
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlImage.SetVisible(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ControlHandle, visible);
     }
     //--------------------------------------------------------------------------
 
@@ -97,7 +97,7 @@ namespace gui
     ///
     void SetFileName(const std::string& strFileName, const bool useCache = true)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->controlImage.SetFileName(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_ControlHandle, strFileName.c_str(), useCache);
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlImage.SetFileName(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ControlHandle, strFileName.c_str(), useCache);
     }
     //--------------------------------------------------------------------------
 
@@ -110,7 +110,7 @@ namespace gui
     ///
     void SetColorDiffuse(uint32_t colorDiffuse)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->controlImage.SetColorDiffuse(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_ControlHandle, colorDiffuse);
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlImage.SetColorDiffuse(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ControlHandle, colorDiffuse);
     }
     //--------------------------------------------------------------------------
 

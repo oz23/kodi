@@ -86,7 +86,7 @@ namespace gui
       const std::string& thumbnailImage,
       const std::string& path)
     {
-      m_ListItemHandle = ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->listItem.Create(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, label.c_str(),
+      m_ListItemHandle = ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->listItem.Create(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, label.c_str(),
                                                 label2.c_str(), iconImage.c_str(),
                                                 thumbnailImage.c_str(), path.c_str());
     }
@@ -102,7 +102,7 @@ namespace gui
     ///
     virtual ~CListItem()
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->listItem.Destroy(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_ListItemHandle);
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->listItem.Destroy(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ListItemHandle);
     }
     //--------------------------------------------------------------------------
 
@@ -118,7 +118,7 @@ namespace gui
       std::string label;
       label.resize(1024);
       unsigned int size = (unsigned int)label.capacity();
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->listItem.GetLabel(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_ListItemHandle, label[0], size);
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->listItem.GetLabel(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ListItemHandle, label[0], size);
       label.resize(size);
       label.shrink_to_fit();
       return label.c_str();
@@ -134,7 +134,7 @@ namespace gui
     ///
     void SetLabel(const std::string& label)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->listItem.SetLabel(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_ListItemHandle, label.c_str());
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->listItem.SetLabel(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ListItemHandle, label.c_str());
     }
     //--------------------------------------------------------------------------
 
@@ -150,7 +150,7 @@ namespace gui
       std::string label;
       label.resize(1024);
       unsigned int size = (unsigned int)label.capacity();
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->listItem.GetLabel2(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_ListItemHandle, label[0], size);
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->listItem.GetLabel2(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ListItemHandle, label[0], size);
       label.resize(size);
       label.shrink_to_fit();
       return label.c_str();
@@ -166,7 +166,7 @@ namespace gui
     ///
     void SetLabel2(const std::string& label)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->listItem.SetLabel2(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_ListItemHandle, label.c_str());
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->listItem.SetLabel2(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ListItemHandle, label.c_str());
     }
     //--------------------------------------------------------------------------
     
@@ -182,7 +182,7 @@ namespace gui
       std::string image;
       image.resize(1024);
       unsigned int size = (unsigned int)image.capacity();
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->listItem.GetIconImage(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_ListItemHandle, image[0], size);
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->listItem.GetIconImage(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ListItemHandle, image[0], size);
       image.resize(size);
       image.shrink_to_fit();
       return image.c_str();
@@ -201,7 +201,7 @@ namespace gui
     ///
     void SetIconImage(const std::string& image)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->listItem.SetIconImage(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_ListItemHandle, image.c_str());
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->listItem.SetIconImage(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ListItemHandle, image.c_str());
     }
     //--------------------------------------------------------------------------
 
@@ -217,7 +217,7 @@ namespace gui
       std::string image;
       image.resize(1024);
       unsigned int size = (unsigned int)image.capacity();
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->listItem.GetOverlayImage(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_ListItemHandle, image[0], size);
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->listItem.GetOverlayImage(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ListItemHandle, image[0], size);
       image.resize(size);
       image.shrink_to_fit();
       return image.c_str();
@@ -234,7 +234,7 @@ namespace gui
     ///
     void SetOverlayImage(unsigned int image, bool bOnOff = false)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->listItem.SetOverlayImage(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_ListItemHandle, image, bOnOff);
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->listItem.SetOverlayImage(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ListItemHandle, image, bOnOff);
     }
     //--------------------------------------------------------------------------
 
@@ -249,7 +249,7 @@ namespace gui
     ///
     void SetThumbnailImage(const std::string& image)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->listItem.SetThumbnailImage(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_ListItemHandle, image.c_str());
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->listItem.SetThumbnailImage(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ListItemHandle, image.c_str());
     }
     //--------------------------------------------------------------------------
 
@@ -274,7 +274,7 @@ namespace gui
     ///
     void SetArt(const std::string& type, const std::string& url)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->listItem.SetArt(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_ListItemHandle, type.c_str(), url.c_str());
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->listItem.SetArt(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ListItemHandle, type.c_str(), url.c_str());
     }
     //--------------------------------------------------------------------------
 
@@ -300,12 +300,12 @@ namespace gui
     std::string GetArt(const std::string& type)
     {
       std::string strReturn;
-      char* strMsg = ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->listItem.GetArt(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_ListItemHandle, type.c_str());
+      char* strMsg = ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->listItem.GetArt(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ListItemHandle, type.c_str());
       if (strMsg != nullptr)
       {
         if (std::strlen(strMsg))
           strReturn = strMsg;
-        ::kodi::addon::CAddonBase::m_interface->toKodi.free_string(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, strMsg);
+        ::kodi::addon::CAddonBase::m_interface->toKodi->free_string(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, strMsg);
       }
       return strReturn;
     }
@@ -321,7 +321,7 @@ namespace gui
     /// \sa SetArt
     void SetArtFallback(const std::string& from, const std::string& to)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->listItem.SetArtFallback(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_ListItemHandle, from.c_str(), to.c_str());
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->listItem.SetArtFallback(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ListItemHandle, from.c_str(), to.c_str());
     }
     //--------------------------------------------------------------------------
 
@@ -334,7 +334,7 @@ namespace gui
     ///
     bool HasArt(const std::string& type)
     {
-      return ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->listItem.HasArt(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_ListItemHandle, type.c_str());
+      return ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->listItem.HasArt(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ListItemHandle, type.c_str());
     }
     //--------------------------------------------------------------------------
 
@@ -347,7 +347,7 @@ namespace gui
     ///
     bool HasIcon()
     {
-      return ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->listItem.HasIcon(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_ListItemHandle);
+      return ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->listItem.HasIcon(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ListItemHandle);
     }
     //--------------------------------------------------------------------------
 
@@ -360,7 +360,7 @@ namespace gui
     ///
     bool HasOverlay()
     {
-      return ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->listItem.HasOverlay(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_ListItemHandle);
+      return ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->listItem.HasOverlay(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ListItemHandle);
     }
     //--------------------------------------------------------------------------
 
@@ -373,7 +373,7 @@ namespace gui
     ///
     bool IsFileItem()
     {
-      return ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->listItem.IsFileItem(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_ListItemHandle);
+      return ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->listItem.IsFileItem(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ListItemHandle);
     }
     //--------------------------------------------------------------------------
 
@@ -386,7 +386,7 @@ namespace gui
     ///
     bool IsFolder()
     {
-      return ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->listItem.IsFolder(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_ListItemHandle);
+      return ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->listItem.IsFolder(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ListItemHandle);
     }
     //--------------------------------------------------------------------------
 
@@ -419,7 +419,7 @@ namespace gui
         }
       }
 
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->listItem.SetUniqueIDs(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_ListItemHandle, entries, size, defaultrating.c_str());
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->listItem.SetUniqueIDs(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ListItemHandle, entries, size, defaultrating.c_str());
       if (entries)
         free(entries);
     }
@@ -452,12 +452,12 @@ namespace gui
     std::string GetUniqueID(const std::string& key)
     {
       std::string strReturn;
-      char* strMsg = ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->listItem.GetUniqueID(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_ListItemHandle, key.c_str());
+      char* strMsg = ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->listItem.GetUniqueID(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ListItemHandle, key.c_str());
       if (strMsg != nullptr)
       {
         if (std::strlen(strMsg))
           strReturn = strMsg;
-        ::kodi::addon::CAddonBase::m_interface->toKodi.free_string(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, strMsg);
+        ::kodi::addon::CAddonBase::m_interface->toKodi->free_string(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, strMsg);
       }
       return strReturn;
     }
@@ -492,7 +492,7 @@ namespace gui
     ///
     void SetRating(std::string type, float rating, int votes = 0, bool defaultt = false)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->listItem.SetRating(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_ListItemHandle, type.c_str(), rating, votes, defaultt);
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->listItem.SetRating(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ListItemHandle, type.c_str(), rating, votes, defaultt);
     }
     //--------------------------------------------------------------------------
 
@@ -522,7 +522,7 @@ namespace gui
     ///
     float GetRating(const std::string& key)
     {
-      return ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->listItem.GetRating(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_ListItemHandle, key.c_str());
+      return ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->listItem.GetRating(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ListItemHandle, key.c_str());
     }
     //--------------------------------------------------------------------------
 
@@ -544,7 +544,7 @@ namespace gui
     ///
     void AddSeason(int number, const std::string& name = "")
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->listItem.AddSeason(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_ListItemHandle, number, name.c_str());
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->listItem.AddSeason(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ListItemHandle, number, name.c_str());
     }
     //--------------------------------------------------------------------------
 
@@ -574,7 +574,7 @@ namespace gui
     ///
     int GetVotes(const std::string& key)
     {
-      return ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->listItem.GetVotes(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_ListItemHandle, key.c_str());
+      return ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->listItem.GetVotes(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ListItemHandle, key.c_str());
     }
     //--------------------------------------------------------------------------
 
@@ -588,7 +588,7 @@ namespace gui
     ///
     void Select(bool selected)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->listItem.Select(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_ListItemHandle, selected);
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->listItem.Select(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ListItemHandle, selected);
     }
     //--------------------------------------------------------------------------
 
@@ -601,7 +601,7 @@ namespace gui
     ///
     bool IsSelected()
     {
-      return ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->listItem.IsSelected(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_ListItemHandle);
+      return ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->listItem.IsSelected(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ListItemHandle);
     }
     //--------------------------------------------------------------------------
 
@@ -755,7 +755,7 @@ namespace gui
         }
       }
 
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->listItem.SetInfo(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_ListItemHandle, type.c_str(), entries, size);
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->listItem.SetInfo(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ListItemHandle, type.c_str(), entries, size);
       if (entries)
         free(entries);
     }
@@ -846,7 +846,7 @@ namespace gui
                            bool post = false, bool isgz = false, int season = -1)
     {
       using namespace ::kodi::addon;
-      CAddonBase::m_interface->toKodi.kodi_gui->listItem.AddAvailableThumb(CAddonBase::m_interface->toKodi.kodiBase, m_ListItemHandle, url.c_str(), aspect.c_str(), referrer.c_str(), cache.c_str(), post, isgz, season);
+      CAddonBase::m_interface->toKodi->kodi_gui->listItem.AddAvailableThumb(CAddonBase::m_interface->toKodi->kodiBase, m_ListItemHandle, url.c_str(), aspect.c_str(), referrer.c_str(), cache.c_str(), post, isgz, season);
     }
     //--------------------------------------------------------------------------
 
@@ -902,7 +902,7 @@ namespace gui
         entries[i][1] = dictionary.at(i).second.c_str();
       }
 
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->listItem.AddStreamInfo(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_ListItemHandle, type.c_str(), entries, size);
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->listItem.AddStreamInfo(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ListItemHandle, type.c_str(), entries, size);
       free(entries);
     }
     //--------------------------------------------------------------------------
@@ -947,7 +947,7 @@ namespace gui
         }
       }
 
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->listItem.AddContextMenuItems(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_ListItemHandle, entries, size, replaceItems);
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->listItem.AddContextMenuItems(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ListItemHandle, entries, size, replaceItems);
       if (entries)
         free(entries);
     }
@@ -974,7 +974,7 @@ namespace gui
     ///
     void SetProperty(const std::string& key, const std::string& value)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->listItem.SetProperty(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_ListItemHandle, key.c_str(), value.c_str());
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->listItem.SetProperty(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ListItemHandle, key.c_str(), value.c_str());
     }
     //--------------------------------------------------------------------------
 
@@ -997,7 +997,7 @@ namespace gui
       std::string property;
       property.resize(1024);
       unsigned int size = (unsigned int)property.capacity();
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->listItem.GetProperty(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_ListItemHandle, key.c_str(), property[0], size);
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->listItem.GetProperty(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ListItemHandle, key.c_str(), property[0], size);
       property.resize(size);
       property.shrink_to_fit();
       return property;
@@ -1028,7 +1028,7 @@ namespace gui
     ///
     void ClearProperty(const std::string& key)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->listItem.ClearProperty(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_ListItemHandle, key.c_str());
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->listItem.ClearProperty(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ListItemHandle, key.c_str());
     }
     //--------------------------------------------------------------------------
 
@@ -1048,7 +1048,7 @@ namespace gui
     ///
     void ClearProperties()
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->listItem.ClearProperties(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_ListItemHandle);
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->listItem.ClearProperties(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ListItemHandle);
     }
     //--------------------------------------------------------------------------
 
@@ -1061,7 +1061,7 @@ namespace gui
     ///
     bool HasProperties()
     {
-      return ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->listItem.HasProperties(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_ListItemHandle);
+      return ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->listItem.HasProperties(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ListItemHandle);
     }
     //--------------------------------------------------------------------------
 
@@ -1075,7 +1075,7 @@ namespace gui
     ///
     bool HasProperty(const std::string& key)
     {
-      return ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->listItem.HasProperty(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_ListItemHandle, key.c_str());
+      return ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->listItem.HasProperty(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ListItemHandle, key.c_str());
     }
     //--------------------------------------------------------------------------
 
@@ -1091,7 +1091,7 @@ namespace gui
     ///
     void SetPath(const std::string& path)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->listItem.SetPath(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_ListItemHandle, path.c_str());
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->listItem.SetPath(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ListItemHandle, path.c_str());
     }
     //--------------------------------------------------------------------------
 
@@ -1105,12 +1105,12 @@ namespace gui
     std::string GetPath()
     {
       std::string strReturn;
-      char* strMsg = ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->listItem.GetPath(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_ListItemHandle);
+      char* strMsg = ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->listItem.GetPath(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ListItemHandle);
       if (strMsg != nullptr)
       {
         if (std::strlen(strMsg))
           strReturn = strMsg;
-        ::kodi::addon::CAddonBase::m_interface->toKodi.free_string(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, strMsg);
+        ::kodi::addon::CAddonBase::m_interface->toKodi->free_string(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, strMsg);
       }
       return strReturn;
     }
@@ -1128,7 +1128,7 @@ namespace gui
     ///
     void SetMimeType(const std::string& mimetype)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->listItem.SetMimeType(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_ListItemHandle, mimetype.c_str());
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->listItem.SetMimeType(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ListItemHandle, mimetype.c_str());
     }
     //--------------------------------------------------------------------------
 
@@ -1144,7 +1144,7 @@ namespace gui
     ///
     void SetContentLookup(bool enable)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->listItem.SetContentLookup(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_ListItemHandle, enable);
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->listItem.SetContentLookup(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ListItemHandle, enable);
     }
     //--------------------------------------------------------------------------
 
@@ -1174,7 +1174,7 @@ namespace gui
       for (unsigned int i = 0; i < size; ++i)
         subtitles[i] = subtitleFiles[i].c_str();
 
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->listItem.SetSubtitles(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_ListItemHandle, subtitles, size);
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->listItem.SetSubtitles(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ListItemHandle, subtitles, size);
       free(subtitles);
     }
     //--------------------------------------------------------------------------
@@ -1188,7 +1188,7 @@ namespace gui
     ///
     int GetDuration() const
     {
-      return ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->listItem.GetDuration(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_ListItemHandle);
+      return ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->listItem.GetDuration(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ListItemHandle);
     }
     //--------------------------------------------------------------------------
 

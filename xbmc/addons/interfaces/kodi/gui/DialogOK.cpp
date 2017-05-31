@@ -33,8 +33,8 @@ namespace ADDON
 
 void Interface_GUIDialogOK::Init(AddonGlobalInterface* addonInterface)
 {
-  addonInterface->toKodi.kodi_gui->dialogOK.show_and_get_input_single_text = show_and_get_input_single_text;
-  addonInterface->toKodi.kodi_gui->dialogOK.show_and_get_input_line_text = show_and_get_input_line_text;
+  addonInterface->toKodi->kodi_gui->dialogOK.show_and_get_input_single_text = show_and_get_input_single_text;
+  addonInterface->toKodi->kodi_gui->dialogOK.show_and_get_input_line_text = show_and_get_input_line_text;
 }
 
 void Interface_GUIDialogOK::show_and_get_input_single_text(void* kodiBase, const char *heading, const char *text)

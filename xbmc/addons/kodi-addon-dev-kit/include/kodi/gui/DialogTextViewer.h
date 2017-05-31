@@ -108,7 +108,7 @@ namespace gui
       const std::string& heading,
       const std::string& text)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->dialogTextViewer.Open(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, heading.c_str(), text.c_str());
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->dialogTextViewer.Open(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, heading.c_str(), text.c_str());
     }
     //--------------------------------------------------------------------------
   };

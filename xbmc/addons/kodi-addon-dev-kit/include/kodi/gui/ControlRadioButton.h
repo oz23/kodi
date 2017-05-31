@@ -61,7 +61,7 @@ namespace gui
     ///
     CControlRadioButton(CWindow* window, int controlId)
     {
-      m_ControlHandle = ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->window.GetControl_RadioButton(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_Window->m_WindowHandle, controlId);
+      m_ControlHandle = ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->window.GetControl_RadioButton(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_Window->m_WindowHandle, controlId);
       if (!m_ControlHandle)
         kodi::Log(ADDON_LOG_FATAL, "kodi::gui::CControlRadioButton can't create control class from Kodi !!!");
     }
@@ -84,7 +84,7 @@ namespace gui
     ///
     void SetVisible(bool visible)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->controlRadioButton.SetVisible(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_ControlHandle, visible);
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlRadioButton.SetVisible(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ControlHandle, visible);
     }
     //--------------------------------------------------------------------------
 
@@ -97,7 +97,7 @@ namespace gui
     ///
     void SetEnabled(bool enabled)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->controlRadioButton.SetEnabled(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_ControlHandle, enabled);
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlRadioButton.SetEnabled(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ControlHandle, enabled);
     }
     //--------------------------------------------------------------------------
 
@@ -110,7 +110,7 @@ namespace gui
     ///
     void SetLabel(const std::string& label)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->controlRadioButton.SetLabel(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_ControlHandle, label.c_str());
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlRadioButton.SetLabel(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ControlHandle, label.c_str());
     }
     //--------------------------------------------------------------------------
 
@@ -126,7 +126,7 @@ namespace gui
       std::string text;
       text.resize(1024);
       unsigned int size = (unsigned int)text.capacity();
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->controlRadioButton.GetLabel(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_ControlHandle, text[0], size);
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlRadioButton.GetLabel(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ControlHandle, text[0], size);
       text.resize(size);
       text.shrink_to_fit();
       return text;
@@ -143,7 +143,7 @@ namespace gui
     ///
     void SetSelected(bool selected)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->controlRadioButton.SetSelected(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_ControlHandle, selected);
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlRadioButton.SetSelected(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ControlHandle, selected);
     }
     //--------------------------------------------------------------------------
 
@@ -156,7 +156,7 @@ namespace gui
     ///
     bool IsSelected() const
     {
-      return ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->controlRadioButton.IsSelected(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_ControlHandle);
+      return ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlRadioButton.IsSelected(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ControlHandle);
     }
     //--------------------------------------------------------------------------
 

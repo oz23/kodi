@@ -19,6 +19,7 @@
  */
 
 #include "Network.h"
+
 #include "addons/kodi-addon-dev-kit/include/kodi/Network.h"
 
 #include "Application.h"
@@ -36,10 +37,22 @@ namespace ADDON
 
 void Interface_Network::Init(AddonGlobalInterface *addonInterface)
 {
-  addonInterface->toKodi.kodi->network.wake_on_lan = wake_on_lan;
-  addonInterface->toKodi.kodi->network.get_ip_address = get_ip_address;
-  addonInterface->toKodi.kodi->network.dns_lookup = dns_lookup;
-  addonInterface->toKodi.kodi->network.url_encode = url_encode;
+  addonInterface->toKodi->kodi_network = static_cast<AddonToKodiFuncTable_kodi_network*>(malloc(sizeof(AddonToKodiFuncTable_kodi_network)));
+
+  addonInterface->toKodi->kodi_network->wake_on_lan = wake_on_lan;
+  addonInterface->toKodi->kodi_network->get_ip_address = get_ip_address;
+  addonInterface->toKodi->kodi_network->dns_lookup = dns_lookup;
+  addonInterface->toKodi->kodi_network->url_encode = url_encode;
+}
+
+void Interface_Network::DeInit(AddonGlobalInterface* addonInterface)
+{
+  if (addonInterface->toKodi && /* <-- needed as long as the old addon way is used */
+      addonInterface->toKodi->kodi_network)
+  {
+    free(addonInterface->toKodi->kodi_network);
+    addonInterface->toKodi->kodi_network = nullptr;
+  }
 }
 
 bool Interface_Network::wake_on_lan(void* kodiBase, const char* mac)

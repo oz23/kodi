@@ -20,7 +20,25 @@
  */
 
 #include "AddonBase.h"
-#include "definitions.h"
+
+/*
+ * For interface between add-on and kodi.
+ *
+ * This structure defines the addresses of functions stored inside Kodi which
+ * are then available for the add-on to call
+ *
+ * All function pointers there are used by the C++ interface functions below.
+ * You find the set of them on xbmc/addons/interfaces/General.cpp
+ *
+ * Note: For add-on development itself this is not needed
+ */
+typedef struct AddonToKodiFuncTable_kodi_network
+{
+  bool (*wake_on_lan)(void* kodiBase, const char *mac);
+  char* (*get_ip_address)(void* kodiBase);
+  char* (*dns_lookup)(void* kodiBase, const char* url, bool* ret);
+  char* (*url_encode)(void* kodiBase, const char* url);
+} AddonToKodiFuncTable_kodi_network;
 
 //==============================================================================
 ///
@@ -29,8 +47,6 @@
 /// @brief **Network functions**
 ///
 /// The network module offers functions that allow you to control it.
-///
-/// These are pure static functions them no other initialization need.
 ///
 /// It has the header \ref Network.h "#include <kodi/Network.h>" be included
 /// to enjoy it.
@@ -52,10 +68,9 @@ namespace network
   ///
   inline bool WakeOnLan(const std::string& mac)
   {
-    return ::kodi::addon::CAddonBase::m_interface->toKodi.kodi->network.wake_on_lan(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, mac.c_str());
+    return ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_network->wake_on_lan(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, mac.c_str());
   }
   //----------------------------------------------------------------------------
-
 
   //============================================================================
   ///
@@ -71,24 +86,23 @@ namespace network
   /// ~~~~~~~~~~~~~{.cpp}
   /// #include <kodi/Network.h>
   /// ...
-  /// std::string strIpAddress = kodi::network::GetIPAddress();
-  /// fprintf(stderr, "My IP is '%s'\n", strIpAddress.c_str());
+  /// std::string ipAddress = kodi::network::GetIPAddress();
+  /// fprintf(stderr, "My IP is '%s'\n", ipAddress.c_str());
   /// ...
   /// ~~~~~~~~~~~~~
   ///
   inline std::string GetIPAddress()
   {
     std::string ip;
-    char* string = ::kodi::addon::CAddonBase::m_interface->toKodi.kodi->network.get_ip_address(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase);
+    char* string = ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_network->get_ip_address(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase);
     if (string != nullptr)
     {
       ip = string;
-      ::kodi::addon::CAddonBase::m_interface->toKodi.free_string(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, string);
+      ::kodi::addon::CAddonBase::m_interface->toKodi->free_string(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, string);
     }
     return ip;
   }
   //----------------------------------------------------------------------------
-
 
   //============================================================================
   ///
@@ -119,16 +133,15 @@ namespace network
   inline std::string URLEncode(const std::string& url)
   {
     std::string retString;
-    char* string = ::kodi::addon::CAddonBase::m_interface->toKodi.kodi->network.url_encode(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, url.c_str());
+    char* string = ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_network->url_encode(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, url.c_str());
     if (string != nullptr)
     {
       retString = string;
-      ::kodi::addon::CAddonBase::m_interface->toKodi.free_string(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, string);
+      ::kodi::addon::CAddonBase::m_interface->toKodi->free_string(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, string);
     }
     return retString;
   }
   //----------------------------------------------------------------------------
-
 
   //============================================================================
   ///
@@ -140,8 +153,8 @@ namespace network
   /// should show up instantly. By default, the DNS lookup tool will return an
   /// IP address if you give it a name (e.g. www.example.com)
   ///
-  /// @param[in] strHostName  The code of the message to get.
-  /// @param[in] strIpAddress Returned address
+  /// @param[in] hostName   The code of the message to get.
+  /// @param[out] ipAddress Returned address
   /// @return true if successfull
   ///
   ///
@@ -151,20 +164,20 @@ namespace network
   /// ~~~~~~~~~~~~~{.cpp}
   /// #include <kodi/Network.h>
   /// ...
-  /// std::string strIpAddress;
-  /// bool ret = kodi::network::DNSLookup("www.google.com", strIpAddress);
-  /// fprintf(stderr, "DNSLookup returned for www.google.com the IP '%s', call was %s\n", strIpAddress.c_str(), ret ? "ok" : "failed");
+  /// std::string ipAddress;
+  /// bool ret = kodi::network::DNSLookup("www.google.com", ipAddress);
+  /// fprintf(stderr, "DNSLookup returned for www.google.com the IP '%s', call was %s\n", ipAddress.c_str(), ret ? "ok" : "failed");
   /// ...
   /// ~~~~~~~~~~~~~
   ///
-  inline bool DNSLookup(const std::string& strHostName, std::string& strIpAddress)
+  inline bool DNSLookup(const std::string& hostName, std::string& ipAddress)
   {
     bool ret = false;
-    char* ipAddress = ::kodi::addon::CAddonBase::m_interface->toKodi.kodi->network.dns_lookup(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, strHostName.c_str(), &ret);
-    if (ipAddress != nullptr)
+    char* string = ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_network->dns_lookup(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, hostName.c_str(), &ret);
+    if (string != nullptr)
     {
-      strIpAddress = ipAddress;
-      ::kodi::addon::CAddonBase::m_interface->toKodi.free_string(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, ipAddress);
+      ipAddress = string;
+      ::kodi::addon::CAddonBase::m_interface->toKodi->free_string(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, string);
     }
     return ret;
   }

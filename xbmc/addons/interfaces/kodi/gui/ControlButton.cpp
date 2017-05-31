@@ -33,14 +33,14 @@ namespace ADDON
 
 void Interface_GUIControlButton::Init(AddonGlobalInterface* addonInterface)
 {
-  addonInterface->toKodi.kodi_gui->controlButton.SetVisible = SetVisible;
-  addonInterface->toKodi.kodi_gui->controlButton.SetEnabled = SetEnabled;
+  addonInterface->toKodi->kodi_gui->controlButton.SetVisible = SetVisible;
+  addonInterface->toKodi->kodi_gui->controlButton.SetEnabled = SetEnabled;
 
-  addonInterface->toKodi.kodi_gui->controlButton.SetLabel = SetLabel;
-  addonInterface->toKodi.kodi_gui->controlButton.GetLabel = GetLabel;
+  addonInterface->toKodi->kodi_gui->controlButton.SetLabel = SetLabel;
+  addonInterface->toKodi->kodi_gui->controlButton.GetLabel = GetLabel;
 
-  addonInterface->toKodi.kodi_gui->controlButton.SetLabel2 = SetLabel2;
-  addonInterface->toKodi.kodi_gui->controlButton.GetLabel2 = GetLabel2;
+  addonInterface->toKodi->kodi_gui->controlButton.SetLabel2 = SetLabel2;
+  addonInterface->toKodi->kodi_gui->controlButton.GetLabel2 = GetLabel2;
 }
 
 void Interface_GUIControlButton::SetVisible(void* kodiBase, void* handle, bool yesNo)

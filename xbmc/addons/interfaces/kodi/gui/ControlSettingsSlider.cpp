@@ -33,24 +33,24 @@ namespace ADDON
 
 void Interface_GUIControlSettingsSlider::Init(AddonGlobalInterface* addonInterface)
 {
-  addonInterface->toKodi.kodi_gui->controlSettingsSlider.SetVisible = SetVisible;
-  addonInterface->toKodi.kodi_gui->controlSettingsSlider.SetEnabled = SetEnabled;
+  addonInterface->toKodi->kodi_gui->controlSettingsSlider.SetVisible = SetVisible;
+  addonInterface->toKodi->kodi_gui->controlSettingsSlider.SetEnabled = SetEnabled;
 
-  addonInterface->toKodi.kodi_gui->controlSettingsSlider.SetText = SetText;
-  addonInterface->toKodi.kodi_gui->controlSettingsSlider.Reset = Reset;
+  addonInterface->toKodi->kodi_gui->controlSettingsSlider.SetText = SetText;
+  addonInterface->toKodi->kodi_gui->controlSettingsSlider.Reset = Reset;
 
-  addonInterface->toKodi.kodi_gui->controlSettingsSlider.SetIntRange = SetIntRange;
-  addonInterface->toKodi.kodi_gui->controlSettingsSlider.SetIntValue = SetIntValue;
-  addonInterface->toKodi.kodi_gui->controlSettingsSlider.GetIntValue = GetIntValue;
-  addonInterface->toKodi.kodi_gui->controlSettingsSlider.SetIntInterval = SetIntInterval;
+  addonInterface->toKodi->kodi_gui->controlSettingsSlider.SetIntRange = SetIntRange;
+  addonInterface->toKodi->kodi_gui->controlSettingsSlider.SetIntValue = SetIntValue;
+  addonInterface->toKodi->kodi_gui->controlSettingsSlider.GetIntValue = GetIntValue;
+  addonInterface->toKodi->kodi_gui->controlSettingsSlider.SetIntInterval = SetIntInterval;
 
-  addonInterface->toKodi.kodi_gui->controlSettingsSlider.SetPercentage = SetPercentage;
-  addonInterface->toKodi.kodi_gui->controlSettingsSlider.GetPercentage = GetPercentage;
+  addonInterface->toKodi->kodi_gui->controlSettingsSlider.SetPercentage = SetPercentage;
+  addonInterface->toKodi->kodi_gui->controlSettingsSlider.GetPercentage = GetPercentage;
 
-  addonInterface->toKodi.kodi_gui->controlSettingsSlider.SetFloatRange = SetFloatRange;
-  addonInterface->toKodi.kodi_gui->controlSettingsSlider.SetFloatValue = SetFloatValue;
-  addonInterface->toKodi.kodi_gui->controlSettingsSlider.GetFloatValue = GetFloatValue;
-  addonInterface->toKodi.kodi_gui->controlSettingsSlider.SetFloatInterval = SetFloatInterval;
+  addonInterface->toKodi->kodi_gui->controlSettingsSlider.SetFloatRange = SetFloatRange;
+  addonInterface->toKodi->kodi_gui->controlSettingsSlider.SetFloatValue = SetFloatValue;
+  addonInterface->toKodi->kodi_gui->controlSettingsSlider.GetFloatValue = GetFloatValue;
+  addonInterface->toKodi->kodi_gui->controlSettingsSlider.SetFloatInterval = SetFloatInterval;
 }
 
 void Interface_GUIControlSettingsSlider::SetVisible(void* kodiBase, void* handle, bool visible)

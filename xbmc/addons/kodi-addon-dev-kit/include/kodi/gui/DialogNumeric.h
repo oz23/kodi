@@ -65,7 +65,7 @@ namespace gui
     {
       newPassword.reserve(1024);
       unsigned int size = (unsigned int)newPassword.capacity();
-      bool ret = ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->dialogNumeric.ShowAndVerifyNewPassword(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, newPassword[0], size);
+      bool ret = ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->dialogNumeric.ShowAndVerifyNewPassword(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, newPassword[0], size);
       newPassword.resize(size);
       newPassword.shrink_to_fit();
       return ret;
@@ -153,7 +153,7 @@ namespace gui
     {
       password.resize(1024);
       unsigned int size = (unsigned int)password.capacity();
-      bool ret = ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->dialogNumeric.ShowAndVerifyPassword(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, password[0], size, heading.c_str(), iRetries);
+      bool ret = ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->dialogNumeric.ShowAndVerifyPassword(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, password[0], size, heading.c_str(), iRetries);
       password.resize(size);
       password.shrink_to_fit();
       return ret;
@@ -180,7 +180,7 @@ namespace gui
     {
       toVerify.resize(1024);
       unsigned int size = (unsigned int)toVerify.capacity();
-      bool ret = ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->dialogNumeric.ShowAndVerifyInput(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, toVerify[0], size, heading.c_str(), verifyInput);
+      bool ret = ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->dialogNumeric.ShowAndVerifyInput(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, toVerify[0], size, heading.c_str(), verifyInput);
       toVerify.resize(size);
       toVerify.shrink_to_fit();
       return ret;
@@ -223,7 +223,7 @@ namespace gui
       tm&                     time,
       const std::string&      heading)
     {
-      return ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->dialogNumeric.ShowAndGetTime(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, time, heading.c_str());
+      return ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->dialogNumeric.ShowAndGetTime(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, time, heading.c_str());
     }
     //--------------------------------------------------------------------------
 
@@ -263,7 +263,7 @@ namespace gui
       tm&                     date,
       const std::string&      heading)
     {
-      return ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->dialogNumeric.ShowAndGetDate(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, date, heading.c_str());
+      return ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->dialogNumeric.ShowAndGetDate(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, date, heading.c_str());
     }
     //--------------------------------------------------------------------------
 
@@ -286,7 +286,7 @@ namespace gui
     {
       ipAddress.resize(1024);
       unsigned int size = (unsigned int)ipAddress.capacity();
-      bool ret = ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->dialogNumeric.ShowAndGetIPAddress(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, ipAddress[0], size, heading.c_str());
+      bool ret = ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->dialogNumeric.ShowAndGetIPAddress(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, ipAddress[0], size, heading.c_str());
       ipAddress.resize(size);
       ipAddress.shrink_to_fit();
       return ret;
@@ -331,7 +331,7 @@ namespace gui
     {
       input.resize(1024);
       unsigned int size = (unsigned int)input.capacity();
-      bool ret = ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->dialogNumeric.ShowAndGetNumber(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, input[0], size, heading.c_str(), autoCloseTimeoutMs);
+      bool ret = ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->dialogNumeric.ShowAndGetNumber(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, input[0], size, heading.c_str(), autoCloseTimeoutMs);
       input.resize(size);
       input.shrink_to_fit();
       return ret;
@@ -356,7 +356,7 @@ namespace gui
     {
       time.resize(1024);
       unsigned int size = (unsigned int)time.capacity();
-      bool ret = ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->dialogNumeric.ShowAndGetSeconds(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, time[0], size, heading.c_str());
+      bool ret = ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->dialogNumeric.ShowAndGetSeconds(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, time[0], size, heading.c_str());
       time.resize(size);
       time.shrink_to_fit();
       return ret;

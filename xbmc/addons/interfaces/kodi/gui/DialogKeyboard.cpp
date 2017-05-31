@@ -33,16 +33,16 @@ extern "C"
 
 void Interface_GUIDialogKeyboard::Init(AddonGlobalInterface* addonInterface)
 {
-  addonInterface->toKodi.kodi_gui->dialogKeyboard.ShowAndGetInputWithHead = ShowAndGetInputWithHead;
-  addonInterface->toKodi.kodi_gui->dialogKeyboard.ShowAndGetInput = ShowAndGetInput;
-  addonInterface->toKodi.kodi_gui->dialogKeyboard.ShowAndGetNewPasswordWithHead = ShowAndGetNewPasswordWithHead;
-  addonInterface->toKodi.kodi_gui->dialogKeyboard.ShowAndGetNewPassword = ShowAndGetNewPassword;
-  addonInterface->toKodi.kodi_gui->dialogKeyboard.ShowAndVerifyNewPasswordWithHead = ShowAndVerifyNewPasswordWithHead;
-  addonInterface->toKodi.kodi_gui->dialogKeyboard.ShowAndVerifyNewPassword = ShowAndVerifyNewPassword;
-  addonInterface->toKodi.kodi_gui->dialogKeyboard.ShowAndVerifyPassword = ShowAndVerifyPassword;
-  addonInterface->toKodi.kodi_gui->dialogKeyboard.ShowAndGetFilter = ShowAndGetFilter;
-  addonInterface->toKodi.kodi_gui->dialogKeyboard.SendTextToActiveKeyboard = SendTextToActiveKeyboard;
-  addonInterface->toKodi.kodi_gui->dialogKeyboard.isKeyboardActivated   = isKeyboardActivated;
+  addonInterface->toKodi->kodi_gui->dialogKeyboard.ShowAndGetInputWithHead = ShowAndGetInputWithHead;
+  addonInterface->toKodi->kodi_gui->dialogKeyboard.ShowAndGetInput = ShowAndGetInput;
+  addonInterface->toKodi->kodi_gui->dialogKeyboard.ShowAndGetNewPasswordWithHead = ShowAndGetNewPasswordWithHead;
+  addonInterface->toKodi->kodi_gui->dialogKeyboard.ShowAndGetNewPassword = ShowAndGetNewPassword;
+  addonInterface->toKodi->kodi_gui->dialogKeyboard.ShowAndVerifyNewPasswordWithHead = ShowAndVerifyNewPasswordWithHead;
+  addonInterface->toKodi->kodi_gui->dialogKeyboard.ShowAndVerifyNewPassword = ShowAndVerifyNewPassword;
+  addonInterface->toKodi->kodi_gui->dialogKeyboard.ShowAndVerifyPassword = ShowAndVerifyPassword;
+  addonInterface->toKodi->kodi_gui->dialogKeyboard.ShowAndGetFilter = ShowAndGetFilter;
+  addonInterface->toKodi->kodi_gui->dialogKeyboard.SendTextToActiveKeyboard = SendTextToActiveKeyboard;
+  addonInterface->toKodi->kodi_gui->dialogKeyboard.isKeyboardActivated   = isKeyboardActivated;
 }
 
 bool Interface_GUIDialogKeyboard::ShowAndGetInputWithHead(void* kodiBase, char &aTextString, unsigned int &maxStringSize, const char *strHeading, bool allowEmptyResult, bool hiddenInput, unsigned int autoCloseMs)

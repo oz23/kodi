@@ -33,26 +33,26 @@ namespace ADDON
 
 void Interface_GUIControlSpin::Init(AddonGlobalInterface* addonInterface)
 {
-  addonInterface->toKodi.kodi_gui->controlSpin.SetVisible = SetVisible;
-  addonInterface->toKodi.kodi_gui->controlSpin.SetEnabled = SetEnabled;
+  addonInterface->toKodi->kodi_gui->controlSpin.SetVisible = SetVisible;
+  addonInterface->toKodi->kodi_gui->controlSpin.SetEnabled = SetEnabled;
 
-  addonInterface->toKodi.kodi_gui->controlSpin.SetText = SetText;
-  addonInterface->toKodi.kodi_gui->controlSpin.Reset = Reset;
-  addonInterface->toKodi.kodi_gui->controlSpin.SetType = SetType;
+  addonInterface->toKodi->kodi_gui->controlSpin.SetText = SetText;
+  addonInterface->toKodi->kodi_gui->controlSpin.Reset = Reset;
+  addonInterface->toKodi->kodi_gui->controlSpin.SetType = SetType;
 
-  addonInterface->toKodi.kodi_gui->controlSpin.AddStringLabel = AddStringLabel;
-  addonInterface->toKodi.kodi_gui->controlSpin.SetStringValue = SetStringValue;
-  addonInterface->toKodi.kodi_gui->controlSpin.GetStringValue = GetStringValue;
+  addonInterface->toKodi->kodi_gui->controlSpin.AddStringLabel = AddStringLabel;
+  addonInterface->toKodi->kodi_gui->controlSpin.SetStringValue = SetStringValue;
+  addonInterface->toKodi->kodi_gui->controlSpin.GetStringValue = GetStringValue;
 
-  addonInterface->toKodi.kodi_gui->controlSpin.AddIntLabel = AddIntLabel;
-  addonInterface->toKodi.kodi_gui->controlSpin.SetIntRange = SetIntRange;
-  addonInterface->toKodi.kodi_gui->controlSpin.SetIntValue = SetIntValue;
-  addonInterface->toKodi.kodi_gui->controlSpin.GetIntValue = GetIntValue;
+  addonInterface->toKodi->kodi_gui->controlSpin.AddIntLabel = AddIntLabel;
+  addonInterface->toKodi->kodi_gui->controlSpin.SetIntRange = SetIntRange;
+  addonInterface->toKodi->kodi_gui->controlSpin.SetIntValue = SetIntValue;
+  addonInterface->toKodi->kodi_gui->controlSpin.GetIntValue = GetIntValue;
 
-  addonInterface->toKodi.kodi_gui->controlSpin.SetFloatRange = SetFloatRange;
-  addonInterface->toKodi.kodi_gui->controlSpin.SetFloatValue = SetFloatValue;
-  addonInterface->toKodi.kodi_gui->controlSpin.GetFloatValue = GetFloatValue;
-  addonInterface->toKodi.kodi_gui->controlSpin.SetFloatInterval = SetFloatInterval;
+  addonInterface->toKodi->kodi_gui->controlSpin.SetFloatRange = SetFloatRange;
+  addonInterface->toKodi->kodi_gui->controlSpin.SetFloatValue = SetFloatValue;
+  addonInterface->toKodi->kodi_gui->controlSpin.GetFloatValue = GetFloatValue;
+  addonInterface->toKodi->kodi_gui->controlSpin.SetFloatInterval = SetFloatInterval;
 }
 
 void Interface_GUIControlSpin::SetVisible(void* kodiBase, void* handle, bool visible)

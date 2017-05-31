@@ -36,14 +36,14 @@ namespace ADDON
 
 void Interface_GUIDialogFileBrowser::Init(AddonGlobalInterface* addonInterface)
 {
-  addonInterface->toKodi.kodi_gui->dialogFileBrowser.ShowAndGetDirectory = ShowAndGetDirectory;
-  addonInterface->toKodi.kodi_gui->dialogFileBrowser.ShowAndGetFile = ShowAndGetFile;
-  addonInterface->toKodi.kodi_gui->dialogFileBrowser.ShowAndGetFileFromDir = ShowAndGetFileFromDir;
-  addonInterface->toKodi.kodi_gui->dialogFileBrowser.ShowAndGetFileList = ShowAndGetFileList;
-  addonInterface->toKodi.kodi_gui->dialogFileBrowser.ShowAndGetSource = ShowAndGetSource;
-  addonInterface->toKodi.kodi_gui->dialogFileBrowser.ShowAndGetImage = ShowAndGetImage;
-  addonInterface->toKodi.kodi_gui->dialogFileBrowser.ShowAndGetImageList = ShowAndGetImageList;
-  addonInterface->toKodi.kodi_gui->dialogFileBrowser.ClearList = ClearList;
+  addonInterface->toKodi->kodi_gui->dialogFileBrowser.ShowAndGetDirectory = ShowAndGetDirectory;
+  addonInterface->toKodi->kodi_gui->dialogFileBrowser.ShowAndGetFile = ShowAndGetFile;
+  addonInterface->toKodi->kodi_gui->dialogFileBrowser.ShowAndGetFileFromDir = ShowAndGetFileFromDir;
+  addonInterface->toKodi->kodi_gui->dialogFileBrowser.ShowAndGetFileList = ShowAndGetFileList;
+  addonInterface->toKodi->kodi_gui->dialogFileBrowser.ShowAndGetSource = ShowAndGetSource;
+  addonInterface->toKodi->kodi_gui->dialogFileBrowser.ShowAndGetImage = ShowAndGetImage;
+  addonInterface->toKodi->kodi_gui->dialogFileBrowser.ShowAndGetImageList = ShowAndGetImageList;
+  addonInterface->toKodi->kodi_gui->dialogFileBrowser.ClearList = ClearList;
 }
 
 bool Interface_GUIDialogFileBrowser::ShowAndGetDirectory(void* kodiBase, const char *shares, const char *heading, char &path, unsigned int &maxStringSize, bool writeOnly)

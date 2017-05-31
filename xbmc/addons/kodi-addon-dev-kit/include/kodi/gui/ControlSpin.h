@@ -85,7 +85,7 @@ namespace gui
       : m_Window(window),
         m_ControlId(controlId)
     {
-      m_ControlHandle = ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->window.GetControl_Spin(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_Window->m_WindowHandle, controlId);
+      m_ControlHandle = ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->window.GetControl_Spin(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_Window->m_WindowHandle, controlId);
       if (!m_ControlHandle)
         kodi::Log(ADDON_LOG_FATAL, "kodi::gui::CControlSpin can't create control class from Kodi !!!");
     }
@@ -108,7 +108,7 @@ namespace gui
     ///
     void SetVisible(bool visible)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->controlSpin.SetVisible(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_ControlHandle, visible);
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlSpin.SetVisible(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ControlHandle, visible);
     }
     //--------------------------------------------------------------------------
 
@@ -121,7 +121,7 @@ namespace gui
     ///
     void SetEnabled(bool enabled)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->controlSpin.SetEnabled(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_ControlHandle, enabled);
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlSpin.SetEnabled(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ControlHandle, enabled);
     }
     //--------------------------------------------------------------------------
 
@@ -134,7 +134,7 @@ namespace gui
     ///
     void SetText(const std::string& text)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->controlSpin.SetText(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_ControlHandle, text.c_str());
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlSpin.SetText(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ControlHandle, text.c_str());
     }
     //--------------------------------------------------------------------------
 
@@ -145,7 +145,7 @@ namespace gui
     ///
     void Reset()
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->controlSpin.Reset(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_ControlHandle);
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlSpin.Reset(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ControlHandle);
     }
     //--------------------------------------------------------------------------
 
@@ -160,7 +160,7 @@ namespace gui
     ///
     void SetType(AddonGUISpinControlType type)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->controlSpin.SetType(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_ControlHandle, (int)type);
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlSpin.SetType(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ControlHandle, (int)type);
     }
     //--------------------------------------------------------------------------
 
@@ -177,7 +177,7 @@ namespace gui
     ///
     void AddLabel(const std::string& label, const std::string& value)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->controlSpin.AddStringLabel(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_ControlHandle, label.c_str(), value.c_str());
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlSpin.AddStringLabel(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ControlHandle, label.c_str(), value.c_str());
     }
     //--------------------------------------------------------------------------
 
@@ -194,7 +194,7 @@ namespace gui
     ///
     void AddLabel(const std::string& label, int value)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->controlSpin.AddIntLabel(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_ControlHandle, label.c_str(), value);
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlSpin.AddIntLabel(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ControlHandle, label.c_str(), value);
     }
     //--------------------------------------------------------------------------
 
@@ -209,7 +209,7 @@ namespace gui
     ///
     void SetStringValue(const std::string& value)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->controlSpin.SetStringValue(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_ControlHandle, value.c_str());
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlSpin.SetStringValue(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ControlHandle, value.c_str());
     }
     //--------------------------------------------------------------------------
 
@@ -227,7 +227,7 @@ namespace gui
       std::string text;
       text.resize(1024);
       unsigned int size = (unsigned int)text.capacity();
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->controlSpin.GetStringValue(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_ControlHandle, text[0], size);
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlSpin.GetStringValue(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ControlHandle, text[0], size);
       text.resize(size);
       text.shrink_to_fit();
       return text;
@@ -252,7 +252,7 @@ namespace gui
     ///
     void SetIntRange(int start, int end)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->controlSpin.SetIntRange(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_ControlHandle, start, end);
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlSpin.SetIntRange(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ControlHandle, start, end);
     }
     //--------------------------------------------------------------------------
 
@@ -270,7 +270,7 @@ namespace gui
     ///
     void SetIntValue(int value)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->controlSpin.SetIntValue(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_ControlHandle, value);
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlSpin.SetIntValue(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ControlHandle, value);
     }
     //--------------------------------------------------------------------------
 
@@ -287,7 +287,7 @@ namespace gui
     ///
     int GetIntValue() const
     {
-      return ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->controlSpin.GetIntValue(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_ControlHandle);
+      return ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlSpin.GetIntValue(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ControlHandle);
     }
     //--------------------------------------------------------------------------
 
@@ -312,7 +312,7 @@ namespace gui
     ///
     void SetFloatRange(float start, float end)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->controlSpin.SetFloatRange(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_ControlHandle, start, end);
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlSpin.SetFloatRange(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ControlHandle, start, end);
     }
     //--------------------------------------------------------------------------
 
@@ -331,7 +331,7 @@ namespace gui
     ///
     void SetFloatValue(float value)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->controlSpin.SetFloatValue(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_ControlHandle, value);
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlSpin.SetFloatValue(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ControlHandle, value);
     }
     //--------------------------------------------------------------------------
 
@@ -344,7 +344,7 @@ namespace gui
     ///
     float GetFloatValue() const
     {
-      return ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->controlSpin.GetFloatValue(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_ControlHandle);
+      return ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlSpin.GetFloatValue(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ControlHandle);
     }
     //--------------------------------------------------------------------------
 
@@ -363,7 +363,7 @@ namespace gui
     ///
     void SetFloatInterval(float interval)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->controlSpin.SetFloatInterval(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_ControlHandle, interval);
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlSpin.SetFloatInterval(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ControlHandle, interval);
     }
     //--------------------------------------------------------------------------
 

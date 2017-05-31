@@ -33,7 +33,7 @@ namespace ADDON
 
 void Interface_GUIDialogTextViewer::Init(AddonGlobalInterface* addonInterface)
 {
-  addonInterface->toKodi.kodi_gui->dialogTextViewer.Open = Open;
+  addonInterface->toKodi->kodi_gui->dialogTextViewer.Open = Open;
 }
 
 void Interface_GUIDialogTextViewer::Open(void* kodiBase, const char *heading, const char *text)

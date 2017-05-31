@@ -91,7 +91,7 @@ namespace gui
       const std::string& noLabel = "",
       const std::string& yesLabel = "")
     {
-      return ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->dialogYesNo.ShowAndGetInputSingleText(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, heading.c_str(), text.c_str(), canceled, noLabel.c_str(), yesLabel.c_str());
+      return ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->dialogYesNo.ShowAndGetInputSingleText(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, heading.c_str(), text.c_str(), canceled, noLabel.c_str(), yesLabel.c_str());
     }
     //--------------------------------------------------------------------------
 
@@ -134,7 +134,7 @@ namespace gui
       const std::string&      noLabel = "",
       const std::string&      yesLabel = "")
     {
-      return ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->dialogYesNo.ShowAndGetInputLineText(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, heading.c_str(), line0.c_str(), line1.c_str(), line2.c_str(), noLabel.c_str(), yesLabel.c_str());
+      return ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->dialogYesNo.ShowAndGetInputLineText(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, heading.c_str(), line0.c_str(), line1.c_str(), line2.c_str(), noLabel.c_str(), yesLabel.c_str());
     }
     //--------------------------------------------------------------------------
 
@@ -182,7 +182,7 @@ namespace gui
       const std::string&      noLabel = "",
       const std::string&      yesLabel = "")
     {
-      return ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->dialogYesNo.ShowAndGetInputLineButtonText(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, heading.c_str(), line0.c_str(), line1.c_str(), line2.c_str(), canceled, noLabel.c_str(), yesLabel.c_str());
+      return ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->dialogYesNo.ShowAndGetInputLineButtonText(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, heading.c_str(), line0.c_str(), line1.c_str(), line2.c_str(), canceled, noLabel.c_str(), yesLabel.c_str());
     }
     //--------------------------------------------------------------------------
   };

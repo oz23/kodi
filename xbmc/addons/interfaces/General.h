@@ -1,7 +1,6 @@
 #pragma once
 /*
- *      Copyright (C) 2012-2013 Team XBMC
- *      Copyright (C) 2015-2016 Team KODI
+ *      Copyright (C) 2005-2017 Team Kodi
  *      http://kodi.tv
  *
  *  This Program is free software; you can redistribute it and/or modify
@@ -44,23 +43,19 @@ namespace ADDON
     /*!
      * @brief callback functions from add-on to kodi
      *
-     * @note For add of new functions use the "_" style to identify direct a
-     * add-on callback function. Everything with CamelCase is only for the
-     * usage in Kodi only.
+     * @note To add a new function use the "_" style to directly identify an
+     * add-on callback function. Everything with CamelCase is only to be used
+     * in Kodi.
      *
      * The parameter `kodiBase` is used to become the pointer for a `CAddonDll`
      * class.
      */
     //@{
-    static bool get_setting(void* kodiBase, const char* settingName, void* settingValue);
-    static bool set_setting(void* kodiBase, const char* settingName, const char* settingValue);
-    static void open_settings_dialog(void* kodiBase);
+    static bool open_settings_dialog(void* kodiBase);
     static char* get_localized_string(void* kodiBase, long dwCode);
-    static char* unknown_to_utf8(void* kodiBase, const char* source, bool& ret, bool failOnBadChar);
-    static void queue_notification(void* kodiBase, const int type, const char* message);
-    static void queue_notification_from_type(void* kodiBase, const int type, const char* caption, const char* description, unsigned int displayTime, bool withSound, unsigned int messageTime);
-    static void queue_notification_with_image(void* kodiBase, const char* aImageFile, const char* caption, const char* description, unsigned int displayTime, bool withSound, unsigned int messageTime);
-    static void get_dvd_menu_language(void* kodiInstance, char& language, unsigned int& iMaxStringSize);
+    static char* unknown_to_utf8(void* kodiBase, const char* source, bool* ret, bool failOnBadChar);
+    static char* get_language(void* kodiBase, int format, bool region);
+    static bool queue_notification(void* kodiBase, int type, const char* header, const char* message, const char* imageFile, unsigned int displayTime, bool withSound, unsigned int messageTime);
     //@}
   };
 

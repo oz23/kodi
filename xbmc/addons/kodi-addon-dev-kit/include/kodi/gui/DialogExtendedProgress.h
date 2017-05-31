@@ -75,7 +75,7 @@ namespace gui
     ///
     CDialogExtendedProgress(const std::string& title = "")
     {
-      m_DialogHandle = ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->dialogExtendedProgress.New(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, title.c_str());
+      m_DialogHandle = ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->dialogExtendedProgress.New(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, title.c_str());
       if (!m_DialogHandle)
         kodi::Log(ADDON_LOG_FATAL, "kodi::gui::CDialogExtendedProgress can't create window class from Kodi !!!");
     }
@@ -89,7 +89,7 @@ namespace gui
     ~CDialogExtendedProgress()
     {
       if (m_DialogHandle)
-        ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->dialogExtendedProgress.Delete(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_DialogHandle);
+        ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->dialogExtendedProgress.Delete(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_DialogHandle);
     }
     //--------------------------------------------------------------------------
 
@@ -105,7 +105,7 @@ namespace gui
       std::string text;
       text.resize(1024);
       unsigned int size = (unsigned int)text.capacity();
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->dialogExtendedProgress.Title(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_DialogHandle, text[0], size);
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->dialogExtendedProgress.Title(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_DialogHandle, text[0], size);
       text.resize(size);
       text.shrink_to_fit();
       return text;
@@ -121,7 +121,7 @@ namespace gui
     ///
     void SetTitle(const std::string& title)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->dialogExtendedProgress.SetTitle(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_DialogHandle, title.c_str());
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->dialogExtendedProgress.SetTitle(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_DialogHandle, title.c_str());
     }
     //--------------------------------------------------------------------------
 
@@ -137,7 +137,7 @@ namespace gui
       std::string text;
       text.resize(1024);
       unsigned int size = (unsigned int)text.capacity();
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->dialogExtendedProgress.Text(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_DialogHandle, text[0], size);
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->dialogExtendedProgress.Text(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_DialogHandle, text[0], size);
       text.resize(size);
       text.shrink_to_fit();
       return text;
@@ -153,7 +153,7 @@ namespace gui
     ///
     void SetText(const std::string& text)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->dialogExtendedProgress.SetText(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_DialogHandle, text.c_str());
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->dialogExtendedProgress.SetText(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_DialogHandle, text.c_str());
     }
     //--------------------------------------------------------------------------
 
@@ -166,7 +166,7 @@ namespace gui
     ///
     bool IsFinished() const
     {
-      return ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->dialogExtendedProgress.IsFinished(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_DialogHandle);
+      return ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->dialogExtendedProgress.IsFinished(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_DialogHandle);
     }
     //--------------------------------------------------------------------------
 
@@ -177,7 +177,7 @@ namespace gui
     ///
     void MarkFinished()
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->dialogExtendedProgress.MarkFinished(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_DialogHandle);
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->dialogExtendedProgress.MarkFinished(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_DialogHandle);
     }
     //--------------------------------------------------------------------------
 
@@ -190,7 +190,7 @@ namespace gui
     ///
     float Percentage() const
     {
-      return ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->dialogExtendedProgress.Percentage(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_DialogHandle);
+      return ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->dialogExtendedProgress.Percentage(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_DialogHandle);
     }
     //--------------------------------------------------------------------------
 
@@ -203,7 +203,7 @@ namespace gui
     ///
     void SetPercentage(float percentage)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->dialogExtendedProgress.SetPercentage(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_DialogHandle, percentage);
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->dialogExtendedProgress.SetPercentage(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_DialogHandle, percentage);
     }
     //--------------------------------------------------------------------------
 
@@ -217,7 +217,7 @@ namespace gui
     ///
     void SetProgress(int currentItem, int itemCount)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->dialogExtendedProgress.SetProgress(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_DialogHandle, currentItem, itemCount);
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->dialogExtendedProgress.SetProgress(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_DialogHandle, currentItem, itemCount);
     }
     //--------------------------------------------------------------------------
 

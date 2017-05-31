@@ -73,9 +73,9 @@ namespace gui
       : m_Window(window),
         m_ControlId(controlId)
     {
-      m_ControlHandle = ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->window.GetControl_RenderAddon(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_Window->m_WindowHandle, controlId);
+      m_ControlHandle = ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->window.GetControl_RenderAddon(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_Window->m_WindowHandle, controlId);
       if (m_ControlHandle)
-        ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->controlRendering.SetCallbacks(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_ControlHandle, this,
+        ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlRendering.SetCallbacks(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ControlHandle, this,
                                               OnCreateCB, OnRenderCB, OnStopCB, OnDirtyCB);
       else
         kodi::Log(ADDON_LOG_FATAL, "kodi::gui::CControlRendering can't create control class from Kodi !!!");
@@ -89,7 +89,7 @@ namespace gui
     ///
     virtual ~CControlRendering()
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->controlRendering.Delete(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_ControlHandle);
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlRendering.Delete(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ControlHandle);
     }
     //--------------------------------------------------------------------------
 
@@ -177,7 +177,7 @@ namespace gui
         return;
       }
 
-      ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->controlRendering.SetCallbacks(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, m_ControlHandle, cbhdl,
+      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlRendering.SetCallbacks(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ControlHandle, cbhdl,
                                           CBCreate, CBRender, CBStop, CBDirty);
     }
     //--------------------------------------------------------------------------

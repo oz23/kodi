@@ -87,7 +87,7 @@ namespace gui
       {
         cEntries[i] = entries[i].c_str();
       }
-      int ret = ::kodi::addon::CAddonBase::m_interface->toKodi.kodi_gui->dialogContextMenu.Open(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, heading.c_str(), cEntries, size);
+      int ret = ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->dialogContextMenu.Open(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, heading.c_str(), cEntries, size);
       free(cEntries);
       return ret;
     }

@@ -3,7 +3,6 @@ xbmc/addons                                     addons
 xbmc/addons/interfaces                          addonsBinaryInterfaces
 xbmc/addons/interfaces/Addon                    addonCallbacks_Addon
 xbmc/addons/interfaces/GUI                      addonCallbacks_GUI
-xbmc/addons/interfaces/kodi                     addonInterface_kodi
 xbmc/addons/interfaces/kodi/addon-instance      addonInterface_kodi_addon_instance
 xbmc/addons/interfaces/kodi/gui                 addonInterface_kodi_gui
 xbmc/commons                                    commons
