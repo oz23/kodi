@@ -1080,7 +1080,7 @@ bool CAddonDatabase::AddInstalled(const std::string& addonID, bool enabled)
 {
   std::string now = CDateTime::GetCurrentDateTime().GetAsDBDateTime();
 
-  std::string sql = PrepareSQL("insert into installed(addonID, enabled, installDate)"
+  std::string sql = PrepareSQL("replace into installed(addonID, enabled, installDate)"
     "values('%s', '%d', '%s')",
     addonID.c_str(), enabled ? 1 : 0, now.c_str());
   return ExecuteQuery(sql);

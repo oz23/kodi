@@ -4092,7 +4092,7 @@ void CApplication::ActivateScreenSaver(bool forceType /*= false */)
       g_alarmClock.Stop(SCRIPT_ALARM, true);
 
       if (!CScriptInvocationManager::GetInstance().Stop(libPath))
-        CScriptInvocationManager::GetInstance().ExecuteAsync(libPath, AddonPtr(new CAddonDll(dynamic_cast<ADDON::CAddonDll&>(*m_pythonScreenSaver))));
+        CScriptInvocationManager::GetInstance().ExecuteAsync(libPath, AddonPtr(new CAddon(*m_pythonScreenSaver)));
       return;
     }
     m_pythonScreenSaver.reset();
