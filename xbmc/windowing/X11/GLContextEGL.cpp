@@ -231,6 +231,7 @@ bool CGLContextEGL::Refresh(bool force, int screen, Window glWindow, bool &newCo
     CLog::Log(LOGERROR, "EGL Error: vInfo is NULL!");
   }
 
+  eglGetSyncValuesCHROMIUM = (PFNEGLGETSYNCVALUESCHROMIUMPROC)eglGetProcAddress("eglGetSyncValuesCHROMIUM");
   return retVal;
 }
 
@@ -361,7 +362,51 @@ void CGLContextEGL::SwapBuffers()
   if ((m_eglDisplay == EGL_NO_DISPLAY) || (m_eglSurface == EGL_NO_SURFACE))
     return;
 
+  uint64_t ust1, ust2;
+  uint64_t msc1, msc2;
+  uint64_t sbc1, sbc2;
+
+  eglGetSyncValuesCHROMIUM(m_eglDisplay, m_eglSurface, &ust1, &msc1, &sbc1);
+
   eglSwapBuffers(m_eglDisplay, m_eglSurface);
+
+  eglGetSyncValuesCHROMIUM(m_eglDisplay, m_eglSurface, &ust2, &msc2, &sbc2);
+
+  if ((msc1 - m_sync.msc) > 2)
+  {
+    m_sync.cont = 0;
+  }
+  else if ((msc1 - m_sync.msc) == 2)
+  {
+    if (m_sync.cont < 5)
+    {
+      m_sync.cont = 0;
+    }
+  }
+  else if ((msc1 - m_sync.msc) >= 1)
+  {
+    if (m_sync.cont < 5)
+    {
+      m_sync.interval = (ust1 - m_sync.ust) / (msc1 - m_sync.msc);
+      m_sync.cont++;
+    }
+  }
+
+  m_sync.ust = ust1;
+  m_sync.msc = msc1;
+  m_sync.sbc = sbc1;
+
+  struct timespec nowTs;
+  uint64_t now;
+  clock_gettime(CLOCK_MONOTONIC, &nowTs);
+  now = nowTs.tv_sec * 1000000000 + nowTs.tv_nsec;
+
+  if ((m_sync.cont >= 5) && (msc2 == msc1))
+  {
+    uint64_t sleeptime = m_sync.interval - (now / 1000 - ust2);
+    usleep(sleeptime);
+  }
+
 }
 
 void CGLContextEGL::QueryExtensions()
