@@ -270,7 +270,8 @@ bool CRenderManager::Configure()
     m_pRenderer->Update();
 
     m_playerPort->UpdateRenderInfo(info);
-    m_playerPort->UpdareVideoRender(!m_pRenderer->IsGuiLayer());
+    m_playerPort->UpdateGuiRender(true);
+    m_playerPort->UpdateVideoRender(!m_pRenderer->IsGuiLayer());
 
     m_queued.clear();
     m_discard.clear();
@@ -366,6 +367,10 @@ void CRenderManager::FrameMove()
     {
       m_presentstep = PRESENT_IDLE;
     }
+    else
+    {
+      m_presentTimer.Set(1000);
+    }
 
     if (m_presentstep == PRESENT_READY)
       PrepareNextRender();
@@ -375,7 +380,6 @@ void CRenderManager::FrameMove()
       m_pRenderer->FlipPage(m_presentsource);
       m_presentstep = PRESENT_FRAME;
       m_presentevent.notifyAll();
-      m_presentTimer.Set(1000);
     }
 
     // release all previous
@@ -934,7 +938,7 @@ void CRenderManager::Render(bool clear, DWORD flags, DWORD alpha, bool gui)
     m_presentevent.notifyAll();
   }
 
-  m_playerPort->UpdareGuiRender(IsGuiLayer());
+  m_playerPort->UpdateGuiRender(IsGuiLayer());
 }
 
 bool CRenderManager::IsGuiLayer()
