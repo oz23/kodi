@@ -49,6 +49,8 @@ CGLContextEGL::~CGLContextEGL()
 
 bool CGLContextEGL::Refresh(bool force, int screen, Window glWindow, bool &newContext)
 {
+  m_sync.cont = 0;
+
   // refresh context
   if (m_eglContext && !force)
   {
@@ -364,40 +366,54 @@ void CGLContextEGL::SwapBuffers()
 
   eglGetSyncValuesCHROMIUM(m_eglDisplay, m_eglSurface, &ust2, &msc2, &sbc2);
 
-  if ((msc1 - m_sync.msc) > 2)
+  if ((msc1 - m_sync.msc1) > 2)
   {
     m_sync.cont = 0;
   }
-  else if ((msc1 - m_sync.msc) == 2)
-  {
-    if (m_sync.cont < 5)
-    {
-      m_sync.cont = 0;
-    }
-  }
-  else if ((msc1 - m_sync.msc) >= 1)
-  {
-    if (m_sync.cont < 5)
-    {
-      m_sync.interval = (ust1 - m_sync.ust) / (msc1 - m_sync.msc);
-      m_sync.cont++;
-    }
-  }
-
-  m_sync.ust = ust1;
-  m_sync.msc = msc1;
-  m_sync.sbc = sbc1;
 
   struct timespec nowTs;
   uint64_t now;
   clock_gettime(CLOCK_MONOTONIC, &nowTs);
   now = nowTs.tv_sec * 1000000000 + nowTs.tv_nsec;
 
-  if ((m_sync.cont >= 5) && (msc2 == msc1))
+  // we want to block in SwapBuffers
+  // if a vertical retrace occurs 5 times in a row outside
+  // of this function, we take action
+  if (m_sync.cont < 5)
   {
+    if ((msc1 - m_sync.msc1) == 2)
+    {
+      m_sync.cont = 0;
+    }
+    else if ((msc1 - m_sync.msc1) == 1)
+    {
+      m_sync.interval = (ust1 - m_sync.ust1) / (msc1 - m_sync.msc1);
+      m_sync.cont++;
+    }
+  }
+  else if ((m_sync.cont == 5) && (msc2 == msc1))
+  {
+    // if no vertical retrace has occurred in eglSwapBuffers,
+    // sleep until next vertical retrace
     uint64_t sleeptime = m_sync.interval - (now / 1000 - ust2);
     usleep(sleeptime);
+    m_sync.cont++;
+    msc2++;
   }
+  else if ((m_sync.cont > 5) && (msc2 == m_sync.msc2))
+  {
+    // sleep until next vertical retrace
+    // this avoids blocking outside of this function
+    uint64_t sleeptime = m_sync.interval - (now / 1000 - ust2);
+    usleep(sleeptime);
+    msc2++;
+  }
+
+  m_sync.ust1 = ust1;
+  m_sync.ust2 = ust2;
+  m_sync.msc1 = msc1;
+  m_sync.msc2 = msc2;
+  m_sync.sbc2 = sbc2;
 
 }
 
