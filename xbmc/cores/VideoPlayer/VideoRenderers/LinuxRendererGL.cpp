@@ -548,7 +548,10 @@ void CLinuxRendererGL::RenderUpdate(bool clear, DWORD flags, DWORD alpha)
 
   }
   else
-    Render(flags, index);
+  {
+    if (!Render(flags, index) && clear)
+      ClearBackBuffer();
+  }
 
   VerifyGLState();
   glEnable(GL_BLEND);
@@ -944,7 +947,7 @@ void CLinuxRendererGL::UnInit()
   m_bConfigured = false;
 }
 
-void CLinuxRendererGL::Render(DWORD flags, int renderBuffer)
+bool CLinuxRendererGL::Render(DWORD flags, int renderBuffer)
 {
   // obtain current field, if interlaced
   if( flags & RENDER_FLAG_TOP)
@@ -958,7 +961,9 @@ void CLinuxRendererGL::Render(DWORD flags, int renderBuffer)
 
   // call texture load function
   if (!UploadTexture(renderBuffer))
-    return;
+  {
+    return false;
+  }
 
   if (RenderHook(renderBuffer))
     ;
@@ -991,6 +996,7 @@ void CLinuxRendererGL::Render(DWORD flags, int renderBuffer)
   }
 
   AfterRenderHook(renderBuffer);
+  return true;
 }
 
 void CLinuxRendererGL::RenderSinglePass(int index, int field)
