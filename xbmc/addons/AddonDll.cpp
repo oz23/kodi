@@ -544,11 +544,13 @@ ADDON_STATUS CAddonDll::TransferSettings()
 
 void CAddonDll::UpdateSettings(std::map<std::string, std::string>& settings)
 {
-  if (m_interface.toAddon->set_setting)
+  if (m_interface.toAddon &&
+      m_interface.toAddon->set_setting)
   {
     for (auto it = settings.begin(); it != settings.end(); ++it)
       m_interface.toAddon->set_setting(it->first.c_str(), it->second.c_str()/*, (std::next(it) == settings.end()) ? true : false*/);
   }
+
   CAddon::UpdateSettings(settings);
 }
 
