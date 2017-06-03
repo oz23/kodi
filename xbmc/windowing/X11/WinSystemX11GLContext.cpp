@@ -183,7 +183,6 @@ XVisualInfo* CWinSystemX11GLContext::GetVisual()
     GLX_RED_SIZE, 8,
     GLX_GREEN_SIZE, 8,
     GLX_BLUE_SIZE, 8,
-    GLX_ALPHA_SIZE, 8,
     GLX_DEPTH_SIZE, 24,
     GLX_DOUBLEBUFFER,
     None
