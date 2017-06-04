@@ -401,6 +401,8 @@ void CRenderManager::FrameMove()
     m_bRenderGUI = true;
   }
 
+  m_playerPort->UpdateGuiRender(IsGuiLayer());
+
   ManageCaptures();
 }
 
@@ -937,8 +939,6 @@ void CRenderManager::Render(bool clear, DWORD flags, DWORD alpha, bool gui)
 
     m_presentevent.notifyAll();
   }
-
-  m_playerPort->UpdateGuiRender(IsGuiLayer());
 }
 
 bool CRenderManager::IsGuiLayer()

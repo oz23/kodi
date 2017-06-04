@@ -410,6 +410,8 @@ int CProcessInfo::GetLevelVQ()
 
 void CProcessInfo::SetGuiRender(bool gui)
 {
+  CSingleLock lock(m_stateSection);
+
   bool change = (m_renderGuiLayer != gui);
   m_renderGuiLayer = gui;
   if (change)
@@ -418,11 +420,15 @@ void CProcessInfo::SetGuiRender(bool gui)
 
 bool CProcessInfo::GetGuiRender()
 {
+  CSingleLock lock(m_stateSection);
+
   return m_renderGuiLayer;
 }
 
 void CProcessInfo::SetVideoRender(bool video)
 {
+  CSingleLock lock(m_stateSection);
+
   bool change = (m_renderVideoLayer != video);
   m_renderVideoLayer = video;
   if (change)
@@ -431,5 +437,7 @@ void CProcessInfo::SetVideoRender(bool video)
 
 bool CProcessInfo::GetVideoRender()
 {
+  CSingleLock lock(m_stateSection);
+
   return m_renderVideoLayer;
 }
