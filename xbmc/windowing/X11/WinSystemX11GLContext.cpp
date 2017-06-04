@@ -229,3 +229,11 @@ std::unique_ptr<CVideoSync> CWinSystemX11GLContext::GetVideoSync(void *clock)
   }
   return pVSync;
 }
+
+uint64_t CWinSystemX11GLContext::GetTimeSinceVblank()
+{
+  if (m_pGLContext)
+    return m_pGLContext->GetTimeSinceVblank();
+
+  return 0;
+}

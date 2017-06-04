@@ -43,6 +43,7 @@ public:
 
   // videosync
   virtual std::unique_ptr<CVideoSync> GetVideoSync(void *clock) override;
+  virtual uint64_t GetTimeSinceVblank() override;
 
   GLXWindow GetWindow() const;
   GLXContext GetGlxContext() const;

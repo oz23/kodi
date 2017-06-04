@@ -90,6 +90,8 @@ public:
 
   // videosync
   virtual std::unique_ptr<CVideoSync> GetVideoSync(void *clock) { return nullptr; }
+  // time since last vblank in usec
+  virtual uint64_t GetTimeSinceVblank() { return 0; }
 
   // notifications
   virtual void OnMove(int x, int y) {}

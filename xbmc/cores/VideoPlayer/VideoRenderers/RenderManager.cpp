@@ -1266,7 +1266,8 @@ void CRenderManager::PrepareNextRender()
     return;
   }
 
-  double frameOnScreen = m_dvdClock.GetClock();
+  uint64_t timeSinceVblank = g_Windowing.GetTimeSinceVblank();
+  double frameOnScreen = m_dvdClock.GetClock() - timeSinceVblank;
   double frametime = 1.0 / g_graphicsContext.GetFPS() * DVD_TIME_BASE;
 
   // correct display latency
