@@ -906,24 +906,6 @@ void PAPlayer::OnExit()
 
 }
 
-void PAPlayer::RegisterAudioCallback(IAudioCallback* pCallback)
-{
-  CSingleLock lock(m_streamsLock);
-  m_audioCallback = pCallback;
-  if (m_currentStream && m_currentStream->m_stream)
-    m_currentStream->m_stream->RegisterAudioCallback(pCallback);
-}
-
-void PAPlayer::UnRegisterAudioCallback()
-{
-  CSingleLock lock(m_streamsLock);
-  /* only one stream should have the callback, but we do it to all just incase */
-  for(StreamList::iterator itt = m_streams.begin(); itt != m_streams.end(); ++itt)
-    if ((*itt)->m_stream)
-      (*itt)->m_stream->UnRegisterAudioCallback();
-  m_audioCallback = NULL;
-}
-
 void PAPlayer::OnNothingToQueueNotify()
 {
   m_isFinished = true;
@@ -1133,11 +1115,6 @@ float PAPlayer::GetPercentage()
     return m_playerGUIData.m_time * 100.0f / m_playerGUIData.m_totalTime;
 
   return 0.0f;
-}
-
-bool PAPlayer::SkipNext()
-{
-  return false;
 }
 
 void PAPlayer::UpdateGUIData(StreamInfo *si)

@@ -13,7 +13,7 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with Kodi; see the file COPYING.  If not, see
+ *  along with KODI; see the file COPYING.  If not, see
  *  <http://www.gnu.org/licenses/>.
  *
  */
@@ -87,7 +87,10 @@ static const TypeMapping types[] =
 
 bool CAddonExtensions::ParseExtension(const TiXmlElement* element)
 {
-  const char* cstring;
+  const char* cstring; /* "C" string point where parts from TinyXML becomes
+                          stored, is used as this to prevent double use of
+                          calls and to prevent not wanted "C++" throws if
+                          std::string want to become set with nullptr! */
 
   cstring = element->Attribute("point");
   m_point = cstring ? cstring : "";
@@ -152,7 +155,7 @@ bool CAddonExtensions::ParseExtension(const TiXmlElement* element)
         {
           CAddonExtensions subElement;
           if (subElement.ParseExtension(childElement))
-            m_childs.push_back(std::pair<std::string, CAddonExtensions>(id, subElement));
+            m_children.push_back(std::pair<std::string, CAddonExtensions>(id, subElement));
         }
       }
     }
@@ -162,7 +165,7 @@ bool CAddonExtensions::ParseExtension(const TiXmlElement* element)
   return true;
 }
 
-const extValue CAddonExtensions::GetValue(std::string id) const
+const SExtValue CAddonExtensions::GetValue(const std::string& id) const
 {
   for (auto values : m_values)
   {
@@ -172,7 +175,7 @@ const extValue CAddonExtensions::GetValue(std::string id) const
         return value.second;
     }
   }
-  return extValue("");
+  return SExtValue("");
 }
 
 const EXT_VALUES& CAddonExtensions::GetValues() const
@@ -180,9 +183,9 @@ const EXT_VALUES& CAddonExtensions::GetValues() const
   return m_values;
 }
 
-const CAddonExtensions* CAddonExtensions::GetElement(std::string id) const
+const CAddonExtensions* CAddonExtensions::GetElement(const std::string& id) const
 {
-  for (EXT_ELEMENTS::const_iterator it = m_childs.begin(); it != m_childs.end(); ++it)
+  for (EXT_ELEMENTS::const_iterator it = m_children.begin(); it != m_children.end(); ++it)
   {
     if (it->first == id)
       return &it->second;
@@ -191,13 +194,13 @@ const CAddonExtensions* CAddonExtensions::GetElement(std::string id) const
   return nullptr;
 }
 
-const EXT_ELEMENTS CAddonExtensions::GetElements(std::string id) const
+const EXT_ELEMENTS CAddonExtensions::GetElements(const std::string& id) const
 {
   if (id.empty())
-    return m_childs;
+    return m_children;
 
   EXT_ELEMENTS childs;
-  for (auto child : m_childs)
+  for (auto child : m_children)
   {
     if (child.first == id)
       childs.push_back(std::pair<std::string, CAddonExtensions>(child.first, child.second));
@@ -205,7 +208,7 @@ const EXT_ELEMENTS CAddonExtensions::GetElements(std::string id) const
   return childs;
 }
 
-void CAddonExtensions::Insert(std::string id, std::string value)
+void CAddonExtensions::Insert(const std::string& id, const std::string& value)
 {
   EXT_VALUE extension;
   extension.push_back(std::pair<std::string, std::string>(id, value));
@@ -213,10 +216,9 @@ void CAddonExtensions::Insert(std::string id, std::string value)
 }
 
 CAddonType::CAddonType(TYPE type, CAddonInfo* info, const TiXmlElement* child)
+ : m_type(type),
+   m_path(info->Path())
 {
-  m_type = type;
-  m_path = info->Path();
-
   if (child)
   {
     // Get add-on library file name (if present)
@@ -287,7 +289,7 @@ const char* CAddonType::GetPlatformLibraryName(const TiXmlElement* element)
 }
 
 /**
- * helper functions 
+ * static public helper functions
  *
  */
 
@@ -307,7 +309,7 @@ std::string CAddonInfo::TranslateType(ADDON::TYPE type, bool pretty/*=false*/)
   return "";
 }
 
-TYPE CAddonInfo::TranslateType(const std::string &string)
+TYPE CAddonInfo::TranslateType(const std::string& string)
 {
   for (unsigned int index=0; index < ARRAY_SIZE(types); ++index)
   {
@@ -321,7 +323,7 @@ TYPE CAddonInfo::TranslateType(const std::string &string)
 
 std::string CAddonInfo::TranslateIconType(ADDON::TYPE type)
 {
-  for (unsigned int index=0; index < ARRAY_SIZE(types); ++index)
+  for (unsigned int index = 0; index < ARRAY_SIZE(types); ++index)
   {
     const TypeMapping &map = types[index];
     if (type == map.type)
@@ -330,7 +332,23 @@ std::string CAddonInfo::TranslateIconType(ADDON::TYPE type)
   return "";
 }
 
-CAddonInfo::CAddonInfo(std::string addonPath)
+TYPE CAddonInfo::TranslateSubContent(const std::string& content)
+{
+  if (content == "audio")
+    return ADDON_AUDIO;
+  else if (content == "image")
+    return ADDON_IMAGE;
+  else if (content == "executable")
+    return ADDON_EXECUTABLE;
+  else if (content == "video")
+    return ADDON_VIDEO;
+  else if (content == "game")
+    return ADDON_GAME;
+  else
+    return ADDON_UNKNOWN;
+}
+
+CAddonInfo::CAddonInfo(const std::string& addonPath)
   : m_usable(false),
     m_mainType(ADDON_UNKNOWN),
     m_packageSize(0)
@@ -350,44 +368,15 @@ CAddonInfo::CAddonInfo(std::string addonPath)
     return;
   }
 
-  m_usable = LoadAddonXML(xmlDoc.RootElement(), addonXmlPath);
-  if (m_usable)
-  {
-    for (unsigned int i = 0; i < m_screenshots.size(); ++i)
-    {
-      m_screenshots[i] = URIUtils::AddFileToFolder(m_path, m_screenshots[i]);
-    }
-    if (!m_fanart.empty())
-      m_fanart = URIUtils::AddFileToFolder(m_path, m_fanart);
-    if (!m_icon.empty())
-      m_icon = URIUtils::AddFileToFolder(m_path, m_icon);
-  }
+  m_usable = LoadAddonXML(xmlDoc.RootElement(), m_path);
 }
 
-CAddonInfo::CAddonInfo(const TiXmlElement* baseElement, std::string addonRepoXmlPath)
+CAddonInfo::CAddonInfo(const TiXmlElement* baseElement, const std::string& addonRepoXmlPath)
   : m_usable(false),
     m_mainType(ADDON_UNKNOWN),
     m_packageSize(0)
 {
   m_usable = LoadAddonXML(baseElement, addonRepoXmlPath);
-  if (m_usable)
-  {
-    /*
-     * For repo based addon data becomes the folders set from here, to know the
-     * place is the add-on id needed who comes from xml.
-     *
-     * Also need the add-on path set to the zip file on repository place.
-     */
-    for (unsigned int i = 0; i < m_screenshots.size(); ++i)
-    {
-      m_screenshots[i] = URIUtils::AddFileToFolder(addonRepoXmlPath, StringUtils::Format("%s/%s", m_id.c_str(), m_screenshots[i].c_str()));
-    }
-    if (!m_fanart.empty())
-      m_fanart = URIUtils::AddFileToFolder(addonRepoXmlPath, StringUtils::Format("%s/%s", m_id.c_str(), m_fanart.c_str()));
-    if (!m_icon.empty())
-      m_icon = URIUtils::AddFileToFolder(addonRepoXmlPath, StringUtils::Format("%s/%s", m_id.c_str(), m_icon.c_str()));
-    m_path = URIUtils::AddFileToFolder(addonRepoXmlPath, StringUtils::Format("%s/%s-%s.zip", m_id.c_str(), m_id.c_str(), m_version.asString().c_str()));
-  }
 }
 
 CAddonInfo::CAddonInfo(const std::string& id,
@@ -414,7 +403,7 @@ CAddonInfo::CAddonInfo(const std::string& id,
     CLog::Log(LOGERROR, "CAddonInfo: tried to create add-on info with invalid data (id='%s', type='%i')", m_id.c_str(), m_mainType);
 }
 
-CAddonInfo::CAddonInfo(std::string id, TYPE type)
+CAddonInfo::CAddonInfo(const std::string& id, TYPE type)
   : m_usable(true),
     m_id(std::move(id)),
     m_mainType(type),
@@ -423,7 +412,110 @@ CAddonInfo::CAddonInfo(std::string id, TYPE type)
 
 }
 
-bool CAddonInfo::LoadAddonXML(const TiXmlElement* baseElement, std::string addonXmlPath)
+std::string CAddonInfo::SerializeMetadata()
+{
+  CVariant variant;
+  variant["author"] = m_author;
+  variant["disclaimer"] = m_disclaimer;
+  variant["broken"] = m_broken;
+  variant["size"] = m_packageSize;
+
+  variant["path"] = m_path;
+  variant["icon"] = m_icon;
+
+  variant["art"] = CVariant(CVariant::VariantTypeObject);
+  for (const auto& item : m_art)
+    variant["art"][item.first] = item.second;
+
+  variant["screenshots"] = CVariant(CVariant::VariantTypeArray);
+  for (const auto& item : m_screenshots)
+    variant["screenshots"].push_back(item);
+
+  variant["extensions"] = CVariant(CVariant::VariantTypeArray);
+  variant["extensions"].push_back(TranslateType(m_mainType, false));
+
+  variant["dependencies"] = CVariant(CVariant::VariantTypeArray);
+  for (const auto& kv : m_dependencies)
+  {
+    CVariant dep(CVariant::VariantTypeObject);
+    dep["addonId"] = kv.first;
+    dep["version"] = kv.second.first.asString();
+    dep["optional"] = kv.second.second;
+    variant["dependencies"].push_back(std::move(dep));
+  }
+
+  variant["extrainfo"] = CVariant(CVariant::VariantTypeArray);
+  for (const auto& values : m_types[0].GetValues())
+  {
+    CVariant info(CVariant::VariantTypeObject);
+    for (auto value : values.second)
+    {
+      info["key"] = value.first;
+      info["value"] = value.second.asString();
+      variant["extrainfo"].push_back(std::move(info));
+    }
+  }
+
+  std::string json;
+  CJSONVariantWriter::Write(variant, json, true);
+  return json;
+}
+
+bool CAddonInfo::DeserializeMetadata(const std::string& document)
+{
+  CVariant variant;
+  if (!CJSONVariantParser::Parse(document, variant))
+    return false;
+
+  m_author = variant["author"].asString();
+  m_disclaimer = variant["disclaimer"].asString();
+  m_broken = variant["broken"].asString();
+  m_packageSize = variant["size"].asUnsignedInteger();
+
+  m_path = variant["path"].asString();
+  m_icon = variant["icon"].asString();
+
+  std::map<std::string, std::string> art;
+  for (auto it = variant["art"].begin_map(); it != variant["art"].end_map(); ++it)
+    art.emplace(it->first, it->second.asString());
+  m_art = std::move(art);
+
+  std::vector<std::string> screenshots;
+  for (auto it = variant["screenshots"].begin_array(); it != variant["screenshots"].end_array(); ++it)
+    screenshots.push_back(it->asString());
+  m_screenshots = std::move(screenshots);
+
+  m_mainType = TranslateType(variant["extensions"][0].asString());
+
+  ADDONDEPS deps;
+  for (auto it = variant["dependencies"].begin_array(); it != variant["dependencies"].end_array(); ++it)
+  {
+    AddonVersion version((*it)["version"].asString());
+    deps.emplace((*it)["addonId"].asString(), std::make_pair(std::move(version), (*it)["optional"].asBoolean()));
+  }
+  m_dependencies = std::move(deps);
+
+  CAddonType addonType(m_mainType, this, nullptr);
+
+  for (auto it = variant["extrainfo"].begin_array(); it != variant["extrainfo"].end_array(); ++it)
+  {
+    /// @todo is more required on add-on's repository as the value "provides"
+    if ((*it)["key"].asString() == "provides")
+    {
+      addonType.SetProvides((*it)["value"].asString());
+      break;
+    }
+  }
+
+  m_types.push_back(addonType);
+
+  if (m_id.empty() || m_mainType <= ADDON_UNKNOWN || m_mainType >= ADDON_MAX)
+    return false;
+
+  return true;
+}
+
+bool CAddonInfo::LoadAddonXML(const TiXmlElement* baseElement, const std::string& addonPath)
 {
   /*
    * Following values currently not set from creator:
@@ -439,7 +531,7 @@ bool CAddonInfo::LoadAddonXML(const TiXmlElement* baseElement, std::string addon
 
   if (!StringUtils::EqualsNoCase(baseElement->Value(), "addon"))
   {
-    CLog::Log(LOGERROR, "CAddonInfo: file from '%s' doesnt contain <addon>", addonXmlPath.c_str());
+    CLog::Log(LOGERROR, "CAddonInfo: file from '%s' doesnt contain <addon>", addonPath.c_str());
     return false;
   }
 
@@ -461,7 +553,7 @@ bool CAddonInfo::LoadAddonXML(const TiXmlElement* baseElement, std::string addon
   if (m_id.empty() || m_version.empty())
   {
     CLog::Log(LOGERROR, "CAddonInfo: file '%s' doesnt contain required values on <addon ... > id='%s', version='%s'", 
-              addonXmlPath.c_str(),
+              addonPath.c_str(),
               m_id.empty() ? "missing" : m_id.c_str(),
               m_version.empty() ? "missing" : m_version.asString().c_str());
     return false;
@@ -602,15 +694,25 @@ bool CAddonInfo::LoadAddonXML(const TiXmlElement* baseElement, std::string addon
             if (elementsAssets->GetText() != nullptr)
               m_icon = elementsAssets->GetText();
           }
-          else if (value == "fanart")
-          {
-            if (elementsAssets->GetText() != nullptr)
-              m_fanart = elementsAssets->GetText();
-          }
           else if (value == "screenshot")
           {
             if (elementsAssets->GetText() != nullptr)
               m_screenshots.emplace_back(elementsAssets->GetText());
+          }
+          else if (value == "fanart")
+          {
+            if (elementsAssets->GetText() != nullptr)
+              m_art[value] = elementsAssets->GetText();
+          }
+          else if (value == "banner")
+          {
+            if (elementsAssets->GetText() != nullptr)
+              m_art[value] = elementsAssets->GetText();
+          }
+          else if (value == "clearlogo")
+          {
+            if (elementsAssets->GetText() != nullptr)
+              m_art[value] = elementsAssets->GetText();
           }
         }
       }
@@ -643,10 +745,11 @@ bool CAddonInfo::LoadAddonXML(const TiXmlElement* baseElement, std::string addon
       }
 
       /* Parse addon.xml "<nofanart">...</nofanart>" */
-      if (m_fanart.empty())
+      if (m_art.empty())
       {
         element = child->FirstChildElement("nofanart");
-        m_fanart = (element && strcmp(element->GetText() , "true") == 0) ? "" : "fanart.jpg";
+        if (!element || strcmp(element->GetText(), "true") != 0)
+          m_art["fanart"] = URIUtils::AddFileToFolder(addonPath, "fanart.jpg");
       }
 
       /* Parse addon.xml "<size">...</size>" */
@@ -679,7 +782,7 @@ bool CAddonInfo::LoadAddonXML(const TiXmlElement* baseElement, std::string addon
       TYPE type = TranslateType(point);
       if (type == ADDON_UNKNOWN || type >= ADDON_MAX)
       {
-        CLog::Log(LOGERROR, "CAddonInfo: file '%s' doesn't contain a valid add-on type name (%s)", addonXmlPath.c_str(), point.c_str());
+        CLog::Log(LOGERROR, "CAddonInfo: file '%s' doesn't contain a valid add-on type name (%s)", addonPath.c_str(), point.c_str());
         return false;
       }
 
@@ -702,102 +805,6 @@ bool CAddonInfo::LoadAddonXML(const TiXmlElement* baseElement, std::string addon
   return true;
 }
 
-std::string CAddonInfo::SerializeMetadata()
-{
-  CVariant variant;
-  variant["author"] = m_author;
-  variant["disclaimer"] = m_disclaimer;
-  variant["broken"] = m_broken;
-  variant["size"] = m_packageSize;
-
-  variant["path"] = m_path;
-  variant["fanart"] = m_fanart;
-  variant["icon"] = m_icon;
-
-  variant["screenshots"] = CVariant(CVariant::VariantTypeArray);
-  for (const auto& item : m_screenshots)
-    variant["screenshots"].push_back(item);
-
-  variant["extensions"] = CVariant(CVariant::VariantTypeArray);
-  variant["extensions"].push_back(TranslateType(m_mainType, false));
-
-  variant["dependencies"] = CVariant(CVariant::VariantTypeArray);
-  for (const auto& kv : m_dependencies)
-  {
-    CVariant dep(CVariant::VariantTypeObject);
-    dep["addonId"] = kv.first;
-    dep["version"] = kv.second.first.asString();
-    dep["optional"] = kv.second.second;
-    variant["dependencies"].push_back(std::move(dep));
-  }
-
-  variant["extrainfo"] = CVariant(CVariant::VariantTypeArray);
-  for (const auto& values : m_types[0].GetValues())
-  {
-    CVariant info(CVariant::VariantTypeObject);
-    for (auto value : values.second)
-    {
-      info["key"] = value.first;
-      info["value"] = value.second.asString();
-      variant["extrainfo"].push_back(std::move(info));
-    }
-  }
-
-  std::string json;
-  CJSONVariantWriter::Write(variant, json, true);
-  return json;
-}
-
-bool CAddonInfo::DeserializeMetadata(const std::string& document)
-{
-  CVariant variant;
-  if (!CJSONVariantParser::Parse(document, variant))
-    return false;
-
-  m_author = variant["author"].asString();
-  m_disclaimer = variant["disclaimer"].asString();
-  m_broken = variant["broken"].asString();
-  m_packageSize = variant["size"].asUnsignedInteger();
-
-  m_path = variant["path"].asString();
-  m_fanart = variant["fanart"].asString();
-  m_icon = variant["icon"].asString();
-
-  std::vector<std::string> screenshots;
-  for (auto it = variant["screenshots"].begin_array(); it != variant["screenshots"].end_array(); ++it)
-    screenshots.push_back(it->asString());
-  screenshots = std::move(screenshots);
-
-  m_mainType = TranslateType(variant["extensions"][0].asString());
-
-  ADDONDEPS deps;
-  for (auto it = variant["dependencies"].begin_array(); it != variant["dependencies"].end_array(); ++it)
-  {
-    AddonVersion version((*it)["version"].asString());
-    deps.emplace((*it)["addonId"].asString(), std::make_pair(std::move(version), (*it)["optional"].asBoolean()));
-  }
-  m_dependencies = std::move(deps);
-
-  CAddonType addonType(m_mainType, this, nullptr);
-  
-  for (auto it = variant["extrainfo"].begin_array(); it != variant["extrainfo"].end_array(); ++it)
-  {
-    /// @todo is more required on add-on's repository as the value "provides"
-    if ((*it)["key"].asString() == "provides")
-    {
-      addonType.SetProvides((*it)["value"].asString());
-      break;
-    }
-  }
-
-  m_types.push_back(addonType);
-
-  if (m_id.empty() || m_mainType <= ADDON_UNKNOWN || m_mainType >= ADDON_MAX)
-    return false;
-
-  return true;
-}
-
 bool CAddonInfo::MeetsVersion(const AddonVersion &version) const
 {
   return m_minversion <= version && version <= m_version;
@@ -814,22 +821,6 @@ const CAddonType* CAddonInfo::Type(TYPE type) const
       return &addonType;
   }
   return nullptr;
-}
-
-TYPE CAddonInfo::TranslateSubContent(const std::string &content)
-{
-  if (content == "audio")
-    return ADDON_AUDIO;
-  else if (content == "image")
-    return ADDON_IMAGE;
-  else if (content == "executable")
-    return ADDON_EXECUTABLE;
-  else if (content == "video")
-    return ADDON_VIDEO;
-  else if (content == "game")
-    return ADDON_GAME;
-  else
-    return ADDON_UNKNOWN;
 }
 
 std::string CAddonInfo::MainLibPath() const

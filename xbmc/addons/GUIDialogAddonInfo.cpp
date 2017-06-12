@@ -27,7 +27,7 @@
 #include "FileItem.h"
 #include "ServiceBroker.h"
 #include "filesystem/Directory.h"
-#include "GUIDialogAddonSettings.h"
+#include "addons/settings/GUIDialogAddonSettings.h"
 #include "cores/AudioEngine/Engines/ActiveAE/AudioDSPAddons/ActiveAEDSP.h"
 #include "dialogs/GUIDialogContextMenu.h"
 #include "dialogs/GUIDialogTextViewer.h"
@@ -60,6 +60,7 @@
 #define CONTROL_BTN_AUTOUPDATE      13
 #define CONTROL_LIST_SCREENSHOTS    50
 
+using namespace KODI;
 using namespace ADDON;
 using namespace XFILE;
 
@@ -463,7 +464,7 @@ void CGUIDialogAddonInfo::OnEnableDisable()
 
 void CGUIDialogAddonInfo::OnSettings()
 {
-  CGUIDialogAddonSettings::ShowAndGetInput(m_localAddon);
+  CGUIDialogAddonSettings::ShowForAddon(m_localAddon);
 }
 
 bool CGUIDialogAddonInfo::ShowForItem(const CFileItemPtr& item)

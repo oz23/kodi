@@ -14,7 +14,7 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with Kodi; see the file COPYING.  If not, see
+ *  along with KODI; see the file COPYING.  If not, see
  *  <http://www.gnu.org/licenses/>.
  *
  */
@@ -91,20 +91,20 @@ namespace ADDON
     ADDON_MAX
   } TYPE;
 
-  struct extValue
+  struct SExtValue
   {
-    extValue(const std::string& strValue) : str(strValue) { }
-    const std::string asString()  const { return str; }
-    const bool asBoolean() const { return StringUtils::EqualsNoCase(str, "true"); }
-    const int asInteger() const { return atoi(str.c_str()); }
-    const float asFloat() const { return static_cast<float>(atof(str.c_str())); }
-    const bool empty() const { return str.empty(); }
+    SExtValue(const std::string& strValue) : str(strValue) { }
+    const std::string& asString()  const { return str; }
+    bool asBoolean() const { return StringUtils::EqualsNoCase(str, "true"); }
+    int asInteger() const { return atoi(str.c_str()); }
+    float asFloat() const { return static_cast<float>(atof(str.c_str())); }
+    bool empty() const { return str.empty(); }
     const std::string str;
   };
 
   class CAddonExtensions;
   typedef std::vector<std::pair<std::string, CAddonExtensions> > EXT_ELEMENTS;
-  typedef std::vector<std::pair<std::string, extValue> > EXT_VALUE;
+  typedef std::vector<std::pair<std::string, SExtValue> > EXT_VALUE;
   typedef std::vector<std::pair<std::string, EXT_VALUE> > EXT_VALUES;
 
   class CAddonExtensions
@@ -114,23 +114,22 @@ namespace ADDON
     ~CAddonExtensions() { }
     bool ParseExtension(const TiXmlElement* element);
 
-    const extValue GetValue(std::string id) const;
+    const SExtValue GetValue(const std::string& id) const;
     const EXT_VALUES& GetValues() const;
-    const CAddonExtensions* GetElement(std::string id) const;
-    const EXT_ELEMENTS GetElements(std::string id = "") const;
+    const CAddonExtensions* GetElement(const std::string& id) const;
+    const EXT_ELEMENTS GetElements(const std::string& id = "") const;
 
-    void Insert(std::string id, std::string value);
+    void Insert(const std::string& id, const std::string& value);
 
   private:
     std::string m_point;
     EXT_VALUES m_values;
-    EXT_ELEMENTS m_childs;
+    EXT_ELEMENTS m_children;
   };
 
   class CAddonInfo;
   typedef std::shared_ptr<CAddonInfo> AddonInfoPtr;
   typedef std::vector<AddonInfoPtr> AddonInfos;
-
   /*!
    */
   class CAddonType : public CAddonExtensions
@@ -175,15 +174,9 @@ namespace ADDON
 
   class AddonVersion;
   typedef std::map<std::string, std::pair<const AddonVersion, bool> > ADDONDEPS;
+  typedef std::map<std::string, std::string> InfoMap;
+  typedef std::map<std::string, std::string> ArtMap;
 
-  /*!
-   * @brief Add-on Information class
-   *
-   * This class stores all available standard informations of add-ons. This can
-   * be as source the content of a repository or with local installed ones.
-   *
-   * To generate the information becomes the addon.xml read.
-   */
   class CAddonInfo
   {
   public:
@@ -193,7 +186,7 @@ namespace ADDON
      *
      * @param[in] addonPath The folder name where addon.xml is included
      */
-    CAddonInfo(std::string addonPath);
+    CAddonInfo(const std::string& addonPath);
 
     /*!
      * @brief Class constructor used for repository list of addons where not
@@ -203,26 +196,17 @@ namespace ADDON
      *
      * @param[in] baseElement The TinyXML base element to parse
      * @param[in] addonRepoXmlPath Path to the element related xml file, used
-     *                             to know on log messages to source of fault
+     *                             to know on log messages as source of fault
      *                             For this class constructor it contains the
      *                             big addons.xml from repository!
      */
-    CAddonInfo(const TiXmlElement* baseElement, std::string addonRepoXmlPath);
+    CAddonInfo(const TiXmlElement* baseElement, const std::string& addonRepoXmlPath);
 
     /*!
      * @brief Class constructor used for already known parts, like from
      * database.
      *
      * Source is normally a "addons.xml"
-     *
-     * @param[in] id Identification string of add-on
-     * @param[in] version Version of them
-     * @param[in] name Add-on name
-     * @param[in] summary Summary description
-     * @param[in] description Bigger description
-     * @param[in] metadata Other data from add-on (includes also his type)
-     * @param[in] changelog The changelog
-     * @param[in] origin
      */
     CAddonInfo(const std::string& id,
                const AddonVersion& version,
@@ -233,8 +217,7 @@ namespace ADDON
                const std::string& changelog,
                const std::string& origin);
 
-
-    CAddonInfo(std::string id, TYPE type);
+    CAddonInfo(const std::string& id, TYPE type);
 
     bool IsUsable() const { return m_usable; }
 
@@ -266,9 +249,9 @@ namespace ADDON
     const std::string& Source() const { return m_source; }
     const std::string& Path() const { return m_path; }
     void SetPath(const std::string& path) { m_path = path; }
-    const std::string& Icon() const { return m_icon; }
     const std::string& ChangeLog() const { return m_changelog; }
-    const std::string& FanArt() const { return m_fanart; }
+    const std::string& Icon() const { return m_icon; }
+    const ArtMap& Art() const { return m_art; }
     const std::vector<std::string>& Screenshots() const { return m_screenshots; }
     const std::string& Disclaimer() const { return m_disclaimer; }
     const ADDONDEPS& GetDeps() const { return m_dependencies; }
@@ -278,7 +261,13 @@ namespace ADDON
     const CDateTime& LastUsed() const { return m_lastUsed; }
     const std::string& Origin() const { return m_origin; }
     uint64_t PackageSize() const { return m_packageSize; }
-    std::string Language() { return m_language; }
+    const std::string& Language() const { return m_language; }
+
+    std::string FanArt() const
+    {
+      auto it = Art().find("fanart");
+      return it != Art().end() ? it->second : "";
+    }
 
     bool ProvidesSubContent(const TYPE& content, const TYPE& mainType = ADDON_UNKNOWN) const;
     bool ProvidesSeveralSubContents() const;
@@ -317,9 +306,9 @@ namespace ADDON
     std::string m_author;
     std::string m_source;
     std::string m_path;
-    std::string m_icon;
     std::string m_changelog;
-    std::string m_fanart;
+    std::string m_icon;
+    ArtMap m_art;
     std::vector<std::string> m_screenshots;
     std::string m_disclaimer;
     ADDONDEPS m_dependencies;
@@ -331,7 +320,7 @@ namespace ADDON
     uint64_t m_packageSize;
     std::string m_language;
 
-    bool LoadAddonXML(const TiXmlElement* element, std::string addonXmlPath);
+    bool LoadAddonXML(const TiXmlElement* element, const std::string& addonPath);
 
   /*!
    * @brief active addon handle parts

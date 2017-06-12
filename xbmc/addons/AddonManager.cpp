@@ -21,6 +21,7 @@
 #include "AddonManager.h"
 
 #include <algorithm>
+#include <array>
 #include <iterator>
 #include <memory>
 #include <utility>
@@ -762,7 +763,7 @@ std::shared_ptr<CAddon> CAddonMgr::CreateAddon(AddonInfoPtr addonInfo, TYPE addo
     case ADDON_ADSPDLL:
       return std::make_shared<ActiveAE::CActiveAEDSPAddon>(addonInfo);
     case ADDON_GAMEDLL:
-      return std::make_shared<GAME::CGameClient>(addonInfo);
+      return std::make_shared<KODI::GAME::CGameClient>(addonInfo);
     case ADDON_SKIN:
       return std::make_shared<CSkinInfo>(addonInfo);
     case ADDON_RESOURCE_IMAGES:
@@ -778,7 +779,7 @@ std::shared_ptr<CAddon> CAddonMgr::CreateAddon(AddonInfoPtr addonInfo, TYPE addo
     case ADDON_CONTEXT_ITEM:
       return std::make_shared<CContextMenuAddon>(addonInfo);
     case ADDON_GAME_CONTROLLER:
-      return std::make_shared<GAME::CController>(addonInfo);
+      return std::make_shared<KODI::GAME::CController>(addonInfo);
     default:
       break;
   }

@@ -14,7 +14,6 @@ set(SOURCES Addon.cpp
             FilesystemInstaller.cpp
             GameResource.cpp
             GUIDialogAddonInfo.cpp
-            GUIDialogAddonSettings.cpp
             GUIViewStateAddonBrowser.cpp
             GUIWindowAddonBrowser.cpp
             ImageResource.cpp
@@ -48,7 +47,6 @@ set(HEADERS Addon.h
             FilesystemInstaller.h
             GameResource.h
             GUIDialogAddonInfo.h
-            GUIDialogAddonSettings.h
             GUIViewStateAddonBrowser.h
             GUIWindowAddonBrowser.h
             ImageResource.h

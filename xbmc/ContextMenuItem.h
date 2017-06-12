@@ -25,7 +25,7 @@
 #include "addons/Repository.h"
 #include "addons/RepositoryUpdater.h"
 #include "addons/GUIDialogAddonInfo.h"
-#include "addons/GUIDialogAddonSettings.h"
+#include "addons/settings/GUIDialogAddonSettings.h"
 
 
 namespace ADDON

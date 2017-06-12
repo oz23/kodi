@@ -37,6 +37,8 @@
 #include "cores/AudioEngine/Engines/ActiveAE/ActiveAE.h"
 #include "settings/Settings.h"
 
+using namespace KODI;
+
 CServiceManager::CServiceManager() :
   m_gameServices(new GAME::CGameServices),
   m_peripherals(new PERIPHERALS::CPeripherals)
@@ -128,7 +130,7 @@ bool CServiceManager::Init3()
   m_peripherals->Initialise();
   m_PVRManager->Init();
   m_contextMenuManager->Init();
-  m_gameServices->Init();
+  m_gameServices->Init(*m_peripherals);
 
   init_level = 3;
   return true;

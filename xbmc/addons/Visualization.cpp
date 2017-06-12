@@ -30,7 +30,7 @@
 namespace ADDON
 {
 
-CVisualization::CVisualization(ADDON::AddonDllPtr addonInfo, float x, float y, float w, float h)
+CVisualization::CVisualization(ADDON::AddonInfoPtr addonInfo, float x, float y, float w, float h)
   : IAddonInstanceHandler(ADDON_INSTANCE_VISUALIZATION, addonInfo)
 {
   // Setup new Visualization instance

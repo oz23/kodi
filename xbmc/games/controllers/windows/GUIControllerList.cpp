@@ -37,11 +37,12 @@
 #include "guilib/GUIControlGroupList.h"
 #include "guilib/GUIWindow.h"
 #include "guilib/WindowIDs.h"
-#include "input/joysticks/DefaultJoystick.h" // for DEFAULT_CONTROLLER_ID
+#include "input/joysticks/JoystickIDs.h"
 #include "messaging/ApplicationMessenger.h"
 #include "peripherals/Peripherals.h"
 #include "ServiceBroker.h"
 
+using namespace KODI;
 using namespace ADDON;
 using namespace GAME;
 
@@ -148,7 +149,7 @@ void CGUIControllerList::OnEvent(const ADDON::AddonEvent& event)
 {
   if (typeid(event) == typeid(ADDON::AddonEvents::InstalledChanged))
   {
-    using namespace KODI::MESSAGING;
+    using namespace MESSAGING;
     CGUIMessage msg(GUI_MSG_REFRESH_LIST, m_guiWindow->GetID(), CONTROL_CONTROLLER_LIST);
     CApplicationMessenger::GetInstance().SendGUIMessage(msg);
   }

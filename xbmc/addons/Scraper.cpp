@@ -172,7 +172,7 @@ bool CScraper::Supports(const CONTENT_TYPE &content) const
 bool CScraper::SetPathSettings(CONTENT_TYPE content, const std::string& xml)
 {
   m_pathContent = content;
-  if (!LoadSettings())
+  if (!LoadSettings(false))
     return false;
 
   if (xml.empty())
@@ -180,14 +180,12 @@ bool CScraper::SetPathSettings(CONTENT_TYPE content, const std::string& xml)
 
   CXBMCTinyXML doc;
   doc.Parse(xml);
-  m_userSettingsLoaded = SettingsFromXML(doc);
-
-  return m_userSettingsLoaded;
+  return SettingsFromXML(doc);
 }
 
 std::string CScraper::GetPathSettings()
 {
-  if (!LoadSettings())
+  if (!LoadSettings(false))
     return "";
 
   std::stringstream stream;

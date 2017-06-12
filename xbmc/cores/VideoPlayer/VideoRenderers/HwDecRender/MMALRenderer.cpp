@@ -34,7 +34,7 @@
 #include "cores/VideoPlayer/DVDCodecs/Video/MMALCodec.h"
 #include "xbmc/Application.h"
 #include "linux/RBP.h"
-#include "cores/VideoPlayer/TimingConstants.h"
+#include "TimingConstants.h"
 
 extern "C" {
 #include "libavutil/imgutils.h"

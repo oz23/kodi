@@ -20,8 +20,7 @@
  */
 
 #include "GUIControl.h"
-#include "addons/kodi-addon-dev-kit/include/kodi/addon-instance/Visualization.h"
-#include "addons/AddonInstanceHandler.h"
+#include "addons/Visualization.h"
 #include "cores/AudioEngine/Interfaces/IAudioCallback.h"
 #include "utils/rfft.h"
 
@@ -41,7 +40,7 @@ private:
   int m_iLen;
 };
 
-class CGUIVisualisationControl : public CGUIControl, public ADDON::IAddonInstanceHandler, public IAudioCallback
+class CGUIVisualisationControl : public CGUIControl, public IAudioCallback
 {
 public:
   CGUIVisualisationControl(int parentID, int controlID, float posX, float posY, float width, float height);
@@ -49,8 +48,8 @@ public:
   virtual CGUIVisualisationControl *Clone() const { return new CGUIVisualisationControl(*this); }; //! @todo check for naughties
 
   // Child functions related to IAudioCallback
-  virtual void OnInitialize(int iChannels, int iSamplesPerSec, int iBitsPerSample);
-  virtual void OnAudioData(const float* pAudioData, int iAudioDataLength);
+  virtual void OnInitialize(int channels, int samplesPerSec, int bitsPerSample);
+  virtual void OnAudioData(const float* audioData, unsigned int audioDataLength);
 
   // Child functions related to CGUIControl
   virtual void FreeResources(bool immediately = false);
@@ -65,30 +64,26 @@ public:
 
   std::string Name();
   void UpdateTrack();
-  bool HasPresets() { return !m_presets.empty(); };
+  bool HasPresets();
   void SetPreset(int idx);
   bool IsLocked();
-  unsigned int GetPreset();
-  std::string GetPresetName();
+  int GetActivePreset();
+  std::string GetActivePresetName();
   bool GetPresetList(std::vector<std::string>& vecpresets);
 
 private:
   bool InitVisualization();
   void DeInitVisualization();
-  inline void GetPresets();
   inline void CreateBuffers();
   inline void ClearBuffers();
-
-  // Static function to transfer data from add-on to kodi
-  static void transfer_preset(void* kodiInstance, const char* preset);
 
   bool m_callStart;
   bool m_alreadyStarted;
   bool m_attemptedLoad;
   bool m_updateTrack;
 
-  std::list<CAudioBuffer*> m_vecBuffers;
-  int m_numBuffers; /*!< Number of Audio buffers */
+  std::list<std::unique_ptr<CAudioBuffer>> m_vecBuffers;
+  unsigned int m_numBuffers; /*!< Number of Audio buffers */
   bool m_wantsFreq;
   float m_freq[AUDIO_BUFFER_SIZE]; /*!< Frequency data */
   std::vector<std::string> m_presets; /*!< cached preset list */
@@ -104,7 +99,5 @@ private:
   std::string m_presetsPath; /*!< To add-on sended preset path */
   std::string m_profilePath; /*!< To add-on sended profile path */
 
-  ADDON::AddonDllPtr m_addon;
-  kodi::addon::CInstanceVisualization* m_addonInstance;
-  AddonInstance_Visualization m_struct;
+  ADDON::CVisualization* m_instance;
 };

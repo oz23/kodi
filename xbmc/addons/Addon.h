@@ -19,23 +19,21 @@
  *
  */
 
+#include <memory>
+#include <vector>
+
 #include "addons/AddonInfo.h"
+#include "addons/settings/AddonSettings.h"
+#include "addons/AddonVersion.h"
 #include "utils/XBMCTinyXML.h"
 #include "guilib/LocalizeStrings.h"
 #include "utils/ISerializable.h"
-
-#include <stdint.h>
-#include <map>
-#include <memory>
-#include <set>
-#include <string>
-#include <utility>
-#include <vector>
 
 
 class TiXmlElement;
 class CAddonCallbacksAddon;
 class CVariant;
+class CAddonSettings;
 
 typedef struct cp_plugin_info_t cp_plugin_info_t;
 typedef struct cp_extension_t cp_extension_t;
@@ -82,8 +80,9 @@ public:
   virtual std::string Profile() const { return m_profilePath; }
   virtual std::string Author() const { return m_addonInfo->Author(); }
   virtual std::string ChangeLog() const { return m_addonInfo->ChangeLog(); }
-  virtual std::string FanArt() const { return m_addonInfo->FanArt(); }
   virtual std::string Icon() const { return m_addonInfo->Icon(); };
+  virtual ArtMap Art() const { return m_addonInfo->Art(); };
+  virtual std::string FanArt() const { return m_addonInfo->FanArt(); }
   virtual std::vector<std::string> Screenshots() const { return m_addonInfo->Screenshots(); };
   virtual std::string Disclaimer() const { return m_addonInfo->Disclaimer(); }
   virtual std::string Broken() const { return m_addonInfo->Broken(); }
@@ -118,7 +117,33 @@ public:
    */
   virtual void UpdateSetting(const std::string& key, const std::string& value);
 
-  virtual void UpdateSettings(std::map<std::string, std::string>& settings);
+  /*! \brief Update a user-configured setting with a new boolean value
+  \param key the id of the setting to update
+  \param value the value that the setting should take
+  \sa LoadSettings, LoadUserSettings, SaveSettings, HasSettings, HasUserSettings, GetSetting
+  */
+  virtual bool UpdateSettingBool(const std::string& key, bool value);
+
+  /*! \brief Update a user-configured setting with a new integer value
+  \param key the id of the setting to update
+  \param value the value that the setting should take
+  \sa LoadSettings, LoadUserSettings, SaveSettings, HasSettings, HasUserSettings, GetSetting
+  */
+  virtual bool UpdateSettingInt(const std::string& key, int value);
+
+  /*! \brief Update a user-configured setting with a new number value
+  \param key the id of the setting to update
+  \param value the value that the setting should take
+  \sa LoadSettings, LoadUserSettings, SaveSettings, HasSettings, HasUserSettings, GetSetting
+  */
+  virtual bool UpdateSettingNumber(const std::string& key, double value);
+
+  /*! \brief Update a user-configured setting with a new string value
+  \param key the id of the setting to update
+  \param value the value that the setting should take
+  \sa LoadSettings, LoadUserSettings, SaveSettings, HasSettings, HasUserSettings, GetSetting
+  */
+  virtual bool UpdateSettingString(const std::string& key, const std::string& value);
 
   /*! \brief Retrieve a particular settings value
    If a previously configured user setting is available, we return it's value, else we return the default (if available)
@@ -128,7 +153,43 @@ public:
    */
   virtual std::string GetSetting(const std::string& key);
 
-  virtual TiXmlElement* GetSettingsXML();
+  /*! \brief Retrieve a particular settings value as boolean
+  If a previously configured user setting is available, we return it's value, else we return the default (if available)
+  \param key the id of the setting to retrieve
+  \param value the current value of the setting, or the default if the setting has yet to be configured
+  \return true if the setting's value was retrieved, false otherwise.
+  \sa LoadSettings, LoadUserSettings, SaveSettings, HasSettings, HasUserSettings, UpdateSetting
+  */
+  virtual bool GetSettingBool(const std::string& key, bool& value);
+
+  /*! \brief Retrieve a particular settings value as integer
+  If a previously configured user setting is available, we return it's value, else we return the default (if available)
+  \param key the id of the setting to retrieve
+  \param value the current value of the setting, or the default if the setting has yet to be configured
+  \return true if the setting's value was retrieved, false otherwise.
+  \sa LoadSettings, LoadUserSettings, SaveSettings, HasSettings, HasUserSettings, UpdateSetting
+  */
+  virtual bool GetSettingInt(const std::string& key, int& value);
+
+  /*! \brief Retrieve a particular settings value as number
+  If a previously configured user setting is available, we return it's value, else we return the default (if available)
+  \param key the id of the setting to retrieve
+  \param value the current value of the setting, or the default if the setting has yet to be configured
+  \return true if the setting's value was retrieved, false otherwise.
+  \sa LoadSettings, LoadUserSettings, SaveSettings, HasSettings, HasUserSettings, UpdateSetting
+  */
+  virtual bool GetSettingNumber(const std::string& key, double& value);
+
+  /*! \brief Retrieve a particular settings value as string
+  If a previously configured user setting is available, we return it's value, else we return the default (if available)
+  \param key the id of the setting to retrieve
+  \param value the current value of the setting, or the default if the setting has yet to be configured
+  \return true if the setting's value was retrieved, false otherwise.
+  \sa LoadSettings, LoadUserSettings, SaveSettings, HasSettings, HasUserSettings, UpdateSetting
+  */
+  virtual bool GetSettingString(const std::string& key, std::string& value);
+
+  virtual CAddonSettings* GetSettings() const;
 
   /*! \brief get the required version of a dependency.
    \param dependencyID the addon ID of the dependency.
@@ -140,15 +201,7 @@ public:
    \param version the version to meet.
    \return true if  min_version <= version <= current_version, false otherwise.
    */
-  virtual bool MeetsVersion(const AddonVersion &version) const;
-
-  /*! \brief Load the default settings and override these with any previously configured user settings
-   \param bForce force the load of settings even if they are already loaded (reload)
-   \return true if settings exist, false otherwise
-   \sa LoadUserSettings, SaveSettings, HasSettings, HasUserSettings, GetSetting, UpdateSetting
-   */
-  virtual bool LoadSettings(bool bForce = false);
-
+  virtual bool MeetsVersion(const AddonVersion &version) const { return m_addonInfo->MeetsVersion(version); }
   virtual bool ReloadSettings();
 
   /*! \brief callback for when this add-on is disabled.
@@ -172,13 +225,19 @@ public:
 
   const AddonInfoPtr AddonInfo() const { return m_addonInfo; }
 
-  /*! \brief Utility function to get the default value of a given setting
-   \param setting The XML setting
-   \return The default value for the setting, or empty if no default / unknown
-   */
-  virtual std::string GetDefaultValue(const TiXmlElement *setting) const;
-
 protected:
+  /*! \brief Whether or not the settings have been initialized. */
+  virtual bool SettingsInitialized() const;
+
+  /*! \brief Whether or not the settings have been loaded. */
+  virtual bool SettingsLoaded() const;
+
+  /*! \brief Load the default settings and override these with any previously configured user settings
+   \param bForce force the load of settings even if they are already loaded (reload)
+   \return true if settings exist, false otherwise
+   \sa LoadUserSettings, SaveSettings, HasSettings, HasUserSettings, GetSetting, UpdateSetting
+   */
+  bool LoadSettings(bool bForce);
 
   /*! \brief Load the user settings
    \return true if user settings exist, false otherwise
@@ -201,22 +260,20 @@ protected:
 
   /*! \brief Write settings into an XML document
    \param doc XML document to receive the settings
+   \return true if settings are saved, false otherwise
    \sa SettingsFromXML
    */
-  virtual void SettingsToXML(CXBMCTinyXML &doc) const;
+  virtual bool SettingsToXML(CXBMCTinyXML &doc) const;
 
-  CXBMCTinyXML      m_addonXmlDoc;
-  bool              m_settingsLoaded;
-  bool              m_userSettingsLoaded;
+  const AddonInfoPtr m_addonInfo;
 
 private:
-  bool m_hasSettings;
-  std::map<std::string, std::string> m_settings;
+  bool m_loadSettingsFailed;
+  bool m_hasUserSettings;
 
   std::string m_profilePath;
   std::string m_userSettingsPath;
-
-  const AddonInfoPtr m_addonInfo;
+  mutable std::shared_ptr<CAddonSettings> m_settings;
 };
 
 }; /* namespace ADDON */

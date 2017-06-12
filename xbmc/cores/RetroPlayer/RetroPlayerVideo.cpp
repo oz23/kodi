@@ -29,11 +29,13 @@
 #include "cores/VideoPlayer/VideoRenderers/RenderFlags.h"
 #include "cores/VideoPlayer/VideoRenderers/RenderManager.h"
 #include "cores/VideoPlayer/DVDStreamInfo.h"
+#include "cores/VideoPlayer/TimingConstants.h"
 #include "utils/log.h"
 
 #include <atomic> //! @todo
 
-using namespace GAME;
+using namespace KODI;
+using namespace RETRO;
 
 CRetroPlayerVideo::CRetroPlayerVideo(CRenderManager& renderManager, CProcessInfo& processInfo) :
   //CThread("RetroPlayerVideo"),

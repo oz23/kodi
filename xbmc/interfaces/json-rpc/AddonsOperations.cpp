@@ -218,7 +218,7 @@ static CVariant Serialize(const AddonInfoPtr& addon)
 {
   CVariant variant;
   variant["addonid"] = addon->ID();
-  variant["type"] = ADDON::CAddonInfo::TranslateType(addon->MainType(), false);
+  variant["type"] = CAddonInfo::TranslateType(addon->MainType(), false);
   variant["name"] = addon->Name();
   variant["version"] = addon->Version().asString();
   variant["summary"] = addon->Summary();

@@ -25,8 +25,6 @@
 #include "GUIUserMessages.h"
 #include "GUIWindowManager.h"
 #include "ServiceBroker.h"
-#include "addons/AddonManager.h"
-#include "addons/AddonSystemSettings.h"
 #include "cores/AudioEngine/Engines/ActiveAE/ActiveAE.h"
 #include "filesystem/SpecialProtocol.h"
 #include "guiinfo/GUIInfoLabels.h"
@@ -36,7 +34,6 @@
 #include "settings/Settings.h"
 #include "utils/log.h"
 #include "utils/URIUtils.h"
-#include "windowing/WindowingFactory.h"
 
 using namespace ADDON;
 
@@ -72,34 +69,30 @@ void CAudioBuffer::Set(const float* psBuffer, int iSize)
 
 CGUIVisualisationControl::CGUIVisualisationControl(int parentID, int controlID, float posX, float posY, float width, float height)
   : CGUIControl(parentID, controlID, posX, posY, width, height),
-    IAddonInstanceHandler(ADDON_INSTANCE_VISUALIZATION),
     m_callStart(false),
     m_alreadyStarted(false),
     m_attemptedLoad(false),
     m_updateTrack(false),
-    m_addonInstance(nullptr)
+    m_instance(nullptr)
 {
   ControlType = GUICONTROL_VISUALISATION;
-  m_struct = { 0 };
 }
 
 CGUIVisualisationControl::CGUIVisualisationControl(const CGUIVisualisationControl &from)
   : CGUIControl(from),
-    IAddonInstanceHandler(ADDON_INSTANCE_VISUALIZATION),
     m_callStart(false),
     m_alreadyStarted(false),
     m_attemptedLoad(false),
-    m_addonInstance(nullptr)
+    m_instance(nullptr)
 {
   ControlType = GUICONTROL_VISUALISATION;
-  m_struct = { 0 };
 }
 
 std::string CGUIVisualisationControl::Name()
 {
-  if (m_addon == nullptr)
+  if (m_instance == nullptr)
     return "";
-  return m_addon->Name();
+  return m_instance->Name();
 }
 
 bool CGUIVisualisationControl::OnMessage(CGUIMessage &message)
@@ -126,22 +119,28 @@ bool CGUIVisualisationControl::OnMessage(CGUIMessage &message)
 
 bool CGUIVisualisationControl::OnAction(const CAction &action)
 {
-  if (m_struct.toAddon.OnAction && m_alreadyStarted)
+  if (m_alreadyStarted)
   {
     switch (action.GetID())
     {
     case ACTION_VIS_PRESET_NEXT:
-      m_struct.toAddon.OnAction(&m_struct, VIS_ACTION_NEXT_PRESET, nullptr);
+      m_instance->OnAction(VIS_ACTION_NEXT_PRESET, nullptr);
+      break;
     case ACTION_VIS_PRESET_PREV:
-      m_struct.toAddon.OnAction(&m_struct, VIS_ACTION_PREV_PRESET, nullptr);
+      m_instance->OnAction(VIS_ACTION_PREV_PRESET, nullptr);
+      break;
     case ACTION_VIS_PRESET_RANDOM:
-      m_struct.toAddon.OnAction(&m_struct, VIS_ACTION_RANDOM_PRESET, nullptr);
+      m_instance->OnAction(VIS_ACTION_RANDOM_PRESET, nullptr);
+      break;
     case ACTION_VIS_RATE_PRESET_PLUS:
-      m_struct.toAddon.OnAction(&m_struct, VIS_ACTION_RATE_PRESET_PLUS, nullptr);
+      m_instance->OnAction(VIS_ACTION_RATE_PRESET_PLUS, nullptr);
+      break;
     case ACTION_VIS_RATE_PRESET_MINUS:
-      m_struct.toAddon.OnAction(&m_struct, VIS_ACTION_RATE_PRESET_MINUS, nullptr);
+      m_instance->OnAction(VIS_ACTION_RATE_PRESET_MINUS, nullptr);
+      break;
     case ACTION_VIS_PRESET_LOCK:
-      m_struct.toAddon.OnAction(&m_struct, VIS_ACTION_LOCK_PRESET, nullptr);
+      m_instance->OnAction(VIS_ACTION_LOCK_PRESET, nullptr);
+      break;
     default:
       break;
     }
@@ -158,23 +157,23 @@ void CGUIVisualisationControl::Process(unsigned int currentTime, CDirtyRegionLis
     if (m_bInvalidated)
       FreeResources(true);
 
-    if (!m_addon && !m_attemptedLoad)
+    if (!m_instance && !m_attemptedLoad)
     {
       InitVisualization();
 
       m_attemptedLoad = true;
     }
-    else if (m_callStart && m_struct.toAddon.Start && m_struct.toAddon.Stop)
+    else if (m_callStart && m_instance)
     {
       g_graphicsContext.CaptureStateBlock();
       if (m_alreadyStarted)
       {
-        m_struct.toAddon.Stop(&m_struct);
+        m_instance->Stop();
         m_alreadyStarted = false;
       }
 
       std::string strFile = URIUtils::GetFileName(g_application.CurrentFile());
-      m_alreadyStarted = m_struct.toAddon.Start(&m_struct, m_channels, m_samplesPerSec, m_bitsPerSample, strFile.c_str());
+      m_alreadyStarted = m_instance->Start(m_channels, m_samplesPerSec, m_bitsPerSample, strFile);
       g_graphicsContext.ApplyStateBlock();
       m_callStart = false;
       m_updateTrack = true;
@@ -194,21 +193,23 @@ void CGUIVisualisationControl::Process(unsigned int currentTime, CDirtyRegionLis
 
 bool CGUIVisualisationControl::IsDirty()
 {
-  if (m_struct.toAddon.IsDirty && m_alreadyStarted)
-    return m_struct.toAddon.IsDirty(&m_struct);
+  if (m_instance)
+    return m_instance->IsDirty();
   return false;
 }
 
 void CGUIVisualisationControl::Render()
 {
-  if (m_struct.toAddon.Render && m_alreadyStarted)
+  if (m_instance && m_alreadyStarted)
   {
-    // set the viewport - note: We currently don't have any control over how
-    // the addon renders, so the best we can do is attempt to define
-    // a viewport??
+    /*
+     * set the viewport - note: We currently don't have any control over how
+     * the addon renders, so the best we can do is attempt to define
+     * a viewport??
+     */
     g_graphicsContext.SetViewPort(m_posX, m_posY, m_width, m_height);
     g_graphicsContext.CaptureStateBlock();
-    m_struct.toAddon.Render(&m_struct);
+    m_instance->Render();
     g_graphicsContext.ApplyStateBlock();
     g_graphicsContext.RestoreViewPort();
   }
@@ -247,24 +248,21 @@ void CGUIVisualisationControl::OnInitialize(int channels, int samplesPerSec, int
   m_callStart = true;
 }
 
-void CGUIVisualisationControl::OnAudioData(const float* pAudioData, int iAudioDataLength)
+void CGUIVisualisationControl::OnAudioData(const float* audioData, unsigned int audioDataLength)
 {
-  if (!m_struct.toAddon.AudioData || !m_alreadyStarted)
-    return;
-
-  // FIXME: iAudioDataLength should never be less than 0
-  if (iAudioDataLength < 0)
+  if (!m_instance || !m_alreadyStarted)
     return;
 
   // Save our audio data in the buffers
-  std::unique_ptr<CAudioBuffer> pBuffer (new CAudioBuffer(iAudioDataLength));
-  pBuffer->Set(pAudioData, iAudioDataLength);
-  m_vecBuffers.push_back(pBuffer.release());
+  std::unique_ptr<CAudioBuffer> pBuffer(new CAudioBuffer(audioDataLength));
+  pBuffer->Set(audioData, audioDataLength);
+  //m_vecBuffers.push_back(pBuffer.release());
+  m_vecBuffers.emplace_back(std::move(pBuffer));
 
-  if ((int)m_vecBuffers.size() < m_numBuffers)
+  if (m_vecBuffers.size() < m_numBuffers)
     return;
 
-  std::unique_ptr<CAudioBuffer> ptrAudioBuffer(m_vecBuffers.front());
+  std::unique_ptr<CAudioBuffer> ptrAudioBuffer = std::move(m_vecBuffers.front());
   m_vecBuffers.pop_front();
 
   // Fourier transform the data if the vis wants it...
@@ -278,18 +276,18 @@ void CGUIVisualisationControl::OnAudioData(const float* pAudioData, int iAudioDa
     m_transform->calc(psAudioData, m_freq);
 
     // Transfer data to our visualisation
-    m_struct.toAddon.AudioData(&m_struct, psAudioData, iAudioDataLength, m_freq, AUDIO_BUFFER_SIZE/2); // half due to complex-conjugate
+    m_instance->AudioData(psAudioData, audioDataLength, m_freq, AUDIO_BUFFER_SIZE/2); // half due to complex-conjugate
   }
   else
   { // Transfer data to our visualisation
-    m_struct.toAddon.AudioData(&m_struct, ptrAudioBuffer->Get(), iAudioDataLength, nullptr, 0);
+    m_instance->AudioData(ptrAudioBuffer->Get(), audioDataLength, nullptr, 0);
   }
   return;
 }
 
 void CGUIVisualisationControl::UpdateTrack()
 {
-  if (!m_struct.toAddon.OnAction || !m_alreadyStarted)
+  if (!m_instance || !m_alreadyStarted)
     return;
 
   // get the current album art filename
@@ -299,8 +297,8 @@ void CGUIVisualisationControl::UpdateTrack()
   else
     CLog::Log(LOGDEBUG, "Updating visualization albumart: %s", m_albumThumb.c_str());
 
-  m_struct.toAddon.OnAction(&m_struct, VIS_ACTION_UPDATE_ALBUMART, (void*)(m_albumThumb.c_str()));
-  
+  m_instance->OnAction(VIS_ACTION_UPDATE_ALBUMART, (void*)(m_albumThumb.c_str()));
+
   const MUSIC_INFO::CMusicInfoTag* tag = g_infoManager.GetCurrentSongTag();
   if (!tag)
     return;
@@ -309,7 +307,7 @@ void CGUIVisualisationControl::UpdateTrack()
   std::string albumArtist(tag->GetAlbumArtistString());
   std::string genre(StringUtils::Join(tag->GetGenre(), g_advancedSettings.m_musicItemSeparator));
 
-  kodi::addon::VisTrack track;
+  VisTrack track = {0};
   track.title       = tag->GetTitle().c_str();
   track.artist      = artist.c_str();
   track.album       = tag->GetAlbum().c_str();
@@ -323,70 +321,62 @@ void CGUIVisualisationControl::UpdateTrack()
   track.year        = tag->GetYear();
   track.rating      = tag->GetUserrating();
 
-  m_struct.toAddon.OnAction(&m_struct, VIS_ACTION_UPDATE_TRACK, &track);
-}
-
-void CGUIVisualisationControl::GetPresets()
-{
-  m_presets.clear();
-
-  if (m_struct.toAddon.GetPresets && m_alreadyStarted)
-    m_struct.toAddon.GetPresets(&m_struct);
-  // Note: m_presets becomes filled up with callback function transfer_preset
-}
-
-void CGUIVisualisationControl::transfer_preset(void* kodiInstance, const char* preset)
-{
-  CGUIVisualisationControl *addon = static_cast<CGUIVisualisationControl*>(kodiInstance);
-  if (!addon)
-  {
-    CLog::Log(LOGERROR, "CVisualization::transfer_preset - invalid handler data");
-    return;
-  }
-
-  addon->m_presets.push_back(preset);
+  m_instance->OnAction(VIS_ACTION_UPDATE_TRACK, &track);
 }
 
 bool CGUIVisualisationControl::IsLocked()
 {
-  if (!m_alreadyStarted || m_presets.empty() || m_struct.toAddon.IsLocked == nullptr)
-    return false;
+  if (m_instance && m_alreadyStarted)
+    return m_instance->IsLocked();
 
-  return m_struct.toAddon.IsLocked(&m_struct);
+  return false;
 }
 
-unsigned int CGUIVisualisationControl::GetPreset()
+bool CGUIVisualisationControl::HasPresets()
 {
-  if (m_struct.toAddon.GetPreset && m_alreadyStarted)
-    return m_struct.toAddon.GetPreset(&m_struct);
+  if (m_instance && m_alreadyStarted)
+    return m_instance->HasPresets();
 
-  return 0;
+  return false;
+}
+
+int CGUIVisualisationControl::GetActivePreset()
+{
+  if (m_instance && m_alreadyStarted)
+    return m_instance->GetActivePreset();
+
+  return -1;
 }
 
 void CGUIVisualisationControl::SetPreset(int idx)
 {
-  if (!m_struct.toAddon.OnAction || !m_alreadyStarted)
-    return;
-
-  m_struct.toAddon.OnAction(&m_struct, VIS_ACTION_LOAD_PRESET, static_cast<void*>(&idx));
+  if (m_instance && m_alreadyStarted)
+    m_instance->OnAction(VIS_ACTION_LOAD_PRESET, static_cast<void*>(&idx));
 }
 
-std::string CGUIVisualisationControl::GetPresetName()
+std::string CGUIVisualisationControl::GetActivePresetName()
 {
-  if (!m_presets.empty())
-    return m_presets[GetPreset()];
+  if (m_instance && m_alreadyStarted)
+    return m_instance->GetActivePresetName();
 
   return "";
 }
 
 bool CGUIVisualisationControl::GetPresetList(std::vector<std::string> &vecpresets)
 {
-  vecpresets = m_presets;
-  return !m_presets.empty();
+  if (m_instance && m_alreadyStarted)
+    return m_instance->GetPresetList(vecpresets);
+
+  return false;
 }
 
 bool CGUIVisualisationControl::InitVisualization()
 {
+  ADDON::AddonInfoPtr addonInfo = ADDON::CAddonMgr::GetInstance().GetInstalledAddonInfo(CServiceBroker::GetSettings().GetString(CSettings::SETTING_MUSICPLAYER_VISUALISATION),
+                                                        ADDON::ADDON_VIZ);
+  if (!addonInfo)
+    return false;
+
   CServiceBroker::GetActiveAE().RegisterAudioCallback(this);
 
   g_graphicsContext.CaptureStateBlock();
@@ -395,46 +385,16 @@ bool CGUIVisualisationControl::InitVisualization()
   float y = g_graphicsContext.ScaleFinalYCoord(GetXPosition(), GetYPosition());
   float w = g_graphicsContext.ScaleFinalXCoord(GetXPosition() + GetWidth(), GetYPosition() + GetHeight()) - x;
   float h = g_graphicsContext.ScaleFinalYCoord(GetXPosition() + GetWidth(), GetYPosition() + GetHeight()) - y;
-  if (x < 0) x = 0;
-  if (y < 0) y = 0;
-  if (x + w > g_graphicsContext.GetWidth()) w = g_graphicsContext.GetWidth() - x;
-  if (y + h > g_graphicsContext.GetHeight()) h = g_graphicsContext.GetHeight() - y;
+  if (x < 0)
+    x = 0;
+  if (y < 0)
+    y = 0;
+  if (x + w > g_graphicsContext.GetWidth())
+    w = g_graphicsContext.GetWidth() - x;
+  if (y + h > g_graphicsContext.GetHeight())
+    h = g_graphicsContext.GetHeight() - y;
 
-  m_addon = CAddonMgr::GetInstance().GetAddon(CServiceBroker::GetSettings().GetString(CSettings::SETTING_MUSICPLAYER_VISUALISATION), this);
-  if (!m_addon)
-  {
-    g_graphicsContext.ApplyStateBlock();
-    return false;
-  }
-
-  // Setup new screensaver instance
-  m_name = m_addon->Name();
-  m_presetsPath = CSpecialProtocol::TranslatePath(m_addon->Path());
-  m_profilePath = CSpecialProtocol::TranslatePath(m_addon->Profile());
-
-#ifdef HAS_DX
-  m_struct.props.device = g_Windowing.Get3D11Context();
-#else
-  m_struct.props.device = nullptr;
-#endif
-  m_struct.props.x = x;
-  m_struct.props.y = y;
-  m_struct.props.width = w;
-  m_struct.props.height = h;
-  m_struct.props.pixelRatio = g_graphicsContext.GetResInfo().fPixelRatio;
-  m_struct.props.name = m_name.c_str();
-  m_struct.props.presets = m_presetsPath.c_str();
-  m_struct.props.profile = m_profilePath.c_str();
-  m_struct.toKodi.kodiInstance = this;
-  m_struct.toKodi.transfer_preset = transfer_preset;
-
-  if (m_addon->CreateInstance(ADDON_INSTANCE_VISUALIZATION, m_addon->ID(), &m_struct) != ADDON_STATUS_OK || !m_struct.toAddon.Start)
-  {
-    g_graphicsContext.ApplyStateBlock();
-    return false;
-  }
-
-  GetPresets();
+  m_instance = new ADDON::CVisualization(addonInfo, x, y, w, h);
   CreateBuffers();
 
   m_alreadyStarted = false;
@@ -461,21 +421,19 @@ void CGUIVisualisationControl::DeInitVisualization()
 
   CLog::Log(LOGDEBUG, "FreeVisualisation() started");
 
-  if (m_struct.toAddon.Stop && m_alreadyStarted)
+  if (m_instance)
   {
-    g_graphicsContext.CaptureStateBlock();
-    m_struct.toAddon.Stop(&m_struct);
-    g_graphicsContext.ApplyStateBlock();
-    m_alreadyStarted = false;
-  }
+    if (m_alreadyStarted)
+    {
+      g_graphicsContext.CaptureStateBlock();
+      m_instance->Stop();
+      g_graphicsContext.ApplyStateBlock();
+      m_alreadyStarted = false;
+    }
 
-  if (m_addon)
-  {
-    m_addon->DestroyInstance(m_addon->ID());
-    CAddonMgr::GetInstance().ReleaseAddon(m_addon, this);
+    delete m_instance;
+    m_instance = nullptr;
   }
-
-  m_struct = { 0 };
 
   ClearBuffers();
 }
@@ -487,11 +445,11 @@ void CGUIVisualisationControl::CreateBuffers()
   // Get the number of buffers from the current vis
   VIS_INFO info;
 
-  if (m_struct.toAddon.GetInfo && m_alreadyStarted)
-    m_struct.toAddon.GetInfo(&m_struct, &info);
+  if (m_instance && m_alreadyStarted)
+    m_instance->GetInfo(&info);
 
   m_numBuffers = info.iSyncDelay + 1;
-  m_wantsFreq = (info.bWantsFreq != 0);
+  m_wantsFreq = info.bWantsFreq;
   if (m_numBuffers > MAX_AUDIO_BUFFERS)
     m_numBuffers = MAX_AUDIO_BUFFERS;
   if (m_numBuffers < 1)
@@ -502,14 +460,9 @@ void CGUIVisualisationControl::ClearBuffers()
 {
   m_wantsFreq = false;
   m_numBuffers = 0;
+  m_vecBuffers.clear();
 
-  while (!m_vecBuffers.empty())
-  {
-    CAudioBuffer* pAudioBuffer = m_vecBuffers.front();
-    delete pAudioBuffer;
-    m_vecBuffers.pop_front();
-  }
-  for (int j = 0; j < AUDIO_BUFFER_SIZE; j++)
+  for (int j = 0; j < AUDIO_BUFFER_SIZE; ++j)
   {
     m_freq[j] = 0.0f;
   }

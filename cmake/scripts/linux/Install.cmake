@@ -148,12 +148,14 @@ endif()
 # Install kodi-addon-dev headers
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/xbmc/addons/kodi-addon-dev-kit/include/kodi/
         DESTINATION ${includedir}/${APP_NAME_LC}
-        COMPONENT kodi-addon-dev)
+        COMPONENT kodi-addon-dev
+        REGEX ".txt" EXCLUDE)
 
 install(FILES ${CMAKE_SOURCE_DIR}/xbmc/cores/VideoPlayer/DVDDemuxers/DVDDemuxPacket.h
               ${CMAKE_SOURCE_DIR}/xbmc/cores/VideoPlayer/DVDDemuxers/DemuxCrypto.h
               ${CMAKE_SOURCE_DIR}/xbmc/cores/AudioEngine/Utils/AEChannelData.h
               ${CMAKE_SOURCE_DIR}/xbmc/filesystem/IFileTypes.h
+              ${CMAKE_SOURCE_DIR}/xbmc/input/ActionIDs.h
               ${CMAKE_SOURCE_DIR}/xbmc/input/XBMC_vkeys.h
         DESTINATION ${includedir}/${APP_NAME_LC}
         COMPONENT kodi-addon-dev)

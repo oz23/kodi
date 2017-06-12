@@ -43,6 +43,7 @@ namespace ADDON
 
     // addon settings
     virtual void SaveSettings();
+    virtual std::string GetSetting(const std::string& key);
 
     ADDON_STATUS Create(ADDON_TYPE type, void* funcTable, void* info);
     void Destroy();
@@ -70,8 +71,6 @@ namespace ADDON
      * @param[in] instanceID The from Kodi used ID string of active instance
      */
     void DestroyInstance(const std::string& instanceID);
-
-    virtual void UpdateSettings(std::map<std::string, std::string>& settings);
 
   protected:
     bool Initialized() { return m_initialized; }
@@ -111,6 +110,7 @@ namespace ADDON
     static bool AddOnGetSetting(void *userData, const char *settingName, void *settingValue);
     static void AddOnOpenSettings(const char *url, bool bReload);
     static void AddOnOpenOwnSettings(void *userData, bool bReload);
+    bool UpdateSettingInActiveDialog(const char* id, const std::string& value);
 
     /// addon to kodi basic callbacks below
     //@{
@@ -129,43 +129,17 @@ namespace ADDON
     static char* get_addon_path(void* kodiBase);
     static char* get_base_user_path(void* kodiBase);
     static void addon_log_msg(void* kodiBase, const int addonLogLevel, const char* strMessage);
-    static bool get_setting(void* kodiBase, const char* settingName, void* settingValue);
-    static bool set_setting(void* kodiBase, const char* settingName, const char* settingValue);
+    static bool get_setting_bool(void* kodiBase, const char* id, bool* value);
+    static bool get_setting_int(void* kodiBase, const char* id, int* value);
+    static bool get_setting_float(void* kodiBase, const char* id, float* value);
+    static bool get_setting_string(void* kodiBase, const char* id, char** value);
+    static bool set_setting_bool(void* kodiBase, const char* id, bool value);
+    static bool set_setting_int(void* kodiBase, const char* id, int value);
+    static bool set_setting_float(void* kodiBase, const char* id, float value);
+    static bool set_setting_string(void* kodiBase, const char* id, const char* value);
     static void free_string(void* kodiBase, char* str);
     //@}
   };
-
-//   class IAddonInstanceHandler
-//   {
-//   public:
-//     IAddonInstanceHandler(TYPE type, const std::string& instanceID = "");
-//     IAddonInstanceHandler(TYPE type, const AddonInfoPtr& addonInfo, kodi::addon::IAddonInstance* parentInstance = nullptr, const std::string& instanceID = "");
-//     virtual ~IAddonInstanceHandler();
-// 
-//     const TYPE UsedType() const { return m_type; }
-//     const CAddonType* Type(TYPE type) const { return m_addon->Type(type); }
-//     const std::string& InstanceID() { return m_instanceId; }
-// 
-//     std::string ID() const { return m_addon->ID(); }
-//     std::string Name() const { return m_addon->Name(); }
-//     std::string Author() const { return m_addon->Author(); }
-//     std::string Icon() const { return m_addon->Icon(); }
-//     std::string Path() const { return m_addon->Path(); }
-//     std::string Profile() const { return m_addon->Profile(); }
-// 
-//     const AddonInfoPtr& AddonInfo() { return m_addonInfo; }
-// 
-//     bool CreateInstance(ADDON_TYPE instanceType, KODI_HANDLE instance);
-//     void DestroyInstance();
-//     const AddonDllPtr& Addon() { return m_addon; }
-// 
-//   private:
-//     TYPE m_type;
-//     std::string m_instanceId;
-//     kodi::addon::IAddonInstance* m_parentInstance;
-//     AddonInfoPtr m_addonInfo;
-//     AddonDllPtr m_addon;
-//   };
 
 }; /* namespace ADDON */
 

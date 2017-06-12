@@ -22,22 +22,29 @@
 #include "ControllerLayout.h"
 #include "ControllerTypes.h"
 #include "addons/Addon.h"
+#include "input/joysticks/JoystickTypes.h"
 
 #include <string>
+#include <vector>
 
+namespace KODI
+{
 namespace GAME
 {
+using JOYSTICK::FEATURE_TYPE;
 
 class CController : public ADDON::CAddon
 {
 public:
   CController(ADDON::AddonInfoPtr addonInfo);
-  virtual ~CController(void) { }
+  virtual ~CController(void) = default;
 
   static const ControllerPtr EmptyPtr;
 
   std::string Label(void);
   std::string ImagePath(void) const;
+  void GetFeatures(std::vector<std::string>& features, FEATURE_TYPE type = FEATURE_TYPE::UNKNOWN) const;
+  JOYSTICK::INPUT_TYPE GetInputType(const std::string& feature) const;
 
   bool LoadLayout(void);
 
@@ -48,4 +55,5 @@ private:
   bool              m_bLoaded;
 };
 
+}
 }
