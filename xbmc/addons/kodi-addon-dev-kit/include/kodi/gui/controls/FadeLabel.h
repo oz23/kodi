@@ -19,19 +19,21 @@
  *
  */
 
-#include "../AddonBase.h"
-#include "Window.h"
+#include "../../AddonBase.h"
+#include "../Window.h"
 
 namespace kodi
 {
 namespace gui
 {
+namespace controls
+{
 
   //============================================================================
   ///
-  /// \defgroup cpp_kodi_gui_CControlFadeLabel Control Fade Label
+  /// \defgroup cpp_kodi_gui_controls_CFadeLabel Control Fade Label
   /// \ingroup cpp_kodi_gui
-  /// @brief \cpp_class{ kodi::gui::CControlFadeLabel }
+  /// @brief \cpp_class{ kodi::gui::controls::CFadeLabel }
   /// **Window control used to show multiple pieces of text in the same position,
   /// by fading from one to the other**
   ///
@@ -43,7 +45,7 @@ namespace gui
   /// in and  the process repeats.  A fade label  control is not  supported in a
   /// list container.
   ///
-  /// It has the header \ref ControlFadeLabel.h "#include <kodi/gui/ControlFadeLabel.h>"
+  /// It has the header \ref FadeLabel.h "#include <kodi/gui/controls/FadeLabel.h>"
   /// be included to enjoy it.
   ///
   /// Here you find the needed skin part for a \ref Fade_Label_Control "fade label control"
@@ -51,83 +53,84 @@ namespace gui
   /// @note The  call of the  control is only  possible from  the  corresponding
   /// window as its class and identification number is required.
   ///
-  class CControlFadeLabel
+  class CFadeLabel : public CAddonGUIControlBase
   {
   public:
     //==========================================================================
     ///
-    /// \ingroup cpp_kodi_gui_CControlFadeLabel
+    /// \ingroup cpp_kodi_gui_controls_CFadeLabel
     /// @brief Construct a new control.
     ///
     /// @param[in] window     related window control class
     /// @param[in] controlId  Used skin xml control id
     ///
-    CControlFadeLabel(CWindow* window, int controlId)
-      : m_Window(window),
-        m_ControlId(controlId)
+    CFadeLabel(CWindow* window, int controlId)
+      : CAddonGUIControlBase(window)
     {
-      m_ControlHandle = ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->window.GetControl_FadeLabel(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_Window->m_WindowHandle, controlId);
-      if (!m_ControlHandle)
-        kodi::Log(ADDON_LOG_FATAL, "kodi::gui::CControlFadeLabel can't create control class from Kodi !!!");
+      m_controlHandle = m_interface->kodi_gui->window->get_control_fade_label(m_interface->kodiBase, m_Window->GetControlHandle(), controlId);
+      if (!m_controlHandle)
+        kodi::Log(ADDON_LOG_FATAL, "kodi::gui::controls::CFadeLabel can't create control class from Kodi !!!");
     }
     //--------------------------------------------------------------------------
 
     //==========================================================================
     ///
-    /// \ingroup cpp_kodi_gui_CControlFadeLabel
+    /// \ingroup cpp_kodi_gui_controls_CFadeLabel
     /// @brief Destructor.
     ///
-    virtual ~CControlFadeLabel() { }
+    virtual ~CFadeLabel() = default;
     //--------------------------------------------------------------------------
 
     //==========================================================================
     ///
-    /// \ingroup cpp_kodi_gui_CControlFadeLabel
+    /// \ingroup cpp_kodi_gui_controls_CFadeLabel
     /// @brief Set the control on window to visible.
     ///
     /// @param[in] visible    If true visible, otherwise hidden
     ///
     void SetVisible(bool visible)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlFadeLabel.SetVisible(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ControlHandle, visible);
+      m_interface->kodi_gui->control_fade_label->set_visible(m_interface->kodiBase, m_controlHandle, visible);
     }
     //--------------------------------------------------------------------------
 
     //==========================================================================
     ///
-    /// \ingroup cpp_kodi_gui_CControlFadeLabel
+    /// \ingroup cpp_kodi_gui_controls_CFadeLabel
     /// @brief To add additional text string on fade label.
     ///
     /// @param[in] label      Text to show
     ///
     void AddLabel(const std::string& label)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlFadeLabel.AddLabel(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ControlHandle, label.c_str());
+      m_interface->kodi_gui->control_fade_label->add_label(m_interface->kodiBase, m_controlHandle, label.c_str());
     }
     //--------------------------------------------------------------------------
 
     //==========================================================================
     ///
-    /// \ingroup cpp_kodi_gui_CControlFadeLabel
+    /// \ingroup cpp_kodi_gui_controls_CFadeLabel
     /// @brief Get the used text from button
     ///
     /// @return               Text shown
     ///
     std::string GetLabel() const
     {
-      std::string text;
-      text.resize(1024);
-      unsigned int size = (unsigned int)text.capacity();
-      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlFadeLabel.GetLabel(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ControlHandle, text[0], size);
-      text.resize(size);
-      text.shrink_to_fit();
-      return text;
+      std::string label;
+      char* ret = m_interface->kodi_gui->control_fade_label->get_label(m_interface->kodiBase, m_controlHandle);
+      if (ret != nullptr)
+      {
+        if (std::strlen(ret))
+          label = ret;
+        m_interface->free_string(m_interface->kodiBase, ret);
+      }
+      return label;
     }
     //--------------------------------------------------------------------------
 
     //==========================================================================
     ///
-    /// \ingroup cpp_kodi_gui_CControlFadeLabel
+    /// \ingroup cpp_kodi_gui_controls_CFadeLabel
     /// @brief To enable or disable scrolling on fade label
     ///
     /// @param[in] scroll     To  enable scrolling  set  to true,  otherwise  is
@@ -135,26 +138,22 @@ namespace gui
     ///
     void SetScrolling(bool scroll)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlFadeLabel.SetScrolling(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ControlHandle, scroll);
+      m_interface->kodi_gui->control_fade_label->set_scrolling(m_interface->kodiBase, m_controlHandle, scroll);
     }
     //--------------------------------------------------------------------------
 
     //==========================================================================
     ///
-    /// \ingroup cpp_kodi_gui_CControlFadeLabel
+    /// \ingroup cpp_kodi_gui_controls_CFadeLabel
     /// @brief To reset al inserted labels.
     ///
     void Reset()
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlFadeLabel.Reset(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ControlHandle);
+      m_interface->kodi_gui->control_fade_label->reset(m_interface->kodiBase, m_controlHandle);
     }
     //--------------------------------------------------------------------------
-
-  private:
-    CWindow* m_Window;
-    int m_ControlId;
-    void* m_ControlHandle;
   };
 
+} /* namespace controls */
 } /* namespace gui */
 } /* namespace kodi */

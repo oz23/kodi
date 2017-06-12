@@ -19,106 +19,105 @@
  *
  */
 
-#include "../AddonBase.h"
-#include "Window.h"
+#include "../../AddonBase.h"
+#include "../Window.h"
 
 namespace kodi
 {
 namespace gui
 {
+namespace controls
+{
 
   //============================================================================
   ///
-  /// \defgroup cpp_kodi_gui_CControlProgress Control Progress
+  /// \defgroup cpp_kodi_gui_controls_CImage Control Image
   /// \ingroup cpp_kodi_gui
-  /// @brief \cpp_class{ kodi::gui::CControlProgress }
-  /// **Window control to show the progress of a particular operation**
+  /// @brief \cpp_class{ kodi::gui::controls::CImage }
+  /// **Window control used to show an image.**
   ///
-  /// The progress control is used to show the progress of an item that may take
-  /// a long time,  or to show how far  through a movie you are.  You can choose
-  /// the position, size, and look of the progress control.
+  /// The  image control is used  for displaying  images in Kodi. You can choose
+  /// the position, size, transparency and contents of the image to be displayed.
   ///
-  /// It has the header \ref ControlProgress.h "#include <kodi/gui/ControlProgress.h>"
+  /// It has the header \ref Image.h "#include <kodi/gui/controls/Image.h>"
   /// be included to enjoy it.
   ///
-  /// Here you find the needed skin part for a \ref Progress_Control "progress control"
+  /// Here you find the needed skin part for a \ref Image_Control "image control"
   ///
-  /// @note The call of the control is only possible from the corresponding
+  /// @note The  call of  the control is  only possible  from the  corresponding
   /// window as its class and identification number is required.
   ///
-  class CControlProgress
+  class CImage : public CAddonGUIControlBase
   {
   public:
     //==========================================================================
     ///
-    /// \ingroup cpp_kodi_gui_CControlProgress
+    /// \ingroup cpp_kodi_gui_controls_CImage
     /// @brief Construct a new control
     ///
     /// @param[in] window               related window control class
     /// @param[in] controlId            Used skin xml control id
     ///
-    CControlProgress(CWindow* window, int controlId)
-   : m_Window(window),
-     m_ControlId(controlId)
-  {
-    m_ControlHandle = ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->window.GetControl_Progress(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_Window->m_WindowHandle, controlId);
-    if (!m_ControlHandle)
-      kodi::Log(ADDON_LOG_FATAL, "kodi::gui::CControlProgress can't create control class from Kodi !!!");
-  }
+    CImage(CWindow* window, int controlId)
+      : CAddonGUIControlBase(window)
+    {
+      m_controlHandle = m_interface->kodi_gui->window->get_control_image(m_interface->kodiBase, m_Window->GetControlHandle(), controlId);
+      if (!m_controlHandle)
+        kodi::Log(ADDON_LOG_FATAL, "kodi::gui::controls::CImage can't create control class from Kodi !!!");
+    }
     //--------------------------------------------------------------------------
 
     //==========================================================================
     ///
-    /// \ingroup cpp_kodi_gui_CControlProgress
+    /// \ingroup cpp_kodi_gui_controls_CImage
     /// @brief Destructor
     ///
-    virtual ~CControlProgress() { }
+    virtual ~CImage() = default;
     //--------------------------------------------------------------------------
 
     //==========================================================================
     ///
-    /// \ingroup cpp_kodi_gui_CControlProgress
+    /// \ingroup cpp_kodi_gui_controls_CImage
     /// @brief Set the control on window to visible
     ///
     /// @param[in] visible              If true visible, otherwise hidden
     ///
     void SetVisible(bool visible)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlProgress.SetVisible(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ControlHandle, visible);
+      m_interface->kodi_gui->control_image->set_visible(m_interface->kodiBase, m_controlHandle, visible);
     }
     //--------------------------------------------------------------------------
 
     //==========================================================================
     ///
-    /// \ingroup cpp_kodi_gui_CControlProgress
-    /// @brief To set Percent position of control
+    /// \ingroup cpp_kodi_gui_controls_CImage
+    /// @brief To set the filename used on image control.
     ///
-    /// @param[in] percent              The percent position to use
+    /// @param[in] filename             Image file to use
+    /// @param[in] useCache             To define  storage of image,  default is
+    ///                                 in  cache,  if false  becomes it  loaded
+    ///                                 always on changes again
     ///
-    void SetPercentage(float percent)
+    void SetFileName(const std::string& filename, bool useCache = true)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlProgress.SetPercentage(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ControlHandle, percent);
+      m_interface->kodi_gui->control_image->set_filename(m_interface->kodiBase, m_controlHandle, filename.c_str(), useCache);
     }
     //--------------------------------------------------------------------------
 
     //==========================================================================
     ///
-    /// \ingroup cpp_kodi_gui_CControlProgress
-    /// @brief Get the active percent position of progress bar
+    /// \ingroup cpp_kodi_gui_controls_CImage
+    /// @brief To set set the diffuse color on image.
     ///
-    /// @return                         Progress position as percent
+    /// @param[in] colorDiffuse         Color to use for diffuse
     ///
-    float GetPercentage() const
+    void SetColorDiffuse(uint32_t colorDiffuse)
     {
-      return ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlProgress.GetPercentage(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ControlHandle);
+      m_interface->kodi_gui->control_image->set_color_diffuse(m_interface->kodiBase, m_controlHandle, colorDiffuse);
     }
     //--------------------------------------------------------------------------
-
-  private:
-    CWindow* m_Window;
-    int m_ControlId;
-    void* m_ControlHandle;
   };
 
+} /* namespace controls */
 } /* namespace gui */
 } /* namespace kodi */

@@ -19,35 +19,35 @@
  *
  */
 
-#include "../AddonBase.h"
-#include "definitions.h"
+#include "../../AddonBase.h"
+#include "../definitions.h"
 
 namespace kodi
 {
 namespace gui
 {
+namespace dialogs
+{
 
   //============================================================================
   ///
-  /// \defgroup cpp_kodi_gui_DialogOK Dialog OK
+  /// \defgroup cpp_kodi_gui_dialogs_OK Dialog OK
   /// \ingroup cpp_kodi_gui
   /// @{
-  /// @brief \cpp_namespace{ kodi::gui::DialogOK }
+  /// @brief \cpp_namespace{ kodi::gui::dialogs::OK }
   /// **OK dialog**
   ///
   /// The functions listed below permit the call of a dialogue of information, a
   /// confirmation of the user by press from OK required.
   ///
-  /// These are pure static functions them no other initialization need.
-  ///
-  /// It has the header \ref DialogOK.h "#include <kodi/gui/DialogOK.h>"
+  /// It has the header \ref OK.h "#include <kodi/gui/dialogs/OK.h>"
   /// be included to enjoy it.
   ///
-  namespace DialogOK
+  namespace OK
   {
     //==========================================================================
     ///
-    /// \ingroup cpp_kodi_gui_DialogOK
+    /// \ingroup cpp_kodi_gui_dialogs_OK
     /// @brief Use dialog to inform user with text and confirmation with OK with continued string.
     ///
     /// @param[in] heading Dialog heading.
@@ -58,20 +58,22 @@ namespace gui
     ///
     /// **Example:**
     /// ~~~~~~~~~~~~~{.cpp}
-    /// #include <kodi/gui/DialogOK.h>
+    /// #include <kodi/gui/dialogs/OK.h>
     /// ...
-    /// kodi::gui::DialogOK::ShowAndGetInput("Test dialog", "Hello World!\nI'm a call from add-on\n :) :D");
+    /// kodi::gui::dialogs::OK::ShowAndGetInput("Test dialog", "Hello World!\nI'm a call from add-on\n :) :D");
     /// ~~~~~~~~~~~~~
     ///
     inline void ShowAndGetInput(const std::string& heading, const std::string& text)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->dialogOK.show_and_get_input_single_text(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, heading.c_str(), text.c_str());
+      using namespace ::kodi::addon;
+      CAddonBase::m_interface->toKodi->kodi_gui->dialogOK->show_and_get_input_single_text(CAddonBase::m_interface->toKodi->kodiBase,
+                                                                                          heading.c_str(), text.c_str());
     }
     //--------------------------------------------------------------------------
 
     //==========================================================================
     ///
-    /// \ingroup cpp_kodi_gui_DialogOK
+    /// \ingroup cpp_kodi_gui_dialogs_OK
     /// @brief Use dialog to inform user with text and confirmation with OK with strings separated to the lines.
     ///
     /// @param[in] heading Dialog heading.
@@ -84,18 +86,22 @@ namespace gui
     ///
     /// **Example:**
     /// ~~~~~~~~~~~~~{.cpp}
-    /// #include <kodi/gui/DialogOK.h>
+    /// #include <kodi/gui/dialogs/OK.h>
     /// ...
-    /// kodi::gui::DialogOK::ShowAndGetInput("Test dialog", "Hello World!", "I'm a call from add-on", " :) :D");
+    /// kodi::gui::dialogs::OK::ShowAndGetInput("Test dialog", "Hello World!", "I'm a call from add-on", " :) :D");
     /// ~~~~~~~~~~~~~
     ///
     inline void ShowAndGetInput(const std::string& heading, const std::string& line0, const std::string& line1, const std::string& line2)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->dialogOK.show_and_get_input_line_text(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, heading.c_str(), line0.c_str(), line1.c_str(), line2.c_str());
+      using namespace ::kodi::addon;
+      CAddonBase::m_interface->toKodi->kodi_gui->dialogOK->show_and_get_input_line_text(CAddonBase::m_interface->toKodi->kodiBase,
+                                                                                        heading.c_str(), line0.c_str(), line1.c_str(),
+                                                                                        line2.c_str());
     }
     //--------------------------------------------------------------------------
   }
   /// @}
 
+} /* namespace dialogs */
 } /* namespace gui */
 } /* namespace kodi */

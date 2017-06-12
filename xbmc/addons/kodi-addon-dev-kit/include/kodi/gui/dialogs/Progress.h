@@ -19,30 +19,32 @@
  *
  */
 
-#include "definitions.h"
-#include "../AddonBase.h"
+#include "../definitions.h"
+#include "../../AddonBase.h"
 
 namespace kodi
 {
 namespace gui
 {
+namespace dialogs
+{
 
   //============================================================================
   ///
-  /// \defgroup cpp_kodi_gui_CDialogProgress Dialog Progress
+  /// \defgroup cpp_kodi_gui_dialogs_CProgress Dialog Progress
   /// \ingroup cpp_kodi_gui
-  /// @brief \cpp_class{ kodi::gui::CDialogProgress }
+  /// @brief \cpp_class{ kodi::gui::dialogs::CProgress }
   /// **Progress dialog shown in center**
   ///
-  /// The with \ref DialogProgress.h "#include <kodi/gui/DialogProgress.h>"
+  /// The with \ref DialogProgress.h "#include <kodi/gui/dialogs/Progress.h>"
   /// given class are basically used to create Kodi's progress dialog with named
   /// text fields.
   ///
   /// **Example:**
   /// ~~~~~~~~~~~~~{.cpp}
-  /// #include <kodi/gui/DialogProgress.h>
+  /// #include <kodi/gui/dialogs/Progress.h>
   ///
-  /// kodi::gui::CDialogProgress *progress = new kodiapi::gui::CDialogProgress;
+  /// kodi::gui::dialogs::CProgress *progress = new kodi::gui::dialogs::CProgress;
   /// progress->SetHeading("Test progress");
   /// progress->SetLine(1, "line 1");
   /// progress->SetLine(2, "line 2");
@@ -58,61 +60,65 @@ namespace gui
   /// delete progress;
   /// ~~~~~~~~~~~~~
   ///
-  class CDialogProgress
+  class CProgress
   {
   public:
     //==========================================================================
     ///
-    /// \ingroup cpp_kodi_gui_CDialogProgress
+    /// \ingroup cpp_kodi_gui_dialogs_CProgress
     /// @brief Construct a new dialog
     ///
-    CDialogProgress()
+    CProgress()
     {
-      m_DialogHandle = ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->dialogProgress.New(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase);
+      using namespace ::kodi::addon;
+      m_DialogHandle = CAddonBase::m_interface->toKodi->kodi_gui->dialogProgress->new_dialog(CAddonBase::m_interface->toKodi->kodiBase);
       if (!m_DialogHandle)
-        kodi::Log(ADDON_LOG_FATAL, "kodi::gui::CDialogProgress can't create window class from Kodi !!!");
+        kodi::Log(ADDON_LOG_FATAL, "kodi::gui::dialogs::CProgress can't create window class from Kodi !!!");
     }
     //--------------------------------------------------------------------------
 
     //==========================================================================
     ///
-    /// \ingroup cpp_kodi_gui_CDialogProgress
+    /// \ingroup cpp_kodi_gui_dialogs_CProgress
     /// @brief Destructor
     ///
-    ~CDialogProgress()
+    ~CProgress()
     {
+      using namespace ::kodi::addon;
       if (m_DialogHandle)
-        ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->dialogProgress.Delete(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_DialogHandle);
+        CAddonBase::m_interface->toKodi->kodi_gui->dialogProgress->delete_dialog(CAddonBase::m_interface->toKodi->kodiBase, m_DialogHandle);
     }
     //--------------------------------------------------------------------------
 
     //==========================================================================
     ///
-    /// \ingroup cpp_kodi_gui_CDialogProgress
+    /// \ingroup cpp_kodi_gui_dialogs_CProgress
     /// @brief To open the dialog
     ///
     void Open()
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->dialogProgress.Open(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_DialogHandle);
+      using namespace ::kodi::addon;
+      CAddonBase::m_interface->toKodi->kodi_gui->dialogProgress->open(CAddonBase::m_interface->toKodi->kodiBase, m_DialogHandle);
     }
     //--------------------------------------------------------------------------
 
     //==========================================================================
     ///
-    /// \ingroup cpp_kodi_gui_CDialogProgress
+    /// \ingroup cpp_kodi_gui_dialogs_CProgress
     /// @brief Set the heading title of dialog
     ///
     /// @param[in] heading Title string to use
     ///
     void SetHeading(const std::string& heading)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->dialogProgress.SetHeading(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_DialogHandle, heading.c_str());
+      using namespace ::kodi::addon;
+      CAddonBase::m_interface->toKodi->kodi_gui->dialogProgress->set_heading(CAddonBase::m_interface->toKodi->kodiBase, m_DialogHandle, heading.c_str());
     }
     //--------------------------------------------------------------------------
 
     //==========================================================================
     ///
-    /// \ingroup cpp_kodi_gui_CDialogProgress
+    /// \ingroup cpp_kodi_gui_dialogs_CProgress
     /// @brief To set the line text field on dialog from 0 - 2
     ///
     /// @param[in] iLine Line number
@@ -120,111 +126,120 @@ namespace gui
     ///
     void SetLine(unsigned int iLine, const std::string& line)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->dialogProgress.SetLine(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_DialogHandle, iLine, line.c_str());
+      using namespace ::kodi::addon;
+      CAddonBase::m_interface->toKodi->kodi_gui->dialogProgress->set_line(CAddonBase::m_interface->toKodi->kodiBase, m_DialogHandle, iLine, line.c_str());
     }
     //--------------------------------------------------------------------------
 
     //==========================================================================
     ///
-    /// \ingroup cpp_kodi_gui_CDialogProgress
+    /// \ingroup cpp_kodi_gui_dialogs_CProgress
     /// @brief To enable and show cancel button on dialog
     ///
     /// @param[in] canCancel if true becomes it shown
     ///
     void SetCanCancel(bool canCancel)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->dialogProgress.SetCanCancel(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_DialogHandle, canCancel);
+      using namespace ::kodi::addon;
+      CAddonBase::m_interface->toKodi->kodi_gui->dialogProgress->set_can_cancel(CAddonBase::m_interface->toKodi->kodiBase, m_DialogHandle, canCancel);
     }
     //--------------------------------------------------------------------------
 
     //==========================================================================
     ///
-    /// \ingroup cpp_kodi_gui_CDialogProgress
+    /// \ingroup cpp_kodi_gui_dialogs_CProgress
     /// @brief To check dialog for clicked cancel button
     ///
     /// @return True if canceled
     ///
     bool IsCanceled() const
     {
-      return ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->dialogProgress.IsCanceled(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_DialogHandle);
+      using namespace ::kodi::addon;
+      return CAddonBase::m_interface->toKodi->kodi_gui->dialogProgress->is_canceled(CAddonBase::m_interface->toKodi->kodiBase, m_DialogHandle);
     }
     //--------------------------------------------------------------------------
 
     //==========================================================================
     ///
-    /// \ingroup cpp_kodi_gui_CDialogProgress
+    /// \ingroup cpp_kodi_gui_dialogs_CProgress
     /// @brief Get the current progress position as percent
     ///
     /// @param[in] percentage Position to use from 0 to 100
     ///
     void SetPercentage(int percentage)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->dialogProgress.SetPercentage(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_DialogHandle, percentage);
+      using namespace ::kodi::addon;
+      CAddonBase::m_interface->toKodi->kodi_gui->dialogProgress->set_percentage(CAddonBase::m_interface->toKodi->kodiBase, m_DialogHandle, percentage);
     }
     //--------------------------------------------------------------------------
 
     //==========================================================================
     ///
-    /// \ingroup cpp_kodi_gui_CDialogProgress
+    /// \ingroup cpp_kodi_gui_dialogs_CProgress
     /// @brief To set the current progress position as percent
     ///
     /// @return Current Position used from 0 to 100
     ///
     int GetPercentage() const
     {
-      return ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->dialogProgress.GetPercentage(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_DialogHandle);
+      using namespace ::kodi::addon;
+      return CAddonBase::m_interface->toKodi->kodi_gui->dialogProgress->get_percentage(CAddonBase::m_interface->toKodi->kodiBase, m_DialogHandle);
     }
     //--------------------------------------------------------------------------
 
     //==========================================================================
     ///
-    /// \ingroup cpp_kodi_gui_CDialogProgress
+    /// \ingroup cpp_kodi_gui_dialogs_CProgress
     /// @brief To show or hide progress bar dialog
     ///
     /// @param[in] onOff If true becomes it shown
     ///
     void ShowProgressBar(bool onOff)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->dialogProgress.ShowProgressBar(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_DialogHandle, onOff);
+      using namespace ::kodi::addon;
+      CAddonBase::m_interface->toKodi->kodi_gui->dialogProgress->show_progress_bar(CAddonBase::m_interface->toKodi->kodiBase, m_DialogHandle, onOff);
     }
     //--------------------------------------------------------------------------
 
     //==========================================================================
     ///
-    /// \ingroup cpp_kodi_gui_CDialogProgress
+    /// \ingroup cpp_kodi_gui_dialogs_CProgress
     /// @brief Set the maximum position of progress, needed if `SetProgressAdvance(...)` is used
     ///
     /// @param[in] max Biggest usable position to use
     ///
     void SetProgressMax(int max)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->dialogProgress.SetProgressMax(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_DialogHandle, max);
+      using namespace ::kodi::addon;
+      CAddonBase::m_interface->toKodi->kodi_gui->dialogProgress->set_progress_max(CAddonBase::m_interface->toKodi->kodiBase, m_DialogHandle, max);
     }
     //--------------------------------------------------------------------------
 
     //==========================================================================
     ///
-    /// \ingroup cpp_kodi_gui_CDialogProgress
+    /// \ingroup cpp_kodi_gui_dialogs_CProgress
     /// @brief To increase progress bar by defined step size until reach of maximum position
     ///
     /// @param[in] steps Step size to increase, default is 1
     ///
     void SetProgressAdvance(int steps=1)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->dialogProgress.SetProgressAdvance(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_DialogHandle, steps);
+      using namespace ::kodi::addon;
+      CAddonBase::m_interface->toKodi->kodi_gui->dialogProgress->set_progress_advance(CAddonBase::m_interface->toKodi->kodiBase, m_DialogHandle, steps);
     }
     //--------------------------------------------------------------------------
 
     //==========================================================================
     ///
-    /// \ingroup cpp_kodi_gui_CDialogProgress
+    /// \ingroup cpp_kodi_gui_dialogs_CProgress
     /// @brief To check progress was canceled on work
     ///
     /// @return True if aborted
     ///
     bool Abort()
     {
-      return ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->dialogProgress.Abort(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_DialogHandle);
+      using namespace ::kodi::addon;
+      return CAddonBase::m_interface->toKodi->kodi_gui->dialogProgress->abort(CAddonBase::m_interface->toKodi->kodiBase, m_DialogHandle);
     }
     //--------------------------------------------------------------------------
 
@@ -232,5 +247,6 @@ namespace gui
     void* m_DialogHandle;
   };
 
+} /* namespace dialogs */
 } /* namespace gui */
 } /* namespace kodi */

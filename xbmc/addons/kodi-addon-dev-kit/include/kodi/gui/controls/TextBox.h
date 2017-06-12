@@ -19,26 +19,28 @@
  *
  */
 
-#include "../AddonBase.h"
-#include "Window.h"
+#include "../../AddonBase.h"
+#include "../Window.h"
 
 namespace kodi
 {
 namespace gui
 {
+namespace controls
+{
 
   //============================================================================
   ///
-  /// \defgroup cpp_kodi_gui_CControlTextBox Control Text Box
+  /// \defgroup cpp_kodi_gui_controls_CTextBox Control Text Box
   /// \ingroup cpp_kodi_gui
-  /// @brief \cpp_class{ kodi::gui::CControlTextBox }
+  /// @brief \cpp_class{ kodi::gui::controls::CTextBox }
   /// **Used to show a multi-page piece of text**
   ///
   /// The text box control  can be used to display  descriptions,  help texts or
   /// other larger texts.  It corresponds to the representation which is also to
   /// be seen on the CDialogTextViewer.
   ///
-  /// It has the header \ref ControlTextBox.h "#include <kodi/gui/ControlTextBox.h>"
+  /// It has the header \ref TextBox.h "#include <kodi/gui/controls/TextBox.h>"
   /// be included to enjoy it.
   ///
   /// Here you find the needed skin part for a \ref Text_Box "textbox control".
@@ -46,75 +48,74 @@ namespace gui
   /// @note The call  of the  control is  only possible  from the  corresponding
   /// window as its class and identification number is required.
   ///
-  class CControlTextBox
+  class CTextBox : public CAddonGUIControlBase
   {
   public:
     //==========================================================================
     ///
-    /// \ingroup cpp_kodi_gui_CControlTextBox
+    /// \ingroup cpp_kodi_gui_controls_CTextBox
     /// @brief Construct a new control
     ///
     /// @param[in] window               related window control class
     /// @param[in] controlId            Used skin xml control id
     ///
-    CControlTextBox(CWindow* window, int controlId)
-      : m_Window(window),
-        m_ControlId(controlId)
+    CTextBox(CWindow* window, int controlId)
+      : CAddonGUIControlBase(window)
     {
-      m_ControlHandle = ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->window.GetControl_TextBox(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_Window->m_WindowHandle, controlId);
-      if (!m_ControlHandle)
-        kodi::Log(ADDON_LOG_FATAL, "kodi::gui::CControlTextBox can't create control class from Kodi !!!");
+      m_controlHandle = m_interface->kodi_gui->window->get_control_text_box(m_interface->kodiBase, m_Window->GetControlHandle(), controlId);
+      if (!m_controlHandle)
+        kodi::Log(ADDON_LOG_FATAL, "kodi::gui::controls::CTextBox can't create control class from Kodi !!!");
     }
     //--------------------------------------------------------------------------
 
     //==========================================================================
     ///
-    /// \ingroup cpp_kodi_gui_CControlTextBox
+    /// \ingroup cpp_kodi_gui_controls_CTextBox
     /// @brief Destructor
     ///
-    virtual ~CControlTextBox() { }
+    virtual ~CTextBox() = default;
     //--------------------------------------------------------------------------
 
     //==========================================================================
     ///
-    /// \ingroup cpp_kodi_gui_CControlTextBox
+    /// \ingroup cpp_kodi_gui_controls_CTextBox
     /// @brief Set the control on window to visible
     ///
     /// @param[in] visible              If true visible, otherwise hidden
     ///
     void SetVisible(bool visible)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlTextBox.SetVisible(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ControlHandle,  visible);
+      m_interface->kodi_gui->control_text_box->set_visible(m_interface->kodiBase, m_controlHandle,  visible);
     }
     //--------------------------------------------------------------------------
 
     //==========================================================================
     ///
-    /// \ingroup cpp_kodi_gui_CControlTextBox
+    /// \ingroup cpp_kodi_gui_controls_CTextBox
     /// @brief To reset box an remove all the text
     ///
     void Reset()
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlTextBox.Reset(m_ControlHandle, m_ControlHandle);
+      m_interface->kodi_gui->control_text_box->reset(m_controlHandle, m_controlHandle);
     }
     //--------------------------------------------------------------------------
 
     //==========================================================================
     ///
-    /// \ingroup cpp_kodi_gui_CControlTextBox
+    /// \ingroup cpp_kodi_gui_controls_CTextBox
     /// @brief To set the text on box
     ///
     /// @param[in] text                 Text to show
     ///
     void SetText(const std::string& text)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlTextBox.SetText(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ControlHandle,  text.c_str());
+      m_interface->kodi_gui->control_text_box->set_text(m_interface->kodiBase, m_controlHandle,  text.c_str());
     }
     //--------------------------------------------------------------------------
 
     //==========================================================================
     ///
-    /// \ingroup cpp_kodi_gui_CControlTextBox
+    /// \ingroup cpp_kodi_gui_controls_CTextBox
     /// @brief Get the used text from control
     ///
     /// @return                         Text shown
@@ -122,31 +123,33 @@ namespace gui
     std::string GetText() const
     {
       std::string text;
-      text.resize(16384);
-      unsigned int size = (unsigned int)text.capacity();
-      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlTextBox.GetText(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ControlHandle, text[0], size);
-      text.resize(size);
-      text.shrink_to_fit();
+      char* ret = m_interface->kodi_gui->control_text_box->get_text(m_interface->kodiBase, m_controlHandle);
+      if (ret != nullptr)
+      {
+        if (std::strlen(ret))
+          text = ret;
+        m_interface->free_string(m_interface->kodiBase, ret);
+      }
       return text;
     }
     //--------------------------------------------------------------------------
 
     //==========================================================================
     ///
-    /// \ingroup cpp_kodi_gui_CControlTextBox
+    /// \ingroup cpp_kodi_gui_controls_CTextBox
     /// @brief To scroll text on other position
     ///
     /// @param[in] position             The line position to scroll to
     ///
     void Scroll(unsigned int position)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlTextBox.Scroll(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ControlHandle, position);
+      m_interface->kodi_gui->control_text_box->scroll(m_interface->kodiBase, m_controlHandle, position);
     }
     //--------------------------------------------------------------------------
 
     //==========================================================================
     ///
-    /// \ingroup cpp_kodi_gui_CControlTextBox
+    /// \ingroup cpp_kodi_gui_controls_CTextBox
     /// @brief To set automatic scrolling of textbox
     ///
     /// Specifies the timing  and conditions of  any autoscrolling  this textbox
@@ -163,15 +166,11 @@ namespace gui
     ///
     void SetAutoScrolling(int delay, int time, int repeat)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlTextBox.SetAutoScrolling(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ControlHandle, delay, time, repeat);
+      m_interface->kodi_gui->control_text_box->set_auto_scrolling(m_interface->kodiBase, m_controlHandle, delay, time, repeat);
     }
     //--------------------------------------------------------------------------
-
-  private:
-    CWindow* m_Window;
-    int m_ControlId;
-    void* m_ControlHandle;
   };
 
+} /* namespace controls */
 } /* namespace gui */
 } /* namespace kodi */

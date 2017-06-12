@@ -233,25 +233,9 @@ namespace ADDON
                const std::string& changelog,
                const std::string& origin);
 
-    /*!
-     * @brief Constructor used on XBMCAddon::xbmcgui::WindowXML
-     *
-     * Used there to create a Pseudo Skin Add-on used upon the Python add-on
-     * interface for a code generated window.
-     *
-     * @param[in] id used id for the info
-     * @param[in] type add-on type used for the info
-     */
+
     CAddonInfo(std::string id, TYPE type);
 
-    /*!
-     * @brief To ask generated class is usable and all needed parts are set.
-     *
-     * @return True is OK and usable, otherwise false.
-     *
-     * @note This function is only be related to constructor's who read the
-     * addon xml part.
-     */
     bool IsUsable() const { return m_usable; }
 
     /*!
@@ -264,269 +248,44 @@ namespace ADDON
     void SetOrigin(std::string origin) { m_origin = std::move(origin); }
     //@}
 
-    /*!
-     * @brief Get the ID from add-on
-     *
-     * The ID is defined in addon.xml but should also equal with add-on path!
-     *
-     * @return ID string of add-on
-     */
     const std::string& ID() const { return m_id; }
-
-    /*!
-     * @brief The master type id of add-on
-     *
-     * @note to get a human readable name for the type can be TranslateType(...)
-     * from here used.
-     *
-     * @return Master Type ID of add-on
-     */ 
     TYPE MainType() const { return m_mainType; }
-
-    /*!
-     * @brief To check add-on to support type
-     *
-     * This is a bit different from 'Type()' call, there becomes also the
-     * sub content checked.
-     *
-     * @return true if main type of sub typo is present on add-on
-     */
     bool IsType(TYPE type) const;
-
-    /*!
-     * @brief Get all available types from add-on
-     *
-     * @return a list of types supported on add-on
-     */
     const std::vector<CAddonType>& Types() const { return m_types; }
-
-    /*!
-     * @brief Get the type class from given type identifier
-     *
-     * @param[in] type The type to select, to become the master use
-     *                 ADDON_UNKNOWN
-     * @return Type class or `nullptr` if not present
-     */
     const CAddonType* Type(TYPE type) const;
-
-    /*!
-     * @brief Get the library path where the add-on is present with his
-     * library/exe part.
-     *
-     * The library path can be a local and also for them on repository with
-     * URL to them.
-     *
-     * @return Path with lib where add-on is present, returns empty if no
-     * libname is defined.
-     */
     std::string MainLibPath() const;
 
-    /*!
-     * @brief To get version of add-on
-     *
-     * @return The AddonVersion class from add-on
-     */
     const AddonVersion& Version() const { return m_version; }
-
-    /*!
-     * @brief To get min version of add-on
-     *
-     * Used to check compatibility with others who request them
-     *
-     * @return The AddonVersion class from add-on with minimum version
-     */
     const AddonVersion& MinVersion() const { return m_minversion; }
-
-    /*!
-     * @brief Human readable name of add-on
-     *
-     * @return Add-on name
-     */
     const std::string& Name() const { return m_name; }
-
-    /*!
-     * @brief Licence text of add-on
-     *
-     * @return the complete licence text defined on addon.xml
-     */
     const std::string& License() const { return m_license; }
-
-    /*!
-     * @brief To get a small add-on description text
-     *
-     * @return description text
-     */
     const std::string& Summary() const { return m_summary; }
-
-    /*!
-     * @brief To get a bigger add-on description
-     *
-     * @return description text
-     */
     const std::string& Description() const { return m_description; }
-
-    /*!
-     * @brief To get the master library name of an add-on
-     *
-     * Currently is this used only for binary add-ons where only one library is
-     * present where everything becomes included.
-     *
-     * @return the library name of add-on
-     */
-    const std::string& Libname() const { return m_types[0].m_libname; }
-
-    /*!
-     * @brief to get the author of add-on
-     * @return Author name
-     */
+    const std::string& LibName() const { return m_types[0].m_libname; }
     const std::string& Author() const { return m_author; }
-
-    /*!
-     * @brief The source URL of the add-on
-     * @return Source URL where add-on is from
-     */
     const std::string& Source() const { return m_source; }
-
-    /*!
-     * @brief Path where add-on is present
-     *
-     * Can be local or also repository URL's
-     *
-     * @return Path where add-on is
-     */
     const std::string& Path() const { return m_path; }
-
-    /*!
-    * @brief Set the Path where add-on is present
-    *
-    * Can be local or also repository URL's
-    *
-    * @return
-    */
     void SetPath(const std::string& path) { m_path = path; }
-
-    /*!
-     * @brief To get Path with icon file
-     *
-     * @return If a icon present a path to them, otherwise empty
-     */
     const std::string& Icon() const { return m_icon; }
-
-    /*!
-     * @brief To get a changelog from add-on
-     *
-     * Used to inform the user about changes
-     *
-     * @return Changelog text
-     */
     const std::string& ChangeLog() const { return m_changelog; }
-
-    /*!
-     * @brief To get a add-on fanart picture
-     *
-     * Is used as background on kodi's add-on window.
-     *
-     * @return Path with image who used as fanart
-     */
     const std::string& FanArt() const { return m_fanart; }
-
-    /*!
-     * @brief To get a list of available screenshots from add-on
-     *
-     * Used on kodi's add-on window to descripe a bit from add-on
-     *
-     * @return a list of screenshots if present
-     */
     const std::vector<std::string>& Screenshots() const { return m_screenshots; }
-
-    /*!
-     * @brief To get a disclaimer of warranties
-     *
-     * @return a disclaimer of addon
-     */
     const std::string& Disclaimer() const { return m_disclaimer; }
-
-    /*!
-     * @brief To get a list with dependencies related to this add-on
-     */
     const ADDONDEPS& GetDeps() const { return m_dependencies; }
-
-    /*!
-     * @brief To get broken parts
-     *
-     * @todo make description more detailed
-     */
     const std::string& Broken() const { return m_broken; }
-
-    /*!
-     * @brief To get install date of add-on
-     *
-     * @note this is only be set from add-on browser and not always present!
-     */
     const CDateTime& InstallDate() const { return m_installDate; }
-
-    /*!
-     * @brief To get last updated date of add-on
-     *
-     * @note this is only be set from add-on browser and not always present!
-     */
     const CDateTime& LastUpdated() const { return m_lastUpdated; }
-
-    /*!
-     * @brief To get the last used date of add-on
-     *
-     * @note this is only be set from add-on browser and not always present!
-     */
     const CDateTime& LastUsed() const { return m_lastUsed; }
-
-    /*!
-     * @brief The origin of add-on
-     *
-     * @todo make description more detailed
-     * @note this is only be set from add-on browser and not always present!
-     */
     const std::string& Origin() const { return m_origin; }
-
-    /*!
-     * @brief Size of the add-on package in Bytes
-     */
     uint64_t PackageSize() const { return m_packageSize; }
-
-    /*!
-     * @brief User language of add-on
-     *
-     * @return the on addon.xml defined language string
-     */
     std::string Language() { return m_language; }
 
-    /*!
-     * @brief Check the information about supported sub content
-     *
-     * @param[in] content Sub content type to check present
-     * @param[in] mainType [opt] Type to check sub type from, default to
-     *                     ADDON_UNKNOWN who check all included parts.
-     * @return true if present, otherwise false
-     */
     bool ProvidesSubContent(const TYPE& content, const TYPE& mainType = ADDON_UNKNOWN) const;
-
-    /*!
-     * @brief To check addon contains several sub contents
-     *
-     * e.g. Music together with Video
-     *
-     * @return true if more as one is supported
-     */
     bool ProvidesSeveralSubContents() const;
   
     std::string SerializeMetadata();
     bool DeserializeMetadata(const std::string& document);
 
-    /*!
-     * @brief Checks the information to match asked version
-     *
-     * @param[in] version Version to check
-     * @return true if add-on's version match asked version, otherwise false
-     */
     bool MeetsVersion(const AddonVersion &version) const;
 
     /*!
@@ -572,14 +331,6 @@ namespace ADDON
     uint64_t m_packageSize;
     std::string m_language;
 
-    /*!
-     * @brief Function to load data xml file to set all property values
-     *
-     * @param[in] element The tiny xml element to read
-     * @param[in] addonXmlPath Path to the element related xml file, used
-     *                         to know on log messages to source of fault
-     * @return true if successfully done, otherwise false
-     */
     bool LoadAddonXML(const TiXmlElement* element, std::string addonXmlPath);
 
   /*!

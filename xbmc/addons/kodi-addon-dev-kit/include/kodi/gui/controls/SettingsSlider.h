@@ -19,19 +19,21 @@
  *
  */
 
-#include "../AddonBase.h"
-#include "Window.h"
+#include "../../AddonBase.h"
+#include "../Window.h"
 
 namespace kodi
 {
 namespace gui
 {
+namespace controls
+{
 
   //============================================================================
   ///
-  /// \defgroup cpp_kodi_gui_CControlSettingsSlider Control Settings Slider
+  /// \defgroup cpp_kodi_gui_controls_CSettingsSlider Control Settings Slider
   /// \ingroup cpp_kodi_gui
-  /// @brief \cpp_class{ kodi::gui::CControlSettingsSlider }
+  /// @brief \cpp_class{ kodi::gui::controls::CSettingsSlider }
   /// **Window control for moveable slider with text name**
   ///
   /// The settings slider control is  used in the settings  screens for  when an
@@ -40,7 +42,7 @@ namespace gui
   /// button control  and a slider  control.  It has a  label and  focus and non
   /// focus textures, as well as a slider control on the right.
   ///
-  /// It has the header \ref ControlSettingsSlider.h "#include <kodi/gui/ControlSettingsSlider.h>"
+  /// It has the header \ref SettingsSlider.h "#include <kodi/gui/controls/SettingsSlider.h>"
   /// be included to enjoy it.
   ///
   /// Here you find the needed skin part for a \ref Settings_Slider_Control "settings slider control"
@@ -48,88 +50,87 @@ namespace gui
   /// @note The call  of the control  is only  possible  from the  corresponding
   /// window as its class and identification number is required.
   ///
-  class CControlSettingsSlider
+  class CSettingsSlider : public CAddonGUIControlBase
   {
   public:
     //==========================================================================
     ///
-    /// \ingroup cpp_kodi_gui_CControlSettingsSlider
+    /// \ingroup cpp_kodi_gui_controls_CSettingsSlider
     /// @brief Construct a new control
     ///
     /// @param[in] window               related window control class
     /// @param[in] controlId            Used skin xml control id
     ///
-    CControlSettingsSlider(CWindow* window, int controlId)
-      : m_Window(window),
-        m_ControlId(controlId)
+    CSettingsSlider(CWindow* window, int controlId)
+      : CAddonGUIControlBase(window)
     {
-      m_ControlHandle = ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->window.GetControl_SettingsSlider(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_Window->m_WindowHandle, controlId);
-      if (!m_ControlHandle)
-        kodi::Log(ADDON_LOG_FATAL, "kodi::gui::CControlSettingsSlider can't create control class from Kodi !!!");
+      m_controlHandle = m_interface->kodi_gui->window->get_control_settings_slider(m_interface->kodiBase, m_Window->GetControlHandle(), controlId);
+      if (!m_controlHandle)
+        kodi::Log(ADDON_LOG_FATAL, "kodi::gui::controls::CSettingsSlider can't create control class from Kodi !!!");
     }
     //--------------------------------------------------------------------------
 
     //==========================================================================
     ///
-    /// \ingroup cpp_kodi_gui_CControlSettingsSlider
+    /// \ingroup cpp_kodi_gui_controls_CSettingsSlider
     /// @brief Destructor
     ///
-    virtual ~CControlSettingsSlider() { }
+    virtual ~CSettingsSlider() = default;
     //--------------------------------------------------------------------------
 
     //==========================================================================
     ///
-    /// \ingroup cpp_kodi_gui_CControlSettingsSlider
+    /// \ingroup cpp_kodi_gui_controls_CSettingsSlider
     /// @brief Set the control on window to visible
     ///
     /// @param[in] visible              If true visible, otherwise hidden
     ///
     void SetVisible(bool visible)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlSettingsSlider.SetVisible(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ControlHandle, visible);
+      m_interface->kodi_gui->control_settings_slider->set_visible(m_interface->kodiBase, m_controlHandle, visible);
     }
     //--------------------------------------------------------------------------
 
     //==========================================================================
     ///
-    /// \ingroup cpp_kodi_gui_CControlSettingsSlider
+    /// \ingroup cpp_kodi_gui_controls_CSettingsSlider
     /// @brief Set's the control's enabled/disabled state
     ///
     /// @param[in] enabled              If true enabled, otherwise disabled
     ///
     void SetEnabled(bool enabled)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlSettingsSlider.SetEnabled(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ControlHandle, enabled);
+      m_interface->kodi_gui->control_settings_slider->set_enabled(m_interface->kodiBase, m_controlHandle, enabled);
     }
     //--------------------------------------------------------------------------
 
     //==========================================================================
     ///
-    /// \ingroup cpp_kodi_gui_CControlSettingsSlider
+    /// \ingroup cpp_kodi_gui_controls_CSettingsSlider
     /// @brief To set the text string on settings slider
     ///
     /// @param[in] text                 Text to show
     ///
     void SetText(const std::string& text)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlSettingsSlider.SetText(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ControlHandle, text.c_str());
+      m_interface->kodi_gui->control_settings_slider->set_text(m_interface->kodiBase, m_controlHandle, text.c_str());
     }
     //--------------------------------------------------------------------------
 
     //==========================================================================
     ///
-    /// \ingroup cpp_kodi_gui_CControlSettingsSlider
+    /// \ingroup cpp_kodi_gui_controls_CSettingsSlider
     /// @brief To reset slider on defaults
     ///
     void Reset()
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlSettingsSlider.Reset(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ControlHandle);
+      m_interface->kodi_gui->control_settings_slider->reset(m_interface->kodiBase, m_controlHandle);
     }
     //--------------------------------------------------------------------------
 
     //==========================================================================
     ///
-    /// \ingroup cpp_kodi_gui_CControlSettingsSlider
+    /// \ingroup cpp_kodi_gui_controls_CSettingsSlider
     /// @brief To set the the range as integer of slider, e.g. -10 is the slider
     /// start and e.g. +10 is  the from here defined position where it reach the
     /// end.
@@ -148,13 +149,13 @@ namespace gui
     ///
     void SetIntRange(int start, int end)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlSettingsSlider.SetIntRange(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ControlHandle, start, end);
+      m_interface->kodi_gui->control_settings_slider->set_int_range(m_interface->kodiBase, m_controlHandle, start, end);
     }
     //--------------------------------------------------------------------------
 
     //==========================================================================
     ///
-    /// \ingroup cpp_kodi_gui_CControlSettingsSlider
+    /// \ingroup cpp_kodi_gui_controls_CSettingsSlider
     /// @brief Set the slider position  with the given integer value.  The Range
     /// must be defined with a call from \ref SetIntRange before.
     ///
@@ -166,13 +167,13 @@ namespace gui
     ///
     void SetIntValue(int value)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlSettingsSlider.SetIntValue(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ControlHandle, value);
+      m_interface->kodi_gui->control_settings_slider->set_int_value(m_interface->kodiBase, m_controlHandle, value);
     }
     //--------------------------------------------------------------------------
 
     //==========================================================================
     ///
-    /// \ingroup cpp_kodi_gui_CControlSettingsSlider
+    /// \ingroup cpp_kodi_gui_controls_CSettingsSlider
     /// @brief To get the current position as integer value.
     ///
     /// @return                         The position as integer
@@ -183,13 +184,13 @@ namespace gui
     ///
     int GetIntValue() const
     {
-      return ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlSettingsSlider.GetIntValue(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ControlHandle);
+      return m_interface->kodi_gui->control_settings_slider->get_int_value(m_interface->kodiBase, m_controlHandle);
     }
     //--------------------------------------------------------------------------
 
     //==========================================================================
     ///
-    /// \ingroup cpp_kodi_gui_CControlSettingsSlider
+    /// \ingroup cpp_kodi_gui_controls_CSettingsSlider
     /// @brief To set the  interval steps of slider,  as default is it 1.  If it
     /// becomes  changed with  this function  will a step  of the user  with the
     /// value fixed here be executed.
@@ -202,13 +203,13 @@ namespace gui
     ///
     void SetIntInterval(int interval)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlSettingsSlider.SetIntInterval(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ControlHandle, interval);
+      m_interface->kodi_gui->control_settings_slider->set_int_interval(m_interface->kodiBase, m_controlHandle, interval);
     }
     //--------------------------------------------------------------------------
 
     //==========================================================================
     ///
-    /// \ingroup cpp_kodi_gui_CControlSettingsSlider
+    /// \ingroup cpp_kodi_gui_controls_CSettingsSlider
     /// @brief Sets the percent of the slider.
     ///
     /// @param[in] percent              float - Percent value of slide
@@ -219,13 +220,13 @@ namespace gui
     ///
     void SetPercentage(float percent)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlSettingsSlider.SetPercentage(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ControlHandle, percent);
+      m_interface->kodi_gui->control_settings_slider->set_percentage(m_interface->kodiBase, m_controlHandle, percent);
     }
     //--------------------------------------------------------------------------
 
     //==========================================================================
     ///
-    /// \ingroup cpp_kodi_gui_CControlSettingsSlider
+    /// \ingroup cpp_kodi_gui_controls_CSettingsSlider
     /// @brief Returns a float of the percent of the slider.
     ///
     /// @return                         float - Percent of slider
@@ -236,13 +237,13 @@ namespace gui
     ///
     float GetPercentage() const
     {
-      return ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlSettingsSlider.GetPercentage(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ControlHandle);
+      return m_interface->kodi_gui->control_settings_slider->get_percentage(m_interface->kodiBase, m_controlHandle);
     }
     //--------------------------------------------------------------------------
 
     //==========================================================================
     ///
-    /// \ingroup cpp_kodi_gui_CControlSettingsSlider
+    /// \ingroup cpp_kodi_gui_controls_CSettingsSlider
     /// @brief To set the the range as float of slider, e.g. -25.0 is the slider
     /// start and  e.g.  +25.0 is the from  here defined position where it reach
     /// the end.
@@ -261,13 +262,13 @@ namespace gui
     ///
     void SetFloatRange(float start, float end)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlSettingsSlider.SetFloatRange(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ControlHandle, start, end);
+      m_interface->kodi_gui->control_settings_slider->set_float_range(m_interface->kodiBase, m_controlHandle, start, end);
     }
     //--------------------------------------------------------------------------
 
     //==========================================================================
     ///
-    /// \ingroup cpp_kodi_gui_CControlSettingsSlider
+    /// \ingroup cpp_kodi_gui_controls_CSettingsSlider
     /// @brief Set  the slider position  with the given  float value.  The Range
     /// can be defined with a  call from \ref SetIntRange before,  as default it
     /// is 0.0 to 1.0.
@@ -280,26 +281,26 @@ namespace gui
     ///
     void SetFloatValue(float value)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlSettingsSlider.SetFloatValue(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ControlHandle, value);
+      m_interface->kodi_gui->control_settings_slider->set_float_value(m_interface->kodiBase, m_controlHandle, value);
     }
     //--------------------------------------------------------------------------
 
     //==========================================================================
     ///
-    /// \ingroup cpp_kodi_gui_CControlSettingsSlider
+    /// \ingroup cpp_kodi_gui_controls_CSettingsSlider
     /// @brief To get the current position as float value.
     ///
     /// @return                         The position as float
     ///
     float GetFloatValue() const
     {
-      return ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlSettingsSlider.GetFloatValue(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ControlHandle);
+      return m_interface->kodi_gui->control_settings_slider->get_float_value(m_interface->kodiBase, m_controlHandle);
     }
     //--------------------------------------------------------------------------
 
     //==========================================================================
     ///
-    /// \ingroup cpp_kodi_gui_CControlSettingsSlider
+    /// \ingroup cpp_kodi_gui_controls_CSettingsSlider
     /// @brief To set  the interval steps of slider,  as default is it 0.1 If it
     /// becomes changed with this function will a step of the user with the
     /// value fixed here be executed.
@@ -312,15 +313,11 @@ namespace gui
     ///
     void SetFloatInterval(float interval)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlSettingsSlider.SetFloatInterval(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ControlHandle, interval);
+      m_interface->kodi_gui->control_settings_slider->set_float_interval(m_interface->kodiBase, m_controlHandle, interval);
     }
     //--------------------------------------------------------------------------
-
-  private:
-    CWindow* m_Window;
-    int m_ControlId;
-    void* m_ControlHandle;
   };
 
+} /* namespace controls */
 } /* namespace gui */
 } /* namespace kodi */

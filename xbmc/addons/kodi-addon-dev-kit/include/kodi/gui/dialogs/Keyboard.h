@@ -19,19 +19,21 @@
  *
  */
 
-#include "definitions.h"
-#include "../AddonBase.h"
+#include "../definitions.h"
+#include "../../AddonBase.h"
 
 namespace kodi
 {
 namespace gui
 {
+namespace dialogs
+{
 
   //============================================================================
   ///
-  /// \defgroup cpp_kodi_gui_DialogKeyboard Dialog Keyboard
+  /// \defgroup cpp_kodi_gui_dialogs_Keyboard Dialog Keyboard
   /// \ingroup cpp_kodi_gui
-  /// @brief \cpp_namespace{ kodi::gui::DialogKeyboard }
+  /// @brief \cpp_namespace{ kodi::gui::dialogs::Keyboard }
   /// **Keyboard dialogs**
   ///
   /// The functions listed below have to be permitted by the user for the
@@ -40,20 +42,18 @@ namespace gui
   /// The class supports several kinds, from an easy text choice up to the
   /// passport Word production and their confirmation for add-on.
   ///
-  /// These are pure static functions them no other initialization need.
-  ///
-  /// It has the header \ref DialogKeyboard.h "#include <kodi/gui/DialogKeyboard.h>"
+  /// It has the header \ref Keyboard.h "#include <kodi/gui/dialogs/Keyboard.h>"
   /// be included to enjoy it.
   ///
-  namespace DialogKeyboard
+  namespace Keyboard
   {
     //==========================================================================
     ///
-    /// \ingroup cpp_kodi_gui_DialogKeyboard
+    /// \ingroup cpp_kodi_gui_dialogs_Keyboard
     /// @brief Show keyboard with initial value `text` and replace with  result
     /// string.
     ///
-    /// @param[out] text             Overwritten with user input if return=true.
+    /// @param[in,out] text          Overwritten with user input if return=true.
     /// @param[in] heading           String shown on dialog title.
     /// @param[in] allowEmptyResult  Whether a blank password is valid or not.
     /// @param[in] hiddenInput       The inserted input is not shown as text.
@@ -69,7 +69,7 @@ namespace gui
     ///
     /// **Example:**
     /// ~~~~~~~~~~~~~{.cpp}
-    /// #include <kodi/gui/DialogKeyboard.h>
+    /// #include <kodi/gui/dialogs/Keyboard.h>
     ///
     /// /*
     ///  * The example shows the display of keyboard call dialog at Kodi from the add-on.
@@ -78,34 +78,35 @@ namespace gui
     ///  */
     /// std::string text = "Please change me to them want you want"; /*< It can be leaved empty or a
     ///                                                                  entry text added */
-    /// bool bRet = ::kodi::gui::DialogKeyboard::ShowAndGetInput(text,
+    /// bool bRet = ::kodi::gui::dialogs::Keyboard::ShowAndGetInput(text,
     ///                                                      "Demonstration text entry",
     ///                                                      true,
     ///                                                      false,
     ///                                                      0);
-    /// fprintf(stderr, "Written keyboard input is : %s and was %s\n",
+    /// fprintf(stderr, "Written keyboard input is : '%s' and was %s\n",
     ///                   text.c_str(), bRet ? "OK" : "Canceled");
     /// ~~~~~~~~~~~~~
     ///
-    inline bool ShowAndGetInput(
-      std::string&            text,
-      const std::string&      heading,
-      bool                    allowEmptyResult,
-      bool                    hiddenInput = false,
-      unsigned int            autoCloseMs = 0)
+    inline bool ShowAndGetInput(std::string& text, const std::string& heading, bool allowEmptyResult, bool hiddenInput = false, unsigned int autoCloseMs = 0)
     {
-      text.resize(1024);
-      unsigned int size = (unsigned int)text.capacity();
-      bool ret = ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->dialogKeyboard.ShowAndGetInputWithHead(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, text[0], size, heading.c_str(), allowEmptyResult, hiddenInput, autoCloseMs);
-      text.resize(size);
-      text.shrink_to_fit();
+      using namespace ::kodi::addon;
+      char* retString = nullptr;
+      bool ret = CAddonBase::m_interface->toKodi->kodi_gui->dialogKeyboard->show_and_get_input_with_head(CAddonBase::m_interface->toKodi->kodiBase,
+                                                                                                         text.c_str(), &retString, heading.c_str(), allowEmptyResult,
+                                                                                                         hiddenInput, autoCloseMs);
+      if (retString != nullptr)
+      {
+        if (std::strlen(retString))
+          text = retString;
+        CAddonBase::m_interface->toKodi->free_string(CAddonBase::m_interface->toKodi->kodiBase, retString);
+      }
       return ret;
     }
     //--------------------------------------------------------------------------
 
     //==========================================================================
     ///
-    /// \ingroup cpp_kodi_gui_DialogKeyboard
+    /// \ingroup cpp_kodi_gui_dialogs_Keyboard
     /// @brief The example shows the display of keyboard  call dialog  at  Kodi
     /// from the add-on.
     ///
@@ -119,27 +120,30 @@ namespace gui
     ///                             false  if  unsuccessful   display,  no  user
     ///                             input, or canceled editing.
     ///
-    inline bool ShowAndGetInput(
-      std::string&            text,
-      bool                    allowEmptyResult,
-      unsigned int            autoCloseMs = 0)
+    inline bool ShowAndGetInput(std::string& text, bool allowEmptyResult, unsigned int autoCloseMs = 0)
     {
-      text.resize(1024);
-      unsigned int size = (unsigned int)text.capacity();
-      bool ret = ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->dialogKeyboard.ShowAndGetInput(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, text[0], size, allowEmptyResult, autoCloseMs);
-      text.resize(size);
-      text.shrink_to_fit();
+      using namespace ::kodi::addon;
+      char* retString = nullptr;
+      bool ret = CAddonBase::m_interface->toKodi->kodi_gui->dialogKeyboard->show_and_get_input(CAddonBase::m_interface->toKodi->kodiBase,
+                                                                                               text.c_str(), &retString,
+                                                                                               allowEmptyResult, autoCloseMs);
+      if (retString != nullptr)
+      {
+        if (std::strlen(retString))
+          text = retString;
+        CAddonBase::m_interface->toKodi->free_string(CAddonBase::m_interface->toKodi->kodiBase, retString);
+      }
       return ret;
     }
     //--------------------------------------------------------------------------
 
     //==========================================================================
     ///
-    /// \ingroup cpp_kodi_gui_DialogKeyboard
+    /// \ingroup cpp_kodi_gui_dialogs_Keyboard
     /// @brief Shows  keyboard  and  prompts  for  a  password.   Differs  from
     /// `ShowAndVerifyNewPassword()` in that no second verification
     ///
-    /// @param[out] newPassword      Overwritten with user input if return=true.
+    /// @param[in,out] newPassword   Overwritten with user input if return=true.
     /// @param[in] heading           String shown on dialog title.
     /// @param[in] allowEmptyResult  Whether a blank password is valid or not.
     /// @param[in] autoCloseMs       To close the dialog after a specified time,
@@ -149,51 +153,56 @@ namespace gui
     ///                              false  if  unsuccessful  display,  no  user
     ///                              input, or canceled editing.
     ///
-    inline bool ShowAndGetNewPassword(
-      std::string&            newPassword,
-      const std::string&      heading,
-      bool                    allowEmptyResult,
-      unsigned int            autoCloseMs = 0)
+    inline bool ShowAndGetNewPassword(std::string& newPassword, const std::string& heading, bool allowEmptyResult, unsigned int autoCloseMs = 0)
     {
-      newPassword.resize(1024);
-      unsigned int size = (unsigned int)newPassword.capacity();
-      bool ret = ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->dialogKeyboard.ShowAndGetNewPasswordWithHead(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, newPassword[0], size, heading.c_str(), allowEmptyResult, autoCloseMs);
-      newPassword.resize(size);
-      newPassword.shrink_to_fit();
+      using namespace ::kodi::addon;
+      char* retString = nullptr;
+      bool ret = CAddonBase::m_interface->toKodi->kodi_gui->dialogKeyboard->show_and_get_new_password_with_head(CAddonBase::m_interface->toKodi->kodiBase,
+                                                                                                                newPassword.c_str(), &retString, heading.c_str(),
+                                                                                                                allowEmptyResult, autoCloseMs);
+      if (retString != nullptr)
+      {
+        if (std::strlen(retString))
+          newPassword = retString;
+        CAddonBase::m_interface->toKodi->free_string(CAddonBase::m_interface->toKodi->kodiBase, retString);
+      }
       return ret;
     }
     //--------------------------------------------------------------------------
 
     //==========================================================================
     ///
-    /// \ingroup cpp_kodi_gui_DialogKeyboard
+    /// \ingroup cpp_kodi_gui_dialogs_Keyboard
     /// @brief Shows keyboard and prompts for a password. Differs from
     /// `ShowAndVerifyNewPassword()` in that no second verification
     ///
-    /// @param[out] newPassword    Overwritten with user input if  return=true.
-    /// @param[in] autoCloseMs     To close the dialog after a  specified  time,
-    ///                            in milliseconds, default  is  0  which  keeps
-    ///                            the dialog open indefinitely.
-    /// @return                    true if successful display  and  user  input.
-    ///                            false  if  unsuccessful  display,   no  user
-    ///                            input, or canceled editing.
+    /// @param[in,out] newPassword    Overwritten with user input if return=true.
+    /// @param[in] autoCloseMs        To close the dialog after a specified time,
+    ///                               in milliseconds, default is 0 which  keeps
+    ///                               the dialog open indefinitely.
+    /// @return                       true if successful display  and user input.
+    ///                               false  if  unsuccessful  display,  no  user
+    ///                               input, or canceled editing.
     ///
-    inline bool ShowAndGetNewPassword(
-      std::string&            newPassword,
-      unsigned int            autoCloseMs = 0)
+    inline bool ShowAndGetNewPassword(std::string& newPassword, unsigned int autoCloseMs = 0)
     {
-      newPassword.resize(1024);
-      unsigned int size = (unsigned int)newPassword.capacity();
-      bool ret = ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->dialogKeyboard.ShowAndGetNewPassword(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, newPassword[0], size, autoCloseMs);
-      newPassword.resize(size);
-      newPassword.shrink_to_fit();
+      using namespace ::kodi::addon;
+      char* retString = nullptr;
+      bool ret = CAddonBase::m_interface->toKodi->kodi_gui->dialogKeyboard->show_and_get_new_password(CAddonBase::m_interface->toKodi->kodiBase,
+                                                                                                      newPassword.c_str(), &retString, autoCloseMs);
+      if (retString != nullptr)
+      {
+        if (std::strlen(retString))
+          newPassword = retString;
+        CAddonBase::m_interface->toKodi->free_string(CAddonBase::m_interface->toKodi->kodiBase, retString);
+      }
       return ret;
     }
     //--------------------------------------------------------------------------
 
     //==========================================================================
     ///
-    /// \ingroup cpp_kodi_gui_DialogKeyboard
+    /// \ingroup cpp_kodi_gui_dialogs_Keyboard
     /// @brief Show keyboard twice to  get and confirm a  user-entered  password
     /// string.
     ///
@@ -213,7 +222,7 @@ namespace gui
     /// **Example:**
     /// ~~~~~~~~~~~~~{.cpp}
     /// #include <kodi/General.h>
-    /// #include <kodi/gui/DialogKeyboard.h>
+    /// #include <kodi/gui/dialogs/Keyboard.h>
     ///
     /// /*
     ///  * The example below shows the complete use of keyboard dialog for password
@@ -223,66 +232,60 @@ namespace gui
     ///  * The use of MD5 translated password is always required for the check on Kodi!
     ///  */
     ///
+    /// int maxretries = 3;
     /// /*
-    ///  * Get from Kodi's global settings the maximum allowed retries for passwords.
+    ///  * Password names need to be send as md5 sum to kodi.
     ///  */
-    /// int maxretries = 0;
-    /// if (KodiAPI::AddOn::General::GetSettingInt("masterlock.maxretries", maxretries, true))
+    /// std::string password;
+    /// kodi::GetMD5("kodi", password);
+    ///
+    /// /*
+    ///  * To the loop about password checks.
+    ///  */
+    /// int ret;
+    /// for (unsigned int i = 0; i < maxretries; i++)
     /// {
     ///   /*
-    ///    * Password names need to be send as md5 sum to kodi.
+    ///    * Ask the user about the password.
     ///    */
-    ///   std::string password;
-    ///   kodi::GetMD5("kodi", password);
-    ///
-    ///   /*
-    ///    * To the loop about password checks.
-    ///    */
-    ///   int ret;
-    ///   for (unsigned int i = 0; i < maxretries; i++)
+    ///   ret = ::kodi::gui::dialogs::Keyboard::ShowAndVerifyPassword(password, "Demo password call for PW 'kodi'", i, 0);
+    ///   if (ret == 0)
     ///   {
-    ///     /*
-    ///      * Ask the user about the password.
-    ///      */
-    ///     ret = ::kodi::gui::DialogKeyboard::ShowAndVerifyPassword(password, "Demo password call for PW 'kodi'", i, 0);
-    ///     if (ret == 0)
-    ///     {
-    ///       fprintf(stderr, "Password successfull confirmed after '%i' tries\n", i+1);
-    ///       break;
-    ///     }
-    ///     else if (ret < 0)
-    ///     {
-    ///       fprintf(stderr, "Canceled editing on try '%i'\n", i+1);
-    ///       break;
-    ///     }
-    ///     else /* if (ret > 0) */
-    ///     {
-    ///       fprintf(stderr, "Wrong password entered on try '%i'\n", i+1);
-    ///     }
+    ///     fprintf(stderr, "Password successfull confirmed after '%i' tries\n", i+1);
+    ///     break;
+    ///   }
+    ///   else if (ret < 0)
+    ///   {
+    ///     fprintf(stderr, "Canceled editing on try '%i'\n", i+1);
+    ///     break;
+    ///   }
+    ///   else /* if (ret > 0) */
+    ///   {
+    ///     fprintf(stderr, "Wrong password entered on try '%i'\n", i+1);
     ///   }
     /// }
-    /// else
-    ///   fprintf(stderr, "Requested global setting value 'masterlock.maxretries' not present!");
     /// ~~~~~~~~~~~~~
     ///
-    inline bool ShowAndVerifyNewPassword(
-      std::string&            newPassword,
-      const std::string&      heading,
-      bool                    allowEmptyResult,
-      unsigned int            autoCloseMs = 0)
+    inline bool ShowAndVerifyNewPassword(std::string& newPassword, const std::string& heading, bool allowEmptyResult, unsigned int autoCloseMs = 0)
     {
-      newPassword.resize(1024);
-      unsigned int size = (unsigned int)newPassword.capacity();
-      bool ret = ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->dialogKeyboard.ShowAndGetNewPasswordWithHead(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, newPassword[0], size, heading.c_str(), allowEmptyResult, autoCloseMs);
-      newPassword.resize(size);
-      newPassword.shrink_to_fit();
+      using namespace ::kodi::addon;
+      char* retString = nullptr;
+      bool ret = CAddonBase::m_interface->toKodi->kodi_gui->dialogKeyboard->show_and_verify_new_password_with_head(CAddonBase::m_interface->toKodi->kodiBase,
+                                                                                                                   &retString, heading.c_str(), allowEmptyResult,
+                                                                                                                   autoCloseMs);
+      if (retString != nullptr)
+      {
+        if (std::strlen(retString))
+          newPassword = retString;
+        CAddonBase::m_interface->toKodi->free_string(CAddonBase::m_interface->toKodi->kodiBase, retString);
+      }
       return ret;
     }
     //--------------------------------------------------------------------------
 
     //==========================================================================
     ///
-    /// \ingroup cpp_kodi_gui_DialogKeyboard
+    /// \ingroup cpp_kodi_gui_dialogs_Keyboard
     /// @brief Show keyboard twice to get and confirm  a user-entered  password
     /// string.
     ///
@@ -294,25 +297,28 @@ namespace gui
     ///                            false  if  unsuccessful   display,   no  user
     ///                            input, or canceled editing.
     ///
-    inline bool ShowAndVerifyNewPassword(
-      std::string&            newPassword,
-      unsigned int            autoCloseMs = 0)
+    inline bool ShowAndVerifyNewPassword(std::string& newPassword, unsigned int autoCloseMs = 0)
     {
-      newPassword.resize(1024);
-      unsigned int size = (unsigned int)newPassword.capacity();
-      bool ret = ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->dialogKeyboard.ShowAndVerifyNewPassword(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, newPassword[0], size, autoCloseMs);
-      newPassword.resize(size);
-      newPassword.shrink_to_fit();
+      using namespace ::kodi::addon;
+      char* retString = nullptr;
+      bool ret = CAddonBase::m_interface->toKodi->kodi_gui->dialogKeyboard->show_and_verify_new_password(CAddonBase::m_interface->toKodi->kodiBase,
+                                                                                                         &retString, autoCloseMs);
+      if (retString != nullptr)
+      {
+        if (std::strlen(retString))
+          newPassword = retString;
+        CAddonBase::m_interface->toKodi->free_string(CAddonBase::m_interface->toKodi->kodiBase, retString);
+      }
       return ret;
     }
     //--------------------------------------------------------------------------
 
     //==========================================================================
     ///
-    /// \ingroup cpp_kodi_gui_DialogKeyboard
+    /// \ingroup cpp_kodi_gui_dialogs_Keyboard
     /// @brief Show keyboard and verify user input against `password`.
     ///
-    /// @param[out] password       Value to compare against user input.
+    /// @param[in,out] password    Value to compare against user input.
     /// @param[in] heading         String shown on dialog title.
     /// @param[in] retries         If   greater   than   0,   shows   "Incorrect
     ///                            password,  %d retries left" on dialog line 2,
@@ -324,27 +330,29 @@ namespace gui
     ///                            unsuccessful input. -1 if no user  input  or
     ///                            canceled editing.
     ///
-    inline int ShowAndVerifyPassword(
-      std::string&            password,
-      const std::string&      heading,
-      int                     retries,
-      unsigned int            autoCloseMs = 0)
+    inline int ShowAndVerifyPassword(std::string& password, const std::string& heading, int retries, unsigned int autoCloseMs = 0)
     {
-      password.resize(1024);
-      unsigned int size = (unsigned int)password.capacity();
-      int ret = ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->dialogKeyboard.ShowAndVerifyPassword(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, password[0], size, heading.c_str(), retries, autoCloseMs);
-      password.resize(size);
-      password.shrink_to_fit();
+      using namespace ::kodi::addon;
+      char* retString = nullptr;
+      int ret = CAddonBase::m_interface->toKodi->kodi_gui->dialogKeyboard->show_and_verify_password(CAddonBase::m_interface->toKodi->kodiBase,
+                                                                                                    password.c_str(), &retString, heading.c_str(),
+                                                                                                    retries, autoCloseMs);
+      if (retString != nullptr)
+      {
+        if (std::strlen(retString))
+          password = retString;
+        CAddonBase::m_interface->toKodi->free_string(CAddonBase::m_interface->toKodi->kodiBase, retString);
+      }
       return ret;
     }
     //--------------------------------------------------------------------------
 
     //==========================================================================
     ///
-    /// \ingroup cpp_kodi_gui_DialogKeyboard
+    /// \ingroup cpp_kodi_gui_dialogs_Keyboard
     /// @brief Shows a filter related keyboard
     ///
-    /// @param[out] text           Overwritten with user input if  return=true.
+    /// @param[in,out] text        Overwritten with user input if  return=true.
     /// @param[in] searching       Use dialog for  search and  send  our  search
     ///                            message in safe way (only  the active  window
     ///                            needs it)
@@ -357,23 +365,25 @@ namespace gui
     ///                            false   if  unsuccessful  display,   no  user
     ///                            input, or canceled editing.
     ///
-    inline bool ShowAndGetFilter(
-      std::string&            text,
-      bool                    searching,
-      unsigned int            autoCloseMs = 0)
+    inline bool ShowAndGetFilter(std::string& text, bool searching, unsigned int autoCloseMs = 0)
     {
-      text.resize(1024);
-      unsigned int size = (unsigned int)text.capacity();
-      bool ret = ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->dialogKeyboard.ShowAndGetFilter(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, text[0], size, searching, autoCloseMs);
-      text.resize(size);
-      text.shrink_to_fit();
+      using namespace ::kodi::addon;
+      char* retString = nullptr;
+      bool ret = CAddonBase::m_interface->toKodi->kodi_gui->dialogKeyboard->show_and_get_filter(CAddonBase::m_interface->toKodi->kodiBase,
+                                                                                                text.c_str(), &retString, searching, autoCloseMs);
+      if (retString != nullptr)
+      {
+        if (std::strlen(retString))
+          text = retString;
+        CAddonBase::m_interface->toKodi->free_string(CAddonBase::m_interface->toKodi->kodiBase, retString);
+      }
       return ret;
     }
     //--------------------------------------------------------------------------
 
     //==========================================================================
     ///
-    /// \ingroup cpp_kodi_gui_DialogKeyboard
+    /// \ingroup cpp_kodi_gui_dialogs_Keyboard
     /// @brief Send a text to a visible keyboard
     ///
     /// @param[in] text            Overwritten with user input if  return=true.
@@ -381,27 +391,29 @@ namespace gui
     /// @return                    true   if    successful   done,    false   if
     ///                            unsuccessful or keyboard not present.
     ///
-    inline bool SendTextToActiveKeyboard(
-      const std::string&      text,
-      bool                    closeKeyboard = false)
+    inline bool SendTextToActiveKeyboard(const std::string& text, bool closeKeyboard = false)
     {
-      return ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->dialogKeyboard.SendTextToActiveKeyboard(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, text.c_str(), closeKeyboard);
+      using namespace ::kodi::addon;
+      return CAddonBase::m_interface->toKodi->kodi_gui->dialogKeyboard->send_text_to_active_keyboard(CAddonBase::m_interface->toKodi->kodiBase,
+                                                                                                     text.c_str(), closeKeyboard);
     }
     //--------------------------------------------------------------------------
 
     //==========================================================================
     ///
-    /// \ingroup cpp_kodi_gui_DialogKeyboard
+    /// \ingroup cpp_kodi_gui_dialogs_Keyboard
     /// @brief Check for visible keyboard on GUI
     ///
     /// @return  true if keyboard present, false if not present
     ///
     inline bool IsKeyboardActivated()
     {
-      return ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->dialogKeyboard.isKeyboardActivated(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase);
+      using namespace ::kodi::addon;
+      return CAddonBase::m_interface->toKodi->kodi_gui->dialogKeyboard->is_keyboard_activated(CAddonBase::m_interface->toKodi->kodiBase);
     }
     //--------------------------------------------------------------------------
   };
 
+} /* namespace dialogs */
 } /* namespace gui */
 } /* namespace kodi */

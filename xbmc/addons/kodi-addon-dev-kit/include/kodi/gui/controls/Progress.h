@@ -19,111 +19,103 @@
  *
  */
 
-#include "../AddonBase.h"
-#include "Window.h"
+#include "../../AddonBase.h"
+#include "../Window.h"
 
 namespace kodi
 {
 namespace gui
 {
+namespace controls
+{
 
   //============================================================================
   ///
-  /// \defgroup cpp_kodi_gui_CControlLabel Control Label
+  /// \defgroup cpp_kodi_gui_controls_CProgress Control Progress
   /// \ingroup cpp_kodi_gui
-  /// @brief \cpp_class{ kodi::gui::CControlLabel }
-  /// **Window control used to show some lines of text.**
+  /// @brief \cpp_class{ kodi::gui::controls::CProgress }
+  /// **Window control to show the progress of a particular operation**
   ///
-  /// The  label control  is used for  displaying text  in Kodi.  You can choose
-  /// the font, size, colour, location and contents of the text to be displayed.
+  /// The progress control is used to show the progress of an item that may take
+  /// a long time,  or to show how far  through a movie you are.  You can choose
+  /// the position, size, and look of the progress control.
   ///
-  /// It has the header \ref ControlLabel.h "#include <kodi/gui/ControlLabel.h>"
+  /// It has the header \ref Progress.h "#include <kodi/gui/controls/Progress.h>"
   /// be included to enjoy it.
   ///
-  /// Here you find the needed skin part for a \ref Label_Control "label control"
+  /// Here you find the needed skin part for a \ref Progress_Control "progress control"
   ///
-  /// @note The  call  of the control  is only possible  from the  corresponding
+  /// @note The call of the control is only possible from the corresponding
   /// window as its class and identification number is required.
   ///
-  class CControlLabel
+  class CProgress : public CAddonGUIControlBase
   {
   public:
     //==========================================================================
     ///
-    /// \ingroup cpp_kodi_gui_CControlLabel
+    /// \ingroup cpp_kodi_gui_controls_CProgress
     /// @brief Construct a new control
     ///
     /// @param[in] window               related window control class
     /// @param[in] controlId            Used skin xml control id
     ///
-    CControlLabel(CWindow* window, int controlId)
-      : m_Window(window),
-        m_ControlId(controlId)
+    CProgress(CWindow* window, int controlId)
+      : CAddonGUIControlBase(window)
     {
-      m_ControlHandle = ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->window.GetControl_Label(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_Window->m_WindowHandle, controlId);
-      if (!m_ControlHandle)
-        kodi::Log(ADDON_LOG_FATAL, "kodi::gui::CControlLabel can't create control class from Kodi !!!");
+      m_controlHandle = m_interface->kodi_gui->window->get_control_progress(m_interface->kodiBase, m_Window->GetControlHandle(), controlId);
+      if (!m_controlHandle)
+        kodi::Log(ADDON_LOG_FATAL, "kodi::gui::controls::CProgress can't create control class from Kodi !!!");
     }
     //--------------------------------------------------------------------------
 
     //==========================================================================
     ///
-    /// \ingroup cpp_kodi_gui_CControlLabel
+    /// \ingroup cpp_kodi_gui_controls_CProgress
     /// @brief Destructor
     ///
-    virtual ~CControlLabel() { }
+    virtual ~CProgress() = default;
     //--------------------------------------------------------------------------
 
     //==========================================================================
     ///
-    /// \ingroup cpp_kodi_gui_CControlLabel
+    /// \ingroup cpp_kodi_gui_controls_CProgress
     /// @brief Set the control on window to visible
     ///
     /// @param[in] visible              If true visible, otherwise hidden
     ///
     void SetVisible(bool visible)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlLabel.SetVisible(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ControlHandle, visible);
+      m_interface->kodi_gui->control_progress->set_visible(m_interface->kodiBase, m_controlHandle, visible);
     }
     //--------------------------------------------------------------------------
 
     //==========================================================================
     ///
-    /// \ingroup cpp_kodi_gui_CControlLabel
-    /// @brief To set the text string on label
+    /// \ingroup cpp_kodi_gui_controls_CProgress
+    /// @brief To set Percent position of control
     ///
-    /// @param[in] text                 Text to show
+    /// @param[in] percent              The percent position to use
     ///
-    void SetLabel(const std::string& text)
+    void SetPercentage(float percent)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlLabel.SetLabel(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ControlHandle, text.c_str());
+      m_interface->kodi_gui->control_progress->set_percentage(m_interface->kodiBase, m_controlHandle, percent);
     }
     //--------------------------------------------------------------------------
 
     //==========================================================================
     ///
-    /// \ingroup cpp_kodi_gui_CControlLabel
-    /// @brief Get the used text from control
+    /// \ingroup cpp_kodi_gui_controls_CProgress
+    /// @brief Get the active percent position of progress bar
     ///
-    /// @return                         Used text on label control
+    /// @return                         Progress position as percent
     ///
-    std::string GetLabel() const
+    float GetPercentage() const
     {
-      std::string text;
-      text.resize(1024);
-      unsigned int size = (unsigned int)text.capacity();
-      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlLabel.GetLabel(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ControlHandle, text[0], size);
-      text.resize(size);
-      text.shrink_to_fit();
-      return text;
+      return m_interface->kodi_gui->control_progress->get_percentage(m_interface->kodiBase, m_controlHandle);
     }
     //--------------------------------------------------------------------------
-
-  private:
-    CWindow* m_Window;
-    int m_ControlId;
-    void* m_ControlHandle;
   };
 
+} /* namespace controls */
 } /* namespace gui */
 } /* namespace kodi */

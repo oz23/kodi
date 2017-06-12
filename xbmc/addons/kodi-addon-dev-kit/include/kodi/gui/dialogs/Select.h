@@ -19,36 +19,36 @@
  *
  */
 
-#include "definitions.h"
-#include "../AddonBase.h"
+#include "../definitions.h"
+#include "../../AddonBase.h"
 
 namespace kodi
 {
 namespace gui
 {
+namespace dialogs
+{
 
   //============================================================================
   ///
-  /// \defgroup cpp_kodi_gui_DialogSelect Dialog Select
+  /// \defgroup cpp_kodi_gui_dialogs_Select Dialog Select
   /// \ingroup cpp_kodi_gui
   /// @{
-  /// @brief \cpp_namespace{ kodi::gui::DialogSelect }
+  /// @brief \cpp_namespace{ kodi::gui::dialogs::Select }
   /// **Selection dialog**
   ///
   /// The function listed below permits the call of a dialogue to select of an
   /// entry as a key
   ///
-  /// These are pure static functions them no other initialization need.
-  ///
-  /// It has the header \ref DialogSelect.h "#include <kodi/gui/DialogSelect.h>"
+  /// It has the header \ref Select.h "#include <kodi/gui/dialogs/Select.h>"
   /// be included to enjoy it.
   ///
   ///
-  namespace DialogSelect
+  namespace Select
   {
     //==========================================================================
     ///
-    /// \ingroup cpp_kodi_gui_DialogSelect
+    /// \ingroup cpp_kodi_gui_dialogs_Select
     /// @brief Show a selection dialog about given parts.
     ///
     /// @param[in] heading      Dialog heading name
@@ -64,7 +64,7 @@ namespace gui
     ///
     /// **Example:**
     /// ~~~~~~~~~~~~~{.cpp}
-    /// #include <kodi/gui/DialogSelect.h>
+    /// #include <kodi/gui/dialogs/Select.h>
     ///
     /// const std::vector<std::string> entries
     /// {
@@ -75,26 +75,23 @@ namespace gui
     ///   "Test 5"
     /// };
     ///
-    /// int selected = kodi::gui::DialogSelect::Show("Test selection", entries, -1);
+    /// int selected = kodi::gui::dialogs::Select::Show("Test selection", entries, -1);
     /// if (selected < 0)
     ///   fprintf(stderr, "Item selection canceled\n");
     /// else
     ///   fprintf(stderr, "Selected item is: %i\n", selected);
     /// ~~~~~~~~~~~~~
     ///
-    inline int Show(
-      const std::string& heading,
-      const std::vector<std::string>& entries,
-      int selected = -1,
-      bool autoclose = false)
+    inline int Show(const std::string& heading, const std::vector<std::string>& entries, int selected = -1, bool autoclose = false)
     {
+      using namespace ::kodi::addon;
       unsigned int size = entries.size();
       const char** cEntries = (const char**)malloc(size*sizeof(const char**));
       for (unsigned int i = 0; i < size; ++i)
       {
         cEntries[i] = entries[i].c_str();
       }
-      int ret = ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->dialogSelect.Open(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, heading.c_str(), cEntries, size, selected, autoclose);
+      int ret = CAddonBase::m_interface->toKodi->kodi_gui->dialogSelect->open(CAddonBase::m_interface->toKodi->kodiBase, heading.c_str(), cEntries, size, selected, autoclose);
       free(cEntries);
       return ret;
     }
@@ -102,5 +99,6 @@ namespace gui
   };
   /// @}
 
+} /* namespace dialogs */
 } /* namespace gui */
 } /* namespace kodi */

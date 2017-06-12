@@ -19,19 +19,21 @@
  *
  */
 
-#include "../AddonBase.h"
-#include "Window.h"
+#include "../../AddonBase.h"
+#include "../Window.h"
 
 namespace kodi
 {
 namespace gui
 {
+namespace controls
+{
 
   //============================================================================
   ///
-  /// \defgroup cpp_kodi_gui_CControlRendering Control Rendering
+  /// \defgroup cpp_kodi_gui_controls_CRendering Control Rendering
   /// \ingroup cpp_kodi_gui
-  /// @brief \cpp_class{ kodi::gui::CControlRendering }
+  /// @brief \cpp_class{ kodi::gui::controls::CRendering }
   /// **Window control for rendering own parts**
   ///
   /// This rendering control is used  when own parts are needed.  You  have  the
@@ -39,10 +41,10 @@ namespace gui
   /// screen set by the size of them.
   ///
   /// Alternative  can be  the virtual  functions from t his been ignored if the
-  /// callbacks are  defined  by the  \ref CControlRendering_SetIndependentCallbacks function  and
+  /// callbacks are  defined  by the  \ref CRendering_SetIndependentCallbacks function  and
   /// class is used as single and not as a parent class.
   ///
-  /// It has the header \ref ControlRendering.h "#include <kodi/gui/ControlRendering.h>"
+  /// It has the header \ref Rendering.h "#include <kodi/gui/controls/Rendering.h>"
   /// be included to enjoy it.
   ///
   /// Here you find the needed skin part for a \ref Addon_Rendering_control "rendering control"
@@ -53,49 +55,48 @@ namespace gui
 
   //============================================================================
   ///
-  /// \defgroup cpp_kodi_gui_CControlRendering_Defs Definitions, structures and enumerators
-  /// \ingroup cpp_kodi_gui_CControlRendering
+  /// \defgroup cpp_kodi_gui_controls_CRendering_Defs Definitions, structures and enumerators
+  /// \ingroup cpp_kodi_gui_controls_CRendering
   /// @brief **Library definition values**
   ///
 
-  class CControlRendering
+  class CRendering : public CAddonGUIControlBase
   {
   public:
     //==========================================================================
     ///
-    /// \ingroup cpp_kodi_gui_CControlRendering
+    /// \ingroup cpp_kodi_gui_controls_CRendering
     /// @brief Construct a new control
     ///
     /// @param[in] window               related window control class
     /// @param[in] controlId            Used skin xml control id
     ///
-    CControlRendering(CWindow* window, int controlId)
-      : m_Window(window),
-        m_ControlId(controlId)
+    CRendering(CWindow* window, int controlId)
+      : CAddonGUIControlBase(window)
     {
-      m_ControlHandle = ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->window.GetControl_RenderAddon(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_Window->m_WindowHandle, controlId);
-      if (m_ControlHandle)
-        ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlRendering.SetCallbacks(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ControlHandle, this,
-                                              OnCreateCB, OnRenderCB, OnStopCB, OnDirtyCB);
+      m_controlHandle = m_interface->kodi_gui->window->get_control_render_addon(m_interface->kodiBase, m_Window->GetControlHandle(), controlId);
+      if (m_controlHandle)
+        m_interface->kodi_gui->control_rendering->set_callbacks(m_interface->kodiBase, m_controlHandle, this,
+                                                                OnCreateCB, OnRenderCB, OnStopCB, OnDirtyCB);
       else
-        kodi::Log(ADDON_LOG_FATAL, "kodi::gui::CControlRendering can't create control class from Kodi !!!");
+        kodi::Log(ADDON_LOG_FATAL, "kodi::gui::controls::%s can't create control class from Kodi !!!", __FUNCTION__);
     }
     //--------------------------------------------------------------------------
 
     //==========================================================================
     ///
-    /// \ingroup cpp_kodi_gui_CControlRendering
+    /// \ingroup cpp_kodi_gui_controls_CRendering
     /// @brief Destructor
     ///
-    virtual ~CControlRendering()
+    virtual ~CRendering()
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlRendering.Delete(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ControlHandle);
+      m_interface->kodi_gui->control_rendering->destroy(m_interface->kodiBase, m_controlHandle);
     }
     //--------------------------------------------------------------------------
 
     //==========================================================================
     ///
-    /// \ingroup cpp_kodi_gui_CControlRendering
+    /// \ingroup cpp_kodi_gui_controls_CRendering
     /// @brief To create rendering control on Add-on
     ///
     /// Function  creates the  needed rendering  control for Kodi  which becomes
@@ -118,7 +119,7 @@ namespace gui
 
     //==========================================================================
     ///
-    /// \ingroup cpp_kodi_gui_CControlRendering
+    /// \ingroup cpp_kodi_gui_controls_CRendering
     /// @brief Render process call from Kodi
     ///
     /// @note This  is callback  function from  Kodi to  Add-on  and not  to use
@@ -129,7 +130,7 @@ namespace gui
 
     //==========================================================================
     ///
-    /// \ingroup cpp_kodi_gui_CControlRendering
+    /// \ingroup cpp_kodi_gui_controls_CRendering
     /// @brief Call from Kodi to stop rendering process
     ///
     /// @note This  is callback  function from  Kodi to  Add-on  and not  to use
@@ -140,7 +141,7 @@ namespace gui
 
     //==========================================================================
     ///
-    /// \ingroup cpp_kodi_gui_CControlRendering
+    /// \ingroup cpp_kodi_gui_controls_CRendering
     /// @brief Call from Kodi where add-on  becomes asked about  dirty rendering
     /// region.
     ///
@@ -152,10 +153,10 @@ namespace gui
 
     //==========================================================================
     ///
-    /// \ingroup cpp_kodi_gui_CControlRendering
-    /// \anchor CControlRendering_SetIndependentCallbacks
-    /// @brief If the  class is used  independent (with "new CControlRendering")
-    /// and not as  parent (with "cCLASS_own : CControlRendering") from own must
+    /// \ingroup cpp_kodi_gui_controls_CRendering
+    /// \anchor CRendering_SetIndependentCallbacks
+    /// @brief If the  class is used  independent (with "new CRendering")
+    /// and not as  parent (with "cCLASS_own : CRendering") from own must
     /// be the callback from Kodi to add-on overdriven with own functions!
     ///
     void SetIndependentCallbacks(
@@ -173,45 +174,42 @@ namespace gui
       if (!cbhdl ||
           !CBCreate || !CBRender || !CBStop || !CBDirty)
       {
-        fprintf(stderr, "ERROR: CControlRendering - SetIndependentCallbacks called with nullptr !!!\n");
+        kodi::Log(ADDON_LOG_ERROR, "kodi::gui::controls::%s called with nullptr !!!", __FUNCTION__);
         return;
       }
 
-      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlRendering.SetCallbacks(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ControlHandle, cbhdl,
+      m_interface->kodi_gui->control_rendering->set_callbacks(m_interface->kodiBase, m_controlHandle, cbhdl,
                                           CBCreate, CBRender, CBStop, CBDirty);
     }
     //--------------------------------------------------------------------------
 
   private:
-    CWindow* m_Window;
-    int m_ControlId;
-    void* m_ControlHandle;
-
     /*
      * Defined callback functions from Kodi to add-on, for use in parent / child system
      * (is private)!
      */
     static bool OnCreateCB(void* cbhdl, int x, int y, int w, int h, void* device)
     {
-      return static_cast<CControlRendering*>(cbhdl)->Create(x, y, w, h, device);
+      return static_cast<CRendering*>(cbhdl)->Create(x, y, w, h, device);
     }
 
     static void OnRenderCB(void* cbhdl)
     {
-      static_cast<CControlRendering*>(cbhdl)->Render();
+      static_cast<CRendering*>(cbhdl)->Render();
     }
 
     static void OnStopCB(void* cbhdl)
     {
-      static_cast<CControlRendering*>(cbhdl)->Stop();
+      static_cast<CRendering*>(cbhdl)->Stop();
     }
 
     static bool OnDirtyCB(void* cbhdl)
     {
-      return static_cast<CControlRendering*>(cbhdl)->Dirty();
+      return static_cast<CRendering*>(cbhdl)->Dirty();
     }
 
   };
 
+} /* namespace controls */
 } /* namespace gui */
 } /* namespace kodi */

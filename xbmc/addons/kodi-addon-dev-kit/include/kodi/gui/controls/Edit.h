@@ -19,26 +19,28 @@
  *
  */
 
-#include "../AddonBase.h"
-#include "Window.h"
+#include "../../AddonBase.h"
+#include "../Window.h"
 
 namespace kodi
 {
 namespace gui
 {
+namespace controls
+{
 
   //============================================================================
   ///
-  /// \defgroup cpp_kodi_gui_CControlEdit Control Edit
+  /// \defgroup cpp_kodi_gui_controls_CEdit Control Edit
   /// \ingroup cpp_kodi_gui
-  /// @brief \cpp_class{ kodi::gui::CControlEdit }
+  /// @brief \cpp_class{ kodi::gui::controls::CEdit }
   /// **Editable window text control used as an input control for the osd keyboard
   /// and other input fields**
   ///
   /// The edit control  allows a user to  input text in Kodi. You can choose the
   /// font, size, colour, location and header of the text to be displayed.
   ///
-  /// It has the header \ref ControlEdit.h "#include <kodi/gui/ControlEdit.h>"
+  /// It has the header \ref Edit.h "#include <kodi/gui/controls/Edit.h>"
   /// be included to enjoy it.
   ///
   /// Here  you  find  the   needed  skin  part  for  a   \ref skin_Edit_control
@@ -49,118 +51,165 @@ namespace gui
   ///
 
   //============================================================================
-  // see gui/definition.h for use of group "cpp_kodi_gui_CControlEdit_Defs"
+  // see gui/definition.h for use of group "cpp_kodi_gui_controls_CEdit_Defs"
   ///
-  /// \defgroup cpp_kodi_gui_CControlEdit_Defs Definitions, structures and enumerators
-  /// \ingroup cpp_kodi_gui_CControlEdit
+  /// \defgroup cpp_kodi_gui_controls_CEdit_Defs Definitions, structures and enumerators
+  /// \ingroup cpp_kodi_gui_controls_CEdit
   /// @brief **Library definition values**
   ///
 
-  class CControlEdit
+} /* namespace controls */
+} /* namespace gui */
+} /* namespace kodi */
+
+//============================================================================
+///
+/// \ingroup cpp_kodi_gui_controls_CEdit_Defs
+/// @{
+/// @anchor AddonGUIInputType
+/// @brief Text input types used on kodi::gui::controls::CEdit
+enum AddonGUIInputType
+{
+  /// Text inside edit control only readable
+  ADDON_INPUT_TYPE_READONLY = -1,
+  /// Normal text entries
+  ADDON_INPUT_TYPE_TEXT = 0,
+  /// To use on edit control only numeric numbers
+  ADDON_INPUT_TYPE_NUMBER,
+  /// To insert seconds
+  ADDON_INPUT_TYPE_SECONDS,
+  /// To insert time
+  ADDON_INPUT_TYPE_TIME,
+  /// To insert a date
+  ADDON_INPUT_TYPE_DATE,
+  /// Used for write in IP addresses
+  ADDON_INPUT_TYPE_IPADDRESS,
+  /// Text field used as password entry field with not visible text
+  ADDON_INPUT_TYPE_PASSWORD,
+  /// Text field used as password entry field with not visible text but
+  /// returned as MD5 value
+  ADDON_INPUT_TYPE_PASSWORD_MD5,
+  /// Use text field for search purpose
+  ADDON_INPUT_TYPE_SEARCH,
+  /// Text field as filter
+  ADDON_INPUT_TYPE_FILTER,
+  ///
+  ADDON_INPUT_TYPE_PASSWORD_NUMBER_VERIFY_NEW
+};
+/// @}
+//----------------------------------------------------------------------------
+
+namespace kodi
+{
+namespace gui
+{
+namespace controls
+{
+
+  class CEdit : public CAddonGUIControlBase
   {
   public:
     //==========================================================================
     ///
-    /// \ingroup cpp_kodi_gui_CControlEdit
+    /// \ingroup cpp_kodi_gui_controls_CEdit
     /// @brief Construct a new control
     ///
     /// @param[in] window               related window control class
     /// @param[in] controlId            Used skin xml control id
     ///
-    CControlEdit(CWindow* window, int controlId)
-      : m_Window(window),
-        m_ControlId(controlId)
+    CEdit(CWindow* window, int controlId)
+      : CAddonGUIControlBase(window)
     {
-      m_ControlHandle = ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->window.GetControl_Edit(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_Window->m_WindowHandle, controlId);
-      if (!m_ControlHandle)
-        kodi::Log(ADDON_LOG_FATAL, "kodi::gui::CControlEdit can't create control class from Kodi !!!");
+      m_controlHandle = m_interface->kodi_gui->window->get_control_edit(m_interface->kodiBase, m_Window->GetControlHandle(), controlId);
+      if (!m_controlHandle)
+        kodi::Log(ADDON_LOG_FATAL, "kodi::gui::control::CEdit can't create control class from Kodi !!!");
     }
     //--------------------------------------------------------------------------
 
     //==========================================================================
     ///
-    /// \ingroup cpp_kodi_gui_CControlEdit
+    /// \ingroup cpp_kodi_gui_controls_CEdit
     /// @brief Destructor
     ///
-    virtual ~CControlEdit()
-    {
-    }
+    virtual ~CEdit() = default;
     //--------------------------------------------------------------------------
 
     //==========================================================================
     ///
-    /// \ingroup cpp_kodi_gui_CControlEdit
+    /// \ingroup cpp_kodi_gui_controls_CEdit
     /// @brief Set the control on window to visible
     ///
     /// @param[in] visible              If true visible, otherwise hidden
     ///
     void SetVisible(bool visible)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlEdit.SetVisible(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ControlHandle, visible);
+      m_interface->kodi_gui->control_edit->set_visible(m_interface->kodiBase, m_controlHandle, visible);
     }
     //--------------------------------------------------------------------------
 
     //==========================================================================
     ///
-    /// \ingroup cpp_kodi_gui_CControlEdit
+    /// \ingroup cpp_kodi_gui_controls_CEdit
     /// @brief Set's the control's enabled/disabled state
     ///
     /// @param[in] enabled              If true enabled, otherwise disabled
     ///
     void SetEnabled(bool enabled)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlEdit.SetEnabled(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ControlHandle, enabled);
+      m_interface->kodi_gui->control_edit->set_enabled(m_interface->kodiBase, m_controlHandle, enabled);
     }
     //--------------------------------------------------------------------------
 
     //==========================================================================
     ///
-    /// \ingroup cpp_kodi_gui_CControlEdit
+    /// \ingroup cpp_kodi_gui_controls_CEdit
     /// @brief To set the text string on edit control
     ///
     /// @param[in] label                Text to show
     ///
     void SetLabel(const std::string& label)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlEdit.SetLabel(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ControlHandle, label.c_str());
+      m_interface->kodi_gui->control_edit->set_label(m_interface->kodiBase, m_controlHandle, label.c_str());
     }
     //--------------------------------------------------------------------------
 
     //==========================================================================
     ///
-    /// \ingroup cpp_kodi_gui_CControlEdit
+    /// \ingroup cpp_kodi_gui_controls_CEdit
     /// @brief Returns the text heading for this edit control.
     ///
     /// @return                         Heading text
     ///
     std::string GetLabel() const
     {
-      std::string text;
-      text.resize(1024);
-      unsigned int size = (unsigned int)text.capacity();
-      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlEdit.GetLabel(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ControlHandle, text[0], size);
-      text.resize(size);
-      text.shrink_to_fit();
-      return text;
+      std::string label;
+      char* ret = m_interface->kodi_gui->control_edit->get_label(m_interface->kodiBase, m_controlHandle);
+      if (ret != nullptr)
+      {
+        if (std::strlen(ret))
+          label = ret;
+        m_interface->free_string(m_interface->kodiBase, ret);
+      }
+      return label;
     }
     //--------------------------------------------------------------------------
 
     //==========================================================================
     ///
-    /// \ingroup cpp_kodi_gui_CControlEdit
+    /// \ingroup cpp_kodi_gui_controls_CEdit
     /// @brief Set's text heading for this edit control.
     ///
     /// @param[in] text                 string or unicode - text string.
     ///
     void SetText(const std::string& text)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlEdit.SetText(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ControlHandle, text.c_str());
+      m_interface->kodi_gui->control_edit->set_text(m_interface->kodiBase, m_controlHandle, text.c_str());
     }
     //--------------------------------------------------------------------------
 
     //==========================================================================
     ///
-    /// \ingroup cpp_kodi_gui_CControlEdit
+    /// \ingroup cpp_kodi_gui_controls_CEdit
     /// @brief Returns the text value for this edit control.
     ///
     /// @return                         Text value of control
@@ -168,62 +217,60 @@ namespace gui
     std::string GetText() const
     {
       std::string text;
-      text.resize(1024);
-      unsigned int size = (unsigned int)text.capacity();
-      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlEdit.GetText(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ControlHandle, text[0], size);
-      text.resize(size);
-      text.shrink_to_fit();
+      char* ret = m_interface->kodi_gui->control_edit->get_text(m_interface->kodiBase, m_controlHandle);
+      if (ret != nullptr)
+      {
+        if (std::strlen(ret))
+          text = ret;
+        m_interface->free_string(m_interface->kodiBase, ret);
+      }
       return text;
     }
     //--------------------------------------------------------------------------
 
     //==========================================================================
     ///
-    /// \ingroup cpp_kodi_gui_CControlEdit
+    /// \ingroup cpp_kodi_gui_controls_CEdit
     /// @brief Set the cursor position on text.
     ///
     /// @param[in] iPosition            The position to set
     ///
     void SetCursorPosition(unsigned int iPosition)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlEdit.SetCursorPosition(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ControlHandle, iPosition);
+      m_interface->kodi_gui->control_edit->set_cursor_position(m_interface->kodiBase, m_controlHandle, iPosition);
     }
     //--------------------------------------------------------------------------
 
     //==========================================================================
     ///
-    /// \ingroup cpp_kodi_gui_CControlEdit
+    /// \ingroup cpp_kodi_gui_controls_CEdit
     /// @brief To get current cursor position on text field
     ///
     /// @return                         The current cursor position
     ///
     unsigned int GetCursorPosition()
     {
-      return ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlEdit.GetCursorPosition(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ControlHandle);
+      return m_interface->kodi_gui->control_edit->get_cursor_position(m_interface->kodiBase, m_controlHandle);
     }
     //--------------------------------------------------------------------------
 
     //==========================================================================
     ///
-    /// \ingroup cpp_kodi_gui_CControlEdit
+    /// \ingroup cpp_kodi_gui_controls_CEdit
     /// @brief To set field input type which are defined on \ref AddonGUIInputType
     ///
-    /// @param[in] type                 The   \ref AddonGUIInputType "Add-on input type"
+    /// @param[in] type                 The \ref AddonGUIInputType "Add-on input type"
     ///                                 to use
-    /// @param[in] heading              The heading  text for  related  keyboard
+    /// @param[in] heading              The heading text for related keyboard
     ///                                 dialog
     ///
     void SetInputType(AddonGUIInputType type, const std::string& heading)
     {
-      ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->controlEdit.SetInputType(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase, m_ControlHandle, type, heading.c_str());
+      m_interface->kodi_gui->control_edit->set_input_type(m_interface->kodiBase, m_controlHandle, static_cast<int>(type), heading.c_str());
     }
     //--------------------------------------------------------------------------
-
-  private:
-    CWindow* m_Window;
-    int m_ControlId;
-    void* m_ControlHandle;
   };
 
+} /* namespace controls */
 } /* namespace gui */
 } /* namespace kodi */
