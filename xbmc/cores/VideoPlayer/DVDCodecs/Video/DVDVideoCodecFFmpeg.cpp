@@ -970,11 +970,14 @@ bool CDVDVideoCodecFFmpeg::GetPictureCommon(VideoPicture* pVideoPicture)
   }
 
   pVideoPicture->iRepeatPicture = 0.5 * m_pFrame->repeat_pict;
+  pVideoPicture->iFlags = 0;
   pVideoPicture->iFlags |= m_pFrame->interlaced_frame ? DVP_FLAG_INTERLACED : 0;
   pVideoPicture->iFlags |= m_pFrame->top_field_first ? DVP_FLAG_TOP_FIELD_FIRST: 0;
 
   if (m_codecControlFlags & DVD_CODEC_CTRL_DROP)
+  {
     pVideoPicture->iFlags |= DVP_FLAG_DROPPED;
+  }
 
   pVideoPicture->chroma_position = m_pCodecContext->chroma_sample_location;
   pVideoPicture->color_primaries = m_pCodecContext->color_primaries;
