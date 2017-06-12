@@ -191,6 +191,7 @@ XVisualInfo* CWinSystemX11GLContext::GetVisual()
 }
 
 #if defined (HAVE_LIBVA)
+#include <va/va_x11.h>
 #include "cores/VideoPlayer/DVDCodecs/Video/VAAPI.h"
 #include "cores/VideoPlayer/VideoRenderers/HwDecRender/RendererVAAPIGL.h"
 #endif
@@ -266,4 +267,12 @@ uint64_t CWinSystemX11GLContext::GetTimeSinceVblank()
     return m_pGLContext->GetTimeSinceVblank();
 
   return 0;
+}
+
+void* CWinSystemX11GLContext::GetVaDisplay()
+{
+#if defined(HAVE_LIBVA)
+  return vaGetDisplay(m_dpy);
+#endif
+  return nullptr;
 }
