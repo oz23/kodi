@@ -192,25 +192,36 @@ XVisualInfo* CWinSystemX11GLContext::GetVisual()
 
 bool CWinSystemX11GLContext::RefreshGLContext(bool force)
 {
-  if (!m_pGLContext)
+  bool success = false;
+  if (m_pGLContext)
   {
-    m_pGLContext = new CGLContextEGL(m_dpy);
+    success = m_pGLContext->Refresh(force, m_nScreen, m_glWindow, m_newGlContext);
+    return success;
   }
 
-  bool success = m_pGLContext->Refresh(force, m_nScreen, m_glWindow, m_newGlContext);
+  m_pGLContext = new CGLContextEGL(m_dpy);
+  success = m_pGLContext->Refresh(force, m_nScreen, m_glWindow, m_newGlContext);
   if (success)
   {
-    VAAPI::CDecoder::CheckCaps(static_cast<CGLContextEGL*>(m_pGLContext)->m_eglDisplay);
-    return true;
+    std::string gpuvendor;
+    const char* vend = (const char*) glGetString(GL_VENDOR);
+    if (vend)
+      gpuvendor = vend;
+    std::transform(gpuvendor.begin(), gpuvendor.end(), gpuvendor.begin(), ::tolower);
+    if (gpuvendor.compare(0, 5, "intel") == 0)
+    {
+      VAAPI::CDecoder::CheckCaps(static_cast<CGLContextEGL*>(m_pGLContext)->m_eglDisplay);
+      return success;
+    }
+    delete m_pGLContext;
   }
 
-  // fallback for vdpau and NVIdia crap
-  delete m_pGLContext;
+  // fallback for vdpau
   m_pGLContext = new CGLContextGLX(m_dpy);
   success = m_pGLContext->Refresh(force, m_nScreen, m_glWindow, m_newGlContext);
   if (success)
   {
-    VDPAU::CDecoder::CheckCaps();
+    //VDPAU::CDecoder::CheckCaps();
   }
   return success;
 }
