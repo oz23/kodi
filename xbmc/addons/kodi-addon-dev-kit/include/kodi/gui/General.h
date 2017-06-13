@@ -50,7 +50,8 @@ namespace gui
   ///
   inline void Lock()
   {
-    ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->general.lock();
+    using namespace ::kodi::addon;
+    CAddonBase::m_interface->toKodi->kodi_gui->general->lock();
   }
 
   //--------------------------------------------------------------------------
@@ -62,7 +63,8 @@ namespace gui
   ///
   inline void Unlock()
   {
-    ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->general.unlock();
+    using namespace ::kodi::addon;
+    CAddonBase::m_interface->toKodi->kodi_gui->general->unlock();
   }
   //--------------------------------------------------------------------------
 
@@ -73,7 +75,8 @@ namespace gui
   ///
   inline int GetScreenHeight()
   {
-    return ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->general.get_screen_height(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase);
+    using namespace ::kodi::addon;
+    return CAddonBase::m_interface->toKodi->kodi_gui->general->get_screen_height(CAddonBase::m_interface->toKodi->kodiBase);
   }
   //--------------------------------------------------------------------------
 
@@ -84,7 +87,8 @@ namespace gui
   ///
   inline int GetScreenWidth()
   {
-    return ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->general.get_screen_width(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase);
+    using namespace ::kodi::addon;
+    return CAddonBase::m_interface->toKodi->kodi_gui->general->get_screen_width(CAddonBase::m_interface->toKodi->kodiBase);
   }
   //--------------------------------------------------------------------------
 
@@ -95,7 +99,8 @@ namespace gui
   ///
   inline int GetVideoResolution()
   {
-    return ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->general.get_video_resolution(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase);
+    using namespace ::kodi::addon;
+    return CAddonBase::m_interface->toKodi->kodi_gui->general->get_video_resolution(CAddonBase::m_interface->toKodi->kodiBase);
   }
   //--------------------------------------------------------------------------
 
@@ -112,13 +117,14 @@ namespace gui
   /// **Example:**
   /// ~~~~~~~~~~~~~{.cpp}
   /// ..
-  /// int wid = kodi::gui::general::GetCurrentWindowDialogId()
+  /// int wid = kodi::gui::GetCurrentWindowDialogId()
   /// ..
   /// ~~~~~~~~~~~~~
   ///
   inline int GetCurrentWindowDialogId()
   {
-    return ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->general.get_current_window_dialog_id(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase);
+    using namespace ::kodi::addon;
+    return CAddonBase::m_interface->toKodi->kodi_gui->general->get_current_window_dialog_id(CAddonBase::m_interface->toKodi->kodiBase);
   }
   //--------------------------------------------------------------------------
 
@@ -135,13 +141,14 @@ namespace gui
   /// **Example:**
   /// ~~~~~~~~~~~~~{.cpp}
   /// ..
-  /// int wid = kodi::gui::general::GetCurrentWindowId()
+  /// int wid = kodi::gui::GetCurrentWindowId()
   /// ..
   /// ~~~~~~~~~~~~~
   ///
   inline int GetCurrentWindowId()
   {
-    return ::kodi::addon::CAddonBase::m_interface->toKodi->kodi_gui->general.get_current_window_id(::kodi::addon::CAddonBase::m_interface->toKodi->kodiBase);
+    using namespace ::kodi::addon;
+    return CAddonBase::m_interface->toKodi->kodi_gui->general->get_current_window_id(CAddonBase::m_interface->toKodi->kodiBase);
   }
   //--------------------------------------------------------------------------
 

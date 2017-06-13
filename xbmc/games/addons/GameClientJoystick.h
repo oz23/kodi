@@ -24,6 +24,8 @@
 
 struct KodiToAddonFuncTable_Game;
 
+namespace KODI
+{
 namespace GAME
 {
   class CGameClient;
@@ -34,7 +36,7 @@ namespace GAME
    *
    * Listens to game controller events and forwards them to the games (as game_input_event).
    */
-  class CGameClientJoystick : public KODI::JOYSTICK::IInputHandler
+  class CGameClientJoystick : public JOYSTICK::IInputHandler
   {
   public:
     /*!
@@ -52,7 +54,8 @@ namespace GAME
     virtual std::string ControllerID(void) const override;
     virtual bool HasFeature(const std::string& feature) const override;
     virtual bool AcceptsInput(void) override;
-    virtual KODI::JOYSTICK::INPUT_TYPE GetInputType(const std::string& feature) const override;
+    virtual JOYSTICK::INPUT_TYPE GetInputType(const std::string& feature) const override;
+    virtual unsigned int GetDelayMs(const std::string& feature) const override { return 0; }
     virtual bool OnButtonPress(const std::string& feature, bool bPressed) override;
     virtual void OnButtonHold(const std::string& feature, unsigned int holdTimeMs) override { }
     virtual bool OnButtonMotion(const std::string& feature, float magnitude) override;
@@ -67,4 +70,5 @@ namespace GAME
     const ControllerPtr       m_controller;
     const KodiToAddonFuncTable_Game* const m_dllStruct;
   };
+}
 }

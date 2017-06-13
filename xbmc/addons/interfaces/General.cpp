@@ -24,11 +24,12 @@
 
 #include "Application.h"
 #include "addons/AddonDll.h"
-#include "addons/GUIDialogAddonSettings.h"
+#include "addons/settings/GUIDialogAddonSettings.h"
 #include "dialogs/GUIDialogKaiToast.h"
 #include "utils/CharsetConverter.h"
 #include "utils/log.h"
 #include "utils/LangCodeExpander.h"
+#include "utils/md5.h"
 #include "utils/StringUtils.h"
 
 using namespace kodi; // addon-dev-kit namespace
@@ -45,6 +46,7 @@ void Interface_General::Init(AddonGlobalInterface* addonInterface)
   addonInterface->toKodi->kodi->unknown_to_utf8 = unknown_to_utf8;
   addonInterface->toKodi->kodi->get_language = get_language;
   addonInterface->toKodi->kodi->queue_notification = queue_notification;
+  addonInterface->toKodi->kodi->get_md5 = get_md5;
 }
 
 void Interface_General::DeInit(AddonGlobalInterface* addonInterface)
@@ -68,7 +70,7 @@ bool Interface_General::open_settings_dialog(void* kodiBase)
 
   // show settings dialog
   AddonInfoPtr addonInfo = CAddonMgr::GetInstance().GetInstalledAddonInfo(addon->ID());
-  return CGUIDialogAddonSettings::ShowAndGetInput(addonInfo);
+  return CGUIDialogAddonSettings::ShowForAddon(addonInfo);
 }
 
 char* Interface_General::get_localized_string(void* kodiBase, long dwCode)
@@ -137,12 +139,12 @@ char* Interface_General::get_language(void* kodiBase, int format, bool region)
     case LANG_FMT_ISO_639_2:
     {
       std::string langCode;
-      g_LangCodeExpander.ConvertToISO6392T(string, langCode);
+      g_LangCodeExpander.ConvertToISO6392B(string, langCode);
       string = langCode;
       if (region)
       {
         std::string region3Code;
-        g_LangCodeExpander.ConvertToISO6392T(g_langInfo.GetRegionLocale(), region3Code);
+        g_LangCodeExpander.ConvertToISO6392B(g_langInfo.GetRegionLocale(), region3Code);
         if (!region3Code.empty())
           string += "-" + region3Code;
       }
@@ -178,11 +180,13 @@ bool Interface_General::queue_notification(void* kodiBase, int type, const char*
     usedHeader = header;
   else
     usedHeader = addon->Name();
-  
-  if (type != QUEUE_OWN_STYLE)
+
+  QueueMsg qtype = static_cast<QueueMsg>(type);
+
+  if (qtype != QUEUE_OWN_STYLE)
   {
     CGUIDialogKaiToast::eMessageType usedType;
-    switch (type)
+    switch (qtype)
     {
     case QUEUE_WARNING:
       usedType = CGUIDialogKaiToast::Warning;
@@ -215,5 +219,18 @@ bool Interface_General::queue_notification(void* kodiBase, int type, const char*
   }
   return true;
 }
-  
+
+void Interface_General::get_md5(void* kodiBase, const char* text, char* md5)
+{
+  CAddonDll* addon = static_cast<CAddonDll*>(kodiBase);
+  if (addon == nullptr || text == nullptr)
+  {
+    CLog::Log(LOGERROR, "Interface_General::%s - invalid data (addon='%p', text='%p')", __FUNCTION__, addon, text);
+    return;
+  }
+
+  std::string md5Int = XBMC::XBMC_MD5::GetMD5(std::string(text));
+  strncpy(md5, md5Int.c_str(), 40);
+}
+
 } /* namespace ADDON */

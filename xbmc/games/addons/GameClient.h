@@ -36,6 +36,8 @@
 
 class CFileItem;
 
+namespace KODI
+{
 namespace GAME
 {
 
@@ -60,7 +62,7 @@ public:
 
   virtual ~CGameClient(void);
 
-  // Implementation of IAddon via CAddonDll
+  // Implementation of CAddon via CAddonDll
   virtual std::string     MainLibPath() const override;
   virtual ADDON::AddonPtr GetRunningInstance() const override;
 
@@ -200,3 +202,4 @@ private:
 };
 
 } // namespace GAME
+} // namespace KODI

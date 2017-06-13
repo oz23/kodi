@@ -168,7 +168,7 @@ protected:
 
   bool m_streaminfo;
   bool m_checkvideo;
-  int m_displayTime;
+  int m_displayTime = 0;
   double m_dtsAtDisplayTime;
 };
 

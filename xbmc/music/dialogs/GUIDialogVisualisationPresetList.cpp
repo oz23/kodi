@@ -70,7 +70,7 @@ void CGUIDialogVisualisationPresetList::SetVisualisation(CGUIVisualisationContro
         item.RemoveExtension();
         Add(item);
       }
-      SetSelected(m_viz->GetPreset());
+      SetSelected(m_viz->GetActivePreset());
     }
   }
 }

@@ -22,7 +22,7 @@
 #include "dialogs/GUIDialogOK.h"
 #include "guilib/GUIWindowManager.h"
 #include "guilib/WindowIDs.h"
-#include "input/joysticks/DefaultJoystick.h"
+#include "input/joysticks/JoystickIDs.h"
 #include "input/joysticks/IActionMap.h"
 #include "input/joysticks/IButtonMap.h"
 #include "input/joysticks/IButtonMapCallback.h"
@@ -50,8 +50,6 @@ std::string CGUIDialogButtonCapture::ControllerID(void) const
 
 void CGUIDialogButtonCapture::Show()
 {
-  using namespace KODI::MESSAGING;
-
   if (!IsRunning())
   {
     InstallHooks();

@@ -126,7 +126,9 @@ public:
   // and does not need to be passed further down the line (to our global action handlers)
   virtual bool OnAction(const CAction &action);
   
+  using CGUIControlGroup::OnBack;
   virtual bool OnBack(int actionID);
+  using CGUIControlGroup::OnInfo;
   virtual bool OnInfo(int actionID) { return false; };
 
   /*! \brief Clear the background (if necessary) prior to rendering the window
@@ -143,6 +145,7 @@ public:
   int GetPreviousWindow() { return m_previousWindow; };
   CRect GetScaledBounds() const;
   virtual void ClearAll();
+  using CGUIControlGroup::AllocResources;
   virtual void AllocResources(bool forceLoad = false);
   virtual void FreeResources(bool forceUnLoad = false);
   virtual void DynamicResourceAlloc(bool bOnOff);
@@ -166,6 +169,7 @@ public:
   virtual bool IsVisible() const { return true; }; // windows are always considered visible as they implement their own
                                                    // versions of UpdateVisibility, and are deemed visible if they're in
                                                    // the window manager's active list.
+  virtual bool HasVisibleControls() { return true; }; //Assume that window always has visible controls
 
   virtual bool IsAnimating(ANIMATION_TYPE animType);
 
@@ -184,6 +188,7 @@ public:
   void DisableAnimations();
 
   virtual void ResetControlStates();
+  virtual void UpdateControlStats() {}; // Do not count window itself
 
   void       SetRunActionsManually();
   void       RunLoadActions() const;

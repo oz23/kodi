@@ -70,6 +70,7 @@ public:
   bool GetGuiRender();
   void SetVideoRender(bool video);
   bool GetVideoRender();
+  bool IsPlayerStateChanged();
 
 protected:
   std::atomic_bool m_hasAVInfoChanges;
@@ -103,6 +104,7 @@ protected:
   } m_renderInfo;
 
   CCriticalSection m_stateSection;
+  bool m_playerStateChanged = false;
   struct SStateInfo
   {
     bool m_stateSeeking;

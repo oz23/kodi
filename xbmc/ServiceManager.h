@@ -58,9 +58,12 @@ class CSettings;
 class IAE;
 class CFavouritesService;
 
+namespace KODI
+{
 namespace GAME
 {
   class CGameServices;
+}
 }
 
 namespace PERIPHERALS
@@ -96,7 +99,7 @@ public:
   /**\brief Get the platform object. This is save to be called after Init1() was called
    */
   CPlatform& GetPlatform();
-  GAME::CGameServices& GetGameServices();
+  KODI::GAME::CGameServices& GetGameServices();
   PERIPHERALS::CPeripherals& GetPeripherals();
 
   PLAYLIST::CPlayListPlayer& GetPlaylistPlayer();
@@ -141,7 +144,7 @@ protected:
   std::unique_ptr<CPlatform> m_Platform;
   std::unique_ptr<PLAYLIST::CPlayListPlayer> m_playlistPlayer;
   std::unique_ptr<CSettings> m_settings;
-  std::unique_ptr<GAME::CGameServices> m_gameServices;
+  std::unique_ptr<KODI::GAME::CGameServices> m_gameServices;
   std::unique_ptr<PERIPHERALS::CPeripherals> m_peripherals;
   std::unique_ptr<CFavouritesService, delete_favouritesService> m_favouritesService;
 };

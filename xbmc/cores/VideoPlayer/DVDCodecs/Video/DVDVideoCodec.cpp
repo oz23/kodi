@@ -28,7 +28,7 @@
 #include "cores/VideoPlayer/DVDCodecs/Video/VDPAU.h"
 #endif
 
-bool CDVDVideoCodec::IsSettingVisible(const std::string &condition, const std::string &value, const CSetting *setting, void *data)
+bool CDVDVideoCodec::IsSettingVisible(const std::string &condition, const std::string &value, std::shared_ptr<const CSetting> setting, void *data)
 {
   if (setting == NULL || value.empty())
     return false;

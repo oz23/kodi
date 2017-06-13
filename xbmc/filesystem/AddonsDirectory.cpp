@@ -42,6 +42,7 @@
 #include "utils/StringUtils.h"
 #include "URL.h"
 
+using namespace KODI;
 using namespace ADDON;
 
 namespace XFILE
@@ -195,7 +196,6 @@ static bool IsOrphaned(const AddonInfoPtr& addon, const AddonInfos& all)
   }
   return true;
 }
-
 
 // Creates categories from addon types, if we have any addons with that type.
 static void GenerateTypeListing(const CURL& path, const std::set<TYPE>& types,
@@ -763,7 +763,6 @@ bool CAddonsDirectory::GetDirectory(const CURL& url, CFileItemList &items)
 
     CAddonsDirectory::GenerateAddonListing(path, addons, items, g_localizeStrings.Get(24004));
     return true;
-
   }
   else if (endpoint == "downloading")
   {
@@ -852,8 +851,6 @@ CFileItemPtr CAddonsDirectory::FileItemFromAddonInfo(const AddonInfoPtr &addonIn
   item->SetLabel(strLabel);
   item->SetArt("thumb", addonInfo->Icon());
   item->SetIconImage("DefaultAddon.png");
-  if (URIUtils::IsInternetStream(addonInfo->FanArt()) || CFile::Exists(addonInfo->FanArt()))
-    item->SetArt("fanart", addonInfo->FanArt());
 
   //! @todo fix hacks that depends on these
   item->SetProperty("Addon.ID", addonInfo->ID());

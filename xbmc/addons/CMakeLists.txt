@@ -14,7 +14,6 @@ set(SOURCES Addon.cpp
             FilesystemInstaller.cpp
             GameResource.cpp
             GUIDialogAddonInfo.cpp
-            GUIDialogAddonSettings.cpp
             GUIViewStateAddonBrowser.cpp
             GUIWindowAddonBrowser.cpp
             ImageResource.cpp
@@ -26,6 +25,7 @@ set(SOURCES Addon.cpp
             Service.cpp
             Skin.cpp
             UISoundsResource.cpp
+            Visualization.cpp
             Webinterface.cpp)
 
 set(HEADERS Addon.h
@@ -47,7 +47,6 @@ set(HEADERS Addon.h
             FilesystemInstaller.h
             GameResource.h
             GUIDialogAddonInfo.h
-            GUIDialogAddonSettings.h
             GUIViewStateAddonBrowser.h
             GUIWindowAddonBrowser.h
             ImageResource.h
@@ -60,6 +59,7 @@ set(HEADERS Addon.h
             Service.h
             Skin.h
             UISoundsResource.h
+            Visualization.h
             Webinterface.h)
 
 core_add_library(addons)

@@ -23,7 +23,7 @@
 #include "Repository.h"
 #include "RepositoryUpdater.h"
 #include "GUIDialogAddonInfo.h"
-#include "GUIDialogAddonSettings.h"
+#include "settings/GUIDialogAddonSettings.h"
 
 
 namespace CONTEXTMENU
@@ -42,7 +42,7 @@ bool CAddonSettings::IsVisible(const CFileItem& item) const
 bool CAddonSettings::Execute(const CFileItemPtr& item) const
 {
   AddonInfoPtr addon = CAddonMgr::GetInstance().GetInstalledAddonInfo(item->GetAddonInfo()->ID());
-  return CGUIDialogAddonSettings::ShowAndGetInput(addon);
+  return CGUIDialogAddonSettings::ShowForAddon(addon);
 }
 
 bool CCheckForUpdates::IsVisible(const CFileItem& item) const

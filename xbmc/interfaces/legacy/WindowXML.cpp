@@ -130,7 +130,7 @@ namespace XBMCAddon
         if (!XFILE::CFile::Exists(strSkinPath))
         {
           // Finally fallback to the DefaultSkin as it didn't exist in either the XBMC Skin folder or the fallback skin folder
-          addonInfo->m_path = URIUtils::AddFileToFolder(fallbackPath, defaultSkin);
+          addonInfo->SetPath(URIUtils::AddFileToFolder(fallbackPath, defaultSkin));
           ADDON::CSkinInfo skinInfo(addonInfo, res);
 
           skinInfo.Start();
