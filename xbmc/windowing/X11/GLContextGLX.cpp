@@ -153,8 +153,6 @@ bool CGLContextGLX::IsSuitableVisual(XVisualInfo *vInfo)
     return false;
   if (glXGetConfig(m_dpy, vInfo, GLX_BLUE_SIZE, &value) || value < 8)
     return false;
-  if (glXGetConfig(m_dpy, vInfo, GLX_ALPHA_SIZE, &value) || value < 8)
-    return false;
   if (glXGetConfig(m_dpy, vInfo, GLX_DEPTH_SIZE, &value) || value < 8)
     return false;
 
