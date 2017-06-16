@@ -38,7 +38,9 @@
 
 #if defined(HAS_GL)
 #include "LinuxRendererGL.h"
+#if defined(HAVE_LIBVA)
 #include "HwDecRender/RendererVAAPIGL.h"
+#endif
 #include "HwDecRender/RendererVDPAU.h"
 #if defined(TARGET_DARWIN_OSX)
 #include "HwDecRender/RendererVTBGL.h"
