@@ -1988,10 +1988,13 @@ void CVideoPlayer::HandlePlaySpeed()
       if (m_CurrentVideo.id >= 0)
       {
         double videoPts = m_VideoPlayerVideo->GetCurrentPts();
-        double now = m_clock.GetClock();
-        if (fabs(now - videoPts) > DVD_MSEC_TO_TIME(5000))
+        if (videoPts != DVD_NOPTS_VALUE)
         {
-          m_clock.Discontinuity(videoPts);
+          double now = m_clock.GetClock();
+          if (fabs(now - videoPts) > DVD_MSEC_TO_TIME(5000))
+          {
+            m_clock.Discontinuity(videoPts);
+          }
         }
       }
     }
