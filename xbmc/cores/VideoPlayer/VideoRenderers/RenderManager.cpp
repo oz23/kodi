@@ -38,32 +38,43 @@
 
 #if defined(HAS_GL)
 #include "LinuxRendererGL.h"
+#endif
+
 #if defined(HAVE_LIBVA)
 #include "HwDecRender/RendererVAAPIGL.h"
 #endif
+
+#if defined(HAVE_LIBVA)
 #include "HwDecRender/RendererVDPAU.h"
+#endif
+
 #if defined(TARGET_DARWIN_OSX)
 #include "HwDecRender/RendererVTBGL.h"
 #endif
-#elif HAS_GLES == 2
-  #include "LinuxRendererGLES.h"
-  #include "HwDecRender/RendererVAAPIGLES.h"
+
+#if HAS_GLES == 2
+#include "LinuxRendererGLES.h"
+#include "HwDecRender/RendererVAAPIGLES.h"
+#endif
+
 #if defined(HAS_MMAL)
 #include "HwDecRender/MMALRenderer.h"
 #endif
+
 #if defined(TARGET_DARWIN_IOS)
 #include "HwDecRender/RendererVTBGLES.h"
 #endif
+
 #if defined(HAS_IMXVPU)
 #include "HwDecRender/RendererIMX.h"
 #endif
+
 #if defined(HAS_LIBAMCODEC)
 #include "HwDecRender/RendererAML.h"
 #endif
-#elif defined(HAS_DX)
-  #include "WinRenderer.h"
-#elif defined(HAS_SDL)
-  #include "LinuxRenderer.h"
+
+#if defined(HAS_DX)
+#include "WinRenderer.h"
 #endif
 
 #if defined(TARGET_ANDROID)
