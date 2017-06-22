@@ -21,7 +21,6 @@
 
 #include "system.h"
 
-#ifdef HAS_GL
 
 #include "RenderSystemGL.h"
 #include "guilib/GraphicContext.h"
@@ -647,5 +646,3 @@ bool CRenderSystemGL::SupportsStereo(RENDER_STEREO_MODE mode) const
   }
 }
 
-
-#endif

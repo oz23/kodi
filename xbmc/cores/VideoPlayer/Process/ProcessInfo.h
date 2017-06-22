@@ -19,20 +19,24 @@
  */
 #pragma once
 
+#include "VideoBuffer.h"
 #include "cores/IPlayer.h"
-#include "cores/VideoPlayer/VideoRenderers/RenderFormats.h"
+#include "cores/VideoPlayer/VideoRenderers/RenderInfo.h"
 #include "threads/CriticalSection.h"
 #include <atomic>
 #include <list>
 #include <string>
+
+class CDataCacheCore;
 
 class CProcessInfo
 {
 public:
   static CProcessInfo* CreateInstance();
   virtual ~CProcessInfo();
+  void SetDataCache(CDataCacheCore *cache);
 
-  // player video info
+  // player video
   void ResetVideoCodecInfo();
   void SetVideoDecoderName(const std::string &name, bool isHw);
   std::string GetVideoDecoderName();
@@ -53,6 +57,7 @@ public:
   bool Supports(EINTERLACEMETHOD method);
   void SetDeinterlacingMethodDefault(EINTERLACEMETHOD method);
   EINTERLACEMETHOD GetDeinterlacingMethodDefault();
+  CVideoBufferManager& GetVideoBufferManager();
 
   // player audio info
   void ResetAudioCodecInfo();
@@ -72,6 +77,7 @@ public:
   void UpdateRenderInfo(CRenderInfo &info);
   void UpdateRenderBuffers(int queued, int discard, int free);
   void GetRenderBuffers(int &queued, int &discard, int &free);
+  virtual std::vector<AVPixelFormat> GetRenderFormats();
 
   // player states
   void SetStateSeeking(bool active);
@@ -86,6 +92,7 @@ public:
 
 protected:
   CProcessInfo();
+  CDataCacheCore *m_dataCache = nullptr;
 
   // player video info
   bool m_videoIsHWDecoder;
@@ -99,6 +106,7 @@ protected:
   std::list<EINTERLACEMETHOD> m_deintMethods;
   EINTERLACEMETHOD m_deintMethodDefault;
   CCriticalSection m_videoCodecSection;
+  CVideoBufferManager m_videoBufferManager;
 
   // player audio info
   std::string m_audioDecoderName;

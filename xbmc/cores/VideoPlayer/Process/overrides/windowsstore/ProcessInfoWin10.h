@@ -1,7 +1,5 @@
-#pragma once
-
 /*
- *      Copyright (C) 2005-2013 Team XBMC
+ *      Copyright (C) 2005-2016 Team XBMC
  *      http://xbmc.org
  *
  *  This Program is free software; you can redistribute it and/or modify
@@ -19,13 +17,15 @@
  *  <http://www.gnu.org/licenses/>.
  *
  */
+#pragma once
 
-#include "Video/DVDVideoCodec.h"
+#include "cores/IPlayer.h"
+#include "../../ProcessInfo.h"
 
-class CDVDCodecUtils
+class CProcessInfoWin10 : public CProcessInfo
 {
 public:
-  static bool IsVP3CompatibleWidth(int width);
-  static double NormalizeFrameduration(double frameduration, bool *match = NULL);
+  CProcessInfoWin10();
+  virtual ~CProcessInfoWin10();
+  EINTERLACEMETHOD GetFallbackDeintMethod() override;
 };
-

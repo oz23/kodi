@@ -1,7 +1,5 @@
-#pragma once
-
 /*
- *      Copyright (C) 2005-2013 Team XBMC
+ *      Copyright (C) 2005-2016 Team XBMC
  *      http://xbmc.org
  *
  *  This Program is free software; you can redistribute it and/or modify
@@ -20,12 +18,32 @@
  *
  */
 
-#include "Video/DVDVideoCodec.h"
+#include "ProcessInfoWin.h"
 
-class CDVDCodecUtils
+// Override for platform ports
+#if defined(TARGET_WINDOWS) && defined(TARGET_WIN10)
+
+CProcessInfo* CProcessInfo::CreateInstance()
 {
-public:
-  static bool IsVP3CompatibleWidth(int width);
-  static double NormalizeFrameduration(double frameduration, bool *match = NULL);
-};
+  return new CProcessInfoWin10();
+}
+
+
+// base class definitions
+CProcessInfoWin10::CProcessInfoWin10()
+{
+
+}
+
+CProcessInfoWin10::~CProcessInfoWin10()
+{
+
+}
+
+EINTERLACEMETHOD CProcessInfoWin10::GetFallbackDeintMethod()
+{
+  return EINTERLACEMETHOD::VS_INTERLACEMETHOD_AUTO;
+}
+
+#endif
 

@@ -21,8 +21,6 @@
 
 #include "system.h"
 
-#ifdef HAS_X11_WIN_EVENTS
-
 #include "xbmc/windowing/WinEvents.h"
 #include "WinEventsX11.h"
 #include "Application.h"
@@ -670,4 +668,3 @@ XBMCKey CWinEventsX11Imp::LookupXbmcKeySym(KeySym keysym)
 
   return (XBMCKey)keysym;
 }
-#endif

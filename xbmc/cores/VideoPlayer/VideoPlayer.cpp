@@ -669,6 +669,9 @@ CVideoPlayer::CVideoPlayer(IPlayerCallback& callback)
   m_SkipCommercials = true;
 
   m_processInfo.reset(CProcessInfo::CreateInstance());
+  // if we have a gui, register the cache
+  m_processInfo->SetDataCache(&CServiceBroker::GetDataCacheCore());
+
   CreatePlayers();
 
   m_displayLost = false;
@@ -1978,6 +1981,19 @@ void CVideoPlayer::HandlePlaySpeed()
             m_clock.SetSpeedAdjust(adjust);
             if (m_omxplayer_mode)
               m_OmxPlayerState.av_clock.OMXSetSpeedAdjust(adjust);
+          }
+        }
+      }
+      // convenience for debugging
+      if (m_CurrentVideo.id >= 0)
+      {
+        double videoPts = m_VideoPlayerVideo->GetCurrentPts();
+        if (videoPts != DVD_NOPTS_VALUE)
+        {
+          double now = m_clock.GetClock();
+          if (fabs(now - videoPts) > DVD_MSEC_TO_TIME(5000))
+          {
+            m_clock.Discontinuity(videoPts);
           }
         }
       }
@@ -5286,12 +5302,12 @@ void CVideoPlayer::UpdateRenderBuffers(int queued, int discard, int free)
   m_processInfo->UpdateRenderBuffers(queued, discard, free);
 }
 
-void CVideoPlayer::UpdareGuiRender(bool gui)
+void CVideoPlayer::UpdateGuiRender(bool gui)
 {
   m_processInfo->SetGuiRender(gui);
 }
 
-void CVideoPlayer::UpdareVideoRender(bool video)
+void CVideoPlayer::UpdateVideoRender(bool video)
 {
   m_processInfo->SetVideoRender(video);
 }

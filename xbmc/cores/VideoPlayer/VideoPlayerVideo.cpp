@@ -72,7 +72,6 @@ CVideoPlayerVideo::CVideoPlayerVideo(CDVDClock* pClock
 {
   m_pClock = pClock;
   m_pOverlayContainer = pOverlayContainer;
-  m_pTempOverlayPicture = NULL;
   m_pVideoCodec = NULL;
   m_speed = DVD_PLAYSPEED_NORMAL;
 
@@ -120,9 +119,6 @@ double CVideoPlayerVideo::GetOutputDelay()
 
 bool CVideoPlayerVideo::OpenStream(CDVDStreamInfo hint)
 {
-  CRenderInfo info;
-  info = m_renderManager.GetRenderInfo();
-
   if (hint.flags & AV_DISPOSITION_ATTACHED_PIC)
     return false;
   if (hint.extrasize == 0)
@@ -147,7 +143,7 @@ bool CVideoPlayerVideo::OpenStream(CDVDStreamInfo hint)
     {
       hint.codecOptions |= CODEC_ALLOW_FALLBACK;
     }
-    CDVDVideoCodec* codec = CDVDFactoryCodec::CreateVideoCodec(hint, m_processInfo, info);
+    CDVDVideoCodec* codec = CDVDFactoryCodec::CreateVideoCodec(hint, m_processInfo);
     if (!codec)
     {
       CLog::Log(LOGINFO, "CVideoPlayerVideo::OpenStream - could not open video codec");
@@ -158,7 +154,7 @@ bool CVideoPlayerVideo::OpenStream(CDVDStreamInfo hint)
   {
     m_processInfo.ResetVideoCodecInfo();
     hint.codecOptions |= CODEC_ALLOW_FALLBACK;
-    CDVDVideoCodec* codec = CDVDFactoryCodec::CreateVideoCodec(hint, m_processInfo, info);
+    CDVDVideoCodec* codec = CDVDFactoryCodec::CreateVideoCodec(hint, m_processInfo);
     if (!codec)
     {
       CLog::Log(LOGERROR, "CVideoPlayerVideo::OpenStream - could not open video codec");
@@ -176,6 +172,8 @@ bool CVideoPlayerVideo::OpenStream(CDVDStreamInfo hint)
 void CVideoPlayerVideo::OpenStream(CDVDStreamInfo &hint, CDVDVideoCodec* codec)
 {
   CLog::Log(LOGDEBUG, "CVideoPlayerVideo::OpenStream - open stream with codec id: %i", hint.codec);
+
+  m_processInfo.GetVideoBufferManager().ReleasePools();
 
   //reported fps is usually not completely correct
   if (hint.fpsrate && hint.fpsscale)
@@ -222,10 +220,8 @@ void CVideoPlayerVideo::OpenStream(CDVDStreamInfo &hint, CDVDVideoCodec* codec)
   if (!codec)
   {
     CLog::Log(LOGNOTICE, "Creating video codec with codec id: %i", hint.codec);
-    CRenderInfo info;
-    info = m_renderManager.GetRenderInfo();
     hint.codecOptions |= CODEC_ALLOW_FALLBACK;
-    codec = CDVDFactoryCodec::CreateVideoCodec(hint, m_processInfo, info);
+    codec = CDVDFactoryCodec::CreateVideoCodec(hint, m_processInfo);
     if (!codec)
     {
       CLog::Log(LOGERROR, "CVideoPlayerVideo::OpenStream - could not open video codec");
@@ -267,10 +263,10 @@ void CVideoPlayerVideo::CloseStream(bool bWaitForBuffers)
     m_pVideoCodec = NULL;
   }
 
-  if (m_pTempOverlayPicture)
+  if (m_picture.videoBuffer)
   {
-    CDVDCodecUtils::FreePicture(m_pTempOverlayPicture);
-    m_pTempOverlayPicture = NULL;
+    m_picture.videoBuffer->Release();
+    m_picture.videoBuffer = nullptr;
   }
 }
 
@@ -390,8 +386,8 @@ void CVideoPlayerVideo::Process()
         pts += frametime * 4;
       }
 
-      //Waiting timed out, output last picture
-      if (m_picture.iFlags & DVP_FLAG_ALLOCATED)
+      // Waiting timed out, output last picture
+      if (m_picture.videoBuffer)
       {
         OutputPicture(&m_picture, pts);
         pts += frametime;
@@ -429,7 +425,11 @@ void CVideoPlayerVideo::Process()
     {
       if(m_pVideoCodec)
         m_pVideoCodec->Reset();
-      m_picture.iFlags &= ~DVP_FLAG_ALLOCATED;
+      if (m_picture.videoBuffer)
+      {
+        m_picture.videoBuffer->Release();
+        m_picture.videoBuffer = nullptr;
+      }
       m_packets.clear();
       m_droppingStats.Reset();
       m_syncState = IDVDStreamPlayer::SYNC_STARTING;
@@ -440,7 +440,11 @@ void CVideoPlayerVideo::Process()
       bool sync = static_cast<CDVDMsgBool*>(pMsg)->m_value;
       if(m_pVideoCodec)
         m_pVideoCodec->Reset();
-      m_picture.iFlags &= ~DVP_FLAG_ALLOCATED;
+      if (m_picture.videoBuffer)
+      {
+        m_picture.videoBuffer->Release();
+        m_picture.videoBuffer = nullptr;
+      }
       m_packets.clear();
       pts = 0;
       m_rewindStalled = false;
@@ -479,7 +483,11 @@ void CVideoPlayerVideo::Process()
 
       OpenStream(msg->m_hints, msg->m_codec);
       msg->m_codec = NULL;
-      m_picture.iFlags &= ~DVP_FLAG_ALLOCATED;
+      if (m_picture.videoBuffer)
+      {
+        m_picture.videoBuffer->Release();
+        m_picture.videoBuffer = nullptr;
+      }
     }
     else if (pMsg->IsType(CDVDMsg::VIDEO_DRAIN))
     {
@@ -726,7 +734,7 @@ void CVideoPlayerVideo::Flush(bool sync)
 }
 
 #ifdef HAS_VIDEO_PLAYBACK
-void CVideoPlayerVideo::ProcessOverlays(VideoPicture* pSource, double pts)
+void CVideoPlayerVideo::ProcessOverlays(const VideoPicture* pSource, double pts)
 {
   // remove any overlays that are out of time
   if (m_syncState == IDVDStreamPlayer::SYNC_INSYNC)
@@ -789,18 +797,14 @@ std::string CVideoPlayerVideo::GetStereoMode()
   return stereo_mode;
 }
 
-int CVideoPlayerVideo::OutputPicture(const VideoPicture* src, double pts)
+int CVideoPlayerVideo::OutputPicture(const VideoPicture* pPicture, double pts)
 {
   m_bAbortOutput = false;
 
-  /* picture buffer is not allowed to be modified in this call */
-  VideoPicture picture(*src);
-  VideoPicture* pPicture = &picture;
-
   /* grab stereo mode from image if available */
-  if (src->stereo_mode[0] && m_hints.stereo_mode.compare(src->stereo_mode) != 0)
+  if (pPicture->stereo_mode[0] && m_hints.stereo_mode.compare(pPicture->stereo_mode) != 0)
   {
-    m_hints.stereo_mode = src->stereo_mode;
+    m_hints.stereo_mode = pPicture->stereo_mode;
     // signal about changes in video parameters
     m_messageParent.Put(new CDVDMsg(CDVDMsg::PLAYER_AVCHANGE));
   }
@@ -828,7 +832,7 @@ int CVideoPlayerVideo::OutputPicture(const VideoPicture* src, double pts)
 
   flags |= stereo_flags;
 
-  if(!m_renderManager.Configure(picture,
+  if (!m_renderManager.Configure(*pPicture,
                                 static_cast<float>(config_framerate),
                                 flags,
                                 m_hints.orientation,

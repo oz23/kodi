@@ -221,7 +221,7 @@ bool CWinSystemX11GLContext::RefreshGLContext(bool force)
   success = m_pGLContext->Refresh(force, m_nScreen, m_glWindow, m_newGlContext);
   if (success)
   {
-    //VDPAU::CDecoder::CheckCaps();
+    VDPAU::CDecoder::CheckCaps();
   }
   return success;
 }

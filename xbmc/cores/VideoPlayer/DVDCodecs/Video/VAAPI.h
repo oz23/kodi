@@ -19,11 +19,8 @@
  */
 #pragma once
 
-#include "system_gl.h"
-#include <EGL/egl.h>
-#include <EGL/eglext.h>
-
 #include "DVDVideoCodec.h"
+#include "cores/VideoPlayer/Process/VideoBuffer.h"
 #include "settings/VideoSettings.h"
 #include "threads/CriticalSection.h"
 #include "threads/SharedSection.h"
@@ -113,7 +110,6 @@ struct CVaapiConfig
   AVRational aspect;
   VAConfigID configId;
   CVaapiBufferStats *stats;
-  CDecoder *vaapi;
   int upscale;
   CVideoSurfaces *videoSurfaces;
   uint32_t maxReferences;
@@ -153,83 +149,21 @@ struct CVaapiProcessedPicture
   bool crop;
 };
 
-/**
- *
- */
-struct CVaapiGLSurface
+class CVaapiRenderPicture : public CVideoBuffer
 {
-  CVaapiProcessedPicture procPic;
-  VADisplay vadsp;
-  VAImage vaImage;
-  VABufferInfo vBufInfo;
-  EGLImageKHR eglImage;
-  EGLImageKHR eglImageY, eglImageVU;
-  GLenum textureTarget;
-  EGLDisplay eglDisplay;
-  PFNEGLCREATEIMAGEKHRPROC eglCreateImageKHR;
-  PFNEGLDESTROYIMAGEKHRPROC eglDestroyImageKHR;
-  PFNGLEGLIMAGETARGETTEXTURE2DOESPROC glEGLImageTargetTexture2DOES;
-  bool mapped;
-};
-
-/**
- * Ready to render textures
- * Sent from COutput back to CDecoder
- * Objects are referenced by VideoPicture and are sent
- * to renderer
- */
-class CVaapiRenderPicture
-{
-  friend class CDecoder;
-  friend class COutput;
 public:
-  CVaapiRenderPicture(CCriticalSection &section)
-    : texWidth(0), texHeight(0), texture(0), textureY(0), textureVU(0), valid(false), vaapi(NULL), avFrame(NULL),
-      usefence(false), refCount(0), renderPicSection(section) { fence = 0; }
-  void Sync();
+  CVaapiRenderPicture(int id) : CVideoBuffer(id) { }
   VideoPicture DVDPic;
-  int texWidth, texHeight;
-  CRect crop;
-  GLuint texture;
-  GLuint textureY, textureVU;
-  bool valid;
-  CDecoder *vaapi;
-  AVFrame *avFrame;
-  CVaapiRenderPicture* Acquire();
-  long Release();
-private:
-  void ReturnUnused();
-  bool GLMapSurface();
-  void GLUnMapSurface();
-  bool usefence;
-  GLsync fence;
-  int refCount;
-  CVaapiGLSurface glInterop;
-  CCriticalSection &renderPicSection;
+  CVaapiProcessedPicture procPic;
+  AVFrame *avFrame = nullptr;
+
+  bool valid = false;
+  VADisplay vadsp;
 };
 
 //-----------------------------------------------------------------------------
 // Output
 //-----------------------------------------------------------------------------
-
-/**
- * Buffer pool holds allocated vaapi and gl resources
- * Embedded in COutput
- */
-struct VaapiBufferPool
-{
-  VaapiBufferPool();
-  virtual ~VaapiBufferPool();
-  std::vector<CVaapiRenderPicture*> allRenderPics;
-  std::deque<int> usedRenderPics;
-  std::deque<int> freeRenderPics;
-  std::deque<int> syncRenderPics;
-  std::deque<CVaapiProcessedPicture> processedPics;
-  std::deque<CVaapiProcessedPicture> processedPicsAway;
-  std::deque<CVaapiDecodedPicture> decodedPics;
-  CCriticalSection renderPicSec;
-  int procPicId;
-};
 
 class COutputControlProtocol : public Protocol
 {
@@ -278,12 +212,15 @@ struct SDiMethods
  * COutput generated ready to render textures and passes them back to
  * CDecoder
  */
+
+class CDecoder;
 class CPostproc;
+class CVaapiBufferPool;
 
 class COutput : private CThread
 {
 public:
-  COutput(CEvent *inMsgEvent);
+  COutput(CDecoder &decoder, CEvent *inMsgEvent);
   virtual ~COutput();
   void Start();
   void Dispose();
@@ -301,39 +238,27 @@ protected:
   void QueueReturnPicture(CVaapiRenderPicture *pic);
   void ProcessReturnPicture(CVaapiRenderPicture *pic);
   void ProcessReturnProcPicture(int id);
-  bool ProcessSyncPicture();
+  void ProcessSyncPicture();
   void ReleaseProcessedPicture(CVaapiProcessedPicture &pic);
   void DropVppProcessedPictures();
   bool Init();
   bool Uninit();
   void Flush();
-  bool CreateEGLContext();
-  bool DestroyEGLContext();
-  bool EnsureBufferPool();
+  void EnsureBufferPool();
   void ReleaseBufferPool(bool precleanup = false);
-  bool GLInit();
   bool CheckSuccess(VAStatus status);
-  PFNEGLCREATEIMAGEKHRPROC eglCreateImageKHR;
-  PFNEGLDESTROYIMAGEKHRPROC eglDestroyImageKHR;
-  PFNGLEGLIMAGETARGETTEXTURE2DOESPROC glEGLImageTargetTexture2DOES;
   CEvent m_outMsgEvent;
   CEvent *m_inMsgEvent;
   int m_state;
   bool m_bStateMachineSelfTrigger;
+  CDecoder &m_vaapi;
 
   // extended state variables for state machine
   int m_extTimeout;
   bool m_vaError;
   CVaapiConfig m_config;
-  VaapiBufferPool m_bufferPool;
-  EGLDisplay m_eglDisplay;
-  EGLSurface m_eglSurface;
-  EGLContext m_eglContext;
-#ifdef HAVE_X11
-  Display *m_Display;
-#endif
+  std::shared_ptr<CVaapiBufferPool> m_bufferPool;
   CVaapiDecodedPicture m_currentPicture;
-  GLenum m_textureTarget;
   CPostproc *m_pp;
   SDiMethods m_diMethods;
   EINTERLACEMETHOD m_currentDiMethod;
@@ -399,9 +324,6 @@ private:
   VAProfile *m_profiles;
   std::vector<CDecoder*> m_decoders;
   int m_renderNodeFD{-1};
-#ifdef HAVE_X11
-  static Display *m_X11dpy;
-#endif
 };
 
 /**
@@ -410,14 +332,14 @@ private:
 class CDecoder
  : public IHardwareDecoder
 {
-   friend class CVaapiRenderPicture;
+   friend class CVaapiBufferPool;
 
 public:
 
   CDecoder(CProcessInfo& processInfo);
   virtual ~CDecoder();
 
-  virtual bool Open (AVCodecContext* avctx, AVCodecContext* mainctx, const enum AVPixelFormat, unsigned int surfaces = 0) override;
+  virtual bool Open (AVCodecContext* avctx, AVCodecContext* mainctx, const enum AVPixelFormat) override;
   virtual CDVDVideoCodec::VCReturn Decode (AVCodecContext* avctx, AVFrame* frame);
   virtual bool GetPicture(AVCodecContext* avctx, VideoPicture* picture) override;
   virtual void Reset() override;
@@ -433,7 +355,7 @@ public:
   void FFReleaseBuffer(uint8_t *data);
   static int FFGetBuffer(AVCodecContext *avctx, AVFrame *pic, int flags);
 
-  static void CheckCaps(EGLDisplay eglDisplay);
+  static void CheckCaps(void *eglDisplay);
   static bool IsCapGeneral() { return m_capGeneral; }
 
 protected:
@@ -442,7 +364,6 @@ protected:
   bool CheckStatus(VAStatus vdp_st, int line);
   void FiniVAAPIOutput();
   void ReturnRenderPicture(CVaapiRenderPicture *renderPic);
-  void ReturnProcPicture(int id);
   long ReleasePicReference();
   bool CheckSuccess(VAStatus status);
 
@@ -466,7 +387,7 @@ protected:
   COutput m_vaapiOutput;
   CVaapiBufferStats m_bufferStats;
   CEvent m_inMsgEvent;
-  CVaapiRenderPicture *m_presentPicture;
+  CVaapiRenderPicture *m_presentPicture = nullptr;
 
   int m_codecControl;
   CProcessInfo& m_processInfo;

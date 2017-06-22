@@ -30,7 +30,7 @@ extern "C"
 }
 
 CPixelConverter::CPixelConverter() :
-  m_renderFormat(RENDER_FMT_NONE),
+  //m_renderFormat(RENDER_FMT_NONE),
   m_width(0),
   m_height(0),
   m_swsContext(nullptr),
@@ -43,8 +43,8 @@ bool CPixelConverter::Open(AVPixelFormat pixfmt, AVPixelFormat targetfmt, unsign
   if (pixfmt == targetfmt || width == 0 || height == 0)
     return false;
 
-  m_renderFormat = CDVDCodecUtils::EFormatFromPixfmt(targetfmt);
-  if (m_renderFormat == RENDER_FMT_NONE)
+  //m_renderFormat = CDVDCodecUtils::EFormatFromPixfmt(targetfmt);
+  //if (m_renderFormat == RENDER_FMT_NONE)
   {
     CLog::Log(LOGERROR, "%s: Invalid target pixel format: %d", __FUNCTION__, targetfmt);
     return false;
@@ -62,7 +62,7 @@ bool CPixelConverter::Open(AVPixelFormat pixfmt, AVPixelFormat targetfmt, unsign
     return false;
   }
 
-  m_buf = CDVDCodecUtils::AllocatePicture(width, height);
+  //m_buf = CDVDCodecUtils::AllocatePicture(width, height);
   if (!m_buf)
   {
     CLog::Log(LOGERROR, "%s: Failed to allocate picture of dimensions %dx%d", __FUNCTION__, width, height);
@@ -82,7 +82,7 @@ void CPixelConverter::Dispose()
 
   if (m_buf)
   {
-    CDVDCodecUtils::FreePicture(m_buf);
+    //CDVDCodecUtils::FreePicture(m_buf);
     m_buf = nullptr;
   }
 }
@@ -98,10 +98,10 @@ bool CPixelConverter::Decode(const uint8_t* pData, unsigned int size)
 
   uint8_t* src[] =       { dataMutable,         0,                   0,                   0 };
   int      srcStride[] = { stride,              0,                   0,                   0 };
-  uint8_t* dst[] =       { m_buf->data[0],      m_buf->data[1],      m_buf->data[2],      0 };
-  int      dstStride[] = { m_buf->iLineSize[0], m_buf->iLineSize[1], m_buf->iLineSize[2], 0 };
+//  uint8_t* dst[] =       { m_buf->data[0],      m_buf->data[1],      m_buf->data[2],      0 };
+//  int      dstStride[] = { m_buf->iLineSize[0], m_buf->iLineSize[1], m_buf->iLineSize[2], 0 };
 
-  sws_scale(m_swsContext, src, srcStride, 0, m_height, dst, dstStride);
+//  sws_scale(m_swsContext, src, srcStride, 0, m_height, dst, dstStride);
 
   return true;
 }
@@ -113,8 +113,8 @@ void CPixelConverter::GetPicture(VideoPicture& dvdVideoPicture)
 
   for (int i = 0; i < 4; i++)
   {
-    dvdVideoPicture.data[i]      = m_buf->data[i];
-    dvdVideoPicture.iLineSize[i] = m_buf->iLineSize[i];
+//    VideoPicture.data[i]      = m_buf->data[i];
+//    VideoPicture.iLineSize[i] = m_buf->iLineSize[i];
   }
 
   dvdVideoPicture.iFlags         = 0; // *not* DVP_FLAG_ALLOCATED
@@ -124,5 +124,5 @@ void CPixelConverter::GetPicture(VideoPicture& dvdVideoPicture)
   dvdVideoPicture.iHeight        = m_height;
   dvdVideoPicture.iDisplayWidth  = m_width; //! @todo: Update if aspect ratio changes
   dvdVideoPicture.iDisplayHeight = m_height;
-  dvdVideoPicture.format         = m_renderFormat;
+  //dvdVideoPicture.format         = m_renderFormat;
 }

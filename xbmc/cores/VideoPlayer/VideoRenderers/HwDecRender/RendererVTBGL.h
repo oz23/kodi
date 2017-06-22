@@ -32,15 +32,14 @@ public:
   virtual ~CRendererVTB();
 
   // Player functions
-  virtual void AddVideoPictureHW(VideoPicture &picture, int index) override;
   virtual void ReleaseBuffer(int idx) override;
   virtual bool NeedBuffer(int idx) override;
-  virtual CRenderInfo GetRenderInfo() override;
+  static bool HandlesVideoBuffer(CVideoBuffer *buffer);
 
 protected:
   virtual bool LoadShadersHook() override;
   virtual void AfterRenderHook(int idx) override;
-  virtual EShaderFormat GetShaderFormat(ERenderFormat renderFormat) override;
+  virtual EShaderFormat GetShaderFormat() override;
 
   // textures
   virtual bool UploadTexture(int index) override;

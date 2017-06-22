@@ -23,6 +23,7 @@
 #include "system.h"
 
 #include "cores/VideoPlayer/VideoRenderers/LinuxRendererGL.h"
+#include "VdpauGL.h"
 
 class CRendererVDPAU : public CLinuxRendererGL
 {
@@ -30,14 +31,13 @@ public:
   CRendererVDPAU();
   virtual ~CRendererVDPAU();
 
-  virtual bool Configure(unsigned int width, unsigned int height, unsigned int d_width, unsigned int d_height,
-                         float fps, unsigned flags, ERenderFormat format, void *hwPic, unsigned int orientation) override;
+  virtual bool Configure(const VideoPicture &picture, float fps, unsigned flags, unsigned int orientation) override;
 
   // Player functions
-  virtual void AddVideoPictureHW(VideoPicture &picture, int index);
-  virtual void ReleaseBuffer(int idx);
-  virtual CRenderInfo GetRenderInfo();
-  virtual bool ConfigChanged(void *hwPic) override;
+  virtual void ReleaseBuffer(int idx) override;
+  virtual bool ConfigChanged(const VideoPicture &picture) override;
+  static bool HandlesVideoBuffer(CVideoBuffer *buffer);
+  bool NeedBuffer(int idx) override;
 
   // Feature support
   virtual bool Supports(ERENDERFEATURE feature);
@@ -46,9 +46,10 @@ public:
 protected:
   virtual bool LoadShadersHook();
   virtual bool RenderHook(int idx);
+  virtual void AfterRenderHook(int idx) override;
 
   // textures
-  virtual bool UploadTexture(int index);
+  virtual bool UploadTexture(int index) override;
   virtual void DeleteTexture(int index);
   virtual bool CreateTexture(int index);
 
@@ -60,9 +61,13 @@ protected:
   void DeleteVDPAUTexture420(int index);
   bool UploadVDPAUTexture420(int index);
 
-  virtual EShaderFormat GetShaderFormat(ERenderFormat renderFormat) override;
+  virtual EShaderFormat GetShaderFormat() override;
 
   bool m_isYuv = false;
+
+  VDPAU::CInteropState m_interopState;
+  VDPAU::CVdpauTexture m_vdpauTextures[NUM_BUFFERS];
+  GLsync m_fences[NUM_BUFFERS];
 };
 
 

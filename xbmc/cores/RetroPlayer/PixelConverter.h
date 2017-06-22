@@ -20,7 +20,6 @@
 #pragma once
 
 #include "IPixelConverter.h"
-#include "cores/VideoPlayer/VideoRenderers/RenderFormats.h"
 
 #include <stdint.h>
 
@@ -40,7 +39,7 @@ public:
   virtual void GetPicture(VideoPicture& dvdVideoPicture) override;
 
 protected:
-  ERenderFormat m_renderFormat;
+  //ERenderFormat m_renderFormat;
   unsigned int m_width;
   unsigned int m_height;
   SwsContext* m_swsContext;

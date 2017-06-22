@@ -427,6 +427,11 @@ uint64_t CGLContextEGL::GetTimeSinceVblank()
   if (interval == 0)
     return 0;
 
+  if (now < m_sync.ust2)
+  {
+    return 0;
+  }
+
   uint64_t ret = now - m_sync.ust2;
   while (ret > interval)
     ret -= interval;

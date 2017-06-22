@@ -56,8 +56,8 @@ protected:
   virtual void UpdateClockSync(bool enabled) = 0;
   virtual void UpdateRenderInfo(CRenderInfo &info) = 0;
   virtual void UpdateRenderBuffers(int queued, int discard, int free) = 0;
-  virtual void UpdareGuiRender(bool gui) = 0;
-  virtual void UpdareVideoRender(bool video) = 0;
+  virtual void UpdateGuiRender(bool gui) = 0;
+  virtual void UpdateVideoRender(bool video) = 0;
 };
 
 class CRenderManager
@@ -103,9 +103,9 @@ public:
    * @param orientation
    * @param numbers of kept buffer references
    */
-  bool Configure(VideoPicture& picture, float fps, unsigned flags, unsigned int orientation, int buffers = 0);
+  bool Configure(const VideoPicture& picture, float fps, unsigned flags, unsigned int orientation, int buffers = 0);
 
-  int AddVideoPicture(VideoPicture& picture);
+  int AddVideoPicture(const VideoPicture& picture);
 
   /**
    * Called by video player to flip render buffers
@@ -125,9 +125,6 @@ public:
   void FlipPage(volatile std::atomic_bool& bStop, double pts, EINTERLACEMETHOD deintMethod, EFIELDSYNC sync, bool wait);
 
   void AddOverlay(CDVDOverlay* o, double pts);
-
-  // Get renderer info, can be called before configure
-  CRenderInfo GetRenderInfo();
 
   /**
    * If player uses buffering it has to wait for a buffer before it calls
@@ -229,8 +226,7 @@ protected:
   std::deque<int> m_queued;
   std::deque<int> m_discard;
 
-  ERenderFormat m_format;
-  void *m_hwPic = nullptr;
+  std::unique_ptr<VideoPicture> m_pConfigPicture;
   unsigned int m_width, m_height, m_dwidth, m_dheight;
   unsigned int m_flags = 0;
   float m_fps;
