@@ -1008,7 +1008,10 @@ CDVDVideoCodec::VCReturn CDecoder::Check(AVCodecContext* avctx)
 bool CDecoder::GetPicture(AVCodecContext* avctx, VideoPicture* picture)
 {
   if (picture->videoBuffer)
+  {
     picture->videoBuffer->Release();
+    picture->videoBuffer = nullptr;
+  }
 
   CSingleLock lock(m_DecoderSection);
 
