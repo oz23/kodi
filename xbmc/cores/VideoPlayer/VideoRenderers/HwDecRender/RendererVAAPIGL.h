@@ -56,7 +56,7 @@ protected:
   virtual EShaderFormat GetShaderFormat() override;
 
   bool m_isVAAPIBuffer = true;
-  CVaapiTexture m_vaapiTextures[NUM_BUFFERS];
+  VAAPI::CVaapiTexture m_vaapiTextures[NUM_BUFFERS];
   GLsync m_fences[NUM_BUFFERS];
 };
 

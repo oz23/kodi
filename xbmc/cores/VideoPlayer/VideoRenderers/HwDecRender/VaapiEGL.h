@@ -27,8 +27,8 @@
 
 namespace VAAPI
 {
+
 class CVaapiRenderPicture;
-}
 
 struct InteropInfo
 {
@@ -42,7 +42,7 @@ struct InteropInfo
 class CVaapiTexture
 {
 public:
-  bool Map(VAAPI::CVaapiRenderPicture *pic);
+  bool Map(CVaapiRenderPicture *pic);
   void Unmap();
   void Init(InteropInfo &interop);
 
@@ -54,7 +54,7 @@ public:
 
 protected:
   InteropInfo m_interop;
-  VAAPI::CVaapiRenderPicture *m_vaapiPic = nullptr;
+  CVaapiRenderPicture *m_vaapiPic = nullptr;
   struct GLSurface
   {
     VAImage vaImage;
@@ -63,3 +63,5 @@ protected:
     EGLImageKHR eglImageY, eglImageVU;
   } m_glSurface;
 };
+}
+

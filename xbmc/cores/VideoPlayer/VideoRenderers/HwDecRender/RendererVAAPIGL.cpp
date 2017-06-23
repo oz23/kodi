@@ -28,6 +28,8 @@
 #include "utils/GLUtils.h"
 #include "windowing/WindowingFactory.h"
 
+using namespace VAAPI;
+
 CRendererVAAPI::CRendererVAAPI()
 {
 
@@ -43,7 +45,7 @@ CRendererVAAPI::~CRendererVAAPI()
 
 bool CRendererVAAPI::HandlesVideoBuffer(CVideoBuffer *buffer)
 {
-  VAAPI::CVaapiRenderPicture *pic = dynamic_cast<VAAPI::CVaapiRenderPicture*>(buffer);
+  CVaapiRenderPicture *pic = dynamic_cast<CVaapiRenderPicture*>(buffer);
   if (pic)
     return true;
 
@@ -52,7 +54,7 @@ bool CRendererVAAPI::HandlesVideoBuffer(CVideoBuffer *buffer)
 
 bool CRendererVAAPI::Configure(const VideoPicture &picture, float fps, unsigned flags, unsigned int orientation)
 {
-  VAAPI::CVaapiRenderPicture *pic = dynamic_cast<VAAPI::CVaapiRenderPicture*>(picture.videoBuffer);
+  CVaapiRenderPicture *pic = dynamic_cast<CVaapiRenderPicture*>(picture.videoBuffer);
   if (pic->procPic.videoSurface != VA_INVALID_ID)
     m_isVAAPIBuffer = true;
   else
@@ -79,7 +81,7 @@ bool CRendererVAAPI::Configure(const VideoPicture &picture, float fps, unsigned 
 
 bool CRendererVAAPI::ConfigChanged(const VideoPicture &picture)
 {
-  VAAPI::CVaapiRenderPicture *pic = dynamic_cast<VAAPI::CVaapiRenderPicture*>(picture.videoBuffer);
+  CVaapiRenderPicture *pic = dynamic_cast<CVaapiRenderPicture*>(picture.videoBuffer);
   if (pic->procPic.videoSurface != VA_INVALID_ID && !m_isVAAPIBuffer)
     return true;
 
@@ -168,7 +170,7 @@ bool CRendererVAAPI::UploadTexture(int index)
 
   YUVBUFFER &buf = m_buffers[index];
 
-  VAAPI::CVaapiRenderPicture *pic = dynamic_cast<VAAPI::CVaapiRenderPicture*>(buf.videoBuffer);
+  CVaapiRenderPicture *pic = dynamic_cast<CVaapiRenderPicture*>(buf.videoBuffer);
 
   if (!pic || !pic->valid)
   {

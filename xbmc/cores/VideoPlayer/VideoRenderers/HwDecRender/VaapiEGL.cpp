@@ -32,7 +32,7 @@ void CVaapiTexture::Init(InteropInfo &interop)
   m_interop = interop;
 }
 
-bool CVaapiTexture::Map(VAAPI::CVaapiRenderPicture *pic)
+bool CVaapiTexture::Map(CVaapiRenderPicture *pic)
 {
   VAStatus status;
 
