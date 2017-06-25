@@ -17,12 +17,12 @@
  *  <http://www.gnu.org/licenses/>.
  *
  */
-#include "system.h"
 #include "VAAPI.h"
 #include "ServiceBroker.h"
 #include "windowing/WindowingFactory.h"
 #include "DVDVideoCodec.h"
 #include "cores/VideoPlayer/DVDCodecs/DVDCodecUtils.h"
+#include "cores/VideoPlayer/DVDCodecs/DVDFactoryCodec.h"
 #include "cores/VideoPlayer/TimingConstants.h"
 #include "cores/VideoPlayer/Process/ProcessInfo.h"
 #include "utils/log.h"
@@ -1195,7 +1195,15 @@ void CDecoder::ReturnRenderPicture(CVaapiRenderPicture *renderPic)
   m_vaapiOutput.m_dataPort.SendOutMessage(COutputDataProtocol::RETURNPIC, &renderPic, sizeof(renderPic));
 }
 
-void CDecoder::CheckCaps(EGLDisplay eglDisplay)
+IHardwareDecoder* CDecoder::Create(CDVDStreamInfo &hint, CProcessInfo &processInfo, AVPixelFormat fmt)
+{
+  if (fmt == AV_PIX_FMT_VAAPI_VLD && CServiceBroker::GetSettings().GetBool(CSettings::SETTING_VIDEOPLAYER_USEVTB))
+    return new VAAPI::CDecoder(processInfo);
+
+  return nullptr;
+}
+
+void CDecoder::Register(EGLDisplay eglDisplay)
 {
   CVaapiConfig config;
   if (!CVAAPIContext::EnsureContext(&config.context, nullptr))
@@ -1274,6 +1282,7 @@ void CDecoder::CheckCaps(EGLDisplay eglDisplay)
       {
         eglDestroyImageKHR(eglDisplay, eglImage);
         m_capGeneral = true;
+        CDVDFactoryCodec::RegisterHWAccel("vaapi", CDecoder::Create);
       }
 
     }

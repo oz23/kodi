@@ -20,32 +20,40 @@
 
 #include "DVDVideoCodec.h"
 #include "ServiceBroker.h"
+#include "cores/VideoPlayer/DVDCodecs/DVDFactoryCodec.h"
 #include "settings/Settings.h"
 #include "settings/lib/Setting.h"
 #include "windowing/WindowingFactory.h"
-
-#if defined (HAVE_LIBVDPAU)
-#include "cores/VideoPlayer/DVDCodecs/Video/VDPAU.h"
-#endif
+#include <string>
+#include <vector>
 
 bool CDVDVideoCodec::IsSettingVisible(const std::string &condition, const std::string &value, std::shared_ptr<const CSetting> setting, void *data)
 {
   if (setting == NULL || value.empty())
     return false;
 
-  //@todo
-  // move ifdeffery to platform specific files
   const std::string &settingId = setting->GetId();
 
-#if defined (HAVE_LIBVDPAU)
   if (settingId == CSettings::SETTING_VIDEOPLAYER_USEVDPAU)
   {
-    if (VDPAU::CDecoder::IsCapGeneral())
-      return true;
-    else
-      return false;
+    auto hwaccels = CDVDFactoryCodec::GetHWAccels();
+    for (auto &id : hwaccels)
+    {
+      if (id == "vdpau")
+        return true;
+    }
+    return false;
   }
-#endif
+  else if (settingId == CSettings::SETTING_VIDEOPLAYER_USEVAAPI)
+  {
+    auto hwaccels = CDVDFactoryCodec::GetHWAccels();
+    for (auto &id : hwaccels)
+    {
+      if (id == "vaapi")
+        return true;
+    }
+    return false;
+  }
 
   // check if we are running on nvidia hardware
   std::string gpuvendor = g_Windowing.GetRenderVendor();

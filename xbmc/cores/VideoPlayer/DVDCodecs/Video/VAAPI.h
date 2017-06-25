@@ -355,8 +355,8 @@ public:
   void FFReleaseBuffer(uint8_t *data);
   static int FFGetBuffer(AVCodecContext *avctx, AVFrame *pic, int flags);
 
-  static void CheckCaps(void *eglDisplay);
-  static bool IsCapGeneral() { return m_capGeneral; }
+  static IHardwareDecoder* Create(CDVDStreamInfo &hint, CProcessInfo &processInfo, AVPixelFormat fmt);
+  static void Register(void *eglDisplay);
 
 protected:
   void SetWidthHeight(int width, int height);

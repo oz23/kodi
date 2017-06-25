@@ -120,8 +120,8 @@ public:
     VC_EOF              //< EOF
   };
 
-  CDVDVideoCodec(CProcessInfo &processInfo) : m_processInfo(processInfo) {}
-  virtual ~CDVDVideoCodec() {}
+  CDVDVideoCodec(CProcessInfo &processInfo) : m_processInfo(processInfo) {};
+  virtual ~CDVDVideoCodec() = default;
 
   /**
    * Open the decoder, returns true on success
