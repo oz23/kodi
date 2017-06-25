@@ -85,7 +85,7 @@ bool CGUIDialogAddonSettings::ShowForAddon(const ADDON::AddonInfoPtr &addonInfo,
    */
   ADDON::AddonPtr addon;
   ADDON::CAddonMgr::GetInstance().GetAddon(addonInfo->ID(), addon, addonInfo->MainType());
-  if (addon->HasSettings())
+  if (!addon->HasSettings())
   {
     // addon does not support settings, inform user
     CGUIDialogOK::ShowAndGetInput(CVariant{ 24000 }, CVariant{ 24030 });
