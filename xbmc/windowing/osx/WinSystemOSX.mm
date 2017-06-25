@@ -232,7 +232,7 @@ CGDirectDisplayID GetDisplayID(int screen_index)
 size_t DisplayBitsPerPixelForMode(CGDisplayModeRef mode)
 {
   size_t bitsPerPixel = 0;
-  
+
   CFStringRef pixEnc = CGDisplayModeCopyPixelEncoding(mode);
   if(CFStringCompare(pixEnc, CFSTR(IO32BitDirectPixels), kCFCompareCaseInsensitive) == kCFCompareEqualTo)
   {
@@ -246,9 +246,9 @@ size_t DisplayBitsPerPixelForMode(CGDisplayModeRef mode)
   {
     bitsPerPixel = 8;
   }
-  
+
   CFRelease(pixEnc);
-  
+
   return bitsPerPixel;
 }
 
@@ -257,7 +257,7 @@ CGDisplayModeRef BestMatchForMode(CGDirectDisplayID display, size_t bitsPerPixel
 {
   // Get a copy of the current display mode
   CGDisplayModeRef displayMode = CGDisplayCopyDisplayMode(kCGDirectMainDisplay);
-  
+
   // Loop through all display modes to determine the closest match.
   // CGDisplayBestModeForParameters is deprecated on 10.6 so we will emulate it's behavior
   // Try to find a mode with the requested depth and equal or greater dimensions first.
@@ -266,10 +266,10 @@ CGDisplayModeRef BestMatchForMode(CGDirectDisplayID display, size_t bitsPerPixel
   CFArrayRef allModes = CGDisplayCopyAllDisplayModes(kCGDirectMainDisplay, NULL);
   for(int i = 0; i < CFArrayGetCount(allModes); i++)	{
     CGDisplayModeRef mode = (CGDisplayModeRef)CFArrayGetValueAtIndex(allModes, i);
-    
+
     if(DisplayBitsPerPixelForMode(mode) != bitsPerPixel)
       continue;
-    
+
     if((CGDisplayModeGetWidth(mode) == width) && (CGDisplayModeGetHeight(mode) == height))
     {
       CGDisplayModeRelease(displayMode); // release the copy we got before ...
@@ -278,7 +278,7 @@ CGDisplayModeRef BestMatchForMode(CGDirectDisplayID display, size_t bitsPerPixel
       break;
     }
   }
-  
+
   // No depth match was found
   if(!match)
   {
@@ -287,7 +287,7 @@ CGDisplayModeRef BestMatchForMode(CGDirectDisplayID display, size_t bitsPerPixel
       CGDisplayModeRef mode = (CGDisplayModeRef)CFArrayGetValueAtIndex(allModes, i);
       if(DisplayBitsPerPixelForMode(mode) >= bitsPerPixel)
         continue;
-      
+
       if((CGDisplayModeGetWidth(mode) == width) && (CGDisplayModeGetHeight(mode) == height))
       {
         displayMode = mode;
@@ -296,9 +296,9 @@ CGDisplayModeRef BestMatchForMode(CGDirectDisplayID display, size_t bitsPerPixel
       }
     }
   }
-  
+
   CFRelease(allModes);
-  
+
   return displayMode;
 }
 
@@ -533,7 +533,7 @@ CGDisplayModeRef GetMode(int width, int height, double refreshrate, int screenId
       return displayMode;
     }
   }
-  
+
   CFRelease(displayModes);
   CLog::Log(LOGERROR, "GetMode - no match found!");
   return NULL;
@@ -596,7 +596,7 @@ static void DisplayReconfigured(CGDirectDisplayID display,
       winsys->HandleOnResetDevice();
     }
   }
-  
+
   if ((flags & kCGDisplayAddFlag) || (flags & kCGDisplayRemoveFlag))
     winsys->UpdateResolutions();
 }
@@ -689,7 +689,7 @@ bool CWinSystemOSX::DestroyWindowSystem()
   NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
   [center removeObserver:(windowDidMoveNoteClass*)m_windowDidMove name:NSWindowDidMoveNotification object:nil];
   [center removeObserver:(windowDidReSizeNoteClass*)m_windowDidReSize name:NSWindowDidResizeNotification object:nil];
-  [center removeObserver:(windowDidChangeScreenNoteClass*)m_windowChangedScreen name:NSWindowDidChangeScreenNotification object:nil];  
+  [center removeObserver:(windowDidChangeScreenNoteClass*)m_windowChangedScreen name:NSWindowDidChangeScreenNotification object:nil];
 
   if (m_can_display_switch)
     CGDisplayRemoveReconfigurationCallback(DisplayReconfigured, (void*)this);
@@ -863,7 +863,7 @@ bool CWinSystemOSX::SetFullScreen(bool fullScreen, RESOLUTION_INFO& res, bool bl
   static NSInteger last_window_level = NSNormalWindowLevel;
   bool was_fullscreen = m_bFullScreen;
   NSOpenGLContext* cur_context;
-  
+
   if (m_lastDisplayNr == -1)
     m_lastDisplayNr = res.iScreen;
 
@@ -888,7 +888,7 @@ bool CWinSystemOSX::SetFullScreen(bool fullScreen, RESOLUTION_INFO& res, bool bl
   m_bFullScreen = fullScreen;
 
   cur_context = [NSOpenGLContext currentContext];
-  
+
   //handle resolution/refreshrate switching early here
   if (m_bFullScreen)
   {
@@ -1337,7 +1337,7 @@ bool CWinSystemOSX::SwitchToVideoMode(int width, int height, double refreshrate,
   CGConfigureDisplayWithDisplayMode(cfg, display_id, dispMode, nullptr);
   CGError err = CGCompleteDisplayConfiguration(cfg, kCGConfigureForAppOnly);
   CGDisplayRelease(display_id);
-  
+
   m_refreshRate = CGDisplayModeGetRefreshRate(dispMode);
 
   Cocoa_CVDisplayLinkUpdate();
@@ -1490,7 +1490,7 @@ bool CWinSystemOSX::IsObscured(void)
 
   CGWindowListOption opts;
   opts = kCGWindowListOptionOnScreenAboveWindow | kCGWindowListExcludeDesktopElements;
-  CFArrayRef windowIDs =CGWindowListCreate(opts, (CGWindowID)[window windowNumber]);  
+  CFArrayRef windowIDs =CGWindowListCreate(opts, (CGWindowID)[window windowNumber]);
 
   if (!windowIDs)
     return m_obscured;
@@ -1659,7 +1659,7 @@ void CWinSystemOSX::HandlePossibleRefreshrateChange()
   static double oldRefreshRate = m_refreshRate;
   Cocoa_CVDisplayLinkUpdate();
   int dummy = 0;
-  
+
   GetScreenResolution(&dummy, &dummy, &m_refreshRate, GetCurrentScreen());
 
   if (oldRefreshRate != m_refreshRate)
@@ -1807,7 +1807,7 @@ void CWinSystemOSX::WindowChangedScreen()
   // different screen
   NSOpenGLContext* context = [NSOpenGLContext currentContext];
   m_lastDisplayNr = -1;
-  
+
   // if we are here the user dragged the window to a different
   // screen and we return the screen of the window
   if (context)
@@ -1840,7 +1840,7 @@ void CWinSystemOSX::AnnounceOnLostDevice()
 
 void CWinSystemOSX::HandleOnResetDevice()
 {
-  
+
   int delay = CServiceBroker::GetSettings().GetInt("videoscreen.delayrefreshchange");
   if (delay > 0)
   {
