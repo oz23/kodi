@@ -34,6 +34,7 @@
 #include "Application.h"
 #include "VideoSyncDRM.h"
 #include "VideoSyncGLX.h"
+#include "cores/VideoPlayer/DVDCodecs/DVDFactoryCodec.h"
 #include "cores/VideoPlayer/DVDCodecs/Video/VAAPI.h"
 #include "cores/VideoPlayer/DVDCodecs/Video/VDPAU.h"
 
@@ -199,6 +200,8 @@ bool CWinSystemX11GLContext::RefreshGLContext(bool force)
     return success;
   }
 
+  CDVDFactoryCodec::ClearHWAccels();
+
   m_pGLContext = new CGLContextEGL(m_dpy);
   success = m_pGLContext->Refresh(force, m_nScreen, m_glWindow, m_newGlContext);
   if (success)
@@ -210,7 +213,7 @@ bool CWinSystemX11GLContext::RefreshGLContext(bool force)
     std::transform(gpuvendor.begin(), gpuvendor.end(), gpuvendor.begin(), ::tolower);
     if (gpuvendor.compare(0, 5, "intel") == 0)
     {
-      VAAPI::CDecoder::CheckCaps(static_cast<CGLContextEGL*>(m_pGLContext)->m_eglDisplay);
+      VAAPI::CDecoder::Register(static_cast<CGLContextEGL*>(m_pGLContext)->m_eglDisplay);
       return success;
     }
     delete m_pGLContext;
@@ -221,7 +224,7 @@ bool CWinSystemX11GLContext::RefreshGLContext(bool force)
   success = m_pGLContext->Refresh(force, m_nScreen, m_glWindow, m_newGlContext);
   if (success)
   {
-    VDPAU::CDecoder::CheckCaps();
+    VDPAU::CDecoder::Register();
   }
   return success;
 }

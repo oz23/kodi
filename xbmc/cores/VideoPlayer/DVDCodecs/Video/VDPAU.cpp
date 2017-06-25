@@ -18,13 +18,13 @@
  *
  */
 
-#include "system.h"
 #include "VDPAU.h"
 #include "ServiceBroker.h"
 #include <dlfcn.h>
 #include "windowing/WindowingFactory.h"
 #include "guilib/GraphicContext.h"
 #include "guilib/TextureManager.h"
+#include "cores/VideoPlayer/DVDCodecs/DVDFactoryCodec.h"
 #include "cores/VideoPlayer/Process/ProcessInfo.h"
 #include "cores/VideoPlayer/VideoRenderers/RenderManager.h"
 #include "TimingConstants.h"
@@ -1256,7 +1256,15 @@ bool CDecoder::CheckStatus(VdpStatus vdp_st, int line)
   return false;
 }
 
-void CDecoder::CheckCaps()
+IHardwareDecoder* CDecoder::Create(CDVDStreamInfo &hint, CProcessInfo &processInfo, AVPixelFormat fmt)
+ {
+   if (CDecoder::IsVDPAUFormat(fmt) && CServiceBroker::GetSettings().GetBool(CSettings::SETTING_VIDEOPLAYER_USEVTB))
+     return new VDPAU::CDecoder(processInfo);
+
+   return nullptr;
+ }
+
+void CDecoder::Register()
 {
   CVDPAUContext *context;
   if (!CVDPAUContext::EnsureContext(&context))
@@ -1265,6 +1273,8 @@ void CDecoder::CheckCaps()
   context->Release();
 
   m_capGeneral = true;
+
+  CDVDFactoryCodec::RegisterHWAccel("vdpau", CDecoder::Create);
 }
 
 //-----------------------------------------------------------------------------
