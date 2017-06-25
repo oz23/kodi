@@ -35,8 +35,6 @@
 #include "VideoSyncDRM.h"
 #include "VideoSyncGLX.h"
 #include "cores/VideoPlayer/DVDCodecs/DVDFactoryCodec.h"
-#include "cores/VideoPlayer/DVDCodecs/Video/VAAPI.h"
-#include "cores/VideoPlayer/DVDCodecs/Video/VDPAU.h"
 
 CWinSystemX11GLContext::CWinSystemX11GLContext()
 {
@@ -191,6 +189,13 @@ XVisualInfo* CWinSystemX11GLContext::GetVisual()
   return glXChooseVisual(m_dpy, m_nScreen, att);
 }
 
+#if defined (HAVE_LIBVA)
+#include "cores/VideoPlayer/DVDCodecs/Video/VAAPI.h"
+#endif
+#if defined (HAVE_LIBVDPAU)
+#include "cores/VideoPlayer/DVDCodecs/Video/VDPAU.h"
+#endif
+
 bool CWinSystemX11GLContext::RefreshGLContext(bool force)
 {
   bool success = false;
@@ -213,7 +218,9 @@ bool CWinSystemX11GLContext::RefreshGLContext(bool force)
     std::transform(gpuvendor.begin(), gpuvendor.end(), gpuvendor.begin(), ::tolower);
     if (gpuvendor.compare(0, 5, "intel") == 0)
     {
+#if defined (HAVE_LIBVA)
       VAAPI::CDecoder::Register(static_cast<CGLContextEGL*>(m_pGLContext)->m_eglDisplay);
+#endif
       return success;
     }
     delete m_pGLContext;
@@ -224,7 +231,9 @@ bool CWinSystemX11GLContext::RefreshGLContext(bool force)
   success = m_pGLContext->Refresh(force, m_nScreen, m_glWindow, m_newGlContext);
   if (success)
   {
+#if defined (HAVE_LIBVDPAU)
     VDPAU::CDecoder::Register();
+#endif
   }
   return success;
 }
