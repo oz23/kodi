@@ -24,7 +24,6 @@
 #include "DVDVideoCodecFFmpeg.h"
 #include "cores/VideoPlayer/DVDCodecs/Video/DVDVideoCodec.h"
 #include "cores/VideoPlayer/Process/VideoBuffer.h"
-#undef BOOL
 #include <CoreVideo/CVPixelBuffer.h>
 
 class CProcessInfo;
