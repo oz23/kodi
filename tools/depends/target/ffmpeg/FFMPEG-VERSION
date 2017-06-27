@@ -1,9 +1,5 @@
 LIBNAME=ffmpeg
 BASE_URL=https://github.com/xbmc/FFmpeg/archive
-<<<<<<< HEAD
 VERSION=release/3.3-kodi
-=======
-VERSION=3.3.2-Leia-Alpha-1
->>>>>>> kodi/master
 ARCHIVE=$(LIBNAME)-$(VERSION).tar.gz
 GNUTLS_VER=3.4.14
