@@ -19,7 +19,8 @@
  */
 #pragma once
 
-#include "addons/AddonInstanceHandler.h"
+#include "addons/binary-addons/AddonInstanceHandler.h"
+#include "addons/binary-addons/BinaryAddonBase.h"
 #include "addons/kodi-addon-dev-kit/include/kodi/addon-instance/Peripheral.h"
 #include "addons/kodi-addon-dev-kit/include/kodi/addon-instance/PeripheralUtils.h"
 #include "input/joysticks/JoystickTypes.h"
@@ -51,7 +52,7 @@ namespace PERIPHERALS
   class CPeripheralAddon : public ADDON::IAddonInstanceHandler
   {
   public:
-    CPeripheralAddon(ADDON::AddonInfoPtr addonInfo);
+    CPeripheralAddon(const ADDON::BinaryAddonBasePtr& addonInfo);
     virtual ~CPeripheralAddon(void);
 
     /*!
@@ -101,19 +102,17 @@ namespace PERIPHERALS
     void UnregisterButtonMap(KODI::JOYSTICK::IButtonMap* buttonMap);
     void RefreshButtonMaps(const std::string& strDeviceName = "");
 
-    /*!
-     * @brief To get the interface table used between addon and kodi
-     * @todo This function becomes removed after old callback library system
-     * is removed.
-     */
-    AddonInstance_Peripheral* GetInstanceInterface() { return &m_struct; }
+    static inline bool ProvidesJoysticks(const ADDON::BinaryAddonBasePtr& addonInfo)
+    {
+      return addonInfo->Type(ADDON::ADDON_PERIPHERALDLL)->GetValue("@provides_joysticks").asBoolean();
+    }
+
+    static inline bool ProvidesButtonMaps(const ADDON::BinaryAddonBasePtr& addonInfo)
+    {
+      return addonInfo->Type(ADDON::ADDON_PERIPHERALDLL)->GetValue("@provides_buttonmaps").asBoolean();
+    }
 
   private:
-    // Static function to transfer data from add-on to kodi
-    static void trigger_scan(void* kodiInstance);
-    static void refresh_button_maps(void* kodiInstance, const char* deviceName, const char* controllerId);
-    static unsigned int feature_count(void* kodiInstance, const char* controllerId, JOYSTICK_FEATURE_TYPE type);
-
     void UnregisterButtonMap(CPeripheral* device);
 
     /*!
@@ -139,7 +138,7 @@ namespace PERIPHERALS
     static std::string GetDeviceName(PeripheralType type);
     static std::string GetProvider(PeripheralType type);
 
-    /* @brief Cache for const char* members in AddonProps_Peripheral */
+    /* @brief Cache for const char* members in PERIPHERAL_PROPERTIES */
     std::string         m_strUserPath;    /*!< @brief translated path to the user profile */
     std::string         m_strClientPath;  /*!< @brief translated path to this add-on */
 
@@ -167,6 +166,7 @@ namespace PERIPHERALS
 
     /* @brief Thread synchronization */
     CCriticalSection    m_critSection;
+    
     AddonInstance_Peripheral m_struct;
 
     CSharedSection      m_dllSection;

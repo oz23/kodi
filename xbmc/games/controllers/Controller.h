@@ -36,8 +36,11 @@ using JOYSTICK::FEATURE_TYPE;
 class CController : public ADDON::CAddon
 {
 public:
-  CController(ADDON::AddonInfoPtr addonInfo);
-  virtual ~CController(void) = default;
+  static std::unique_ptr<CController> FromExtension(ADDON::CAddonInfo addonInfo, const cp_extension_t* ext);
+
+  CController(ADDON::CAddonInfo addonInfo);
+
+  virtual ~CController() = default;
 
   static const ControllerPtr EmptyPtr;
 

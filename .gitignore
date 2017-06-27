@@ -146,6 +146,38 @@ cmake_install.cmake
 /lib/*/1
 /lib/*/win32/1
 
+# /lib/cpluff/
+/lib/cpluff/ABOUT-NLS
+/lib/cpluff/aclocal.m4
+/lib/cpluff/autom4te.cache
+/lib/cpluff/auxliary
+/lib/cpluff/m4
+/lib/cpluff/config.h
+/lib/cpluff/config.h.in
+/lib/cpluff/config.h.in~
+/lib/cpluff/configure
+/lib/cpluff/Makefile.in
+/lib/cpluff/*/Makefile.in
+/lib/cpluff/*/*/Makefile.in
+/lib/cpluff/*/*/*/Makefile.in
+/lib/cpluff/*/*/*/*/Makefile.in
+/lib/cpluff/Makefile
+/lib/cpluff/*/Makefile
+/lib/cpluff/*/*/Makefile
+/lib/cpluff/*/*/*/Makefile
+/lib/cpluff/*/*/*/*/Makefile
+/lib/cpluff/po/*template
+/lib/cpluff/po/*header
+lib/cpluff/console/cpluff-console
+lib/cpluff/examples/cpfile/cpfile
+lib/cpluff/libcpluff/cpluffdef.h
+lib/cpluff/libcpluff/docsrc/Doxyfile-impl
+lib/cpluff/libcpluff/docsrc/Doxyfile-ref
+lib/cpluff/libtool
+lib/cpluff/loader/cpluff-loader
+lib/cpluff/po/POTFILES
+lib/cpluff/stamp-h1
+
 # /lib/gtest
 /lib/gtest/Makefile.in
 /lib/gtest/aclocal.m4
@@ -216,9 +248,12 @@ cmake_install.cmake
 /project/BuildDependencies/bin/swig
 /project/BuildDependencies/bin/doxygen
 /project/BuildDependencies/bin/json-rpc
+/project/BuildDependencies/mingwlibs
 /project/BuildDependencies/x64
+/project/BuildDependencies/win32
 
 # /system
+/system/cpluff.dll
 /system/EasyHook32.dll
 /system/EasyHook64.dll
 /system/libcurl.dll
@@ -230,16 +265,7 @@ cmake_install.cmake
 /system/cec.dll
 /system/libxslt.dll
 /system/ssleay32.dll
-/system/avcodec-57.dll
-/system/avfilter-6.dll
-/system/avformat-57.dll
-/system/avutil-55.dll
-/system/postproc-54.dll
-/system/swscale-4.dll
-/system/swresample-2.dll
 /system/libxml2.dll
-/system/libdvdcss-2.dll
-/system/libdvdnav.dll
 /system/libass.dll
 /system/libbluray*
 /system/libcdio.dll
@@ -382,6 +408,7 @@ cmake_install.cmake
 /xbmc/cores/playercorefactory/Makefile
 /xbmc/cores/Makefile
 /xbmc/cores/VideoPlayer/VideoRenderers/Makefile
+/xbmc/cores/RetroPlayer/Makefile
 
 # /xbmc/filesystem/
 /xbmc/filesystem/Makefile
@@ -457,19 +484,9 @@ cmake_install.cmake
 /xbmc/windowing/Makefile
 /xbmc/windowing/egl/Makefile
 
-# /lib/libdvd/
-/lib/libdvd/bin
-/lib/libdvd/include
-/lib/libdvd/lib
-/lib/libdvd/Makefile
-/lib/libdvd/share
-
 #/lib/win32
 /lib/win32/*.tar*
 /lib/win32/pax_global_header
-
-#/lib/win32/ffmpeg
-/lib/win32/ffmpeg/
 
 /lib/libUPnP/Makefile
 

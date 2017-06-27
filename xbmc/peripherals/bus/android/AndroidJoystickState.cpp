@@ -355,7 +355,7 @@ void CAndroidJoystickState::GetAxisEvents(std::vector<kodi::addon::PeripheralEve
   const std::vector<JOYSTICK_STATE_AXIS>& axes = m_stateBuffer.axes;
 
   for (unsigned int i = 0; i < axes.size(); i++)
-      events.push_back(kodi::addon::PeripheralEvent(m_deviceId, i, axes[i]));
+    events.push_back(kodi::addon::PeripheralEvent(m_deviceId, i, axes[i]));
 
   m_state.axes.assign(axes.begin(), axes.end());
 }

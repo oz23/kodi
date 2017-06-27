@@ -20,7 +20,8 @@
 #pragma once
 
 #include "addons/AddonManager.h"
-#include "addons/Addon.h"
+#include "addons/IAddon.h"
+#include "addons/binary-addons/BinaryAddonBase.h"
 #include "guilib/IWindowManagerCallback.h"
 #include "peripherals/PeripheralTypes.h"
 #include "peripherals/bus/PeripheralBus.h"
@@ -33,8 +34,7 @@
 
 namespace PERIPHERALS
 {
-  class CPeripheralBusAddon : public CPeripheralBus,
-                              public ADDON::IAddonMgrCallback
+  class CPeripheralBusAddon : public CPeripheralBus
   {
   public:
     CPeripheralBusAddon(CPeripherals& manager);
@@ -45,7 +45,7 @@ namespace PERIPHERALS
     /*!
     * \brief Get peripheral add-on that can provide button maps
     */
-    bool GetAddonWithButtonMap(ADDON::AddonInfoPtr &addon) const;
+    bool GetAddonWithButtonMap(PeripheralAddonPtr &addon) const;
 
     /*!
      * \brief Get peripheral add-on that can provide button maps for the given device
@@ -81,9 +81,6 @@ namespace PERIPHERALS
     virtual void         EnableButtonMapping() override;
     virtual void         PowerOff(const std::string& strLocation) override;
 
-    // implementation of IAddonMgrCallback
-    bool RequestRestart(ADDON::AddonPtr addon, bool datachanged) override;
-
     bool SplitLocation(const std::string& strLocation, PeripheralAddonPtr& addon, unsigned int& peripheralIndex) const;
 
   protected:
@@ -94,10 +91,7 @@ namespace PERIPHERALS
   private:
     void OnEvent(const ADDON::AddonEvent& event);
 
-    void PromptEnableAddons(const ADDON::AddonInfos& disabledAddons);
-
-    // Helper function
-    static PeripheralAddonVector GetEnabledAddons();
+    void PromptEnableAddons(const ADDON::BinaryAddonBaseList& disabledAddons);
 
     PeripheralAddonVector m_addons;
     PeripheralAddonVector m_failedAddons;

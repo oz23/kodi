@@ -63,6 +63,33 @@ public:
   static char* GetDVDMenuLanguage(const void* addonData);
   static void FreeString(const void* addonData, char* str);
 
+  // file operations
+  static void* OpenFile(const void* addonData, const char* strFileName, unsigned int flags);
+  static void* OpenFileForWrite(const void* addonData, const char* strFileName, bool bOverwrite);
+  static ssize_t ReadFile(const void* addonData, void* file, void* lpBuf, size_t uiBufSize);
+  static bool ReadFileString(const void* addonData, void* file, char *szLine, int iLineLength);
+  static ssize_t WriteFile(const void* addonData, void* file, const void* lpBuf, size_t uiBufSize);
+  static void FlushFile(const void* addonData, void* file);
+  static int64_t SeekFile(const void* addonData, void* file, int64_t iFilePosition, int iWhence);
+  static int TruncateFile(const void* addonData, void* file, int64_t iSize);
+  static int64_t GetFilePosition(const void* addonData, void* file);
+  static int64_t GetFileLength(const void* addonData, void* file);
+  static double GetFileDownloadSpeed(const void* addonData, void* file);
+  static void CloseFile(const void* addonData, void* file);
+  static int GetFileChunkSize(const void* addonData, void* file);
+  static bool FileExists(const void* addonData, const char *strFileName, bool bUseCache);
+  static int StatFile(const void* addonData, const char *strFileName, struct __stat64* buffer);
+  static bool DeleteFile(const void* addonData, const char *strFileName);
+  static bool CanOpenDirectory(const void* addonData, const char* strURL);
+  static bool CreateDirectory(const void* addonData, const char *strPath);
+  static bool DirectoryExists(const void* addonData, const char *strPath);
+  static bool RemoveDirectory(const void* addonData, const char *strPath);
+  static bool GetDirectory(const void* addondata, const char* strPath, const char* mask, VFSDirEntry** items, unsigned int* num_items);
+  static void FreeDirectory(const void* addondata, VFSDirEntry* items, unsigned int num_items);
+  static void* CURLCreate(const void* addonData, const char* strURL);
+  static bool CURLAddOption(const void* addonData, void* curl, XFILE::CURLOPTIONTYPE type, const char* name, const char * value);
+  static bool CURLOpen(const void* addonData, void* curl, unsigned int flags);
+
 private:
   ADDON::CAddon* m_addon; /*!< the addon */
   CB_AddOnLib  *m_callbacks; /*!< callback addresses */

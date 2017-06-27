@@ -20,7 +20,7 @@
  */
 
 #include "settings/dialogs/GUIDialogSettingsManagerBase.h"
-#include "addons/Addon.h"
+#include "addons/IAddon.h"
 
 class CGUIDialogAddonSettings : public CGUIDialogSettingsManagerBase
 {
@@ -31,7 +31,7 @@ public:
   // specializations of CGUIControl
   virtual bool OnMessage(CGUIMessage &message);
 
-  static bool ShowForAddon(const ADDON::AddonInfoPtr &addon, bool saveToDisk = true);
+  static bool ShowForAddon(const ADDON::AddonPtr &addon, bool saveToDisk = true);
   static void SaveAndClose();
 
   std::string GetCurrentAddonID() const;

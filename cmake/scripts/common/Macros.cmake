@@ -72,7 +72,7 @@ function(core_add_library name)
     add_library(${name} STATIC ${SOURCES} ${HEADERS} ${OTHERS})
     set_target_properties(${name} PROPERTIES PREFIX "")
     set(core_DEPENDS ${name} ${core_DEPENDS} CACHE STRING "" FORCE)
-    add_dependencies(${name} ffmpeg dvdnav crossguid)
+    add_dependencies(${name} libcpluff ffmpeg dvdnav crossguid)
     set(CORE_LIBRARY ${name} PARENT_SCOPE)
 
     # Add precompiled headers to Kodi main libraries
@@ -98,7 +98,7 @@ function(core_add_test_library name)
     set_target_properties(${name} PROPERTIES PREFIX ""
                                              EXCLUDE_FROM_ALL 1
                                              FOLDER "Build Utilities/tests")
-    add_dependencies(${name} ffmpeg dvdnav crossguid)
+    add_dependencies(${name} libcpluff ffmpeg dvdnav crossguid)
     set(test_archives ${test_archives} ${name} CACHE STRING "" FORCE)
   endif()
   foreach(src IN LISTS SOURCES SUPPORTED_SOURCES HEADERS OTHERS)
@@ -706,13 +706,13 @@ macro(find_addon_xml_in_files)
     foreach(loop_var ${ADDON_FILES})
       if(loop_var MATCHES "addon.xml.in")
         string(REPLACE "addon.xml.in" "addon.xml" loop_var ${loop_var})
+
+        list(GET loop_var 0 file_name)
+        string(REPLACE "${CORE_SOURCE_DIR}/" "" file_name ${file_name})
+        list(APPEND ADDON_INSTALL_DATA "${file_name}")
+
+        unset(file_name)
       endif()
-
-      list(GET loop_var 0 file_name)
-      string(REPLACE "${CORE_SOURCE_DIR}/" "" file_name ${file_name})
-      list(APPEND ADDON_INSTALL_DATA "${file_name}")
-
-      unset(file_name)
     endforeach()
     unset(xml_name)
   endforeach()

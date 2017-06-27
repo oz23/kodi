@@ -1,8 +1,8 @@
 xbmc                                            xbmc
 xbmc/addons                                     addons
+xbmc/addons/binary-addons                       addons_binary-addons
 xbmc/addons/interfaces                          addonsBinaryInterfaces
 xbmc/addons/interfaces/Addon                    addonCallbacks_Addon
-xbmc/addons/interfaces/kodi/addon-instance      addonInterface_kodi_addon_instance
 xbmc/addons/interfaces/GUI                      addons_interfaces_gui
 xbmc/addons/interfaces/GUI/controls             addons_interfaces_gui_controls
 xbmc/addons/interfaces/GUI/dialogs              addons_interfaces_gui_dialogs

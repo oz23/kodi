@@ -21,12 +21,14 @@
 #include "PeripheralBusAddon.h"
 #include "addons/Addon.h"
 #include "addons/AddonManager.h"
+#include "addons/binary-addons/BinaryAddonManager.h"
 #include "messaging/helpers/DialogHelper.h"
 #include "peripherals/Peripherals.h"
 #include "peripherals/addons/PeripheralAddon.h"
 #include "peripherals/devices/PeripheralJoystick.h"
 #include "threads/SingleLock.h"
 #include "utils/log.h"
+#include "ServiceBroker.h"
 
 #include <algorithm>
 #include <memory>
@@ -39,7 +41,6 @@ CPeripheralBusAddon::CPeripheralBusAddon(CPeripherals& manager) :
 {
   using namespace ADDON;
 
-  CAddonMgr::GetInstance().RegisterAddonMgrCallback(ADDON_PERIPHERALDLL, this);
   CAddonMgr::GetInstance().Events().Subscribe(this, &CPeripheralBusAddon::OnEvent);
 
   UpdateAddons();
@@ -50,29 +51,32 @@ CPeripheralBusAddon::~CPeripheralBusAddon()
   using namespace ADDON;
 
   CAddonMgr::GetInstance().Events().Unsubscribe(this);
-  CAddonMgr::GetInstance().UnregisterAddonMgrCallback(ADDON_PERIPHERALDLL);
 
   // stop everything before destroying any (loaded) addons
   Clear();
+
+  // destroy any (loaded) addons
+  for (const auto& addon : m_addons)
+    addon->DestroyAddon();
 
   m_failedAddons.clear();
   m_addons.clear();
 }
 
-bool CPeripheralBusAddon::GetAddonWithButtonMap(ADDON::AddonInfoPtr &addon) const
+bool CPeripheralBusAddon::GetAddonWithButtonMap(PeripheralAddonPtr &addon) const
 {
   CSingleLock lock(m_critSection);
 
   auto it = std::find_if(m_addons.begin(), m_addons.end(),
     [](const PeripheralAddonPtr& addon)
     {
-      return addon->Type(ADDON::ADDON_PERIPHERALDLL)->GetValue("@provides_buttonmaps").asBoolean();
+      return addon->HasButtonMaps();
     });
 
   if (it != m_addons.end())
   {
-    addon = std::dynamic_pointer_cast<ADDON::CAddon>(*it)->AddonInfo();
-    return true;
+    addon = *it;
+    return  true;
   }
 
   return false;
@@ -183,12 +187,14 @@ void CPeripheralBusAddon::EnableButtonMapping()
 
   CSingleLock lock(m_critSection);
 
-  AddonInfoPtr dummy;
+  PeripheralAddonPtr dummy;
+
   if (!GetAddonWithButtonMap(dummy))
   {
-    AddonInfos disabledAddons;
-    CAddonMgr::GetInstance().GetDisabledAddonInfos(disabledAddons, ADDON_PERIPHERALDLL);
-    PromptEnableAddons(disabledAddons);
+    BinaryAddonBaseList disabledAddons;
+    CServiceBroker::GetBinaryAddonManager().GetDisabledAddonInfos(disabledAddons, ADDON_PERIPHERALDLL);
+    if (!disabledAddons.empty())
+      PromptEnableAddons(disabledAddons);
   }
 }
 
@@ -324,23 +330,6 @@ void CPeripheralBusAddon::GetDirectory(const std::string &strPath, CFileItemList
     addon->GetDirectory(strPath, items);
 }
 
-bool CPeripheralBusAddon::RequestRestart(ADDON::AddonPtr addon, bool datachanged)
-{
-  // make sure this is a peripheral addon
-  PeripheralAddonPtr peripheralAddon = std::dynamic_pointer_cast<CPeripheralAddon>(addon);
-  if (peripheralAddon == nullptr)
-    return false;
-
-  if (peripheralAddon->CreateAddon() != ADDON_STATUS_OK)
-  {
-    CSingleLock lock(m_critSection);
-    m_addons.erase(std::remove(m_addons.begin(), m_addons.end(), peripheralAddon), m_addons.end());
-    m_failedAddons.push_back(peripheralAddon);
-  }
-
-  return true;
-}
-
 void CPeripheralBusAddon::OnEvent(const ADDON::AddonEvent& event)
 {
   if (typeid(event) == typeid(ADDON::AddonEvents::Enabled) ||
@@ -385,7 +374,7 @@ void CPeripheralBusAddon::UpdateAddons(void)
   using namespace ADDON;
 
   auto GetPeripheralAddonID = [](const PeripheralAddonPtr& addon) { return addon->ID(); };
-  auto GetAddonID = [](const AddonInfoPtr& addon) { return addon->ID(); };
+  auto GetAddonID = [](const BinaryAddonBasePtr& addon) { return addon->ID(); };
 
   std::set<std::string> currentIds;
   std::set<std::string> newIds;
@@ -394,8 +383,8 @@ void CPeripheralBusAddon::UpdateAddons(void)
   std::set<std::string> removed;
 
   // Get new add-ons
-  AddonInfos newAddons;
-  CAddonMgr::GetInstance().GetAddonInfos(newAddons, true, ADDON_PERIPHERALDLL);
+  BinaryAddonBaseList newAddons;
+  CServiceBroker::GetBinaryAddonManager().GetAddonInfos(newAddons, true, ADDON_PERIPHERALDLL);
   std::transform(newAddons.begin(), newAddons.end(), std::inserter(newIds, newIds.end()), GetAddonID);
 
   CSingleLock lock(m_critSection);
@@ -413,9 +402,9 @@ void CPeripheralBusAddon::UpdateAddons(void)
   {
     CLog::Log(LOGDEBUG, "Add-on bus: Registering add-on %s", addonId.c_str());
 
-    auto GetAddon = [addonId](const AddonInfoPtr& addon) { return addon->ID() == addonId; };
+    auto GetAddon = [&addonId](const BinaryAddonBasePtr& addon) { return addon->ID() == addonId; };
 
-    AddonInfos::iterator it = std::find_if(newAddons.begin(), newAddons.end(), GetAddon);
+    BinaryAddonBaseList::iterator it = std::find_if(newAddons.begin(), newAddons.end(), GetAddon);
     if (it != newAddons.end())
     {
       PeripheralAddonPtr newAddon = std::make_shared<CPeripheralAddon>(*it);
@@ -429,9 +418,9 @@ void CPeripheralBusAddon::UpdateAddons(void)
         }
 
         if (bCreated)
-          m_addons.push_back(newAddon);
+          m_addons.emplace_back(std::move(newAddon));
         else
-          m_failedAddons.push_back(newAddon);
+          m_failedAddons.emplace_back(std::move(newAddon));
       }
     }
   }
@@ -455,10 +444,16 @@ void CPeripheralBusAddon::UpdateAddons(void)
     m_addons.erase(std::remove_if(m_addons.begin(), m_addons.end(), ErasePeripheralAddon), m_addons.end());
     if (!erased)
       m_failedAddons.erase(std::remove_if(m_failedAddons.begin(), m_failedAddons.end(), ErasePeripheralAddon), m_failedAddons.end());
+
+    if (erased)
+    {
+      CSingleExit exit(m_critSection);
+      erased->DestroyAddon();
+    }
   }
 }
 
-void CPeripheralBusAddon::PromptEnableAddons(const ADDON::AddonInfos& disabledAddons)
+void CPeripheralBusAddon::PromptEnableAddons(const ADDON::BinaryAddonBaseList& disabledAddons)
 {
   using namespace ADDON;
   using namespace MESSAGING::HELPERS;
@@ -467,9 +462,9 @@ void CPeripheralBusAddon::PromptEnableAddons(const ADDON::AddonInfos& disabledAd
   bool bAccepted = false;
 
   auto itAddon = std::find_if(disabledAddons.begin(), disabledAddons.end(),
-    [](const AddonInfoPtr& addonInfo)
+    [](const BinaryAddonBasePtr& addonInfo)
   {
-    return addonInfo->Type(ADDON::ADDON_PERIPHERALDLL)->GetValue("@provides_buttonmaps").asBoolean();
+    return CPeripheralAddon::ProvidesJoysticks(addonInfo);
   });
 
   if (itAddon != disabledAddons.end())
@@ -481,9 +476,9 @@ void CPeripheralBusAddon::PromptEnableAddons(const ADDON::AddonInfos& disabledAd
 
   if (bAccepted)
   {
-    for (auto addonInfo : disabledAddons)
+    for (const auto& addonInfo : disabledAddons)
     {
-      if (addonInfo->Type(ADDON::ADDON_PERIPHERALDLL)->GetValue("@provides_buttonmaps").asBoolean())
+      if (CPeripheralAddon::ProvidesJoysticks(addonInfo))
         CAddonMgr::GetInstance().EnableAddon(addonInfo->ID());
     }
   }

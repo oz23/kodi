@@ -24,6 +24,7 @@
 #include "GUIPassword.h"
 #include "Util.h"
 #include "addons/AddonManager.h"
+#include "addons/binary-addons/BinaryAddonManager.h"
 #include "addons/BinaryAddonCache.h"
 #include "addons/Skin.h"
 #if defined(TARGET_ANDROID)
@@ -62,7 +63,7 @@ bool AddonHasSettings(const std::string &condition, const std::string &value, Se
   if (!ADDON::CAddonMgr::GetInstance().GetAddon(settingAddon->GetValue(), addon, settingAddon->GetAddonType()) || addon == NULL)
     return false;
 
-  if (addon->IsType(ADDON::ADDON_SKIN))
+  if (addon->Type() == ADDON::ADDON_SKIN)
     return ((ADDON::CSkinInfo*)addon.get())->HasSkinFile("SkinSettings.xml");
 
   return addon->HasSettings();
@@ -85,14 +86,7 @@ bool HasPeripherals(const std::string &condition, const std::string &value, Sett
 
 bool HasPeripheralLibraries(const std::string &condition, const std::string &value, SettingConstPtr setting, void *data)
 {
-  using namespace ADDON;
-
-  VECADDONS peripheralAddons;
-
-  CBinaryAddonCache& addonCache = CServiceBroker::GetBinaryAddonCache();
-  addonCache.GetInstalledAddons(peripheralAddons, ADDON_PERIPHERALDLL);
-
-  return !peripheralAddons.empty();
+  return CServiceBroker::GetBinaryAddonManager().HasInstalledAddons(ADDON::ADDON_PERIPHERALDLL);
 }
 
 bool HasRumbleFeature(const std::string &condition, const std::string &value, SettingConstPtr setting, void *data)

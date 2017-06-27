@@ -324,7 +324,7 @@ CFileItem::CFileItem(const CMediaSource& share)
   FillInMimeType(false);
 }
 
-CFileItem::CFileItem(ADDON::AddonInfoPtr addonInfo) : m_addonInfo(std::move(addonInfo))
+CFileItem::CFileItem(std::shared_ptr<const ADDON::IAddon> addonInfo) : m_addonInfo(std::move(addonInfo))
 {
   Initialize();
 }
@@ -935,7 +935,7 @@ bool CFileItem::IsGame() const
     return false;
 
   if (HasAddonInfo())
-    return CGameUtils::IsStandaloneGame(GetAddonInfo());
+    return CGameUtils::IsStandaloneGame(std::const_pointer_cast<ADDON::IAddon>(GetAddonInfo()));
 
   return CGameUtils::HasGameExtension(m_strPath);
 }
@@ -1056,7 +1056,7 @@ bool CFileItem::IsNFO() const
 
 bool CFileItem::IsDiscImage() const
 {
-  return URIUtils::HasExtension(m_strPath, ".img|.iso|.nrg");
+  return URIUtils::HasExtension(m_strPath, ".img|.iso|.nrg|.udf");
 }
 
 bool CFileItem::IsOpticalMediaFile() const

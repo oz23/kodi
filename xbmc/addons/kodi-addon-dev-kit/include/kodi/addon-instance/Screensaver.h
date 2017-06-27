@@ -90,7 +90,7 @@ namespace addon
       SetAddonStruct(instance);
     }
 
-    virtual ~CInstanceScreensaver() = default;
+    virtual ~CInstanceScreensaver() { }
 
     virtual bool Start() { return true; }
     virtual void Stop() {}

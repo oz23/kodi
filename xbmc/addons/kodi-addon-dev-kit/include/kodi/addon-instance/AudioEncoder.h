@@ -25,6 +25,7 @@ namespace kodi { namespace addon { class CInstanceAudioEncoder; }}
 
 extern "C"
 {
+
   typedef struct AddonProps_AudioEncoder
   {
     int dummy;
@@ -33,7 +34,7 @@ extern "C"
   typedef struct AddonToKodiFuncTable_AudioEncoder
   {
     void* kodiInstance;
-    int (*write) (void* kodiInstance, uint8_t* data, int len);
+    int (*write) (void* kodiInstance, const uint8_t* data, int len);
     int64_t (*seek)(void* kodiInstance, int64_t pos, int whence);
   } AddonToKodiFuncTable_AudioEncoder;
 
@@ -41,14 +42,14 @@ extern "C"
   typedef struct KodiToAddonFuncTable_AudioEncoder
   {
     kodi::addon::CInstanceAudioEncoder* addonInstance;
-    bool (__cdecl* Start) (AddonInstance_AudioEncoder* instance, int iInChannels, int iInRate, int iInBits,
+    bool (__cdecl* start) (const AddonInstance_AudioEncoder* instance, int in_channels, int in_rate, int in_bits,
                            const char* title, const char* artist,
                            const char* albumartist, const char* album,
                            const char* year, const char* track,
                            const char* genre, const char* comment,
-                           int iTrackLength);
-    int  (__cdecl* Encode) (AddonInstance_AudioEncoder* instance, int nNumBytesRead, uint8_t* pbtStream);
-    bool (__cdecl* Finish) (AddonInstance_AudioEncoder* instance);
+                           int track_length);
+    int  (__cdecl* encode) (const AddonInstance_AudioEncoder* instance, int num_bytes_read, const uint8_t* pbt_stream);
+    bool (__cdecl* finish) (const AddonInstance_AudioEncoder* instance);
   } KodiToAddonFuncTable_AudioEncoder;
 
   typedef struct AddonInstance_AudioEncoder
@@ -87,9 +88,9 @@ namespace addon
     //==========================================================================
     /// \brief Start encoder (**required**)
     ///
-    /// \param[in] iInChannels          Number of channels
-    /// \param[in] iInRate              Sample rate of input data
-    /// \param[in] iInBits              Bits per sample in input data
+    /// \param[in] inChannels           Number of channels
+    /// \param[in] inRate               Sample rate of input data
+    /// \param[in] inBits               Bits per sample in input data
     /// \param[in] title                The title of the song
     /// \param[in] artist               The artist of the song
     /// \param[in] albumartist          The albumartist of the song
@@ -97,32 +98,31 @@ namespace addon
     /// \param[in] track                The track number of the song
     /// \param[in] genre                The genre of the song
     /// \param[in] comment              A comment to attach to the song
-    /// \param[in] iTrackLength         Total track length in seconds
+    /// \param[in] trackLength          Total track length in seconds
     /// \return                         True on success, false on failure.
     ///
-    virtual bool Start(int iInChannels,
-                       int iInRate,
-                       int iInBits,
-                       std::string title,
-                       std::string artist,
-                       std::string albumartist,
-                       std::string album,
-                       std::string year,
-                       std::string track,
-                       std::string genre,
-                       std::string comment,
-                       int iTrackLength)=0;
+    virtual bool Start(int inChannels,
+                       int inRate,
+                       int inBits,
+                       const std::string& title,
+                       const std::string& artist,
+                       const std::string& albumartist,
+                       const std::string& album,
+                       const std::string& year,
+                       const std::string& track,
+                       const std::string& genre,
+                       const std::string& comment,
+                       int trackLength) = 0;
     //--------------------------------------------------------------------------
 
     //==========================================================================
     /// \brief Encode a chunk of audio (**required**)
     ///
-    /// \param[in] addonInstance        Encoder context from Create.
-    /// \param[in] nNumBytesRead        Number of bytes in input buffer
+    /// \param[in] numBytesRead         Number of bytes in input buffer
     /// \param[in] pbtStream            the input buffer
     /// \return                         Number of bytes consumed
     ///
-    virtual int Encode(int nNumBytesRead, uint8_t* pbtStream)=0;
+    virtual int Encode(int numBytesRead, const uint8_t* pbtStream) = 0;
     //--------------------------------------------------------------------------
 
     //==========================================================================
@@ -138,12 +138,12 @@ namespace addon
     ///
     /// \param[in] data                 Pointer to the array of elements to be 
     ///                                 written
-    /// \param[in] len                  Size in bytes to be written.
+    /// \param[in] length               Size in bytes to be written.
     /// \return                         The total number of bytes 
     ///                                 successfully written is returned.
-    int Write(uint8_t* data, int len)
+    int Write(const uint8_t* data, int length)
     {
-      return m_instanceData->toKodi.write(m_instanceData->toKodi.kodiInstance, data, len);
+      return m_instanceData->toKodi.write(m_instanceData->toKodi.kodiInstance, data, length);
     }
     //--------------------------------------------------------------------------
 
@@ -180,38 +180,38 @@ namespace addon
 
       m_instanceData = static_cast<AddonInstance_AudioEncoder*>(instance);
       m_instanceData->toAddon.addonInstance = this;
-      m_instanceData->toAddon.Start = ADDON_Start;
-      m_instanceData->toAddon.Encode = ADDON_Encode;
-      m_instanceData->toAddon.Finish = ADDON_Finish;
+      m_instanceData->toAddon.start = ADDON_Start;
+      m_instanceData->toAddon.encode = ADDON_Encode;
+      m_instanceData->toAddon.finish = ADDON_Finish;
     }
 
-    inline static bool ADDON_Start(AddonInstance_AudioEncoder* instance, int iInChannels, int iInRate, int iInBits,
-                     const char* title, const char* artist,
-                     const char* albumartist, const char* album,
-                     const char* year, const char* track,
-                     const char* genre, const char* comment,
-                     int iTrackLength)
+    inline static bool ADDON_Start(const AddonInstance_AudioEncoder* instance, int inChannels, int inRate, int inBits,
+                                   const char* title, const char* artist,
+                                   const char* albumartist, const char* album,
+                                   const char* year, const char* track,
+                                   const char* genre, const char* comment,
+                                   int trackLength)
     {
-      return instance->toAddon.addonInstance->Start(iInChannels,
-                                                       iInRate,
-                                                       iInBits,
-                                                       title,
-                                                       artist,
-                                                       albumartist,
-                                                       album,
-                                                       year,
-                                                       track,
-                                                       genre,
-                                                       comment,
-                                                       iTrackLength);
+      return instance->toAddon.addonInstance->Start(inChannels,
+                                                    inRate,
+                                                    inBits,
+                                                    title,
+                                                    artist,
+                                                    albumartist,
+                                                    album,
+                                                    year,
+                                                    track,
+                                                    genre,
+                                                    comment,
+                                                    trackLength);
     }
 
-    inline static int ADDON_Encode(AddonInstance_AudioEncoder* instance, int nNumBytesRead, uint8_t* pbtStream)
+    inline static int ADDON_Encode(const AddonInstance_AudioEncoder* instance, int numBytesRead, const uint8_t* pbtStream)
     {
-      return instance->toAddon.addonInstance->Encode(nNumBytesRead, pbtStream);
+      return instance->toAddon.addonInstance->Encode(numBytesRead, pbtStream);
     }
 
-    inline static bool ADDON_Finish(AddonInstance_AudioEncoder* instance)
+    inline static bool ADDON_Finish(const AddonInstance_AudioEncoder* instance)
     {
       return instance->toAddon.addonInstance->Finish();
     }

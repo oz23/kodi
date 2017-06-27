@@ -233,7 +233,7 @@ namespace addon
 
   typedef PeripheralVector<PeripheralEvent, PERIPHERAL_EVENT> PeripheralEvents;
 
-  /*!OH
+  /*!
    * kodi::addon::Joystick
    *
    * Wrapper class providing additional joystick information not provided by

@@ -1,6 +1,6 @@
 /*
- *      Copyright (C) 2005-2017 Team Kodi
- *      http://kodi.tv
+ *      Copyright (C) 2005-2013 Team XBMC
+ *      http://xbmc.org
  *
  *  This Program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -13,7 +13,7 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with Kodi; see the file COPYING.  If not, see
+ *  along with XBMC; see the file COPYING.  If not, see
  *  <http://www.gnu.org/licenses/>.
  *
  */
@@ -21,7 +21,7 @@
 #include "GUIWindowScreensaverDim.h"
 
 #include "Application.h"
-#include "addons/AddonDll.h"
+#include "addons/binary-addons/AddonDll.h"
 #include "guilib/GraphicContext.h"
 #include "guilib/GUITexture.h"
 
@@ -49,7 +49,8 @@ void CGUIWindowScreensaverDim::UpdateVisibility()
          usedId == "screensaver.xbmc.builtin.black")
     {
       m_visible = true;
-      const ADDON::AddonDllPtr info = ADDON::CAddonMgr::GetInstance().GetAddon(ADDON::ADDON_SCREENSAVER, usedId);
+      ADDON::AddonPtr info;
+      ADDON::CAddonMgr::GetInstance().GetAddon(usedId, info, ADDON::ADDON_SCREENSAVER);
       if (info && !info->GetSetting("level").empty())
         m_newDimLevel = 100.0f - (float)atof(info->GetSetting("level").c_str());
       else

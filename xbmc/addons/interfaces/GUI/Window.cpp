@@ -26,7 +26,7 @@
 
 #include "Application.h"
 #include "FileItem.h"
-#include "addons/AddonDll.h"
+#include "addons/binary-addons/AddonDll.h"
 #include "addons/Skin.h"
 #include "filesystem/File.h"
 #include "guilib/GUIRenderingControl.h"
@@ -133,7 +133,7 @@ void* Interface_GUIWindow::create(void* kodiBase, const char* xml_filename,
   if (as_dialog && is_media)
   {
     CLog::Log(LOGWARNING, "Interface_GUIWindow::%s: %s/%s - addon tries to create dialog as media window who not allowed, contact Developer '%s' of this addon",
-                __FUNCTION__, CAddonInfo::TranslateType(addon->MainType()).c_str(), addon->Name().c_str(), addon->Author().c_str());
+                __FUNCTION__, CAddonInfo::TranslateType(addon->Type()).c_str(), addon->Name().c_str(), addon->Author().c_str());
   }
 
   RESOLUTION_INFO res;
@@ -142,7 +142,7 @@ void* Interface_GUIWindow::create(void* kodiBase, const char* xml_filename,
   if (!XFILE::CFile::Exists(strSkinPath))
   {
     std::string str("none");
-    ADDON::AddonInfoPtr addonInfo = std::make_shared<ADDON::CAddonInfo>(str, ADDON::ADDON_SKIN);
+    ADDON::CAddonInfo addonInfo(str, ADDON::ADDON_SKIN);
 
     // Check for the matching folder for the skin in the fallback skins folder
     std::string fallbackPath = URIUtils::AddFileToFolder(addon->Path(), "resources", "skins");
@@ -153,7 +153,7 @@ void* Interface_GUIWindow::create(void* kodiBase, const char* xml_filename,
     // Check for the matching folder for the skin in the fallback skins folder (if it exists)
     if (XFILE::CFile::Exists(basePath))
     {
-      addonInfo->SetPath(basePath);
+      addonInfo.SetPath(basePath);
       ADDON::CSkinInfo skinInfo(addonInfo, res);
       skinInfo.Start();
       strSkinPath = skinInfo.GetSkinPath(xml_filename, &res);
@@ -162,7 +162,7 @@ void* Interface_GUIWindow::create(void* kodiBase, const char* xml_filename,
     if (!XFILE::CFile::Exists(strSkinPath))
     {
       // Finally fallback to the DefaultSkin as it didn't exist in either the Kodi Skin folder or the fallback skin folder
-      addonInfo->SetPath(URIUtils::AddFileToFolder(fallbackPath, default_skin));
+      addonInfo.SetPath(URIUtils::AddFileToFolder(fallbackPath, default_skin));
       ADDON::CSkinInfo skinInfo(addonInfo, res);
 
       skinInfo.Start();
@@ -170,7 +170,7 @@ void* Interface_GUIWindow::create(void* kodiBase, const char* xml_filename,
       if (!XFILE::CFile::Exists(strSkinPath))
       {
         CLog::Log(LOGERROR, "Interface_GUIWindow::%s: %s/%s - XML File '%s' for Window is missing, contact Developer '%s' of this addon",
-                    __FUNCTION__, CAddonInfo::TranslateType(addon->MainType()).c_str(), addon->Name().c_str(), strSkinPath.c_str(), addon->Author().c_str());
+                    __FUNCTION__, CAddonInfo::TranslateType(addon->Type()).c_str(), addon->Name().c_str(), strSkinPath.c_str(), addon->Author().c_str());
         return nullptr;
       }
     }

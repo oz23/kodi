@@ -22,6 +22,7 @@
 
 namespace ADDON {
 class CAddonMgr;
+class CBinaryAddonManager;
 class CBinaryAddonCache;
 class CVFSAddonCache;
 }
@@ -69,12 +70,12 @@ class CServiceBroker
 {
 public:
   static ADDON::CAddonMgr &GetAddonMgr();
+  static ADDON::CBinaryAddonManager &GetBinaryAddonManager();
   static ADDON::CBinaryAddonCache &GetBinaryAddonCache();
   static ADDON::CVFSAddonCache &GetVFSAddonCache();
   static ANNOUNCEMENT::CAnnouncementManager &GetAnnouncementManager();
   static XBPython &GetXBPython();
   static PVR::CPVRManager &GetPVRManager();
-  static ActiveAE::CActiveAEDSP& GetADSP();
   static IAE& GetActiveAE();
   static CContextMenuManager& GetContextMenuManager();
   static CDataCacheCore& GetDataCacheCore();

@@ -23,7 +23,6 @@
 
 #include "addons/Addon.h"
 #include "addons/PVRClient.h"
-#include "cores/AudioEngine/Engines/ActiveAE/AudioDSPAddons/ActiveAEDSP.h"
 #include "games/addons/GameClient.h"
 
 #include "addons/interfaces/Addon/AddonCallbacksAddon.h"
@@ -56,8 +55,6 @@ CAddonInterfaces::CAddonInterfaces(CAddon* addon)
   m_callbacks->GUILib_UnRegisterMe          = CAddonInterfaces::GUILib_UnRegisterMe;
   m_callbacks->PVRLib_RegisterMe            = CAddonInterfaces::PVRLib_RegisterMe;
   m_callbacks->PVRLib_UnRegisterMe          = CAddonInterfaces::PVRLib_UnRegisterMe;
-  m_callbacks->ADSPLib_RegisterMe           = CAddonInterfaces::ADSPLib_RegisterMe;
-  m_callbacks->ADSPLib_UnRegisterMe         = CAddonInterfaces::ADSPLib_UnRegisterMe;
   m_callbacks->GameLib_RegisterMe           = CAddonInterfaces::GameLib_RegisterMe;
   m_callbacks->GameLib_UnRegisterMe         = CAddonInterfaces::GameLib_UnRegisterMe;
 }
@@ -141,23 +138,6 @@ void* CAddonInterfaces::PVRLib_RegisterMe(void *addonData)
 }
 
 void CAddonInterfaces::PVRLib_UnRegisterMe(void *addonData, void *cbTable)
-{
-}
-/*\_____________________________________________________________________________
-\*/
-void* CAddonInterfaces::ADSPLib_RegisterMe(void *addonData)
-{
-  CAddonInterfaces* addon = static_cast<CAddonInterfaces*>(addonData);
-  if (addon == nullptr)
-  {
-    CLog::Log(LOGERROR, "CAddonInterfaces - %s - called with a null pointer", __FUNCTION__);
-    return nullptr;
-  }
-
-  return dynamic_cast<ActiveAE::CActiveAEDSPAddon*>(addon->m_addon)->GetInstanceInterface();
-}
-
-void CAddonInterfaces::ADSPLib_UnRegisterMe(void *addonData, void *cbTable)
 {
 }
 /*\_____________________________________________________________________________

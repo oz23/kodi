@@ -77,6 +77,8 @@ typedef void* (*KODICodecLib_RegisterMe)(void *addonData);
 typedef void (*KODICodecLib_UnRegisterMe)(void *addonData, void *cbTable);
 typedef void* (*KODIINPUTSTREAMLib_RegisterMe)(void *addonData);
 typedef void (*KODIINPUTSTREAMLib_UnRegisterMe)(void *addonData, void *cbTable);
+typedef void* (*KODIPeripheralLib_RegisterMe)(void *addonData);
+typedef void (*KODIPeripheralLib_UnRegisterMe)(void *addonData, void *cbTable);
 typedef void* (*KODIGameLib_RegisterMe)(void *addonData);
 typedef void (*KODIGameLib_UnRegisterMe)(void *addonData, void *cbTable);
 
@@ -98,6 +100,8 @@ typedef struct AddonCB
   KODIADSPLib_UnRegisterMe          ADSPLib_UnRegisterMe;
   KODIINPUTSTREAMLib_RegisterMe     INPUTSTREAMLib_RegisterMe;
   KODIINPUTSTREAMLib_UnRegisterMe   INPUTSTREAMLib_UnRegisterMe;
+  KODIPeripheralLib_RegisterMe      PeripheralLib_RegisterMe;
+  KODIPeripheralLib_UnRegisterMe    PeripheralLib_UnRegisterMe;
   KODIGameLib_RegisterMe            GameLib_RegisterMe;
   KODIGameLib_UnRegisterMe          GameLib_UnRegisterMe;
 } AddonCB;
@@ -135,6 +139,32 @@ typedef struct CB_AddOn
   char* (*GetLocalizedString)(const void* addonData, long dwCode);
   char* (*GetDVDMenuLanguage)(const void* addonData);
   void (*FreeString)(const void* addonData, char* str);
+
+  void* (*OpenFile)(const void* addonData, const char* strFileName, unsigned int flags);
+  void* (*OpenFileForWrite)(const void* addonData, const char* strFileName, bool bOverWrite);
+  ssize_t (*ReadFile)(const void* addonData, void* file, void* lpBuf, size_t uiBufSize);
+  bool (*ReadFileString)(const void* addonData, void* file, char *szLine, int iLineLength);
+  ssize_t (*WriteFile)(const void* addonData, void* file, const void* lpBuf, size_t uiBufSize);
+  void (*FlushFile)(const void* addonData, void* file);
+  int64_t (*SeekFile)(const void* addonData, void* file, int64_t iFilePosition, int iWhence);
+  int (*TruncateFile)(const void* addonData, void* file, int64_t iSize);
+  int64_t (*GetFilePosition)(const void* addonData, void* file);
+  int64_t (*GetFileLength)(const void* addonData, void* file);
+  double (*GetFileDownloadSpeed)(const void* addonData, void* file);
+  void (*CloseFile)(const void* addonData, void* file);
+  int (*GetFileChunkSize)(const void* addonData, void* file);
+  bool (*FileExists)(const void* addonData, const char *strFileName, bool bUseCache);
+  int (*StatFile)(const void* addonData, const char *strFileName, struct __stat64* buffer);
+  bool (*DeleteFile)(const void* addonData, const char *strFileName);
+  bool (*CanOpenDirectory)(const void* addonData, const char* strURL);
+  bool (*CreateDirectory)(const void* addonData, const char *strPath);
+  bool (*DirectoryExists)(const void* addonData, const char *strPath);
+  bool (*RemoveDirectory)(const void* addonData, const char *strPath);
+  bool (*GetDirectory)(const void* addonData, const char *strPath, const char* mask, VFSDirEntry** items, unsigned int* num_items);
+  void (*FreeDirectory)(const void* addonData, VFSDirEntry* items, unsigned int num_items);
+  void* (*CURLCreate)(const void* addonData, const char* strURL);
+  bool (*CURLAddOption)(const void* addonData, void* file, XFILE::CURLOPTIONTYPE type, const char* name, const char * value);
+  bool (*CURLOpen)(const void* addonData, void* file, unsigned int flags);
 } CB_AddOnLib;
 
 } /* namespace AddOn */
@@ -267,6 +297,275 @@ namespace ADDON
     void FreeString(char* str)
     {
       m_Callbacks->FreeString(m_Handle->addonData, str);
+    }
+
+    /*!
+     * @brief Open the file with filename via XBMC's CFile. Needs to be closed by calling CloseFile() when done.
+     * @param strFileName The filename to open.
+     * @param flags The flags to pass. Documented in XBMC's File.h
+     * @return A handle for the file, or NULL if it couldn't be opened.
+     */
+    void* OpenFile(const char* strFileName, unsigned int flags)
+    {
+      return m_Callbacks->OpenFile(m_Handle->addonData, strFileName, flags);
+    }
+
+    /*!
+     * @brief Open the file with filename via XBMC's CFile in write mode. Needs to be closed by calling CloseFile() when done.
+     * @param strFileName The filename to open.
+     * @param bOverWrite True to overwrite, false otherwise.
+     * @return A handle for the file, or NULL if it couldn't be opened.
+     */
+    void* OpenFileForWrite(const char* strFileName, bool bOverWrite)
+    {
+      return m_Callbacks->OpenFileForWrite(m_Handle->addonData, strFileName, bOverWrite);
+    }
+
+    /*!
+     * @brief Read from an open file.
+     * @param file The file handle to read from.
+     * @param lpBuf The buffer to store the data in.
+     * @param uiBufSize The size of the buffer.
+     * @return number of successfully read bytes if any bytes were read and stored in
+     *         buffer, zero if no bytes are available to read (end of file was reached)
+     *         or undetectable error occur, -1 in case of any explicit error
+     */
+    ssize_t ReadFile(void* file, void* lpBuf, size_t uiBufSize)
+    {
+      return m_Callbacks->ReadFile(m_Handle->addonData, file, lpBuf, uiBufSize);
+    }
+
+    /*!
+     * @brief Read a string from an open file.
+     * @param file The file handle to read from.
+     * @param szLine The buffer to store the data in.
+     * @param iLineLength The size of the buffer.
+     * @return True when a line was read, false otherwise.
+     */
+    bool ReadFileString(void* file, char *szLine, int iLineLength)
+    {
+      return m_Callbacks->ReadFileString(m_Handle->addonData, file, szLine, iLineLength);
+    }
+
+    /*!
+     * @brief Write to a file opened in write mode.
+     * @param file The file handle to write to.
+     * @param lpBuf The data to write.
+     * @param uiBufSize Size of the data to write.
+     * @return number of successfully written bytes if any bytes were written,
+     *         zero if no bytes were written and no detectable error occur,
+     *         -1 in case of any explicit error
+     */
+    ssize_t WriteFile(void* file, const void* lpBuf, size_t uiBufSize)
+    {
+      return m_Callbacks->WriteFile(m_Handle->addonData, file, lpBuf, uiBufSize);
+    }
+
+    /*!
+     * @brief Flush buffered data.
+     * @param file The file handle to flush the data for.
+     */
+    void FlushFile(void* file)
+    {
+       m_Callbacks->FlushFile(m_Handle->addonData, file);
+    }
+
+    /*!
+     * @brief Seek in an open file.
+     * @param file The file handle to see in.
+     * @param iFilePosition The new position.
+     * @param iWhence Seek argument. See stdio.h for possible values.
+     * @return The new position.
+     */
+    int64_t SeekFile(void* file, int64_t iFilePosition, int iWhence)
+    {
+      return m_Callbacks->SeekFile(m_Handle->addonData, file, iFilePosition, iWhence);
+    }
+
+    /*!
+     * @brief Truncate a file to the requested size.
+     * @param file The file handle to truncate.
+     * @param iSize The new max size.
+     * @return New size?
+     */
+    int TruncateFile(void* file, int64_t iSize)
+    {
+      return m_Callbacks->TruncateFile(m_Handle->addonData, file, iSize);
+    }
+
+    /*!
+     * @brief The current position in an open file.
+     * @param file The file handle to get the position for.
+     * @return The requested position.
+     */
+    int64_t GetFilePosition(void* file)
+    {
+      return m_Callbacks->GetFilePosition(m_Handle->addonData, file);
+    }
+
+    /*!
+     * @brief Get the file size of an open file.
+     * @param file The file to get the size for.
+     * @return The requested size.
+     */
+    int64_t GetFileLength(void* file)
+    {
+      return m_Callbacks->GetFileLength(m_Handle->addonData, file);
+    }
+
+    /*!
+    * @brief Get the download speed of an open file if available.
+    * @param file The file to get the size for.
+    * @return The download speed in seconds.
+    */
+    double GetFileDownloadSpeed(void* file)
+    {
+      return m_Callbacks->GetFileDownloadSpeed(m_Handle->addonData, file);
+    }
+
+    /*!
+     * @brief Close an open file.
+     * @param file The file handle to close.
+     */
+    void CloseFile(void* file)
+    {
+      m_Callbacks->CloseFile(m_Handle->addonData, file);
+    }
+
+    /*!
+     * @brief Get the chunk size for an open file.
+     * @param file the file handle to get the size for.
+     * @return The requested size.
+     */
+    int GetFileChunkSize(void* file)
+    {
+      return m_Callbacks->GetFileChunkSize(m_Handle->addonData, file);
+    }
+
+    /*!
+     * @brief Check if a file exists.
+     * @param strFileName The filename to check.
+     * @param bUseCache Check in file cache.
+     * @return true if the file exists false otherwise.
+     */
+    bool FileExists(const char *strFileName, bool bUseCache)
+    {
+      return m_Callbacks->FileExists(m_Handle->addonData, strFileName, bUseCache);
+    }
+
+    /*!
+     * @brief Reads file status.
+     * @param strFileName The filename to read the status from.
+     * @param buffer The file status is written into this buffer.
+     * @return The file status was successfully read.
+     */
+    int StatFile(const char *strFileName, struct __stat64* buffer)
+    {
+      return m_Callbacks->StatFile(m_Handle->addonData, strFileName, buffer);
+    }
+
+    /*!
+     * @brief Deletes a file.
+     * @param strFileName The filename to delete.
+     * @return The file was successfully deleted.
+     */
+    bool DeleteFile(const char *strFileName)
+    {
+      return m_Callbacks->DeleteFile(m_Handle->addonData, strFileName);
+    }
+
+    /*!
+     * @brief Checks whether a directory can be opened.
+     * @param strUrl The URL of the directory to check.
+     * @return True when it can be opened, false otherwise.
+     */
+    bool CanOpenDirectory(const char* strUrl)
+    {
+      return m_Callbacks->CanOpenDirectory(m_Handle->addonData, strUrl);
+    }
+
+    /*!
+     * @brief Creates a directory.
+     * @param strPath Path to the directory.
+     * @return True when it was created, false otherwise.
+     */
+    bool CreateDirectory(const char *strPath)
+    {
+      return m_Callbacks->CreateDirectory(m_Handle->addonData, strPath);
+    }
+
+    /*!
+     * @brief Checks if a directory exists.
+     * @param strPath Path to the directory.
+     * @return True when it exists, false otherwise.
+     */
+    bool DirectoryExists(const char *strPath)
+    {
+      return m_Callbacks->DirectoryExists(m_Handle->addonData, strPath);
+    }
+
+    /*!
+     * @brief Removes a directory.
+     * @param strPath Path to the directory.
+     * @return True when it was removed, false otherwise.
+     */
+    bool RemoveDirectory(const char *strPath)
+    {
+      return m_Callbacks->RemoveDirectory(m_Handle->addonData, strPath);
+    }
+
+    /*!
+     * @brief Lists a directory.
+     * @param strPath Path to the directory.
+     * @param mask File mask
+     * @param items The directory entries
+     * @param num_items Number of entries in directory
+     * @return True if listing was successful, false otherwise.
+     */
+    bool GetDirectory(const char *strPath, const char* mask, VFSDirEntry** items, unsigned int* num_items)
+    {
+      return m_Callbacks->GetDirectory(m_Handle->addonData, strPath, mask, items, num_items);
+    }
+
+    /*!
+     * @brief Free a directory list
+     * @param items The directory entries
+     * @param num_items Number of entries in directory
+     */
+    void FreeDirectory(VFSDirEntry* items, unsigned int num_items)
+    {
+      m_Callbacks->FreeDirectory(m_Handle->addonData, items, num_items);
+    }
+
+    /*!
+    * @brief Create a Curl representation
+    * @param strURL the URL of the Type.
+    */
+    void* CURLCreate(const char* strURL)
+    {
+      return m_Callbacks->CURLCreate(m_Handle->addonData, strURL);
+    }
+
+    /*!
+    * @brief Adds options to the curl file created with CURLCeate
+    * @param file file pointer to the file returned by CURLCeate
+    * @param type option type to set
+    * @param name name of the option
+    * @param value value of the option
+    */
+    bool CURLAddOption(void* file, XFILE::CURLOPTIONTYPE type, const char* name, const char * value)
+    {
+      return m_Callbacks->CURLAddOption(m_Handle->addonData, file, type, name, value);
+    }
+
+    /*!
+    * @brief Opens the curl file created with CURLCeate
+    * @param file file pointer to the file returned by CURLCeate
+    * @param flags one or more bitwise or combinded flags form XFILE
+    */
+    bool CURLOpen(void* file, unsigned int flags)
+    {
+      return m_Callbacks->CURLOpen(m_Handle->addonData, file, flags);
     }
 
   private:

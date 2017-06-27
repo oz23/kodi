@@ -1,6 +1,6 @@
 /*
- *      Copyright (C) 2005-2017 Team Kodi
- *      http://kodi.tv
+ *      Copyright (C) 2005-2013 Team XBMC
+ *      http://xbmc.org
  *
  *  This Program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -13,7 +13,7 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with Kodi; see the file COPYING.  If not, see
+ *  along with XBMC; see the file COPYING.  If not, see
  *  <http://www.gnu.org/licenses/>.
  *
  */
@@ -23,7 +23,7 @@
 #include "Application.h"
 #include "GUIUserMessages.h"
 #include "ServiceBroker.h"
-#include "addons/interfaces/kodi/addon-instance/Screensaver.h"
+#include "addons/ScreenSaver.h"
 #include "guilib/GUIWindowManager.h"
 #include "settings/Settings.h"
 
@@ -82,11 +82,11 @@ bool CGUIWindowScreensaver::OnMessage(CGUIMessage& message)
       CGUIWindow::OnMessage(message);
 
       g_graphicsContext.CaptureStateBlock();
-      
-      const ADDON::AddonInfoPtr addonInfo = ADDON::CAddonMgr::GetInstance().GetInstalledAddonInfo(CServiceBroker::GetSettings().GetString(CSettings::SETTING_SCREENSAVER_MODE), ADDON::ADDON_SCREENSAVER);
-      if (!addonInfo)
+
+      const ADDON::BinaryAddonBasePtr addonBase = CServiceBroker::GetBinaryAddonManager().GetInstalledAddonInfo(CServiceBroker::GetSettings().GetString(CSettings::SETTING_SCREENSAVER_MODE), ADDON::ADDON_SCREENSAVER);
+      if (!addonBase)
         return false;
-      m_addon = new ADDON::CScreenSaver(addonInfo);
+      m_addon = new ADDON::CScreenSaver(addonBase);
       return m_addon->Start();
     }
 

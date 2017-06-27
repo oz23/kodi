@@ -28,6 +28,11 @@ ADDON::CAddonMgr &CServiceBroker::GetAddonMgr()
   return g_application.m_ServiceManager->GetAddonMgr();
 }
 
+ADDON::CBinaryAddonManager &CServiceBroker::GetBinaryAddonManager()
+{
+  return g_application.m_ServiceManager->GetBinaryAddonManager();
+}
+
 ADDON::CBinaryAddonCache &CServiceBroker::GetBinaryAddonCache()
 {
   return g_application.m_ServiceManager->GetBinaryAddonCache();
@@ -53,11 +58,6 @@ XBPython& CServiceBroker::GetXBPython()
 PVR::CPVRManager &CServiceBroker::GetPVRManager()
 {
   return g_application.m_ServiceManager->GetPVRManager();
-}
-
-ActiveAE::CActiveAEDSP &CServiceBroker::GetADSP()
-{
-  return g_application.m_ServiceManager->GetADSPManager();
 }
 
 IAE& CServiceBroker::GetActiveAE()

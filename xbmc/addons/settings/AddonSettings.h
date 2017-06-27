@@ -23,7 +23,7 @@
 #include <memory>
 #include <string>
 
-#include "addons/Addon.h"
+#include "addons/IAddon.h"
 #include "settings/SettingControl.h"
 #include "settings/SettingCreator.h"
 #include "settings/SettingsBase.h"
@@ -34,12 +34,12 @@ class CXBMCTinyXML;
 
 namespace ADDON
 {
-  class CAddon;
+  class IAddon;
 
   class CAddonSettings : public CSettingsBase, public CSettingCreator, public CSettingControlCreator, public ISettingCallback
   {
   public:
-    CAddonSettings(std::shared_ptr<const CAddon> addon);
+    CAddonSettings(std::shared_ptr<const IAddon> addon);
     virtual ~CAddonSettings() = default;
 
     // specialization of CSettingsBase
@@ -55,7 +55,7 @@ namespace ADDON
     // implementation of ISettingCallback
     void OnSettingAction(std::shared_ptr<const CSetting> setting) override;
 
-    std::shared_ptr<const CAddon> GetAddon() { return m_addon.lock(); }
+    std::shared_ptr<const IAddon> GetAddon() { return m_addon.lock(); }
 
     bool Initialize(const CXBMCTinyXML& doc, bool allowEmpty = false);
     bool Load(const CXBMCTinyXML& doc);
@@ -117,7 +117,7 @@ namespace ADDON
 
     static void FileEnumSettingOptionsFiller(std::shared_ptr<const CSetting> setting, std::vector< std::pair<std::string, std::string> > &list, std::string &current, void *data);
 
-    std::weak_ptr<const CAddon> m_addon;
+    std::weak_ptr<const IAddon> m_addon;
     // store these values so that we don't always have to access the weak pointer
     const std::string m_addonId;
     const std::string m_addonPath;

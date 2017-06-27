@@ -21,14 +21,6 @@
 
 #include "../AddonBase.h"
 
-typedef enum ImageFormat : unsigned int
-{
-  ADDON_IMG_FMT_A8R8G8B8 = 1,
-  ADDON_IMG_FMT_A8 = 2,
-  ADDON_IMG_FMT_RGBA8 = 3,
-  ADDON_IMG_FMT_RGB8 = 4
-} ImageFormat;
-
 namespace kodi { namespace addon { class CInstanceImageDecoder; }}
 
 extern "C"
@@ -41,18 +33,18 @@ extern "C"
 
   typedef struct AddonToKodiFuncTable_ImageDecoder
   {
-    KODI_HANDLE kodiInstance;
+    KODI_HANDLE kodi_instance;
   } AddonToKodiFuncTable_ImageDecoder;
 
   struct AddonInstance_ImageDecoder;
   typedef struct KodiToAddonFuncTable_ImageDecoder
   {
     kodi::addon::CInstanceImageDecoder* addonInstance;
-    bool (__cdecl* LoadImageFromMemory) (AddonInstance_ImageDecoder* instance,
-                                         unsigned char* buffer, unsigned int bufSize,
-                                         unsigned int* width, unsigned int* height);
+    bool (__cdecl* load_image_from_memory) (const AddonInstance_ImageDecoder* instance,
+                                            unsigned char* buffer, unsigned int buf_size,
+                                            unsigned int* width, unsigned int* height);
 
-    bool (__cdecl* Decode) (AddonInstance_ImageDecoder* instance,
+    bool (__cdecl* decode) (const AddonInstance_ImageDecoder* instance,
                             unsigned char* pixels,
                             unsigned int width, unsigned int height,
                             unsigned int pitch, unsigned int format);
@@ -67,6 +59,14 @@ extern "C"
 
 } /* extern "C" */
 
+typedef enum ImageFormat : unsigned int
+{
+  ADDON_IMG_FMT_A8R8G8B8 = 1,
+  ADDON_IMG_FMT_A8 = 2,
+  ADDON_IMG_FMT_RGBA8 = 3,
+  ADDON_IMG_FMT_RGB8 = 4
+} ImageFormat;
+
 namespace kodi
 {
 namespace addon
@@ -76,9 +76,9 @@ namespace addon
   {
   public:
     //==========================================================================
-    /// \brief Class constructor
+    /// @brief Class constructor
     ///
-    /// \param[in] instance             The from Kodi given instance given be
+    /// @param[in] instance             The from Kodi given instance given be
     ///                                 add-on CreateInstance call with instance
     ///                                 id ADDON_INSTANCE_IMAGEDECODER.
     CInstanceImageDecoder(KODI_HANDLE instance)
@@ -91,38 +91,41 @@ namespace addon
     }
     //--------------------------------------------------------------------------
 
-    virtual ~CInstanceImageDecoder() { }
+    virtual ~CInstanceImageDecoder() = default;
 
     //==========================================================================
-    /// \brief Initialize an encoder
+    /// @brief Initialize an encoder
     ///
-    /// \param[in] buffer The data to read from memory
-    /// \param[in] bufSize The buffer size
-    /// \param[in,out] width The optimal width of image on entry, obtained width on return
-    /// \param[in,out] height The optimal height of image, actual obtained height on return
-    /// \return true if successful done, false on error
+    /// @param[in] buffer The data to read from memory
+    /// @param[in] bufSize The buffer size
+    /// @param[in,out] width The optimal width of image on entry, obtained width on return
+    /// @param[in,out] height The optimal height of image, actual obtained height on return
+    /// @return true if successful done, false on error
+    ///
     virtual bool LoadImageFromMemory(unsigned char* buffer, unsigned int bufSize,
                                      unsigned int& width, unsigned int& height) = 0;
     //--------------------------------------------------------------------------
 
     //==========================================================================
-    /// \brief Decode previously loaded image
+    /// @brief Decode previously loaded image
     ///
-    /// \param[in] pixels Output buffer
-    /// \param[in] width Width of output image
-    /// \param[in] height Height of output image
-    /// \param[in] pitch Pitch of output image
-    /// \param[in] format Format of output image
-    /// \return true if successful done, false on error
+    /// @param[in] pixels Output buffer
+    /// @param[in] width Width of output image
+    /// @param[in] height Height of output image
+    /// @param[in] pitch Pitch of output image
+    /// @param[in] format Format of output image
+    /// @return true if successful done, false on error
+    ///
     virtual bool Decode(unsigned char* pixels,
                         unsigned int width, unsigned int height,
                         unsigned int pitch, ImageFormat format) = 0;
     //--------------------------------------------------------------------------
 
     //==========================================================================
-    /// \brief Get the wanted mime type from Kodi
+    /// @brief Get the wanted mime type from Kodi
     ///
-    /// \return the mimetype wanted from Kodi
+    /// @return the mimetype wanted from Kodi
+    ///
     inline std::string MimeType() { return m_instanceData->props.mimetype; }
     //--------------------------------------------------------------------------
 
@@ -134,18 +137,18 @@ namespace addon
 
       m_instanceData = static_cast<AddonInstance_ImageDecoder*>(instance);
       m_instanceData->toAddon.addonInstance = this;
-      m_instanceData->toAddon.LoadImageFromMemory = ADDON_LoadImageFromMemory;
-      m_instanceData->toAddon.Decode = ADDON_Decode;
+      m_instanceData->toAddon.load_image_from_memory = ADDON_LoadImageFromMemory;
+      m_instanceData->toAddon.decode = ADDON_Decode;
     }
 
-    inline static bool ADDON_LoadImageFromMemory(AddonInstance_ImageDecoder* instance,
-                                       unsigned char* buffer, unsigned int bufSize,
-                                       unsigned int* width, unsigned int* height)
+    inline static bool ADDON_LoadImageFromMemory(const AddonInstance_ImageDecoder* instance,
+                                                 unsigned char* buffer, unsigned int bufSize,
+                                                 unsigned int* width, unsigned int* height)
     {
       return instance->toAddon.addonInstance->LoadImageFromMemory(buffer, bufSize, *width, *height);
     }
 
-    inline static bool ADDON_Decode(AddonInstance_ImageDecoder* instance,
+    inline static bool ADDON_Decode(const AddonInstance_ImageDecoder* instance,
                                     unsigned char* pixels,
                                     unsigned int width, unsigned int height,
                                     unsigned int pitch, unsigned int format)

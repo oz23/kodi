@@ -30,7 +30,7 @@
 #include "FileItem.h"
 
 #include "addons/AddonManager.h"
-#include "addons/interfaces/kodi/addon-instance/AudioDecoder.h"
+#include "addons/AudioDecoder.h"
 
 using namespace ADDON;
 
@@ -58,20 +58,19 @@ IMusicInfoTagLoader* CMusicInfoTagLoaderFactory::CreateLoader(const CFileItem& i
   if (strExtension.empty())
     return NULL;
 
-  for (const auto& addonInfo : CAddonMgr::GetInstance().GetAddonInfos(true, ADDON_AUDIODECODER))
+  VECADDONS codecs;
+  CAddonMgr::GetInstance().GetAddons(codecs, ADDON_AUDIODECODER);
+  for (size_t i=0;i<codecs.size();++i)
   {
-    if (addonInfo->Type(ADDON_AUDIODECODER)->GetValue("@tags").asBoolean() &&
-        addonInfo->Type(ADDON_AUDIODECODER)->GetValue("@extension").asString().find("."+strExtension) != std::string::npos)
+    std::shared_ptr<CAudioDecoder> dec(std::static_pointer_cast<CAudioDecoder>(codecs[i]));
+    if (dec->HasTags() && dec->GetExtensions().find("."+strExtension) != std::string::npos)
     {
-      CAudioDecoder* result = new CAudioDecoder(addonInfo);
-      if (!result->Create())
-      {
-        delete result;
-        return nullptr;
-      }
+      CAudioDecoder* result = new CAudioDecoder(*dec);
+      result->Create();
       return result;
     }
   }
+
 
   if (strExtension == "aac" ||
       strExtension == "ape" || strExtension == "mac" ||

@@ -34,7 +34,7 @@ public:
   CEncoderFFmpeg();
   virtual ~CEncoderFFmpeg() {}
 
-  bool Init(AddonToKodiFuncTable_AudioEncoder &callbacks);
+  bool Init(AddonToKodiFuncTable_AudioEncoder& callbacks);
   int Encode(int nNumBytesRead, uint8_t *pbtStream);
   bool Close();
 private:

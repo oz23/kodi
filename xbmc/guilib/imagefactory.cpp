@@ -20,8 +20,8 @@
 
 #include "imagefactory.h"
 #include "guilib/FFmpegImage.h"
-#include "addons/BinaryAddonCache.h"
-#include "addons/interfaces/kodi/addon-instance/ImageDecoder.h"
+#include "addons/ImageDecoder.h"
+#include "addons/binary-addons/BinaryAddonBase.h"
 #include "utils/Mime.h"
 #include "utils/StringUtils.h"
 #include "ServiceBroker.h"
@@ -46,7 +46,10 @@ IImage* ImageFactory::CreateLoader(const CURL& url)
 
 IImage* ImageFactory::CreateLoaderFromMimeType(const std::string& strMimeType)
 {
-  for (const auto& addonInfo : CAddonMgr::GetInstance().GetAddonInfos(true, ADDON_IMAGEDECODER))
+  BinaryAddonBaseList addonInfos;
+
+  CServiceBroker::GetBinaryAddonManager().GetAddonInfos(addonInfos, true, ADDON_IMAGEDECODER);
+  for (auto addonInfo : addonInfos)
   {
     std::vector<std::string> mime = StringUtils::Split(addonInfo->Type(ADDON_IMAGEDECODER)->GetValue("@mimetype").asString(), "|");
     if (std::find(mime.begin(), mime.end(), strMimeType) != mime.end())

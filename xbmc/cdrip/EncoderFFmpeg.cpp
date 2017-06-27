@@ -57,7 +57,7 @@ CEncoderFFmpeg::CEncoderFFmpeg():
   memset(&m_callbacks, 0, sizeof(m_callbacks));
 }
 
-bool CEncoderFFmpeg::Init(AddonToKodiFuncTable_AudioEncoder &callbacks)
+bool CEncoderFFmpeg::Init(AddonToKodiFuncTable_AudioEncoder& callbacks)
 {
   if (!callbacks.kodiInstance || !callbacks.write || !callbacks.seek)
     return false;
@@ -89,7 +89,7 @@ bool CEncoderFFmpeg::Init(AddonToKodiFuncTable_AudioEncoder &callbacks)
   }
 
   AddonPtr addon;
-  CAddonMgr::GetInstance().GetAddon(CServiceBroker::GetSettings().GetString(CSettings::SETTING_AUDIOCDS_ENCODER), addon, ADDON_AUDIOENCODER);
+  CAddonMgr::GetInstance().GetAddon(CServiceBroker::GetSettings().GetString(CSettings::SETTING_AUDIOCDS_ENCODER), addon);
   if (addon)
   {
     m_Format->bit_rate = (128+32*strtol(addon->GetSetting("bitrate").c_str(), NULL, 10))*1000;
@@ -248,7 +248,7 @@ void CEncoderFFmpeg::SetTag(const std::string &tag, const std::string &value)
 
 int CEncoderFFmpeg::avio_write_callback(void *opaque, uint8_t *buf, int buf_size)
 {
-  CEncoderFFmpeg *enc = (CEncoderFFmpeg*)opaque;
+  CEncoderFFmpeg *enc = static_cast<CEncoderFFmpeg*>(opaque);
   if(enc->m_callbacks.write(enc->m_callbacks.kodiInstance, buf, buf_size) != buf_size)
   {
     CLog::Log(LOGERROR, "Error writing FFmpeg buffer to file");
@@ -259,7 +259,7 @@ int CEncoderFFmpeg::avio_write_callback(void *opaque, uint8_t *buf, int buf_size
 
 int64_t CEncoderFFmpeg::avio_seek_callback(void *opaque, int64_t offset, int whence)
 {
-  CEncoderFFmpeg *enc = (CEncoderFFmpeg*)opaque;
+  CEncoderFFmpeg *enc = static_cast<CEncoderFFmpeg*>(opaque);
   return enc->m_callbacks.seek(enc->m_callbacks.kodiInstance, offset, whence);
 }
 

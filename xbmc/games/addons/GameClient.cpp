@@ -63,6 +63,12 @@ using namespace GAME;
 #define EXTENSION_SEPARATOR          "|"
 #define EXTENSION_WILDCARD           "*"
 
+#define GAME_PROPERTY_EXTENSIONS           "extensions"
+#define GAME_PROPERTY_SUPPORTS_VFS         "supports_vfs"
+#define GAME_PROPERTY_SUPPORTS_STANDALONE  "supports_standalone"
+#define GAME_PROPERTY_SUPPORTS_KEYBOARD    "supports_keyboard"
+#define GAME_PROPERTY_SUPPORTS_MOUSE       "supports_mouse"
+
 #define INPUT_SCAN_RATE  125 // Hz
 
 // --- NormalizeExtension ------------------------------------------------------
@@ -90,33 +96,75 @@ namespace
 
 // --- CGameClient -------------------------------------------------------------
 
-CGameClient::CGameClient(ADDON::AddonInfoPtr addonInfo)
-  : CAddonDll(addonInfo),
-    m_libraryProps(this, m_struct.props),
-    m_bSupportsAllExtensions(false),
-    m_bIsPlaying(false),
-    m_serializeSize(0),
-    m_audio(nullptr),
-    m_video(nullptr),
-    m_region(GAME_REGION_UNKNOWN)
+std::unique_ptr<CGameClient> CGameClient::FromExtension(ADDON::CAddonInfo addonInfo, const cp_extension_t* ext)
 {
   using namespace ADDON;
 
-  std::vector<std::string> extensions = StringUtils::Split(Type(ADDON_GAMEDLL)->GetValue("extensions").asString(), EXTENSION_SEPARATOR);
-  std::transform(extensions.begin(), extensions.end(),
-                  std::inserter(m_extensions, m_extensions.begin()), NormalizeExtension);
+  static const std::vector<std::string> properties = {
+      GAME_PROPERTY_EXTENSIONS,
+      GAME_PROPERTY_SUPPORTS_VFS,
+      GAME_PROPERTY_SUPPORTS_STANDALONE,
+      GAME_PROPERTY_SUPPORTS_KEYBOARD,
+      GAME_PROPERTY_SUPPORTS_MOUSE,
+  };
 
-  // Check for wildcard extension
-  if (m_extensions.find(EXTENSION_WILDCARD) != m_extensions.end())
+  for (const auto& property : properties)
   {
-    m_bSupportsAllExtensions = true;
-    m_extensions.clear();
+    std::string strProperty = CAddonMgr::GetInstance().GetExtValue(ext->configuration, property.c_str());
+    if (!strProperty.empty())
+      addonInfo.AddExtraInfo(property, strProperty);
   }
 
-  m_bSupportsVFS = Type(ADDON_GAMEDLL)->GetValue("supports_vfs").asBoolean();
-  m_bSupportsStandalone = Type(ADDON_GAMEDLL)->GetValue("supports_standalone").asBoolean();
-  m_bSupportsKeyboard = Type(ADDON_GAMEDLL)->GetValue("supports_keyboard").asBoolean();
-  m_bSupportsMouse = Type(ADDON_GAMEDLL)->GetValue("supports_mouse").asBoolean();
+  return std::unique_ptr<CGameClient>(new CGameClient(std::move(addonInfo)));
+}
+
+CGameClient::CGameClient(ADDON::CAddonInfo addonInfo) :
+  CAddonDll(std::move(addonInfo)),
+  m_libraryProps(this, m_struct.props),
+  m_bSupportsVFS(false),
+  m_bSupportsStandalone(false),
+  m_bSupportsKeyboard(false),
+  m_bSupportsMouse(false),
+  m_bSupportsAllExtensions(false),
+  m_bIsPlaying(false),
+  m_serializeSize(0),
+  m_audio(nullptr),
+  m_video(nullptr),
+  m_region(GAME_REGION_UNKNOWN)
+{
+  const ADDON::InfoMap& extraInfo = m_addonInfo.ExtraInfo();
+  ADDON::InfoMap::const_iterator it;
+
+  it = extraInfo.find(GAME_PROPERTY_EXTENSIONS);
+  if (it != extraInfo.end())
+  {
+    std::vector<std::string> extensions = StringUtils::Split(it->second, EXTENSION_SEPARATOR);
+    std::transform(extensions.begin(), extensions.end(),
+      std::inserter(m_extensions, m_extensions.begin()), NormalizeExtension);
+
+    // Check for wildcard extension
+    if (m_extensions.find(EXTENSION_WILDCARD) != m_extensions.end())
+    {
+      m_bSupportsAllExtensions = true;
+      m_extensions.clear();
+    }
+  }
+
+  it = extraInfo.find(GAME_PROPERTY_SUPPORTS_VFS);
+  if (it != extraInfo.end())
+    m_bSupportsVFS = (it->second == "true");
+
+  it = extraInfo.find(GAME_PROPERTY_SUPPORTS_STANDALONE);
+  if (it != extraInfo.end())
+    m_bSupportsStandalone = (it->second == "true");
+
+  it = extraInfo.find(GAME_PROPERTY_SUPPORTS_KEYBOARD);
+  if (it != extraInfo.end())
+    m_bSupportsKeyboard = (it->second == "true");
+
+  it = extraInfo.find(GAME_PROPERTY_SUPPORTS_MOUSE);
+  if (it != extraInfo.end())
+    m_bSupportsMouse = (it->second == "true");
 
   ResetPlayback();
 }
@@ -126,13 +174,13 @@ CGameClient::~CGameClient(void)
   CloseFile();
 }
 
-std::string CGameClient::MainLibPath() const
+std::string CGameClient::LibPath() const
 {
   // If the game client requires a proxy, load its DLL instead
   if (m_struct.props.proxy_dll_count > 0)
     return m_struct.props.proxy_dll_paths[0];
 
-  return CAddon::MainLibPath();
+  return CAddon::LibPath();
 }
 
 ADDON::AddonPtr CGameClient::GetRunningInstance() const
@@ -140,7 +188,7 @@ ADDON::AddonPtr CGameClient::GetRunningInstance() const
   using namespace ADDON;
 
   CBinaryAddonCache& addonCache = CServiceBroker::GetBinaryAddonCache();
-  return addonCache.GetAddonInstance(ID(), MainType());
+  return addonCache.GetAddonInstance(ID(), Type());
 }
 
 bool CGameClient::SupportsPath() const
@@ -402,7 +450,8 @@ std::string CGameClient::GetMissingResource()
     const std::string& strDependencyId = it->first;
     if (StringUtils::StartsWith(strDependencyId, "resource.games"))
     {
-      const bool bInstalled = CAddonMgr::GetInstance().IsAddonEnabled(strDependencyId);
+      AddonPtr addon;
+      const bool bInstalled = CAddonMgr::GetInstance().GetAddon(strDependencyId, addon);
       if (!bInstalled)
       {
         strAddonId = strDependencyId;
@@ -514,17 +563,17 @@ bool CGameClient::OpenPixelStream(GAME_PIXEL_FORMAT format, unsigned int width, 
   unsigned int orientation = 0;
   switch (rotation)
   {
-    case GAME_VIDEO_ROTATION_90:
-      orientation = 360 - 90;
-      break;
-    case GAME_VIDEO_ROTATION_180:
-      orientation = 360 - 180;
-      break;
-    case GAME_VIDEO_ROTATION_270:
-      orientation = 360 - 270;
-      break;
-    default:
-      break;
+  case GAME_VIDEO_ROTATION_90:
+    orientation = 360 - 90;
+    break;
+  case GAME_VIDEO_ROTATION_180:
+    orientation = 360 - 180;
+    break;
+  case GAME_VIDEO_ROTATION_270:
+    orientation = 360 - 270;
+    break;
+  default:
+    break;
   }
 
   return m_video->OpenPixelStream(pixelFormat, width, height, m_timing.GetFrameRate(), orientation);
@@ -603,20 +652,20 @@ void CGameClient::AddStreamData(GAME_STREAM_TYPE stream, const uint8_t* data, un
 {
   switch (stream)
   {
-    case GAME_STREAM_AUDIO:
-    {
-      if (m_audio)
-        m_audio->AddData(data, size);
-      break;
-    }
-    case GAME_STREAM_VIDEO:
-    {
-      if (m_video)
-        m_video->AddData(data, size);
-      break;
-    }
-    default:
-      break;
+  case GAME_STREAM_AUDIO:
+  {
+    if (m_audio)
+      m_audio->AddData(data, size);
+    break;
+  }
+  case GAME_STREAM_VIDEO:
+  {
+    if (m_video)
+      m_video->AddData(data, size);
+    break;
+  }
+  default:
+    break;
   }
 }
 
@@ -624,20 +673,20 @@ void CGameClient::CloseStream(GAME_STREAM_TYPE stream)
 {
   switch (stream)
   {
-    case GAME_STREAM_AUDIO:
-    {
-      if (m_audio)
-        m_audio->CloseStream();
-      break;
-    }
-    case GAME_STREAM_VIDEO:
-    {
-      if (m_video)
-        m_video->CloseStream();
-      break;
-    }
-    default:
-      break;
+  case GAME_STREAM_AUDIO:
+  {
+    if (m_audio)
+      m_audio->CloseStream();
+    break;
+  }
+  case GAME_STREAM_VIDEO:
+  {
+    if (m_video)
+      m_video->CloseStream();
+    break;
+  }
+  default:
+    break;
   }
 }
 
@@ -769,7 +818,7 @@ void CGameClient::UpdatePort(unsigned int port, const ControllerPtr& controller)
 bool CGameClient::AcceptsInput(void) const
 {
   return g_application.IsAppFocused() &&
-  g_windowManager.GetActiveWindowID() == WINDOW_FULLSCREEN_GAME;
+         g_windowManager.GetActiveWindowID() == WINDOW_FULLSCREEN_GAME;
 }
 
 void CGameClient::ClearPorts(void)
@@ -811,12 +860,12 @@ bool CGameClient::ReceiveInputEvent(const game_input_event& event)
 
   switch (event.type)
   {
-    case GAME_INPUT_EVENT_MOTOR:
-      if (event.feature_name)
-        bHandled = SetRumble(event.port, event.feature_name, event.motor.magnitude);
-      break;
-    default:
-      break;
+  case GAME_INPUT_EVENT_MOTOR:
+    if (event.feature_name)
+      bHandled = SetRumble(event.port, event.feature_name, event.motor.magnitude);
+    break;
+  default:
+    break;
   }
 
   return bHandled;
@@ -892,7 +941,7 @@ bool CGameClient::LogError(GAME_ERROR error, const char* strMethod) const
   if (error != GAME_ERROR_NO_ERROR)
   {
     CLog::Log(LOGERROR, "GAME - %s - addon '%s' returned an error: %s",
-              strMethod, ID().c_str(), CGameClientTranslator::ToString(error));
+        strMethod, ID().c_str(), CGameClientTranslator::ToString(error));
     return false;
   }
   return true;
@@ -901,7 +950,7 @@ bool CGameClient::LogError(GAME_ERROR error, const char* strMethod) const
 void CGameClient::LogException(const char* strFunctionName) const
 {
   CLog::Log(LOGERROR, "GAME: exception caught while trying to call '%s' on add-on %s",
-            strFunctionName, ID().c_str());
+      strFunctionName, ID().c_str());
   CLog::Log(LOGERROR, "Please contact the developer of this add-on: %s", Author().c_str());
 }
 

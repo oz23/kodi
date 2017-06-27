@@ -25,7 +25,7 @@
 #include <vector>
 
 #include "addons/Addon.h"
-#include "addons/AddonDll.h"
+#include "addons/binary-addons/AddonDll.h"
 #include "addons/kodi-addon-dev-kit/include/kodi/xbmc_pvr_types.h"
 
 #include "pvr/channels/PVRChannel.h"
@@ -55,8 +55,8 @@ namespace PVR
   class CPVRClient : public ADDON::CAddonDll
   {
   public:
-    CPVRClient(ADDON::AddonInfoPtr addonInfo);
-    virtual ~CPVRClient(void);
+    explicit CPVRClient(ADDON::CAddonInfo addonInfo);
+    ~CPVRClient(void);
 
     void OnDisabled() override;
     void OnEnabled() override;

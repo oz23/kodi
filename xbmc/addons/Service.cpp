@@ -26,15 +26,19 @@
 namespace ADDON
 {
 
-CService::CService(AddonInfoPtr addonInfo)
-  : CAddon(addonInfo),
-    m_type(UNKNOWN),
-    m_startOption(LOGIN)
+std::unique_ptr<CService> CService::FromExtension(CAddonInfo addonInfo, const cp_extension_t* ext)
 {
-  std::string start = Type(ADDON_SERVICE)->GetValue("@start").asString();
+  START_OPTION startOption(LOGIN);
+  std::string start = CAddonMgr::GetInstance().GetExtValue(ext->configuration, "@start");
   if (start == "startup")
-    m_startOption = STARTUP;
+    startOption = STARTUP;
+  return std::unique_ptr<CService>(new CService(std::move(addonInfo), TYPE(UNKNOWN), startOption));
+}
 
+
+CService::CService(CAddonInfo addonInfo, TYPE type, START_OPTION startOption)
+  : CAddon(std::move(addonInfo)), m_type(type), m_startOption(startOption)
+{
   BuildServiceType();
 }
 
@@ -45,7 +49,7 @@ bool CService::Start()
   {
 #ifdef HAS_PYTHON
   case PYTHON:
-    ret = (CScriptInvocationManager::GetInstance().ExecuteAsync(Type(ADDON_SERVICE)->LibPath(), this->shared_from_this()) != -1);
+    ret = (CScriptInvocationManager::GetInstance().ExecuteAsync(LibPath(), this->shared_from_this()) != -1);
     break;
 #endif
 
@@ -66,7 +70,7 @@ bool CService::Stop()
   {
 #ifdef HAS_PYTHON
   case PYTHON:
-    ret = CScriptInvocationManager::GetInstance().Stop(Type(ADDON_SERVICE)->LibPath());
+    ret = CScriptInvocationManager::GetInstance().Stop(LibPath());
     break;
 #endif
 
@@ -81,7 +85,7 @@ bool CService::Stop()
 
 void CService::BuildServiceType()
 {
-  std::string str = Type(ADDON_SERVICE)->LibPath();
+  std::string str = LibPath();
   std::string ext;
 
   size_t p = str.find_last_of('.');

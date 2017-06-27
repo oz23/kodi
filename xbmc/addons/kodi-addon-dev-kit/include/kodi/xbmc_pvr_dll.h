@@ -39,9 +39,10 @@ extern "C"
    * Used to check which options should be presented in the UI, which methods to call, etc.
    * All capabilities that the add-on supports should be set to true.
    * @param pCapabilities The add-on's capabilities.
+   * @return PVR_ERROR_NO_ERROR if the properties were fetched successfully.
    * @remarks Valid implementation required.
    */
-  void GetCapabilities(PVR_ADDON_CAPABILITIES *pCapabilities);
+  PVR_ERROR GetAddonCapabilities(PVR_ADDON_CAPABILITIES *pCapabilities);
 
   /*!
    * @return The name reported by the backend that will be displayed in the UI.
@@ -630,7 +631,7 @@ extern "C"
 
     pClient->toAddon.addonInstance = nullptr; // used in future
 
-    pClient->toAddon.GetCapabilities                = GetCapabilities;
+    pClient->toAddon.GetAddonCapabilities           = GetAddonCapabilities;
     pClient->toAddon.GetStreamProperties            = GetStreamProperties;
     pClient->toAddon.GetConnectionString            = GetConnectionString;
     pClient->toAddon.GetBackendName                 = GetBackendName;

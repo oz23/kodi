@@ -35,7 +35,7 @@
 #include "utils/Weather.h"
 #include "PartyModeManager.h"
 #include "guilib/GUIVisualisationControl.h"
-#include "input/ButtonTranslator.h"
+#include "input/WindowTranslator.h"
 #include "utils/AlarmClock.h"
 #include "LangInfo.h"
 #include "utils/SystemInfo.h"
@@ -5627,7 +5627,7 @@ int CGUIInfoManager::TranslateSingleString(const std::string &strCondition, bool
     {
       if (prop.name == "property" && prop.num_params() == 1)
       { //! @todo this doesn't support foo.xml
-        int winID = cat.param().empty() ? 0 : CButtonTranslator::TranslateWindow(cat.param());
+        int winID = cat.param().empty() ? 0 : CWindowTranslator::TranslateWindow(cat.param());
         if (winID != WINDOW_INVALID)
           return AddMultiInfo(GUIInfo(WINDOW_PROPERTY, winID, ConditionalStringParameter(prop.param())));
       }
@@ -5637,7 +5637,7 @@ int CGUIInfoManager::TranslateSingleString(const std::string &strCondition, bool
         { //! @todo The parameter for these should really be on the first not the second property
           if (prop.param().find("xml") != std::string::npos)
             return AddMultiInfo(GUIInfo(window_bools[i].val, 0, ConditionalStringParameter(prop.param())));
-          int winID = prop.param().empty() ? WINDOW_INVALID : CButtonTranslator::TranslateWindow(prop.param());
+          int winID = prop.param().empty() ? WINDOW_INVALID : CWindowTranslator::TranslateWindow(prop.param());
           return winID != WINDOW_INVALID ? AddMultiInfo(GUIInfo(window_bools[i].val, winID, 0)) : window_bools[i].val;
         }
       }
@@ -6677,8 +6677,9 @@ std::string CGUIInfoManager::GetLabel(int info, int contextWindow, std::string *
     break;
   case VISUALISATION_NAME:
     {
-      AddonInfoPtr addon = CAddonMgr::GetInstance().GetInstalledAddonInfo(CServiceBroker::GetSettings().GetString(CSettings::SETTING_MUSICPLAYER_VISUALISATION), ADDON_VIZ);
-      if (addon)
+      AddonPtr addon;
+      strLabel = CServiceBroker::GetSettings().GetString(CSettings::SETTING_MUSICPLAYER_VISUALISATION);
+      if (CAddonMgr::GetInstance().GetAddon(strLabel,addon) && addon)
         strLabel = addon->Name();
     }
     break;
@@ -6845,12 +6846,15 @@ INFO::InfoPtr CGUIInfoManager::Register(const std::string &expression, int conte
     return INFO::InfoPtr();
 
   CSingleLock lock(m_critInfo);
-  std::pair<INFOBOOLTYPE::const_iterator, bool> res;
+  std::pair<INFOBOOLTYPE::iterator, bool> res;
 
   if (condition.find_first_of("|+[]!") != condition.npos)
     res = m_bools.insert(std::make_shared<InfoExpression>(condition, context, m_refreshCounter));
   else
     res = m_bools.insert(std::make_shared<InfoSingle>(condition, context, m_refreshCounter));
+
+  if (res.second)
+    res.first->get()->Initialize();
 
   return *(res.first);
 }
@@ -6994,7 +6998,12 @@ bool CGUIInfoManager::GetBool(int condition1, int contextWindow, const CGUIListI
   else if (condition == SYSTEM_HAS_PVR)
     bReturn = true;
   else if (condition == SYSTEM_HAS_PVR_ADDON)
-    bReturn = CAddonMgr::GetInstance().HasEnabledAddons(ADDON::ADDON_PVRDLL);
+  {
+    VECADDONS pvrAddons;
+    CBinaryAddonCache &addonCache = CServiceBroker::GetBinaryAddonCache();
+    addonCache.GetAddons(pvrAddons, ADDON::ADDON_PVRDLL);
+    bReturn = (pvrAddons.size() > 0);
+  }
   else if (condition == SYSTEM_HAS_ADSP)
     bReturn = true;
   else if (condition == SYSTEM_HAS_CMS)
@@ -7634,7 +7643,8 @@ bool CGUIInfoManager::GetMultiInfoBool(const GUIInfo &info, int contextWindow, c
         break;
       case SYSTEM_HAS_ADDON:
       {
-        bReturn = CAddonMgr::GetInstance().IsAddonEnabled(m_stringParameters[info.GetData1()]);
+        AddonPtr addon;
+        bReturn = CAddonMgr::GetInstance().GetAddon(m_stringParameters[info.GetData1()],addon) && addon;
         break;
       }
       case CONTAINER_SCROLL_PREVIOUS:
@@ -8096,11 +8106,11 @@ std::string CGUIInfoManager::GetMultiInfoLabel(const GUIInfo &info, int contextW
     // it simply retrieves it's name or icon that means if an addon is placed on the home screen it
     // will stay there even if it's disabled/marked as broken. This might need to be changed/fixed
     // in the future.
-    AddonInfoPtr addon;
+    AddonPtr addon;
     if (info.GetData2() == 0)
-      addon = CAddonMgr::GetInstance().GetInstalledAddonInfo(const_cast<CGUIInfoManager*>(this)->GetLabel(info.GetData1(), contextWindow));
+      CAddonMgr::GetInstance().GetAddon(const_cast<CGUIInfoManager*>(this)->GetLabel(info.GetData1(), contextWindow),addon,ADDON_UNKNOWN,false);
     else
-      addon = CAddonMgr::GetInstance().GetInstalledAddonInfo(m_stringParameters[info.GetData1()]);
+      CAddonMgr::GetInstance().GetAddon(m_stringParameters[info.GetData1()],addon,ADDON_UNKNOWN,false);
     if (addon && info.m_info == SYSTEM_ADDON_TITLE)
       return addon->Name();
     if (addon && info.m_info == SYSTEM_ADDON_ICON)
@@ -10538,7 +10548,7 @@ std::string CGUIInfoManager::GetItemLabel(const CFileItem *item, int info, std::
     break;
   case LISTITEM_ADDON_TYPE:
     if (item->HasAddonInfo())
-      return ADDON::CAddonInfo::TranslateType(item->GetAddonInfo()->MainType(),true);
+      return ADDON::CAddonInfo::TranslateType(item->GetAddonInfo()->Type(),true);
     break;
   case LISTITEM_ADDON_INSTALL_DATE:
     if (item->HasAddonInfo())
@@ -10557,8 +10567,8 @@ std::string CGUIInfoManager::GetItemLabel(const CFileItem *item, int info, std::
     {
       if (item->GetAddonInfo()->Origin() == ORIGIN_SYSTEM)
         return g_localizeStrings.Get(24992);
-      AddonInfoPtr origin = CAddonMgr::GetInstance().GetInstalledAddonInfo(item->GetAddonInfo()->Origin(), ADDON_REPOSITORY);
-      if (origin)
+      AddonPtr origin;
+      if (CAddonMgr::GetInstance().GetAddon(item->GetAddonInfo()->Origin(), origin, ADDON_UNKNOWN, false))
         return origin->Name();
       return g_localizeStrings.Get(13205);
     }

@@ -25,12 +25,12 @@
 
 namespace ADDON {
 class CAddonMgr;
+class CBinaryAddonManager;
 class CBinaryAddonCache;
 class CVFSAddonCache;
 }
 
 namespace ActiveAE {
-class CActiveAEDSP;
 class CActiveAE;
 }
 
@@ -85,6 +85,7 @@ public:
   bool Init3();
   void Deinit();
   ADDON::CAddonMgr& GetAddonMgr();
+  ADDON::CBinaryAddonManager& GetBinaryAddonManager();
   ADDON::CBinaryAddonCache& GetBinaryAddonCache();
   ADDON::CVFSAddonCache& GetVFSAddonCache();
   ANNOUNCEMENT::CAnnouncementManager& GetAnnouncementManager();
@@ -92,7 +93,6 @@ public:
   XBPython& GetXBPython();
 #endif
   PVR::CPVRManager& GetPVRManager();
-  ActiveAE::CActiveAEDSP& GetADSPManager();
   IAE& GetActiveAE();
   CContextMenuManager& GetContextMenuManager();
   CDataCacheCore& GetDataCacheCore();
@@ -130,6 +130,7 @@ protected:
   };
 
   std::unique_ptr<ADDON::CAddonMgr> m_addonMgr;
+  std::unique_ptr<ADDON::CBinaryAddonManager> m_binaryAddonManager;
   std::unique_ptr<ADDON::CBinaryAddonCache> m_binaryAddonCache;
   std::unique_ptr<ADDON::CVFSAddonCache> m_vfsAddonCache;
   std::unique_ptr<ANNOUNCEMENT::CAnnouncementManager> m_announcementManager;
@@ -137,7 +138,6 @@ protected:
   std::unique_ptr<XBPython> m_XBPython;
 #endif
   std::unique_ptr<PVR::CPVRManager> m_PVRManager;
-  std::unique_ptr<ActiveAE::CActiveAEDSP> m_ADSPManager;
   std::unique_ptr<ActiveAE::CActiveAE, delete_activeAE> m_ActiveAE;
   std::unique_ptr<CContextMenuManager, delete_contextMenuManager> m_contextMenuManager;
   std::unique_ptr<CDataCacheCore, delete_dataCacheCore> m_dataCacheCore;

@@ -32,7 +32,7 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#include "AddonBase.h"
+#include "xbmc_addon_types.h"
 #include "xbmc_epg_types.h"
 
 /*! @note Define "USE_DEMUX" at compile time if demuxing in the PVR add-on is used.
@@ -575,7 +575,7 @@ extern "C" {
   {
     KODI_HANDLE addonInstance;
 
-    void (__cdecl* GetCapabilities)(PVR_ADDON_CAPABILITIES*);
+    PVR_ERROR (__cdecl* GetAddonCapabilities)(PVR_ADDON_CAPABILITIES*);
     PVR_ERROR (__cdecl* GetStreamProperties)(PVR_STREAM_PROPERTIES*);
     const char* (__cdecl* GetBackendName)(void);
     const char* (__cdecl* GetBackendVersion)(void);

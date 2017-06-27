@@ -125,6 +125,7 @@ endforeach()
 
 # Required dependencies. Keep in alphabetical order please
 set(required_deps Cdio
+                  Cpluff
                   CrossGUID
                   FFMPEG
                   Fmt
@@ -298,7 +299,7 @@ endif()
 # main library (used for main binary and tests)
 add_library(lib${APP_NAME_LC} STATIC $<TARGET_OBJECTS:compileinfo>)
 set_target_properties(lib${APP_NAME_LC} PROPERTIES PREFIX "")
-add_dependencies(lib${APP_NAME_LC} ffmpeg dvdnav crossguid)
+add_dependencies(lib${APP_NAME_LC} libcpluff ffmpeg dvdnav crossguid)
 
 # Other files (IDE)
 set(OTHER_FILES cmake/README.md)

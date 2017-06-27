@@ -8028,7 +8028,7 @@ this.Kodi.module("AddonApp.Pvr", function(Pvr, App, Backbone, Marionette, $, _) 
   API = {
     isEnabled: function() {
       return App.request("addon:isEnabled", {
-        type: 'kodi.pvrclient'
+        type: 'xbmc.pvrclient'
       });
     }
   };
