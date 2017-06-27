@@ -35,6 +35,7 @@
 #include "VideoSyncDRM.h"
 #include "VideoSyncGLX.h"
 #include "cores/VideoPlayer/DVDCodecs/DVDFactoryCodec.h"
+#include "cores/VideoPlayer/VideoRenderers/RenderFactory.h"
 
 CWinSystemX11GLContext::CWinSystemX11GLContext()
 {
@@ -191,9 +192,11 @@ XVisualInfo* CWinSystemX11GLContext::GetVisual()
 
 #if defined (HAVE_LIBVA)
 #include "cores/VideoPlayer/DVDCodecs/Video/VAAPI.h"
+#include "cores/VideoPlayer/VideoRenderers/HwDecRender/RendererVAAPIGL.h"
 #endif
 #if defined (HAVE_LIBVDPAU)
 #include "cores/VideoPlayer/DVDCodecs/Video/VDPAU.h"
+#include "cores/VideoPlayer/VideoRenderers/HwDecRender/RendererVDPAU.h"
 #endif
 
 bool CWinSystemX11GLContext::RefreshGLContext(bool force)
@@ -206,6 +209,8 @@ bool CWinSystemX11GLContext::RefreshGLContext(bool force)
   }
 
   CDVDFactoryCodec::ClearHWAccels();
+  VIDEOPLAYER::CRendererFactory::ClearRenderer();
+  CLinuxRendererGL::Register();
 
   m_pGLContext = new CGLContextEGL(m_dpy);
   success = m_pGLContext->Refresh(force, m_nScreen, m_glWindow, m_newGlContext);
@@ -220,6 +225,7 @@ bool CWinSystemX11GLContext::RefreshGLContext(bool force)
     {
 #if defined (HAVE_LIBVA)
       VAAPI::CDecoder::Register(static_cast<CGLContextEGL*>(m_pGLContext)->m_eglDisplay);
+      CRendererVAAPI::Register();
 #endif
       return success;
     }
@@ -233,6 +239,7 @@ bool CWinSystemX11GLContext::RefreshGLContext(bool force)
   {
 #if defined (HAVE_LIBVDPAU)
     VDPAU::CDecoder::Register();
+    CRendererVDPAU::Register();
 #endif
   }
   return success;
