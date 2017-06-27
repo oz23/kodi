@@ -1,6 +1,6 @@
 #pragma once
 /*
- *      Copyright (C) 2014-2016 Team Kodi
+ *      Copyright (C) 2014-2017 Team Kodi
  *      http://kodi.tv
  *
  *  This Program is free software; you can redistribute it and/or modify
@@ -243,9 +243,6 @@ extern "C"
   } ATTRIBUTE_PACKED JOYSTICK_FEATURE;
   ///}
 
-  /*!
-   * @brief Properties passed to the Create() method of an add-on.
-   */
   typedef struct AddonProps_Peripheral
   {
     const char* user_path;              /*!< @brief path to the user profile */
@@ -257,9 +254,9 @@ extern "C"
   typedef struct AddonToKodiFuncTable_Peripheral
   {
     KODI_HANDLE kodiInstance;
-    void (*TriggerScan)(void* kodiInstance);
-    void (*RefreshButtonMaps)(void* kodiInstance, const char* deviceName, const char* controllerId);
-    unsigned int (*FeatureCount)(void* kodiInstance, const char* controllerId, JOYSTICK_FEATURE_TYPE type);
+    void (*trigger_scan)(void* kodiInstance);
+    void (*refresh_button_maps)(void* kodiInstance, const char* device_name, const char* controller_id);
+    unsigned int (*feature_count)(void* kodiInstance, const char* controller_id, JOYSTICK_FEATURE_TYPE type);
   } AddonToKodiFuncTable_Peripheral;
 
   //! @todo Mouse, light gun, multitouch
@@ -268,27 +265,27 @@ extern "C"
   {
     kodi::addon::CInstancePeripheral* addonInstance;
 
-    void (__cdecl* GetCapabilities)(AddonInstance_Peripheral* addonInstance, PERIPHERAL_CAPABILITIES*);
-    PERIPHERAL_ERROR (__cdecl* PerformDeviceScan)(AddonInstance_Peripheral* addonInstance, unsigned int*, PERIPHERAL_INFO**);
-    void             (__cdecl* FreeScanResults)(AddonInstance_Peripheral* addonInstance, unsigned int, PERIPHERAL_INFO*);
-    PERIPHERAL_ERROR (__cdecl* GetEvents)(AddonInstance_Peripheral* addonInstance, unsigned int*, PERIPHERAL_EVENT**);
-    void             (__cdecl* FreeEvents)(AddonInstance_Peripheral* addonInstance, unsigned int, PERIPHERAL_EVENT*);
-    bool             (__cdecl* SendEvent)(AddonInstance_Peripheral* addonInstance, const PERIPHERAL_EVENT*);
+    void (__cdecl* get_capabilities)(const AddonInstance_Peripheral* addonInstance, PERIPHERAL_CAPABILITIES* capabilities);
+    PERIPHERAL_ERROR (__cdecl* perform_device_scan)(const AddonInstance_Peripheral* addonInstance, unsigned int* peripheral_count, PERIPHERAL_INFO** scan_results);
+    void (__cdecl* free_scan_results)(const AddonInstance_Peripheral* addonInstance, unsigned int peripheral_count, PERIPHERAL_INFO* scan_results);
+    PERIPHERAL_ERROR (__cdecl* get_events)(const AddonInstance_Peripheral* addonInstance, unsigned int* event_count, PERIPHERAL_EVENT** events);
+    void (__cdecl* free_events)(const AddonInstance_Peripheral* addonInstance, unsigned int event_count, PERIPHERAL_EVENT* events);
+    bool (__cdecl* send_event)(const AddonInstance_Peripheral* addonInstance, const PERIPHERAL_EVENT* event);
 
     /// @name Joystick operations
     ///{
-    PERIPHERAL_ERROR (__cdecl* GetJoystickInfo)(AddonInstance_Peripheral* addonInstance, unsigned int, JOYSTICK_INFO*);
-    void             (__cdecl* FreeJoystickInfo)(AddonInstance_Peripheral* addonInstance, JOYSTICK_INFO*);
-    PERIPHERAL_ERROR (__cdecl* GetFeatures)(AddonInstance_Peripheral* addonInstance, const JOYSTICK_INFO*, const char*, unsigned int*, JOYSTICK_FEATURE**);
-    void             (__cdecl* FreeFeatures)(AddonInstance_Peripheral* addonInstance, unsigned int, JOYSTICK_FEATURE*);
-    PERIPHERAL_ERROR (__cdecl* MapFeatures)(AddonInstance_Peripheral* addonInstance, const JOYSTICK_INFO*, const char*, unsigned int, const JOYSTICK_FEATURE*);
-    PERIPHERAL_ERROR (__cdecl* GetIgnoredPrimitives)(AddonInstance_Peripheral* addonInstance, const JOYSTICK_INFO*, unsigned int*, JOYSTICK_DRIVER_PRIMITIVE**);
-    void             (__cdecl* FreePrimitives)(AddonInstance_Peripheral* addonInstance, unsigned int, JOYSTICK_DRIVER_PRIMITIVE*);
-    PERIPHERAL_ERROR (__cdecl* SetIgnoredPrimitives)(AddonInstance_Peripheral* addonInstance, const JOYSTICK_INFO*, unsigned int, const JOYSTICK_DRIVER_PRIMITIVE*);
-    void             (__cdecl* SaveButtonMap)(AddonInstance_Peripheral* addonInstance, const JOYSTICK_INFO*);
-    void             (__cdecl* RevertButtonMap)(AddonInstance_Peripheral* addonInstance, const JOYSTICK_INFO*);
-    void             (__cdecl* ResetButtonMap)(AddonInstance_Peripheral* addonInstance, const JOYSTICK_INFO*, const char*);
-    void             (__cdecl* PowerOffJoystick)(AddonInstance_Peripheral* addonInstance, unsigned int);
+    PERIPHERAL_ERROR (__cdecl* get_joystick_info)(const AddonInstance_Peripheral* addonInstance, unsigned int index, JOYSTICK_INFO* info);
+    void (__cdecl* free_joystick_info)(const AddonInstance_Peripheral* addonInstance, JOYSTICK_INFO* info);
+    PERIPHERAL_ERROR (__cdecl* get_features)(const AddonInstance_Peripheral* addonInstance, const JOYSTICK_INFO* joystick, const char* controller_id, unsigned int* feature_count, JOYSTICK_FEATURE** features);
+    void (__cdecl* free_features)(const AddonInstance_Peripheral* addonInstance, unsigned int feature_count, JOYSTICK_FEATURE* features);
+    PERIPHERAL_ERROR (__cdecl* map_features)(const AddonInstance_Peripheral* addonInstance, const JOYSTICK_INFO* joystick, const char* controller_id, unsigned int feature_count, const JOYSTICK_FEATURE* features);
+    PERIPHERAL_ERROR (__cdecl* get_ignored_primitives)(const AddonInstance_Peripheral* addonInstance, const JOYSTICK_INFO* joystick, unsigned int* feature_count, JOYSTICK_DRIVER_PRIMITIVE** primitives);
+    void (__cdecl* free_primitives)(const AddonInstance_Peripheral* addonInstance, unsigned int, JOYSTICK_DRIVER_PRIMITIVE* primitives);
+    PERIPHERAL_ERROR (__cdecl* set_ignored_primitives)(const AddonInstance_Peripheral* addonInstance, const JOYSTICK_INFO* joystick, unsigned int primitive_count, const JOYSTICK_DRIVER_PRIMITIVE* primitives);
+    void (__cdecl* save_button_map)(const AddonInstance_Peripheral* addonInstance, const JOYSTICK_INFO* joystick);
+    void (__cdecl* revert_button_map)(const AddonInstance_Peripheral* addonInstance, const JOYSTICK_INFO* joystick);
+    void (__cdecl* reset_button_map)(const AddonInstance_Peripheral* addonInstance, const JOYSTICK_INFO* joystick, const char* controller_id);
+    void (__cdecl* power_off_joystick)(const AddonInstance_Peripheral* addonInstance, unsigned int index);
     ///}
   } KodiToAddonFuncTable_Peripheral;
 
@@ -333,175 +330,175 @@ namespace addon
     /// @name Peripheral operations
     ///{
     /*!
-    * @brief Get the list of features that this add-on provides
-    * @param capabilities The add-on's capabilities.
-    * @remarks Valid implementation required.
-    *
-    * Called by the frontend to query the add-on's capabilities and supported
-    * peripherals. All capabilities that the add-on supports should be set to true.
-    *
-    */
+     * @brief Get the list of features that this add-on provides
+     * @param capabilities The add-on's capabilities.
+     * @remarks Valid implementation required.
+     *
+     * Called by the frontend to query the add-on's capabilities and supported
+     * peripherals. All capabilities that the add-on supports should be set to true.
+     *
+     */
     virtual void GetCapabilities(PERIPHERAL_CAPABILITIES &capabilities) { }
 
     /*!
-    * @brief Perform a scan for joysticks
-    * @param peripheral_count  Assigned to the number of peripherals allocated
-    * @param scan_results      Assigned to allocated memory
-    * @return PERIPHERAL_NO_ERROR if successful; peripherals must be freed using
-    * FreeScanResults() in this case
-    *
-    * The frontend calls this when a hardware change is detected. If an add-on
-    * detects a hardware change, it can trigger this function using the
-    * TriggerScan() callback.
-    */
+     * @brief Perform a scan for joysticks
+     * @param peripheral_count  Assigned to the number of peripherals allocated
+     * @param scan_results      Assigned to allocated memory
+     * @return PERIPHERAL_NO_ERROR if successful; peripherals must be freed using
+     * FreeScanResults() in this case
+     *
+     * The frontend calls this when a hardware change is detected. If an add-on
+     * detects a hardware change, it can trigger this function using the
+     * TriggerScan() callback.
+     */
     virtual PERIPHERAL_ERROR PerformDeviceScan(unsigned int* peripheral_count, PERIPHERAL_INFO** scan_results) { return PERIPHERAL_ERROR_NOT_IMPLEMENTED; }
 
     /*!
-    * @brief Free the memory allocated in PerformDeviceScan()
-    *
-    * Must be called if PerformDeviceScan() returns PERIPHERAL_NO_ERROR.
-    *
-    * @param peripheral_count  The number of events allocated for the events array
-    * @param scan_results      The array of allocated peripherals
-    */
+     * @brief Free the memory allocated in PerformDeviceScan()
+     *
+     * Must be called if PerformDeviceScan() returns PERIPHERAL_NO_ERROR.
+     *
+     * @param peripheral_count  The number of events allocated for the events array
+     * @param scan_results      The array of allocated peripherals
+     */
     virtual void FreeScanResults(unsigned int peripheral_count, PERIPHERAL_INFO* scan_results) { }
 
     /*!
-    * @brief Get all events that have occurred since the last call to GetEvents()
-    * @return PERIPHERAL_NO_ERROR if successful; events must be freed using
-    * FreeEvents() in this case
-    */
+     * @brief Get all events that have occurred since the last call to GetEvents()
+     * @return PERIPHERAL_NO_ERROR if successful; events must be freed using
+     * FreeEvents() in this case
+     */
     virtual PERIPHERAL_ERROR GetEvents(unsigned int* event_count, PERIPHERAL_EVENT** events) { return PERIPHERAL_ERROR_NOT_IMPLEMENTED; }
 
     /*!
-    * @brief Free the memory allocated in GetEvents()
-    *
-    * Must be called if GetEvents() returns PERIPHERAL_NO_ERROR.
-    *
-    * @param event_count  The number of events allocated for the events array
-    * @param events       The array of allocated events
-    */
+     * @brief Free the memory allocated in GetEvents()
+     *
+     * Must be called if GetEvents() returns PERIPHERAL_NO_ERROR.
+     *
+     * @param event_count  The number of events allocated for the events array
+     * @param events       The array of allocated events
+     */
     virtual void FreeEvents(unsigned int event_count, PERIPHERAL_EVENT* events) { }
 
     /*!
-    * @brief Send an input event to the specified peripheral
-    * @param peripheralIndex The index of the device receiving the input event
-    * @param event The input event
-    * @return true if the event was handled, false otherwise
-    */
+     * @brief Send an input event to the specified peripheral
+     * @param peripheralIndex The index of the device receiving the input event
+     * @param event The input event
+     * @return true if the event was handled, false otherwise
+     */
     virtual bool SendEvent(const PERIPHERAL_EVENT* event) { return false; }
     ///}
 
     /// @name Joystick operations
     /*!
-    * @note #define PERIPHERAL_ADDON_JOYSTICKS before including kodi_peripheral_dll.h
-    * in the add-on if the add-on provides joysticks and add provides_joysticks="true"
-    * to the kodi.peripheral extension point node in addon.xml.
-    */
+     * @note #define PERIPHERAL_ADDON_JOYSTICKS before including kodi_peripheral_dll.h
+     * in the add-on if the add-on provides joysticks and add provides_joysticks="true"
+     * to the kodi.peripheral extension point node in addon.xml.
+     */
     ///{
     /*!
-    * @brief Get extended info about an attached joystick
-    * @param index  The joystick's driver index
-    * @param info   The container for the allocated joystick info
-    * @return PERIPHERAL_NO_ERROR if successful; array must be freed using
-    *         FreeJoystickInfo() in this case
-    */
+     * @brief Get extended info about an attached joystick
+     * @param index  The joystick's driver index
+     * @param info   The container for the allocated joystick info
+     * @return PERIPHERAL_NO_ERROR if successful; array must be freed using
+     *         FreeJoystickInfo() in this case
+     */
     virtual PERIPHERAL_ERROR GetJoystickInfo(unsigned int index, JOYSTICK_INFO* info) { return PERIPHERAL_ERROR_NOT_IMPLEMENTED; }
 
     /*!
-    * @brief Free the memory allocated in GetJoystickInfo()
-    */
+     * @brief Free the memory allocated in GetJoystickInfo()
+     */
     virtual void FreeJoystickInfo(JOYSTICK_INFO* info) { }
 
     /*!
-    * @brief Get the features that allow translating the joystick into the controller profile
-    * @param joystick      The device's joystick properties; unknown values may be left at their default
-    * @param controller_id The controller profile being requested, e.g. game.controller.default
-    * @param feature_count The number of features allocated for the features array
-    * @param features      The array of allocated features
-    * @return PERIPHERAL_NO_ERROR if successful; array must be freed using
-    *         FreeButtonMap() in this case
-    */
+     * @brief Get the features that allow translating the joystick into the controller profile
+     * @param joystick      The device's joystick properties; unknown values may be left at their default
+     * @param controller_id The controller profile being requested, e.g. game.controller.default
+     * @param feature_count The number of features allocated for the features array
+     * @param features      The array of allocated features
+     * @return PERIPHERAL_NO_ERROR if successful; array must be freed using
+     *         FreeButtonMap() in this case
+     */
     virtual PERIPHERAL_ERROR GetFeatures(const JOYSTICK_INFO* joystick, const char* controller_id,
-                                unsigned int* feature_count, JOYSTICK_FEATURE** features) { return PERIPHERAL_ERROR_NOT_IMPLEMENTED; }
+                                         unsigned int* feature_count, JOYSTICK_FEATURE** features) { return PERIPHERAL_ERROR_NOT_IMPLEMENTED; }
 
     /*!
-    * @brief Free the memory allocated in GetFeatures()
-    *
-    * Must be called if GetFeatures() returns PERIPHERAL_NO_ERROR.
-    *
-    * @param feature_count  The number of features allocated for the features array
-    * @param features       The array of allocated features
-    */
+     * @brief Free the memory allocated in GetFeatures()
+     *
+     * Must be called if GetFeatures() returns PERIPHERAL_NO_ERROR.
+     *
+     * @param feature_count  The number of features allocated for the features array
+     * @param features       The array of allocated features
+     */
     virtual void FreeFeatures(unsigned int feature_count, JOYSTICK_FEATURE* features) { }
 
     /*!
-    * @brief Add or update joystick features
-    * @param joystick      The device's joystick properties; unknown values may be left at their default
-    * @param controller_id The game controller profile being updated
-    * @param feature_count The number of features in the features array
-    * @param features      The array of features
-    * @return PERIPHERAL_NO_ERROR if successful
-    */
+     * @brief Add or update joystick features
+     * @param joystick      The device's joystick properties; unknown values may be left at their default
+     * @param controller_id The game controller profile being updated
+     * @param feature_count The number of features in the features array
+     * @param features      The array of features
+     * @return PERIPHERAL_NO_ERROR if successful
+     */
     virtual PERIPHERAL_ERROR MapFeatures(const JOYSTICK_INFO* joystick, const char* controller_id,
-                                unsigned int feature_count, const JOYSTICK_FEATURE* features) { return PERIPHERAL_ERROR_NOT_IMPLEMENTED; }
+                                         unsigned int feature_count, const JOYSTICK_FEATURE* features) { return PERIPHERAL_ERROR_NOT_IMPLEMENTED; }
 
     /*!
-    * @brief Get the driver primitives that should be ignored while mapping the device
-    * @param joystick        The device's joystick properties; unknown values may be left at their default
-    * @param primitive_count The number of features allocated for the primitives array
-    * @param primitives      The array of allocated driver primitives to be ignored
-    * @return PERIPHERAL_NO_ERROR if successful; array must be freed using
-    *         FreePrimitives() in this case
-    */
+     * @brief Get the driver primitives that should be ignored while mapping the device
+     * @param joystick        The device's joystick properties; unknown values may be left at their default
+     * @param primitive_count The number of features allocated for the primitives array
+     * @param primitives      The array of allocated driver primitives to be ignored
+     * @return PERIPHERAL_NO_ERROR if successful; array must be freed using
+     *         FreePrimitives() in this case
+     */
     virtual PERIPHERAL_ERROR GetIgnoredPrimitives(const JOYSTICK_INFO* joystick,
-                                          unsigned int* primitive_count,
-                                          JOYSTICK_DRIVER_PRIMITIVE** primitives) { return PERIPHERAL_ERROR_NOT_IMPLEMENTED; }
+                                                  unsigned int* primitive_count,
+                                                  JOYSTICK_DRIVER_PRIMITIVE** primitives) { return PERIPHERAL_ERROR_NOT_IMPLEMENTED; }
 
     /*!
-    * @brief Free the memory allocated in GetIgnoredPrimitives()
-    *
-    * Must be called if GetIgnoredPrimitives() returns PERIPHERAL_NO_ERROR.
-    *
-    * @param primitive_count  The number of driver primitives allocated for the primitives array
-    * @param primitives       The array of allocated driver primitives
-    */
+     * @brief Free the memory allocated in GetIgnoredPrimitives()
+     *
+     * Must be called if GetIgnoredPrimitives() returns PERIPHERAL_NO_ERROR.
+     *
+     * @param primitive_count  The number of driver primitives allocated for the primitives array
+     * @param primitives       The array of allocated driver primitives
+     */
     virtual void FreePrimitives(unsigned int primitive_count, JOYSTICK_DRIVER_PRIMITIVE* primitives) { }
 
     /*!
-    * @brief Set the list of driver primitives that are ignored for the device
-    * @param joystick         The device's joystick properties; unknown values may be left at their default
-    * @param primitive_count  The number of driver features in the primitives array
-    * @param primitives       The array of driver primitives to ignore
-    * @return PERIPHERAL_NO_ERROR if successful
-    */
+     * @brief Set the list of driver primitives that are ignored for the device
+     * @param joystick         The device's joystick properties; unknown values may be left at their default
+     * @param primitive_count  The number of driver features in the primitives array
+     * @param primitives       The array of driver primitives to ignore
+     * @return PERIPHERAL_NO_ERROR if successful
+     */
     virtual PERIPHERAL_ERROR SetIgnoredPrimitives(const JOYSTICK_INFO* joystick,
-                                          unsigned int primitive_count,
-                                          const JOYSTICK_DRIVER_PRIMITIVE* primitives) { return PERIPHERAL_ERROR_NOT_IMPLEMENTED; }
+                                                  unsigned int primitive_count,
+                                                  const JOYSTICK_DRIVER_PRIMITIVE* primitives) { return PERIPHERAL_ERROR_NOT_IMPLEMENTED; }
 
     /*!
-    * @brief Save the button map for the given joystick
-    * @param joystick      The device's joystick properties
-    */
+     * @brief Save the button map for the given joystick
+     * @param joystick      The device's joystick properties
+     */
     virtual void SaveButtonMap(const JOYSTICK_INFO* joystick) { }
 
     /*!
-    * @brief Revert the button map to the last time it was loaded or committed to disk
-    * @param joystick      The device's joystick properties
-    */
+     * @brief Revert the button map to the last time it was loaded or committed to disk
+     * @param joystick      The device's joystick properties
+     */
     virtual void RevertButtonMap(const JOYSTICK_INFO* joystick) { }
 
     /*!
-    * @brief Reset the button map for the given joystick and controller profile ID
-    * @param joystick      The device's joystick properties
-    * @param controller_id The game controller profile being reset
-    */
+     * @brief Reset the button map for the given joystick and controller profile ID
+     * @param joystick      The device's joystick properties
+     * @param controller_id The game controller profile being reset
+     */
     virtual void ResetButtonMap(const JOYSTICK_INFO* joystick, const char* controller_id) { }
 
     /*!
-    * @brief Powers off the given joystick if supported
-    * @param index  The joystick's driver index
-    */
+     * @brief Powers off the given joystick if supported
+     * @param index  The joystick's driver index
+     */
     virtual void PowerOffJoystick(unsigned int index) { }
 
     const std::string AddonPath() const
@@ -515,37 +512,37 @@ namespace addon
     }
 
     /*!
-    * @brief Trigger a scan for peripherals
-    *
-    * The add-on calls this if a change in hardware is detected.
-    */
+     * @brief Trigger a scan for peripherals
+     *
+     * The add-on calls this if a change in hardware is detected.
+     */
     void TriggerScan(void)
     {
-      return m_instanceData->toKodi.TriggerScan(m_instanceData->toKodi.kodiInstance);
+      return m_instanceData->toKodi.trigger_scan(m_instanceData->toKodi.kodiInstance);
     }
 
     /*!
-    * @brief Notify the frontend that button maps have changed
-    *
-    * @param[optional] deviceName The name of the device to refresh, or empty/null for all devices
-    * @param[optional] controllerId The controller ID to refresh, or empty/null for all controllers
-    */
+     * @brief Notify the frontend that button maps have changed
+     *
+     * @param[optional] deviceName The name of the device to refresh, or empty/null for all devices
+     * @param[optional] controllerId The controller ID to refresh, or empty/null for all controllers
+     */
     void RefreshButtonMaps(const std::string& strDeviceName = "", const std::string& strControllerId = "")
     {
-      return m_instanceData->toKodi.RefreshButtonMaps(m_instanceData->toKodi.kodiInstance, strDeviceName.c_str(), strControllerId.c_str());
+      return m_instanceData->toKodi.refresh_button_maps(m_instanceData->toKodi.kodiInstance, strDeviceName.c_str(), strControllerId.c_str());
     }
 
     /*!
-    * @brief Return the number of features belonging to the specified controller
-    *
-    * @param controllerId    The controller ID to enumerate
-    * @param type[optional]  Type to filter by, or JOYSTICK_FEATURE_TYPE_UNKNOWN for all features
-    *
-    * @return The number of features matching the request parameters
-    */
+     * @brief Return the number of features belonging to the specified controller
+     *
+     * @param controllerId    The controller ID to enumerate
+     * @param type[optional]  Type to filter by, or JOYSTICK_FEATURE_TYPE_UNKNOWN for all features
+     *
+     * @return The number of features matching the request parameters
+     */
     unsigned int FeatureCount(const std::string& strControllerId, JOYSTICK_FEATURE_TYPE type = JOYSTICK_FEATURE_TYPE_UNKNOWN)
     {
-      return m_instanceData->toKodi.FeatureCount(m_instanceData->toKodi.kodiInstance, strControllerId.c_str(), type);
+      return m_instanceData->toKodi.feature_count(m_instanceData->toKodi.kodiInstance, strControllerId.c_str(), type);
     }
 
   private:
@@ -557,120 +554,123 @@ namespace addon
       m_instanceData = static_cast<AddonInstance_Peripheral*>(instance);
       m_instanceData->toAddon.addonInstance = this;
 
-      m_instanceData->toAddon.GetCapabilities = ADDON_GetCapabilities;
-      m_instanceData->toAddon.PerformDeviceScan = ADDON_PerformDeviceScan;
-      m_instanceData->toAddon.FreeScanResults = ADDON_FreeScanResults;
-      m_instanceData->toAddon.GetEvents = ADDON_GetEvents;
-      m_instanceData->toAddon.FreeEvents = ADDON_FreeEvents;
-      m_instanceData->toAddon.SendEvent = ADDON_SendEvent;
+      m_instanceData->toAddon.get_capabilities = ADDON_GetCapabilities;
+      m_instanceData->toAddon.perform_device_scan = ADDON_PerformDeviceScan;
+      m_instanceData->toAddon.free_scan_results = ADDON_FreeScanResults;
+      m_instanceData->toAddon.get_events = ADDON_GetEvents;
+      m_instanceData->toAddon.free_events = ADDON_FreeEvents;
+      m_instanceData->toAddon.send_event = ADDON_SendEvent;
 
-      m_instanceData->toAddon.GetJoystickInfo = ADDON_GetJoystickInfo;
-      m_instanceData->toAddon.FreeJoystickInfo = ADDON_FreeJoystickInfo;
-      m_instanceData->toAddon.GetFeatures = ADDON_GetFeatures;
-      m_instanceData->toAddon.FreeFeatures = ADDON_FreeFeatures;
-      m_instanceData->toAddon.MapFeatures = ADDON_MapFeatures;
-      m_instanceData->toAddon.GetIgnoredPrimitives = ADDON_GetIgnoredPrimitives;
-      m_instanceData->toAddon.FreePrimitives = ADDON_FreePrimitives;
-      m_instanceData->toAddon.SetIgnoredPrimitives = ADDON_SetIgnoredPrimitives;
-      m_instanceData->toAddon.SaveButtonMap = ADDON_SaveButtonMap;
-      m_instanceData->toAddon.RevertButtonMap = ADDON_RevertButtonMap;
-      m_instanceData->toAddon.ResetButtonMap = ADDON_ResetButtonMap;
-      m_instanceData->toAddon.PowerOffJoystick = ADDON_PowerOffJoystick;
+      m_instanceData->toAddon.get_joystick_info = ADDON_GetJoystickInfo;
+      m_instanceData->toAddon.free_joystick_info = ADDON_FreeJoystickInfo;
+      m_instanceData->toAddon.get_features = ADDON_GetFeatures;
+      m_instanceData->toAddon.free_features = ADDON_FreeFeatures;
+      m_instanceData->toAddon.map_features = ADDON_MapFeatures;
+      m_instanceData->toAddon.get_ignored_primitives = ADDON_GetIgnoredPrimitives;
+      m_instanceData->toAddon.free_primitives = ADDON_FreePrimitives;
+      m_instanceData->toAddon.set_ignored_primitives = ADDON_SetIgnoredPrimitives;
+      m_instanceData->toAddon.save_button_map = ADDON_SaveButtonMap;
+      m_instanceData->toAddon.revert_button_map = ADDON_RevertButtonMap;
+      m_instanceData->toAddon.reset_button_map = ADDON_ResetButtonMap;
+      m_instanceData->toAddon.power_off_joystick = ADDON_PowerOffJoystick;
     }
 
-    inline static void ADDON_GetCapabilities(AddonInstance_Peripheral* addonInstance, PERIPHERAL_CAPABILITIES *pCapabilities)
+    inline static void ADDON_GetCapabilities(const AddonInstance_Peripheral* addonInstance, PERIPHERAL_CAPABILITIES *capabilities)
     {
-      addonInstance->toAddon.addonInstance->GetCapabilities(*pCapabilities);
+      addonInstance->toAddon.addonInstance->GetCapabilities(*capabilities);
     }
 
-    inline static PERIPHERAL_ERROR ADDON_PerformDeviceScan(AddonInstance_Peripheral* addonInstance, unsigned int* peripheral_count, PERIPHERAL_INFO** scan_results)
+    inline static PERIPHERAL_ERROR ADDON_PerformDeviceScan(const AddonInstance_Peripheral* addonInstance, unsigned int* peripheral_count, PERIPHERAL_INFO** scan_results)
     {
       return addonInstance->toAddon.addonInstance->PerformDeviceScan(peripheral_count, scan_results);
     }
 
-    inline static void ADDON_FreeScanResults(AddonInstance_Peripheral* addonInstance, unsigned int peripheral_count, PERIPHERAL_INFO* scan_results)
+    inline static void ADDON_FreeScanResults(const AddonInstance_Peripheral* addonInstance, unsigned int peripheral_count, PERIPHERAL_INFO* scan_results)
     {
       addonInstance->toAddon.addonInstance->FreeScanResults(peripheral_count, scan_results);
     }
 
-    inline static PERIPHERAL_ERROR ADDON_GetEvents(AddonInstance_Peripheral* addonInstance, unsigned int* event_count, PERIPHERAL_EVENT** events)
+    inline static PERIPHERAL_ERROR ADDON_GetEvents(const AddonInstance_Peripheral* addonInstance, unsigned int* event_count, PERIPHERAL_EVENT** events)
     {
       return addonInstance->toAddon.addonInstance->GetEvents(event_count, events);
     }
 
-    inline static void ADDON_FreeEvents(AddonInstance_Peripheral* addonInstance, unsigned int event_count, PERIPHERAL_EVENT* events)
+    inline static void ADDON_FreeEvents(const AddonInstance_Peripheral* addonInstance, unsigned int event_count, PERIPHERAL_EVENT* events)
     {
       addonInstance->toAddon.addonInstance->FreeEvents(event_count, events);
     }
 
-    inline static bool ADDON_SendEvent(AddonInstance_Peripheral* addonInstance, const PERIPHERAL_EVENT* event)
+    inline static bool ADDON_SendEvent(const AddonInstance_Peripheral* addonInstance, const PERIPHERAL_EVENT* event)
     {
       return addonInstance->toAddon.addonInstance->SendEvent(event);
     }
 
     
-    inline static PERIPHERAL_ERROR ADDON_GetJoystickInfo(AddonInstance_Peripheral* addonInstance, unsigned int index, JOYSTICK_INFO* info)
+    inline static PERIPHERAL_ERROR ADDON_GetJoystickInfo(const AddonInstance_Peripheral* addonInstance, unsigned int index, JOYSTICK_INFO* info)
     {
       return addonInstance->toAddon.addonInstance->GetJoystickInfo(index, info);
     }
 
-    inline static void ADDON_FreeJoystickInfo(AddonInstance_Peripheral* addonInstance, JOYSTICK_INFO* info)
+    inline static void ADDON_FreeJoystickInfo(const AddonInstance_Peripheral* addonInstance, JOYSTICK_INFO* info)
     {
       addonInstance->toAddon.addonInstance->FreeJoystickInfo(info);
     }
 
-    inline static PERIPHERAL_ERROR ADDON_GetFeatures(AddonInstance_Peripheral* addonInstance, const JOYSTICK_INFO* joystick, const char* controller_id,
-                                unsigned int* feature_count, JOYSTICK_FEATURE** features)
+    inline static PERIPHERAL_ERROR ADDON_GetFeatures(const AddonInstance_Peripheral* addonInstance,
+                                                     const JOYSTICK_INFO* joystick, const char* controller_id,
+                                                     unsigned int* feature_count, JOYSTICK_FEATURE** features)
     {
       return addonInstance->toAddon.addonInstance->GetFeatures(joystick, controller_id, feature_count, features);
     }
 
-    inline static void ADDON_FreeFeatures(AddonInstance_Peripheral* addonInstance, unsigned int feature_count, JOYSTICK_FEATURE* features)
+    inline static void ADDON_FreeFeatures(const AddonInstance_Peripheral* addonInstance, unsigned int feature_count, JOYSTICK_FEATURE* features)
     {
       addonInstance->toAddon.addonInstance->FreeFeatures(feature_count, features);
     }
 
-    inline static PERIPHERAL_ERROR ADDON_MapFeatures(AddonInstance_Peripheral* addonInstance, const JOYSTICK_INFO* joystick, const char* controller_id,
-                                unsigned int feature_count, const JOYSTICK_FEATURE* features)
+    inline static PERIPHERAL_ERROR ADDON_MapFeatures(const AddonInstance_Peripheral* addonInstance,
+                                                     const JOYSTICK_INFO* joystick, const char* controller_id,
+                                                     unsigned int feature_count, const JOYSTICK_FEATURE* features)
     {
       return addonInstance->toAddon.addonInstance->MapFeatures(joystick, controller_id, feature_count, features);
     }
 
-    inline static PERIPHERAL_ERROR ADDON_GetIgnoredPrimitives(AddonInstance_Peripheral* addonInstance, const JOYSTICK_INFO* joystick,
-                                          unsigned int* primitive_count,
-                                          JOYSTICK_DRIVER_PRIMITIVE** primitives)
+    inline static PERIPHERAL_ERROR ADDON_GetIgnoredPrimitives(const AddonInstance_Peripheral* addonInstance,
+                                                              const JOYSTICK_INFO* joystick, unsigned int* primitive_count,
+                                                              JOYSTICK_DRIVER_PRIMITIVE** primitives)
     {
       return addonInstance->toAddon.addonInstance->GetIgnoredPrimitives(joystick, primitive_count, primitives);
     }
 
-    inline static void ADDON_FreePrimitives(AddonInstance_Peripheral* addonInstance, unsigned int primitive_count, JOYSTICK_DRIVER_PRIMITIVE* primitives)
+    inline static void ADDON_FreePrimitives(const AddonInstance_Peripheral* addonInstance,
+                                            unsigned int primitive_count, JOYSTICK_DRIVER_PRIMITIVE* primitives)
     {
       addonInstance->toAddon.addonInstance->FreePrimitives(primitive_count, primitives);
     }
 
-    inline static PERIPHERAL_ERROR ADDON_SetIgnoredPrimitives(AddonInstance_Peripheral* addonInstance, const JOYSTICK_INFO* joystick,
-                                          unsigned int primitive_count,
-                                          const JOYSTICK_DRIVER_PRIMITIVE* primitives)
+    inline static PERIPHERAL_ERROR ADDON_SetIgnoredPrimitives(const AddonInstance_Peripheral* addonInstance,
+                                                              const JOYSTICK_INFO* joystick, unsigned int primitive_count,
+                                                              const JOYSTICK_DRIVER_PRIMITIVE* primitives)
     {
       return addonInstance->toAddon.addonInstance->SetIgnoredPrimitives(joystick, primitive_count, primitives);
     }
 
-    inline static void ADDON_SaveButtonMap(AddonInstance_Peripheral* addonInstance, const JOYSTICK_INFO* joystick)
+    inline static void ADDON_SaveButtonMap(const AddonInstance_Peripheral* addonInstance, const JOYSTICK_INFO* joystick)
     {
       addonInstance->toAddon.addonInstance->SaveButtonMap(joystick);
     }
 
-    inline static void ADDON_RevertButtonMap(AddonInstance_Peripheral* addonInstance, const JOYSTICK_INFO* joystick)
+    inline static void ADDON_RevertButtonMap(const AddonInstance_Peripheral* addonInstance, const JOYSTICK_INFO* joystick)
     {
       addonInstance->toAddon.addonInstance->RevertButtonMap(joystick);
     }
 
-    inline static void ADDON_ResetButtonMap(AddonInstance_Peripheral* addonInstance, const JOYSTICK_INFO* joystick, const char* controller_id)
+    inline static void ADDON_ResetButtonMap(const AddonInstance_Peripheral* addonInstance, const JOYSTICK_INFO* joystick, const char* controller_id)
     {
       addonInstance->toAddon.addonInstance->ResetButtonMap(joystick, controller_id);
     }
 
-    inline static void ADDON_PowerOffJoystick(AddonInstance_Peripheral* addonInstance, unsigned int index)
+    inline static void ADDON_PowerOffJoystick(const AddonInstance_Peripheral* addonInstance, unsigned int index)
     {
       addonInstance->toAddon.addonInstance->PowerOffJoystick(index);
     }

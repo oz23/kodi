@@ -40,7 +40,7 @@
 #include "filesystem/File.h"
 #include "utils/URIUtils.h"
 #include "ServiceBroker.h"
-#include "addons/AddonManager.h"
+#include "addons/binary-addons/BinaryAddonManager.h"
 #include "Util.h"
 
 
@@ -62,7 +62,9 @@ CDVDInputStream* CDVDFactoryInputStream::CreateInputStream(IVideoPlayer* pPlayer
     }
   }
 
-  for (auto addonInfo : CAddonMgr::GetInstance().GetAddonInfos(true /*enabled only*/, ADDON_INPUTSTREAM))
+  BinaryAddonBaseList addonInfos;
+  CServiceBroker::GetBinaryAddonManager().GetAddonInfos(addonInfos, true /*enabled only*/, ADDON_INPUTSTREAM);
+  for (auto addonInfo : addonInfos)
   {
     if (CInputStreamAddon::Supports(addonInfo, fileitem))
       return new CInputStreamAddon(addonInfo, pPlayer, fileitem);

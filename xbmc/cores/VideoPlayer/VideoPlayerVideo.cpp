@@ -733,8 +733,12 @@ void CVideoPlayerVideo::Flush(bool sync)
   m_bAbortOutput = true;
 }
 
+<<<<<<< HEAD
 #ifdef HAS_VIDEO_PLAYBACK
 void CVideoPlayerVideo::ProcessOverlays(const VideoPicture* pSource, double pts)
+=======
+void CVideoPlayerVideo::ProcessOverlays(VideoPicture* pSource, double pts)
+>>>>>>> kodi/master
 {
   // remove any overlays that are out of time
   if (m_syncState == IDVDStreamPlayer::SYNC_INSYNC)
@@ -779,7 +783,6 @@ void CVideoPlayerVideo::ProcessOverlays(const VideoPicture* pSource, double pts)
 
 
 }
-#endif
 
 std::string CVideoPlayerVideo::GetStereoMode()
 {

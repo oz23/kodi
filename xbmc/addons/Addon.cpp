@@ -88,7 +88,7 @@ bool CAddon::SettingsLoaded() const
   return m_settings != nullptr && m_settings->IsLoaded();
 }
 
-bool CAddon::LoadSettings(bool bForce /* = false */)
+bool CAddon::LoadSettings(bool bForce, bool loadUserSettings /* = true */)
 {
   if (SettingsInitialized() && !bForce)
     return true;
@@ -128,7 +128,8 @@ bool CAddon::LoadSettings(bool bForce /* = false */)
   m_loadSettingsFailed = false;
 
   // load user settings / values
-  LoadUserSettings();
+  if (loadUserSettings)
+    LoadUserSettings();
 
   return true;
 }
@@ -395,8 +396,7 @@ void OnEnabled(const std::string& id)
 {
   // If the addon is a special, call enabled handler
   AddonPtr addon;
-  if (CAddonMgr::GetInstance().GetAddon(id, addon, ADDON_PVRDLL) ||
-      CAddonMgr::GetInstance().GetAddon(id, addon, ADDON_ADSPDLL))
+  if (CAddonMgr::GetInstance().GetAddon(id, addon, ADDON_PVRDLL))
     return addon->OnEnabled();
 
   if (CAddonMgr::GetInstance().ServicesHasStarted())
@@ -413,8 +413,7 @@ void OnDisabled(const std::string& id)
 {
 
   AddonPtr addon;
-  if (CAddonMgr::GetInstance().GetAddon(id, addon, ADDON_PVRDLL, false) ||
-      CAddonMgr::GetInstance().GetAddon(id, addon, ADDON_ADSPDLL, false))
+  if (CAddonMgr::GetInstance().GetAddon(id, addon, ADDON_PVRDLL, false))
     return addon->OnDisabled();
 
   if (CAddonMgr::GetInstance().ServicesHasStarted())

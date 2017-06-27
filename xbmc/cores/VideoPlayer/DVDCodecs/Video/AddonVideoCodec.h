@@ -20,7 +20,8 @@
  */
 
 #include "DVDVideoCodec.h"
-#include "addons/AddonInstanceHandler.h"
+#include "addons/AddonProvider.h"
+#include "addons/binary-addons/AddonInstanceHandler.h"
 #include "addons/kodi-addon-dev-kit/include/kodi/addon-instance/VideoCodec.h"
 
 class BufferPool;
@@ -30,8 +31,8 @@ class CAddonVideoCodec
   , public ADDON::IAddonInstanceHandler
 {
 public:
-  CAddonVideoCodec(CProcessInfo &processInfo, ADDON::AddonInfoPtr& addonInfo, kodi::addon::IAddonInstance* parentInstance);
-  virtual ~CAddonVideoCodec();
+  CAddonVideoCodec(CProcessInfo &processInfo, ADDON::BinaryAddonBasePtr& addonInfo, kodi::addon::IAddonInstance* parentInstance);
+  ~CAddonVideoCodec();
 
   virtual bool Open(CDVDStreamInfo &hints, CDVDCodecOptions &options) override;
   virtual bool Reconfigure(CDVDStreamInfo &hints) override;
@@ -40,20 +41,20 @@ public:
   virtual VCReturn GetPicture(VideoPicture* pVideoPicture) override;
   virtual const char* GetName() override;
   virtual void SetCodecControl(int flags) override { m_codecFlags = flags; }
+
 private:
   bool CopyToInitData(VIDEOCODEC_INITDATA &initData, CDVDStreamInfo &hints);
 
   /*!
-  * @brief all picture members can be expected to be set correctly except decodedData and pts.
-    GetFrameBuffer has to set decodedData() to a valid memory adress and return true.
-    In case no buffer allocation fails, return false.
-  */
+   * @brief All picture members can be expected to be set correctly except decodedData and pts.
+   * GetFrameBuffer has to set decodedData to a valid memory adress and return true.
+   * In case buffer allocation fails, return false.
+   */
   bool GetFrameBuffer(VIDEOCODEC_PICTURE &picture);
 
-  static bool get_frame_buffer(void* kodiInstance, VIDEOCODEC_PICTURE &picture);
+  static bool get_frame_buffer(void* kodiInstance, VIDEOCODEC_PICTURE *picture);
 
   AddonInstance_VideoCodec m_struct;
-
   int m_codecFlags;
   VIDEOCODEC_FORMAT m_formats[VIDEOCODEC_FORMAT::MaxVideoFormats + 1];
   float m_displayAspect;

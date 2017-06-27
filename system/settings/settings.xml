@@ -561,9 +561,9 @@
         </setting>
         <setting id="audiocds.encoder" type="addon" label="621" help="36287">
           <level>3</level>
-          <default>audioencoder.xbmc.builtin.wav</default>
+          <default>audioencoder.kodi.builtin.aac</default>
           <constraints>
-            <addontype>xbmc.audioencoder</addontype>
+            <addontype>kodi.audioencoder</addontype>
           </constraints>
           <control type="button" format="addon">
             <show more="true" details="true">installed</show>
@@ -3352,7 +3352,7 @@
       <group id="1" label="16000">
         <setting id="screensaver.mode" type="addon" label="356" help="36130">
           <level>0</level>
-          <default>screensaver.xbmc.builtin.dim</default>
+          <default>default</default> <!-- will be properly set on startup -->
           <constraints>
             <addontype>xbmc.ui.screensaver</addontype>
             <allowempty>true</allowempty>
