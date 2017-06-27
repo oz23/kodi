@@ -76,7 +76,8 @@
 #include "network/WakeOnAccess.h"
 #include "utils/StringUtils.h"
 #include "ServiceBroker.h"
-#include "addons/interfaces/kodi/addon-instance/VFSEntry.h"
+#include "addons/VFSEntry.h"
+#include "addons/BinaryAddonCache.h"
 
 using namespace ADDON;
 using namespace XFILE;
@@ -101,13 +102,18 @@ IFile* CFileFactory::CreateLoader(const CURL& url)
     return NULL;
 
   std::string strProtocol = url.GetProtocol();
+  StringUtils::ToLower(strProtocol);
+
   if (!strProtocol.empty() && CServiceBroker::IsBinaryAddonCacheUp())
   {
-    StringUtils::ToLower(strProtocol);
-    for (const auto& vfsAddon : CServiceBroker::GetVFSAddonCache().GetAddonInstances())
+    VECADDONS addons;
+    ADDON::CBinaryAddonCache &addonCache = CServiceBroker::GetBinaryAddonCache();
+    addonCache.GetAddons(addons, ADDON::ADDON_VFS);
+    for (size_t i=0;i<addons.size();++i)
     {
-      if (vfsAddon->HasFiles() && vfsAddon->GetProtocols().find(strProtocol) != std::string::npos)
-        return new CVFSEntryIFileWrapper(vfsAddon);
+      VFSEntryPtr vfs(std::static_pointer_cast<CVFSEntry>(addons[i]));
+      if (vfs->HasFiles() && vfs->GetProtocols().find(strProtocol) != std::string::npos)
+        return new CVFSEntryIFileWrapper(vfs);
     }
   }
 

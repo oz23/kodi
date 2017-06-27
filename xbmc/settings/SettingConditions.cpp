@@ -62,7 +62,7 @@ bool AddonHasSettings(const std::string &condition, const std::string &value, Se
   if (!ADDON::CAddonMgr::GetInstance().GetAddon(settingAddon->GetValue(), addon, settingAddon->GetAddonType()) || addon == NULL)
     return false;
 
-  if (addon->IsType(ADDON::ADDON_SKIN))
+  if (addon->Type() == ADDON::ADDON_SKIN)
     return ((ADDON::CSkinInfo*)addon.get())->HasSkinFile("SkinSettings.xml");
 
   return addon->HasSettings();

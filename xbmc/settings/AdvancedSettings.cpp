@@ -25,10 +25,10 @@
 #include <string>
 #include <vector>
 
-#include "addons/AddonManager.h"
+#include "addons/AudioDecoder.h"
 #include "addons/BinaryAddonCache.h"
-#include "addons/interfaces/kodi/addon-instance/AudioDecoder.h"
-#include "addons/interfaces/kodi/addon-instance/ImageDecoder.h"
+#include "addons/IAddon.h"
+#include "addons/ImageDecoder.h"
 #include "Application.h"
 #include "ServiceBroker.h"
 #include "filesystem/File.h"
@@ -1430,10 +1430,14 @@ std::string CAdvancedSettings::GetMusicExtensions() const
 {
   std::string result(m_musicExtensions);
 
-  for (const auto& addon : CAddonMgr::GetInstance().GetAddonInfos(true, ADDON_AUDIODECODER))
+  VECADDONS codecs;
+  CBinaryAddonCache &addonCache = CServiceBroker::GetBinaryAddonCache();
+  addonCache.GetAddons(codecs, ADDON_AUDIODECODER);
+  for (size_t i=0;i<codecs.size();++i)
   {
+    std::shared_ptr<CAudioDecoder> dec(std::static_pointer_cast<CAudioDecoder>(codecs[i]));
     result += '|';
-    result += addon->Type(ADDON_AUDIODECODER)->GetValue("@extension").asString();
+    result += dec->GetExtensions();
   }
 
   return result;
@@ -1443,10 +1447,14 @@ std::string CAdvancedSettings::GetPictureExtensions() const
 {
   std::string result(m_pictureExtensions);
 
-  for (const auto& addonInfo : CAddonMgr::GetInstance().GetAddonInfos(true, ADDON_IMAGEDECODER))
+  VECADDONS codecs;
+  CBinaryAddonCache &addonCache = CServiceBroker::GetBinaryAddonCache();
+  addonCache.GetAddons(codecs, ADDON_IMAGEDECODER);
+  for (size_t i=0;i<codecs.size();++i)
   {
+    std::shared_ptr<CImageDecoder> dec(std::static_pointer_cast<CImageDecoder>(codecs[i]));
     result += '|';
-    result += addonInfo->Type(ADDON_IMAGEDECODER)->GetValue("@extension").asString();
+    result += dec->GetExtensions();
   }
 
   return result;

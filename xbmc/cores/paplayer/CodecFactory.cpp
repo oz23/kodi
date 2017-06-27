@@ -23,8 +23,8 @@
 #include "URL.h"
 #include "VideoPlayerCodec.h"
 #include "utils/StringUtils.h"
-#include "addons/interfaces/kodi/addon-instance/AudioDecoder.h"
-#include "addons/AddonInstanceHandler.h"
+#include "addons/AudioDecoder.h"
+#include "addons/BinaryAddonCache.h"
 #include "ServiceBroker.h"
 
 using namespace ADDON;
@@ -33,17 +33,17 @@ ICodec* CodecFactory::CreateCodec(const std::string &strFileType)
 {
   std::string fileType = strFileType;
   StringUtils::ToLower(fileType);
-
-  for (const auto& addonInfo : CAddonMgr::GetInstance().GetAddonInfos(true, ADDON_AUDIODECODER))
+  VECADDONS codecs;
+  ADDON::CBinaryAddonCache &addonCache = CServiceBroker::GetBinaryAddonCache();
+  addonCache.GetAddons(codecs, ADDON::ADDON_AUDIODECODER);
+  for (size_t i=0;i<codecs.size();++i)
   {
-    if (addonInfo->Type(ADDON_AUDIODECODER)->GetValue("@extension").asString().find("."+fileType) != std::string::npos)
+    std::shared_ptr<CAudioDecoder> dec(std::static_pointer_cast<CAudioDecoder>(codecs[i]));
+    std::vector<std::string> exts = StringUtils::Split(dec->GetExtensions(), "|");
+    if (std::find(exts.begin(), exts.end(), "."+fileType) != exts.end())
     {
-      CAudioDecoder* result = new CAudioDecoder(addonInfo);
-      if (!result->Create())
-      {
-        delete result;
-        return nullptr;
-      }
+      CAudioDecoder* result = new CAudioDecoder(*dec);
+      result->Create();
       return result;
     }
   }
@@ -59,16 +59,17 @@ ICodec* CodecFactory::CreateCodecDemux(const CFileItem& file, unsigned int filec
   StringUtils::ToLower(content);
   if (!content.empty())
   {
-    for (const auto& addonInfo : CAddonMgr::GetInstance().GetAddonInfos(true, ADDON_AUDIODECODER))
+    VECADDONS codecs;
+    CBinaryAddonCache &addonCache = CServiceBroker::GetBinaryAddonCache();
+    addonCache.GetAddons(codecs, ADDON_AUDIODECODER);
+    for (size_t i=0;i<codecs.size();++i)
     {
-      if (addonInfo->Type(ADDON_AUDIODECODER)->GetValue("@mimetype").asString().find(content) != std::string::npos)
+      std::shared_ptr<CAudioDecoder> dec(std::static_pointer_cast<CAudioDecoder>(codecs[i]));
+      std::vector<std::string> mime = StringUtils::Split(dec->GetMimetypes(), "|");
+      if (std::find(mime.begin(), mime.end(), content) != mime.end())
       {
-        CAudioDecoder* result = new CAudioDecoder(addonInfo);
-        if (!result->Create())
-        {
-          delete result;
-          return nullptr;
-        }
+        CAudioDecoder* result = new CAudioDecoder(*dec);
+        result->Create();
         return result;
       }
     }

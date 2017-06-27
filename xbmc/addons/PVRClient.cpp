@@ -58,8 +58,13 @@ namespace PVR
 
 #define DEFAULT_INFO_STRING_VALUE "unknown"
 
-CPVRClient::CPVRClient(AddonInfoPtr addonInfo)
-  : CAddonDll(addonInfo)
+std::unique_ptr<CPVRClient> CPVRClient::FromExtension(CAddonInfo addonInfo, const cp_extension_t* ext)
+{
+  return std::unique_ptr<CPVRClient>(new CPVRClient(std::move(addonInfo)));
+}
+
+CPVRClient::CPVRClient(CAddonInfo addonInfo)
+  : CAddonDll(std::move(addonInfo))
 {
   ResetProperties();
 }
@@ -380,7 +385,12 @@ bool CPVRClient::GetAddonProperties(void)
 
   /* get the capabilities */
   memset(&addonCapabilities, 0, sizeof(addonCapabilities));
-  m_struct.toAddon.GetCapabilities(&addonCapabilities);
+  PVR_ERROR retVal = m_struct.toAddon.GetAddonCapabilities(&addonCapabilities);
+  if (retVal != PVR_ERROR_NO_ERROR)
+  {
+    CLog::Log(LOGERROR, "PVR - couldn't get the capabilities for add-on '%s'. Please contact the developer of this add-on: %s", GetFriendlyName().c_str(), Author().c_str());
+    return false;
+  }
 
   /* get the name of the backend */
   strBackendName = m_struct.toAddon.GetBackendName();

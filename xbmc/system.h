@@ -30,7 +30,9 @@
 #define HAS_DVD_SWSCALE
 #define HAS_VideoPlayer
 #define HAS_EVENT_SERVER
+#define HAS_SCREENSAVER
 #define HAS_VIDEO_PLAYBACK
+#define HAS_VISUALISATION
 #define HAS_PVRCLIENTS
 #define HAS_ADSPADDONS
 

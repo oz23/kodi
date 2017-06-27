@@ -41,8 +41,9 @@
 #include "utils/StringUtils.h"
 #include "URL.h"
 #include "ServiceBroker.h"
-#include "addons/interfaces/kodi/addon-instance/AudioDecoder.h"
-#include "addons/interfaces/kodi/addon-instance/VFSEntry.h"
+#include "addons/AudioDecoder.h"
+#include "addons/VFSEntry.h"
+#include "addons/BinaryAddonCache.h"
 #include "AudioBookFileDirectory.h"
 
 using namespace ADDON;
@@ -65,30 +66,36 @@ IFileDirectory* CFileDirectoryFactory::Create(const CURL& url, CFileItem* pItem,
   StringUtils::ToLower(strExtension);
   if (!strExtension.empty())
   {
-    for (const auto& addonInfo : CAddonMgr::GetInstance().GetAddonInfos(true, ADDON_AUDIODECODER))
+    VECADDONS codecs;
+    CBinaryAddonCache &addonCache = CServiceBroker::GetBinaryAddonCache();
+    addonCache.GetAddons(codecs, ADDON_AUDIODECODER);
+    for (size_t i=0;i<codecs.size();++i)
     {
-      if (addonInfo->Type(ADDON_AUDIODECODER)->GetValue("@tags").asBoolean() &&
-          addonInfo->Type(ADDON_AUDIODECODER)->GetValue("@extension").asString().find(strExtension) != std::string::npos)
+      std::shared_ptr<CAudioDecoder> dec(std::static_pointer_cast<CAudioDecoder>(codecs[i]));
+      if (dec->HasTracks() && dec->GetExtensions().find(strExtension) != std::string::npos)
       {
-        CAudioDecoder* result = new CAudioDecoder(addonInfo);
-        if (!result->Create() || !result->ContainsFiles(url))
-        {
-          delete result;
-          return nullptr;
-        }
-        return result;
+        CAudioDecoder* result = new CAudioDecoder(*dec);
+        result->Create();
+        if (result->ContainsFiles(url))
+          return result;
+        delete result;
+        return NULL;
       }
     }
   }
 
-  if (!strExtension.empty() && CServiceBroker::IsBinaryAddonCacheUp())
+  if (CServiceBroker::IsBinaryAddonCacheUp())
   {
-    for (const auto& vfsAddon : CServiceBroker::GetVFSAddonCache().GetAddonInstances())
+    VECADDONS vfs;
+    CBinaryAddonCache &addonCache = CServiceBroker::GetBinaryAddonCache();
+    addonCache.GetAddons(vfs, ADDON_VFS);
+    for (size_t i=0;i<vfs.size();++i)
     {
-      if (!vfsAddon->HasFileDirectories() &&
-           vfsAddon->GetExtensions().find(strExtension) != std::string::npos)
+      std::shared_ptr<CVFSEntry> dec(std::static_pointer_cast<CVFSEntry>(vfs[i]));
+      if (!strExtension.empty() && dec->HasFileDirectories() &&
+          dec->GetExtensions().find(strExtension) != std::string::npos)
       {
-        CVFSEntryIFileDirectoryWrapper* wrap = new CVFSEntryIFileDirectoryWrapper(vfsAddon);
+        CVFSEntryIFileDirectoryWrapper* wrap = new CVFSEntryIFileDirectoryWrapper(dec);
         if (wrap->ContainsFiles(url))
         {
           if (wrap->m_items.Size() == 1)
@@ -106,7 +113,7 @@ IFileDirectory* CFileDirectoryFactory::Create(const CURL& url, CFileItem* pItem,
           pItem->m_bIsFolder = true;
 
         delete wrap;
-        return nullptr;
+        return NULL;
       }
     }
   }

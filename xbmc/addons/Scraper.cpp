@@ -127,46 +127,62 @@ static void CheckScraperError(const TiXmlElement *pxeRoot)
   throw CScraperError(sTitle, sMessage);
 }
 
-CScraper::CScraper(TYPE addonType, AddonInfoPtr addonInfo)
-  : CAddon(addonInfo),
-    m_fLoaded(false),
-    m_pathContent(CONTENT_NONE),
-    m_addonType(addonType)
+std::unique_ptr<CScraper> CScraper::FromExtension(CAddonInfo addonInfo, const cp_extension_t* ext)
 {
-  m_requiressettings = Type(m_addonType)->GetValue("@requiressettings").asBoolean();
+  bool requiressettings = CAddonMgr::GetInstance().GetExtValue(ext->configuration,"@requiressettings") == "true";
 
   CDateTimeSpan persistence;
-  std::string tmp = Type(m_addonType)->GetValue("@cachepersistence").asString();
+  std::string tmp = CAddonMgr::GetInstance().GetExtValue(ext->configuration, "@cachepersistence");
   if (!tmp.empty())
-    m_persistence.SetFromTimeString(tmp);
+    persistence.SetFromTimeString(tmp);
 
-  switch (m_addonType)
+  CONTENT_TYPE pathContent(CONTENT_NONE);
+  switch (addonInfo.MainType())
   {
     case ADDON_SCRAPER_ALBUMS:
-      m_pathContent = CONTENT_ALBUMS;
+      pathContent = CONTENT_ALBUMS;
       break;
     case ADDON_SCRAPER_ARTISTS:
-      m_pathContent = CONTENT_ARTISTS;
+      pathContent = CONTENT_ARTISTS;
       break;
     case ADDON_SCRAPER_MOVIES:
-      m_pathContent = CONTENT_MOVIES;
+      pathContent = CONTENT_MOVIES;
       break;
     case ADDON_SCRAPER_MUSICVIDEOS:
-      m_pathContent = CONTENT_MUSICVIDEOS;
+      pathContent = CONTENT_MUSICVIDEOS;
       break;
     case ADDON_SCRAPER_TVSHOWS:
-      m_pathContent = CONTENT_TVSHOWS;
+      pathContent = CONTENT_TVSHOWS;
       break;
     default:
       break;
   }
 
-  m_isPython = URIUtils::GetExtension(Type(m_addonType)->LibPath()) == ".py";
+  return std::unique_ptr<CScraper>(new CScraper(std::move(addonInfo), requiressettings, persistence, pathContent));
+}
+
+CScraper::CScraper(CAddonInfo addonInfo)
+  : CAddon(std::move(addonInfo)),
+    m_fLoaded(false),
+    m_requiressettings(false),
+    m_pathContent(CONTENT_NONE)
+{
+  m_isPython = URIUtils::GetExtension(LibPath()) == ".py";
+}
+
+CScraper::CScraper(CAddonInfo addonInfo, bool requiressettings, CDateTimeSpan persistence, CONTENT_TYPE pathContent)
+  : CAddon(std::move(addonInfo)),
+    m_fLoaded(false),
+    m_requiressettings(requiressettings),
+    m_persistence(persistence),
+    m_pathContent(pathContent)
+{
+  m_isPython = URIUtils::GetExtension(LibPath()) == ".py";
 }
 
 bool CScraper::Supports(const CONTENT_TYPE &content) const
 {
-  return IsType(ScraperTypeFromContent(content));
+  return Type() == ScraperTypeFromContent(content);
 }
 
 bool CScraper::SetPathSettings(CONTENT_TYPE content, const std::string& xml)
@@ -340,24 +356,29 @@ bool CScraper::Load()
   if (m_fLoaded || m_isPython)
     return true;
 
-  bool result = m_parser.Load(Type(m_addonType)->LibPath());
+  bool result=m_parser.Load(LibPath());
   if (result)
   {
     //! @todo this routine assumes that deps are a single level, and assumes the dep is installed.
     //!       1. Does it make sense to have recursive dependencies?
     //!       2. Should we be checking the dep versions or do we assume it is ok?
-    for (auto itr : GetDeps())
+    ADDONDEPS deps = GetDeps();
+    ADDONDEPS::iterator itr = deps.begin();
+    while (itr != deps.end())
     {
-      if (itr.first == "xbmc.metadata")
+      if (itr->first == "xbmc.metadata")
+      {
+        ++itr;
         continue;
+      }
+      AddonPtr dep;
 
-      bool bOptional = itr.second.second;
+      bool bOptional = itr->second.second;
 
-      AddonInfoPtr dep = CAddonMgr::GetInstance().GetInstalledAddonInfo(itr.first);
-      if (dep)
+      if (CAddonMgr::GetInstance().GetAddon((*itr).first, dep))
       {
         CXBMCTinyXML doc;
-        if (dep->IsType(ADDON_SCRAPER_LIBRARY) && doc.LoadFile(dep->Type(ADDON_SCRAPER_LIBRARY)->LibPath()))
+        if (dep->Type() == ADDON_SCRAPER_LIBRARY && doc.LoadFile(dep->LibPath()))
           m_parser.AddDocument(&doc);
       }
       else
@@ -368,11 +389,12 @@ bool CScraper::Load()
           break;
         }
       }
+      ++itr;
     }
   }
 
   if (!result)
-    CLog::Log(LOGWARNING, "failed to load scraper XML from %s", Type(m_addonType)->LibPath().c_str());
+    CLog::Log(LOGWARNING, "failed to load scraper XML from %s", LibPath().c_str());
   return m_fLoaded = result;
 }
 

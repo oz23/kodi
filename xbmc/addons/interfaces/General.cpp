@@ -69,7 +69,13 @@ bool Interface_General::open_settings_dialog(void* kodiBase)
   }
 
   // show settings dialog
-  AddonInfoPtr addonInfo = CAddonMgr::GetInstance().GetInstalledAddonInfo(addon->ID());
+  AddonPtr addonInfo;
+  if (CAddonMgr::GetInstance().GetAddon(addon->ID(), addonInfo))
+  {
+    CLog::Log(LOGERROR, "Interface_General::%s - Could not get addon information for '%s'", __FUNCTION__, addon->ID().c_str());
+    return false;
+  }
+
   return CGUIDialogAddonSettings::ShowForAddon(addonInfo);
 }
 

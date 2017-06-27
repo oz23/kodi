@@ -30,8 +30,13 @@ using namespace GAME;
 
 const ControllerPtr CController::EmptyPtr;
 
-CController::CController(ADDON::AddonInfoPtr addonInfo) :
-  CAddon(addonInfo),
+std::unique_ptr<CController> CController::FromExtension(ADDON::CAddonInfo addonInfo, const cp_extension_t* ext)
+{
+  return std::unique_ptr<CController>(new CController(std::move(addonInfo)));
+}
+
+CController::CController(ADDON::CAddonInfo addonInfo) :
+  CAddon(std::move(addonInfo)),
   m_bLoaded(false)
 {
 }
@@ -46,7 +51,7 @@ std::string CController::Label(void)
 std::string CController::ImagePath(void) const
 {
   if (!m_layout.Image().empty())
-    return URIUtils::AddFileToFolder(URIUtils::GetDirectory(Type(ADDON::ADDON_GAME_CONTROLLER)->LibPath()), m_layout.Image());
+    return URIUtils::AddFileToFolder(URIUtils::GetDirectory(LibPath()), m_layout.Image());
   return "";
 }
 
@@ -74,7 +79,7 @@ bool CController::LoadLayout(void)
 {
   if (!m_bLoaded)
   {
-    std::string strLayoutXmlPath = Type(ADDON::ADDON_GAME_CONTROLLER)->LibPath();
+    std::string strLayoutXmlPath = LibPath();
 
     CXBMCTinyXML xmlDoc;
     if (!xmlDoc.LoadFile(strLayoutXmlPath))

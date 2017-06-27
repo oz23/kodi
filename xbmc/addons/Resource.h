@@ -40,7 +40,7 @@ public:
   }
 
 protected:
-  explicit CResource(AddonInfoPtr addonInfo) : CAddon(addonInfo) {}
+  explicit CResource(CAddonInfo addonInfo) : CAddon(std::move(addonInfo)) {}
 
   std::string GetResourcePath() const
   {

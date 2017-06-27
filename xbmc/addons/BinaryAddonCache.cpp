@@ -33,6 +33,9 @@ CBinaryAddonCache::~CBinaryAddonCache()
 void CBinaryAddonCache::Init()
 {
   m_addonsToCache = {
+    ADDON_AUDIODECODER,
+    ADDON_IMAGEDECODER,
+    ADDON_INPUTSTREAM,
     ADDON_PVRDLL,
     ADDON_GAMEDLL,
     ADDON_VFS,
@@ -54,7 +57,7 @@ void CBinaryAddonCache::GetAddons(VECADDONS& addons, const TYPE& type)
 
   for (auto &addon : myAddons)
   {
-    if (CAddonMgr::GetInstance().IsAddonEnabled(addon->ID()))
+    if (!CAddonMgr::GetInstance().IsAddonDisabled(addon->ID()))
       addons.emplace_back(std::move(addon));
   }
 }
@@ -66,7 +69,7 @@ void CBinaryAddonCache::GetDisabledAddons(VECADDONS& addons, const TYPE& type)
 
   for (auto &addon : myAddons)
   {
-    if (!CAddonMgr::GetInstance().IsAddonEnabled(addon->ID()))
+    if (CAddonMgr::GetInstance().IsAddonDisabled(addon->ID()))
       addons.emplace_back(std::move(addon));
   }
 }
@@ -116,7 +119,7 @@ void CBinaryAddonCache::Update()
   for (auto &addonType : m_addonsToCache)
   {
     VECADDONS addons;
-    CAddonMgr::GetInstance().GetAddons(addons, addonType, false);
+    CAddonMgr::GetInstance().GetInstalledAddons(addons, addonType);
     addonmap.insert(AddonMap::value_type(addonType, addons));
   }
 

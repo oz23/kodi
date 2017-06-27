@@ -27,12 +27,10 @@ namespace ADDON
   class IAddonInstanceHandler
   {
   public:
-    IAddonInstanceHandler(ADDON_TYPE type, const std::string& instanceID = "");
-    IAddonInstanceHandler(ADDON_TYPE type, const AddonInfoPtr& addonInfo, KODI_HANDLE parentInstance = nullptr, const std::string& instanceID = "");
+    IAddonInstanceHandler(ADDON_TYPE type, const AddonDllPtr& addonInfo, KODI_HANDLE parentInstance = nullptr, const std::string& instanceID = "");
     virtual ~IAddonInstanceHandler();
 
     const ADDON_TYPE UsedType() const { return m_type; }
-    const CAddonType* Type(TYPE type) const { return m_addon->Type(type); }
     const std::string& InstanceID() { return m_instanceId; }
 
     std::string ID() const { return m_addon ? m_addon->ID() : ""; }
@@ -43,8 +41,6 @@ namespace ADDON
     std::string Profile() const { return m_addon ? m_addon->Profile() : ""; }
     AddonVersion Version() const { return m_addon ? m_addon->Version() : AddonVersion("0.0.0"); }
 
-    const AddonInfoPtr& AddonInfo() { return m_addonInfo; }
-
     bool CreateInstance(KODI_HANDLE instance);
     void DestroyInstance();
     const AddonDllPtr& Addon() { return m_addon; }
@@ -53,7 +49,6 @@ namespace ADDON
     ADDON_TYPE m_type;
     std::string m_instanceId;
     KODI_HANDLE m_parentInstance;
-    AddonInfoPtr m_addonInfo;
     AddonDllPtr m_addon;
   };
 

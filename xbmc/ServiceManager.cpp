@@ -20,7 +20,6 @@
 
 #include "ServiceManager.h"
 #include "addons/BinaryAddonCache.h"
-#include "addons/interfaces/kodi/addon-instance/VFSEntry.h"
 #include "ContextMenuManager.h"
 #include "cores/AudioEngine/Engines/ActiveAE/ActiveAE.h"
 #include "cores/DataCacheCore.h"
@@ -34,7 +33,6 @@
 #include "interfaces/generic/ScriptInvocationManager.h"
 #include "interfaces/python/XBPython.h"
 #include "pvr/PVRManager.h"
-#include "cores/AudioEngine/Engines/ActiveAE/ActiveAE.h"
 #include "settings/Settings.h"
 
 using namespace KODI;
@@ -85,9 +83,6 @@ bool CServiceManager::Init2()
 
   m_binaryAddonCache.reset( new ADDON::CBinaryAddonCache());
   m_binaryAddonCache->Init();
-
-  m_vfsAddonCache.reset( new ADDON::CVFSAddonCache());
-  m_vfsAddonCache->Init();
 
   m_favouritesService.reset(new CFavouritesService(CProfilesManager::GetInstance().GetProfileUserDataFolder()));
   m_contextMenuManager.reset(new CContextMenuManager(*m_addonMgr.get()));
@@ -141,7 +136,6 @@ void CServiceManager::Deinit()
   m_gameServices->Deinit();
   m_peripherals.reset();
   m_contextMenuManager.reset();
-  m_vfsAddonCache.reset();
   m_favouritesService.reset();
   m_binaryAddonCache.reset();
   if (m_PVRManager)
@@ -166,11 +160,6 @@ ADDON::CBinaryAddonCache &CServiceManager::GetBinaryAddonCache()
   return *m_binaryAddonCache.get();
 }
 
-ADDON::CVFSAddonCache &CServiceManager::GetVFSAddonCache()
-{
-  return *m_vfsAddonCache.get();
-}
-
 ANNOUNCEMENT::CAnnouncementManager& CServiceManager::GetAnnouncementManager()
 {
   return *m_announcementManager;
@@ -186,11 +175,6 @@ XBPython& CServiceManager::GetXBPython()
 PVR::CPVRManager& CServiceManager::GetPVRManager()
 {
   return *m_PVRManager;
-}
-
-ActiveAE::CActiveAEDSP& CServiceManager::GetADSPManager()
-{
-  return *m_ADSPManager;
 }
 
 IAE& CServiceManager::GetActiveAE()

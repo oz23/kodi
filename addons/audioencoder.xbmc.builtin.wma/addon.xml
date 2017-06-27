@@ -5,7 +5,7 @@
   name="WMA encoder"
   provider-name="spiff">
   <extension
-    point="kodi.audioencoder"
+    point="xbmc.audioencoder"
     extension=".wma"
     library_linux="dummy.so"/>
   <extension point="xbmc.addon.metadata">

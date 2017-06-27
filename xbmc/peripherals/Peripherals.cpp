@@ -73,7 +73,8 @@
 #include "bus/virtual/PeripheralBusCEC.h"
 #endif
 
-using namespace KODI::JOYSTICK;
+using namespace KODI;
+using namespace JOYSTICK;
 using namespace PERIPHERALS;
 using namespace XFILE;
 
@@ -120,7 +121,7 @@ void CPeripherals::Initialise()
 
   m_eventScanner.Start();
 
-  KODI::MESSAGING::CApplicationMessenger::GetInstance().RegisterReceiver(this);
+  MESSAGING::CApplicationMessenger::GetInstance().RegisterReceiver(this);
   ANNOUNCEMENT::CAnnouncementManager::GetInstance().AddAnnouncer(this);
 #endif
 }
@@ -978,13 +979,14 @@ void CPeripherals::OnSettingAction(std::shared_ptr<const CSetting> setting)
     std::string strAddonId;
     if (CGUIWindowAddonBrowser::SelectAddonID(ADDON::ADDON_PERIPHERALDLL, strAddonId, false, true, true, false, true) == 1 && !strAddonId.empty())
     {
-      ADDON::AddonInfoPtr addon = ADDON::CAddonMgr::GetInstance().GetInstalledAddonInfo(strAddonId);
-      CGUIDialogAddonSettings::ShowForAddon(addon);
+      ADDON::AddonPtr addon;
+      if (ADDON::CAddonMgr::GetInstance().GetAddon(strAddonId, addon))
+        CGUIDialogAddonSettings::ShowForAddon(addon);
     }
   }
 }
 
-void CPeripherals::OnApplicationMessage(KODI::MESSAGING::ThreadMessage* pMsg)
+void CPeripherals::OnApplicationMessage(MESSAGING::ThreadMessage* pMsg)
 {
   switch (pMsg->dwMessage)
   {

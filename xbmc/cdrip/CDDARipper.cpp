@@ -46,7 +46,7 @@
 #include "Application.h"
 #include "music/MusicDatabase.h"
 #include "addons/AddonManager.h"
-#include "addons/interfaces/kodi/addon-instance/AudioEncoder.h"
+#include "addons/AudioEncoder.h"
 
 using namespace ADDON;
 using namespace XFILE;
@@ -290,9 +290,13 @@ std::string CCDDARipper::GetTrackName(CFileItem *item)
   if (track.empty())
     track = StringUtils::Format("%s%02i", "Track-", trackNumber);
 
-  const AddonInfoPtr addonInfo = CAddonMgr::GetInstance().GetInstalledAddonInfo(CServiceBroker::GetSettings().GetString(CSettings::SETTING_AUDIOCDS_ENCODER), ADDON_AUDIOENCODER);
-  if (addonInfo)
-    track += addonInfo->Type(ADDON_AUDIOENCODER)->GetValue("@extension").asString();
+  AddonPtr addon;
+  CAddonMgr::GetInstance().GetAddon(CServiceBroker::GetSettings().GetString(CSettings::SETTING_AUDIOCDS_ENCODER), addon);
+  if (addon)
+  {
+    std::shared_ptr<CAudioEncoder> enc = std::static_pointer_cast<CAudioEncoder>(addon);
+    track += enc->extension;
+  }
 
   return track;
 }

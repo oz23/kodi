@@ -19,14 +19,16 @@
  */
 
 #include "GUIDialogVisualisationPresetList.h"
+#include "addons/Visualisation.h"
 #include "guilib/GUIWindowManager.h"
-#include "guilib/GUIVisualisationControl.h"
 #include "GUIUserMessages.h"
 #include "FileItem.h"
 #include "input/Key.h"
 #include "guilib/LocalizeStrings.h"
 #include "utils/StringUtils.h"
 #include "utils/Variant.h"
+
+using ADDON::CVisualisation;
 
 CGUIDialogVisualisationPresetList::CGUIDialogVisualisationPresetList()
     : CGUIDialogSelect(WINDOW_DIALOG_VIS_PRESET_LIST),
@@ -49,10 +51,10 @@ bool CGUIDialogVisualisationPresetList::OnMessage(CGUIMessage &message)
 void CGUIDialogVisualisationPresetList::OnSelect(int idx)
 {
   if (m_viz)
-    m_viz->SetPreset(idx);
+    m_viz->OnAction(VIS_ACTION_LOAD_PRESET, static_cast<void*>(&idx));
 }
 
-void CGUIDialogVisualisationPresetList::SetVisualisation(CGUIVisualisationControl* vis)
+void CGUIDialogVisualisationPresetList::SetVisualisation(CVisualisation* vis)
 {
   m_viz = vis;
   Reset();
@@ -70,7 +72,7 @@ void CGUIDialogVisualisationPresetList::SetVisualisation(CGUIVisualisationContro
         item.RemoveExtension();
         Add(item);
       }
-      SetSelected(m_viz->GetActivePreset());
+      SetSelected(m_viz->GetPreset());
     }
   }
 }
@@ -80,7 +82,7 @@ void CGUIDialogVisualisationPresetList::OnInitWindow()
   CGUIMessage msg(GUI_MSG_GET_VISUALISATION, 0, 0);
   g_windowManager.SendMessage(msg);
   if (msg.GetPointer())
-    SetVisualisation(static_cast<CGUIVisualisationControl*>(msg.GetPointer()));
+    SetVisualisation(static_cast<CVisualisation*>(msg.GetPointer()));
   CGUIDialogSelect::OnInitWindow();
 }
 

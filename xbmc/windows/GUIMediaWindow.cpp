@@ -31,7 +31,7 @@
 #include "URL.h"
 #include "Util.h"
 #include "addons/AddonManager.h"
-#include "addons/settings/GUIDialogAddonSettings.h"
+#include "addons/PluginSource.h"
 #if defined(TARGET_ANDROID)
 #include "platform/android/activity/XBMCApp.h"
 #endif
@@ -980,10 +980,10 @@ bool CGUIMediaWindow::OnClick(int iItem, const std::string &player)
     AddonPtr addon;
     if (CAddonMgr::GetInstance().GetAddon(url.GetHostName(), addon, ADDON_SCRIPT))
     {
-      if (!CScriptInvocationManager::GetInstance().Stop(addon->Type(ADDON_SCRIPT)->LibPath()))
+      if (!CScriptInvocationManager::GetInstance().Stop(addon->LibPath()))
       {
         CAddonMgr::GetInstance().UpdateLastUsed(addon->ID());
-        CScriptInvocationManager::GetInstance().ExecuteAsync(addon->Type(ADDON_SCRIPT)->LibPath(), addon);
+        CScriptInvocationManager::GetInstance().ExecuteAsync(addon->LibPath(), addon);
       }
       return true;
     }
@@ -1072,10 +1072,11 @@ bool CGUIMediaWindow::OnClick(int iItem, const std::string &player)
     if (m_vecItems->IsPlugin())
     {
       CURL url(m_vecItems->GetPath());
-      AddonInfoPtr addon = CAddonMgr::GetInstance().GetInstalledAddonInfo(url.GetHostName(), ADDON_PLUGIN);
-      if (addon)
+      AddonPtr addon;
+      if (CAddonMgr::GetInstance().GetAddon(url.GetHostName(),addon))
       {
-        if (addon->ProvidesSubContent(ADDON_AUDIO))
+        PluginPtr plugin = std::dynamic_pointer_cast<CPluginSource>(addon);
+        if (plugin && plugin->Provides(CPluginSource::AUDIO))
         {
           CFileItemList items;
           std::unique_ptr<CGUIViewState> state(CGUIViewState::GetViewState(GetID(), items));
@@ -1326,7 +1327,7 @@ void CGUIMediaWindow::SetHistoryForPath(const std::string& strDirectory)
   if (!strDirectory.empty())
   {
     // Build the directory history for default path
-    std::string strPath, strParentPath, strOptions;
+    std::string strPath, strParentPath;
     strPath = strDirectory;
     URIUtils::RemoveSlashAtEnd(strPath);
 
@@ -1335,30 +1336,9 @@ void CGUIMediaWindow::SetHistoryForPath(const std::string& strDirectory)
 
     m_history.ClearPathHistory();
 
-    if (URIUtils::IsPlugin(strPath))
-    {
-      CURL url(strPath);
-      std::map<std::string, std::string> options;
-      url.GetOptions(options);
-      if (options.size() == 1 && options.begin()->first == "content_type")
-      {
-        strOptions = url.GetOptions();
-        url.SetOptions("");
-        strPath = url.Get();
-      }
-    }
-
     bool originalPath = true;
     while (URIUtils::GetParentPath(strPath, strParentPath))
     {
-      if (!strOptions.empty())
-      {
-        CURL url(strPath);
-        url.SetOptions(strOptions);
-        strPath = url.Get();
-        strOptions.clear();
-      }
-
       for (int i = 0; i < (int)items.Size(); ++i)
       {
         CFileItemPtr pItem = items[i];

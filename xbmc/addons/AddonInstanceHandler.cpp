@@ -26,31 +26,18 @@
 namespace ADDON
 {
 
-IAddonInstanceHandler::IAddonInstanceHandler(ADDON_TYPE type, const std::string& instanceID/* = ""*/)
-  : m_type(type),
-    m_parentInstance(nullptr)
-{
-  m_instanceId = !instanceID.empty() ? instanceID : StringUtils::Format("%p", static_cast<void*>(this));
-}
-  
-IAddonInstanceHandler::IAddonInstanceHandler(ADDON_TYPE type, const AddonInfoPtr& addonInfo, KODI_HANDLE parentInstance/* = nullptr*/, const std::string& instanceID/* = ""*/)
+IAddonInstanceHandler::IAddonInstanceHandler(ADDON_TYPE type, const AddonDllPtr& addonInfo, KODI_HANDLE parentInstance/* = nullptr*/, const std::string& instanceID/* = ""*/)
   : m_type(type),
     m_parentInstance(parentInstance),
-    m_addonInfo(addonInfo)
+    m_addon(addonInfo)
 {
   // if no special instance ID is given generate one from class pointer (is
   // faster as unique id and also safe enough for them).
   m_instanceId = !instanceID.empty() ? instanceID : StringUtils::Format("%p", static_cast<void*>(this));
-
-  m_addon = CAddonMgr::GetInstance().GetAddon(addonInfo, this);
-  if (!m_addon)
-    CLog::Log(LOGFATAL, "ADDON::IAddonInstanceHandler: Tried to get add-on '%s' who not available!", addonInfo->ID().c_str());
 }
 
 IAddonInstanceHandler::~IAddonInstanceHandler()
 {
-  if (m_addon)
-    CAddonMgr::GetInstance().ReleaseAddon(m_addon, this);
 }
 
 bool IAddonInstanceHandler::CreateInstance(KODI_HANDLE instance)

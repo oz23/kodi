@@ -23,6 +23,7 @@
 #include "JSONRPC.h"
 #include "ServiceDescription.h"
 #include "addons/Addon.h"
+#include "addons/IAddon.h"
 #include "dbwrappers/DatabaseQuery.h"
 #include "input/ButtonTranslator.h"
 #include "interfaces/AnnouncementManager.h"

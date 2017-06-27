@@ -20,7 +20,7 @@
 #pragma once
 
 #include "addons/AddonManager.h"
-#include "addons/Addon.h"
+#include "addons/IAddon.h"
 #include "guilib/IWindowManagerCallback.h"
 #include "peripherals/PeripheralTypes.h"
 #include "peripherals/bus/PeripheralBus.h"
@@ -43,9 +43,14 @@ namespace PERIPHERALS
     void UpdateAddons(void);
 
     /*!
+     * \brief Get peripheral add-on by ID
+     */
+    bool GetAddon(const std::string &strId, ADDON::AddonPtr &addon) const;
+
+    /*!
     * \brief Get peripheral add-on that can provide button maps
     */
-    bool GetAddonWithButtonMap(ADDON::AddonInfoPtr &addon) const;
+    bool GetAddonWithButtonMap(PeripheralAddonPtr &addon) const;
 
     /*!
      * \brief Get peripheral add-on that can provide button maps for the given device
@@ -83,6 +88,7 @@ namespace PERIPHERALS
 
     // implementation of IAddonMgrCallback
     bool RequestRestart(ADDON::AddonPtr addon, bool datachanged) override;
+    bool RequestRemoval(ADDON::AddonPtr addon) override;
 
     bool SplitLocation(const std::string& strLocation, PeripheralAddonPtr& addon, unsigned int& peripheralIndex) const;
 
@@ -94,7 +100,7 @@ namespace PERIPHERALS
   private:
     void OnEvent(const ADDON::AddonEvent& event);
 
-    void PromptEnableAddons(const ADDON::AddonInfos& disabledAddons);
+    void PromptEnableAddons(const ADDON::VECADDONS& disabledAddons);
 
     // Helper function
     static PeripheralAddonVector GetEnabledAddons();

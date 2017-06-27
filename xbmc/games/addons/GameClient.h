@@ -58,12 +58,14 @@ class IGameVideoCallback;
 class CGameClient : public ADDON::CAddonDll
 {
 public:
-  CGameClient(ADDON::AddonInfoPtr addonInfo);
+  static std::unique_ptr<CGameClient> FromExtension(ADDON::CAddonInfo addonInfo, const cp_extension_t* ext);
+
+  CGameClient(ADDON::CAddonInfo addonInfo);
 
   virtual ~CGameClient(void);
 
-  // Implementation of CAddon via CAddonDll
-  virtual std::string     MainLibPath() const override;
+  // Implementation of IAddon via CAddonDll
+  virtual std::string     LibPath() const override;
   virtual ADDON::AddonPtr GetRunningInstance() const override;
 
   // Query properties of the game client

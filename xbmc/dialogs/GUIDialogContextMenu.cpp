@@ -189,16 +189,18 @@ void CGUIDialogContextMenu::SetPosition(float posX, float posY)
 
 float CGUIDialogContextMenu::GetHeight() const
 {
-  if (m_backgroundImage)
-    return m_backgroundImage->GetHeight();
+  const CGUIControl *backMain = GetControl(BACKGROUND_IMAGE);
+  if (backMain)
+    return backMain->GetHeight();
   else
     return CGUIDialog::GetHeight();
 }
 
 float CGUIDialogContextMenu::GetWidth() const
 {
-  if (m_backgroundImage)
-    return m_backgroundImage->GetWidth();
+  const CGUIControl *pControl = GetControl(BACKGROUND_IMAGE);
+  if (pControl)
+    return pControl->GetWidth();
   else
     return CGUIDialog::GetWidth();
 }
@@ -533,13 +535,13 @@ void CGUIDialogContextMenu::OnWindowLoaded()
   m_coordY = m_posY;
   
   const CGUIControlGroupList* pGroupList = dynamic_cast<const CGUIControlGroupList *>(GetControl(GROUP_LIST));
-  m_backgroundImage = GetControl(BACKGROUND_IMAGE);
-  if (m_backgroundImage && pGroupList)
+  const CGUIControl *pControl = GetControl(BACKGROUND_IMAGE);
+  if (pControl && pGroupList)
   {
     if (pGroupList->GetOrientation() == VERTICAL)
-      m_backgroundImageSize = m_backgroundImage->GetHeight();
+      m_backgroundImageSize = pControl->GetHeight();
     else
-      m_backgroundImageSize = m_backgroundImage->GetWidth();
+      m_backgroundImageSize = pControl->GetWidth();
   }
 
   CGUIDialog::OnWindowLoaded();

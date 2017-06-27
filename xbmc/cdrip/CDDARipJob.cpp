@@ -36,7 +36,7 @@
 #include "utils/StringUtils.h"
 #include "storage/MediaManager.h"
 #include "addons/AddonManager.h"
-#include "addons/interfaces/kodi/addon-instance/AudioEncoder.h"
+#include "addons/AudioEncoder.h"
 
 #if defined(TARGET_WINDOWS)
 #include "platform/win32/CharsetConverter.h"
@@ -171,7 +171,7 @@ int CCDDARipJob::RipChunk(CFile& reader, CEncoder* encoder, int& percent)
     return 1;
 
   // encode data
-  int encres = encoder->Encode(result, stream);
+  int encres=encoder->Encode(result, stream);
 
   // Get progress indication
   percent = static_cast<int>(reader.GetPosition()*100/reader.GetLength());
@@ -184,27 +184,30 @@ int CCDDARipJob::RipChunk(CFile& reader, CEncoder* encoder, int& percent)
 
 CEncoder* CCDDARipJob::SetupEncoder(CFile& reader)
 {
-  CEncoder* encoder = nullptr;
+  CEncoder* encoder = NULL;
   if (CServiceBroker::GetSettings().GetString(CSettings::SETTING_AUDIOCDS_ENCODER) == "audioencoder.xbmc.builtin.aac" ||
-      CServiceBroker::GetSettings().GetString(CSettings::SETTING_AUDIOCDS_ENCODER) == "audioencoder.xbmc.builtin.wma")
+           CServiceBroker::GetSettings().GetString(CSettings::SETTING_AUDIOCDS_ENCODER) == "audioencoder.xbmc.builtin.wma")
   {
-    std::shared_ptr<IEncoder> enc = std::make_shared<CEncoderFFmpeg>();
+    std::shared_ptr<IEncoder> enc(new CEncoderFFmpeg());
     encoder = new CEncoder(enc);
   }
   else
   {
-    const AddonInfoPtr addonInfo = CAddonMgr::GetInstance().GetInstalledAddonInfo(CServiceBroker::GetSettings().GetString(CSettings::SETTING_AUDIOCDS_ENCODER), ADDON_AUDIOENCODER);
-    if (addonInfo)
+    AddonPtr addon;
+    CAddonMgr::GetInstance().GetAddon(CServiceBroker::GetSettings().GetString(CSettings::SETTING_AUDIOCDS_ENCODER), addon);
+    if (addon)
     {
-      std::shared_ptr<IEncoder> enc = std::make_shared<CAudioEncoder>(addonInfo);
+      std::shared_ptr<CAudioEncoder> aud =  std::static_pointer_cast<CAudioEncoder>(addon);
+      aud->Create();
+      std::shared_ptr<IEncoder> enc =  std::static_pointer_cast<IEncoder>(aud);
       encoder = new CEncoder(enc);
     }
   }
   if (!encoder)
-    return nullptr;
+    return NULL;
 
   // we have to set the tags before we init the Encoder
-  std::string strTrack = StringUtils::Format("%li", strtol(m_input.substr(13, m_input.size() - 13 - 5).c_str(), nullptr, 10));
+  std::string strTrack = StringUtils::Format("%li", strtol(m_input.substr(13, m_input.size() - 13 - 5).c_str(),NULL,10));
 
   encoder->SetComment(std::string("Ripped with ") + CSysInfo::GetAppName());
   encoder->SetArtist(StringUtils::Join(m_tag.GetArtist(),
@@ -221,7 +224,7 @@ CEncoder* CCDDARipJob::SetupEncoder(CFile& reader)
 
   // init encoder
   if (!encoder->Init(m_output.c_str(), m_channels, m_rate, m_bps))
-    delete encoder, encoder = nullptr;
+    delete encoder, encoder = NULL;
 
   return encoder;
 }

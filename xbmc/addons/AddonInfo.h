@@ -21,19 +21,10 @@
 
 #include "XBDateTime.h"
 #include "addons/AddonVersion.h"
-#include "utils/StringUtils.h"
 
 #include <map>
-#include <memory>
-#include <set>
-#include <stdlib.h>
 #include <string>
-#include <unordered_set>
 #include <vector>
-
-class TiXmlElement;
-namespace XBMCAddon { namespace xbmcgui { class WindowXML; } } 
-namespace KodiAPI { namespace GUI { class CAddonCallbacksGUI; } } 
 
 namespace ADDON
 {
@@ -75,7 +66,6 @@ namespace ADDON
     ADDON_SCRIPT_LIBRARY,
     ADDON_SCRIPT_MODULE,
     ADDON_GAME_CONTROLLER,
-    ADDON_VIDEOCODEC,
 
     /**
      * @brief virtual addon types
@@ -91,133 +81,17 @@ namespace ADDON
     ADDON_MAX
   } TYPE;
 
-  struct SExtValue
-  {
-    SExtValue(const std::string& strValue) : str(strValue) { }
-    const std::string& asString()  const { return str; }
-    bool asBoolean() const { return StringUtils::EqualsNoCase(str, "true"); }
-    int asInteger() const { return atoi(str.c_str()); }
-    float asFloat() const { return static_cast<float>(atof(str.c_str())); }
-    bool empty() const { return str.empty(); }
-    const std::string str;
-  };
-
-  class CAddonExtensions;
-  typedef std::vector<std::pair<std::string, CAddonExtensions> > EXT_ELEMENTS;
-  typedef std::vector<std::pair<std::string, SExtValue> > EXT_VALUE;
-  typedef std::vector<std::pair<std::string, EXT_VALUE> > EXT_VALUES;
-
-  class CAddonExtensions
-  {
-  public:
-    CAddonExtensions() { }
-    ~CAddonExtensions() { }
-    bool ParseExtension(const TiXmlElement* element);
-
-    const SExtValue GetValue(const std::string& id) const;
-    const EXT_VALUES& GetValues() const;
-    const CAddonExtensions* GetElement(const std::string& id) const;
-    const EXT_ELEMENTS GetElements(const std::string& id = "") const;
-
-    void Insert(const std::string& id, const std::string& value);
-
-  private:
-    std::string m_point;
-    EXT_VALUES m_values;
-    EXT_ELEMENTS m_children;
-  };
-
-  class CAddonInfo;
-  typedef std::shared_ptr<CAddonInfo> AddonInfoPtr;
-  typedef std::vector<AddonInfoPtr> AddonInfos;
-  /*!
-   */
-  class CAddonType : public CAddonExtensions
-  {
-  public:
-    CAddonType(TYPE type, CAddonInfo* info, const TiXmlElement* child);
-
-    const TYPE Type() const { return m_type; }
-    std::string LibPath() const;
-    std::string LibName() const { return m_libname; }
-    bool ProvidesSubContent(const TYPE& content) const
-    {
-      return content == ADDON_UNKNOWN ? false : m_type == content || m_providedSubContent.count(content) > 0;
-    }
-
-    bool ProvidesSeveralSubContents() const
-    {
-      return m_providedSubContent.size() > 1;
-    }
-
-    int ProvidedSubContents() const
-    {
-      return m_providedSubContent.size();
-    }
-
-    const char* GetPlatformLibraryName(const TiXmlElement* element);
-    void SetProvides(const std::string &content);
-
-  private:
-    friend class CAddonInfo;
-
-    TYPE m_type;
-    std::string m_path;
-    std::string m_libname;
-    std::set<TYPE> m_providedSubContent;
-  };
-
-  class IAddonInstanceHandler;
-  class CAddonMgr;
-  class CAddonDll;
-  typedef std::shared_ptr<CAddonDll> AddonDllPtr;
-
-  class AddonVersion;
   typedef std::map<std::string, std::pair<const AddonVersion, bool> > ADDONDEPS;
   typedef std::map<std::string, std::string> InfoMap;
   typedef std::map<std::string, std::string> ArtMap;
 
+  class CAddonBuilder;
+
   class CAddonInfo
   {
   public:
-    /*!
-     * @brief Class constructor for local available addons where his addon.xml
-     * is present.
-     *
-     * @param[in] addonPath The folder name where addon.xml is included
-     */
-    CAddonInfo(const std::string& addonPath);
-
-    /*!
-     * @brief Class constructor used for repository list of addons where not
-     * available on local system.
-     *
-     * Source is normally a "addons.xml"
-     *
-     * @param[in] baseElement The TinyXML base element to parse
-     * @param[in] addonRepoXmlPath Path to the element related xml file, used
-     *                             to know on log messages as source of fault
-     *                             For this class constructor it contains the
-     *                             big addons.xml from repository!
-     */
-    CAddonInfo(const TiXmlElement* baseElement, const std::string& addonRepoXmlPath);
-
-    /*!
-     * @brief Class constructor used for already known parts, like from
-     * database.
-     *
-     * Source is normally a "addons.xml"
-     */
-    CAddonInfo(const std::string& id,
-               const AddonVersion& version,
-               const std::string& name,
-               const std::string& summary,
-               const std::string& description,
-               const std::string& metadata,
-               const std::string& changelog,
-               const std::string& origin);
-
-    CAddonInfo(const std::string& id, TYPE type);
+    CAddonInfo();
+    CAddonInfo(std::string id, TYPE type);
 
     bool IsUsable() const { return m_usable; }
 
@@ -233,18 +107,13 @@ namespace ADDON
 
     const std::string& ID() const { return m_id; }
     TYPE MainType() const { return m_mainType; }
-    bool IsType(TYPE type) const;
-    const std::vector<CAddonType>& Types() const { return m_types; }
-    const CAddonType* Type(TYPE type) const;
-    std::string MainLibPath() const;
-
     const AddonVersion& Version() const { return m_version; }
     const AddonVersion& MinVersion() const { return m_minversion; }
     const std::string& Name() const { return m_name; }
     const std::string& License() const { return m_license; }
     const std::string& Summary() const { return m_summary; }
     const std::string& Description() const { return m_description; }
-    const std::string& LibName() const { return m_types[0].m_libname; }
+    const std::string& LibName() const { return m_libname; }
     const std::string& Author() const { return m_author; }
     const std::string& Source() const { return m_source; }
     const std::string& Path() const { return m_path; }
@@ -262,19 +131,6 @@ namespace ADDON
     const std::string& Origin() const { return m_origin; }
     uint64_t PackageSize() const { return m_packageSize; }
     const std::string& Language() const { return m_language; }
-
-    std::string FanArt() const
-    {
-      auto it = Art().find("fanart");
-      return it != Art().end() ? it->second : "";
-    }
-
-    bool ProvidesSubContent(const TYPE& content, const TYPE& mainType = ADDON_UNKNOWN) const;
-    bool ProvidesSeveralSubContents() const;
-  
-    std::string SerializeMetadata();
-    bool DeserializeMetadata(const std::string& document);
-
     bool MeetsVersion(const AddonVersion &version) const;
 
     /*!
@@ -287,15 +143,15 @@ namespace ADDON
     static TYPE TranslateSubContent(const std::string &content);
     //@}
 
+    InfoMap extrainfo; // defined here, but removed in future with cpluff
+
   private:
-    friend class XBMCAddon::xbmcgui::WindowXML;
-    friend class KodiAPI::GUI::CAddonCallbacksGUI;
+    friend class ADDON::CAddonBuilder;
 
     bool m_usable;
 
     std::string m_id;
     TYPE m_mainType;
-    std::vector<CAddonType> m_types;
 
     AddonVersion m_version{"0.0.0"};
     AddonVersion m_minversion{"0.0.0"};
@@ -320,25 +176,7 @@ namespace ADDON
     uint64_t m_packageSize;
     std::string m_language;
 
-    bool LoadAddonXML(const TiXmlElement* element, const std::string& addonPath);
-
-  /*!
-   * @brief active addon handle parts
-   *
-   * This area contains the created addon class and all active instances of the
-   * add-on. If active ones are empty becomes the pointer reseted. For this
-   * reasons is CAddonMgr added as friend here and the private separated from
-   * the rest.
-   *
-   * @todo the AddonDllPtr need to removed in future and everything done only
-   * with AddonPtr.
-   */
-  //@{
-  private:
-    friend class CAddonMgr;
-    AddonDllPtr m_activeAddon;
-    std::unordered_set<const IAddonInstanceHandler*> m_activeAddonHandlers;
-  //@}
+    std::string m_libname;
   };
 
 } /* namespace ADDON */

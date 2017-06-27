@@ -19,9 +19,9 @@
  */
 #pragma once
 
-#include "addons/AddonInstanceHandler.h"
-#include "addons/kodi-addon-dev-kit/include/kodi/addon-instance/Peripheral.h"
-#include "addons/kodi-addon-dev-kit/include/kodi/addon-instance/PeripheralUtils.h"
+#include "addons/AddonDll.h"
+#include "addons/kodi-addon-dev-kit/include/kodi/kodi_peripheral_types.h"
+#include "addons/kodi-addon-dev-kit/include/kodi/kodi_peripheral_utils.hpp"
 #include "input/joysticks/JoystickTypes.h"
 #include "peripherals/PeripheralTypes.h"
 #include "threads/CriticalSection.h"
@@ -45,19 +45,25 @@ namespace PERIPHERALS
   class CPeripheral;
   class CPeripheralJoystick;
 
-  typedef std::vector<kodi::addon::DriverPrimitive> PrimitiveVector;
-  typedef std::map<KODI::JOYSTICK::FeatureName, kodi::addon::JoystickFeature> FeatureMap;
+  typedef std::vector<ADDON::DriverPrimitive> PrimitiveVector;
+  typedef std::map<KODI::JOYSTICK::FeatureName, ADDON::JoystickFeature> FeatureMap;
 
-  class CPeripheralAddon : public ADDON::IAddonInstanceHandler
+  class CPeripheralAddon : public ADDON::CAddonDll
   {
   public:
-    CPeripheralAddon(ADDON::AddonInfoPtr addonInfo);
+    static std::unique_ptr<CPeripheralAddon> FromExtension(ADDON::CAddonInfo addonInfo, const cp_extension_t* ext);
+
+    CPeripheralAddon(ADDON::CAddonInfo addonInfo, bool bProvidesJoysticks, bool bProvidesButtonMaps);
+
     virtual ~CPeripheralAddon(void);
+
+    // implementation of IAddon
+    virtual ADDON::AddonPtr GetRunningInstance(void) const override;
 
     /*!
      * @brief Initialise the instance of this add-on
      */
-    bool CreateAddon(void);
+    ADDON_STATUS CreateAddon(void);
 
     /*!
      * \brief Deinitialize the instance of this add-on
@@ -88,7 +94,7 @@ namespace PERIPHERALS
     bool GetJoystickProperties(unsigned int index, CPeripheralJoystick& joystick);
     bool HasButtonMaps(void) const { return m_bProvidesButtonMaps; }
     bool GetFeatures(const CPeripheral* device, const std::string& strControllerId, FeatureMap& features);
-    bool MapFeature(const CPeripheral* device, const std::string& strControllerId, const kodi::addon::JoystickFeature& feature);
+    bool MapFeature(const CPeripheral* device, const std::string& strControllerId, const ADDON::JoystickFeature& feature);
     bool GetIgnoredPrimitives(const CPeripheral* device, PrimitiveVector& primitives);
     bool SetIgnoredPrimitives(const CPeripheral* device, const PrimitiveVector& primitives);
     void SaveButtonMap(const CPeripheral* device);
@@ -109,20 +115,15 @@ namespace PERIPHERALS
     AddonInstance_Peripheral* GetInstanceInterface() { return &m_struct; }
 
   private:
-    // Static function to transfer data from add-on to kodi
-    static void trigger_scan(void* kodiInstance);
-    static void refresh_button_maps(void* kodiInstance, const char* deviceName, const char* controllerId);
-    static unsigned int feature_count(void* kodiInstance, const char* controllerId, JOYSTICK_FEATURE_TYPE type);
-
     void UnregisterButtonMap(CPeripheral* device);
 
     /*!
      * @brief Helper functions
      */
-    static void GetPeripheralInfo(const CPeripheral* device, kodi::addon::Peripheral& peripheralInfo);
+    static void GetPeripheralInfo(const CPeripheral* device, ADDON::Peripheral& peripheralInfo);
 
-    static void GetJoystickInfo(const CPeripheral* device, kodi::addon::Joystick& joystickInfo);
-    static void SetJoystickInfo(CPeripheralJoystick& joystick, const kodi::addon::Joystick& joystickInfo);
+    static void GetJoystickInfo(const CPeripheral* device, ADDON::Joystick& joystickInfo);
+    static void SetJoystickInfo(CPeripheralJoystick& joystick, const ADDON::Joystick& joystickInfo);
 
     /*!
      * @brief Reset all class members to their defaults. Called by the constructors
@@ -139,7 +140,7 @@ namespace PERIPHERALS
     static std::string GetDeviceName(PeripheralType type);
     static std::string GetProvider(PeripheralType type);
 
-    /* @brief Cache for const char* members in AddonProps_Peripheral */
+    /* @brief Cache for const char* members in PERIPHERAL_PROPERTIES */
     std::string         m_strUserPath;    /*!< @brief translated path to the user profile */
     std::string         m_strClientPath;  /*!< @brief translated path to this add-on */
 
@@ -167,6 +168,7 @@ namespace PERIPHERALS
 
     /* @brief Thread synchronization */
     CCriticalSection    m_critSection;
+    
     AddonInstance_Peripheral m_struct;
 
     CSharedSection      m_dllSection;

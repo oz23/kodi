@@ -21,7 +21,6 @@
 #include "GUIDialogAddonSettings.h"
 #include "GUIPassword.h"
 #include "GUIUserMessages.h"
-#include "addons/AddonManager.h"
 #include "addons/settings/AddonSettings.h"
 #include "dialogs/GUIDialogOK.h"
 #include "guilib/GUIWindowManager.h"
@@ -70,21 +69,14 @@ bool CGUIDialogAddonSettings::OnMessage(CGUIMessage &message)
   return CGUIDialogSettingsManagerBase::OnMessage(message);
 }
 
-bool CGUIDialogAddonSettings::ShowForAddon(const ADDON::AddonInfoPtr &addonInfo, bool saveToDisk /* = true */)
+bool CGUIDialogAddonSettings::ShowForAddon(const ADDON::AddonPtr &addon, bool saveToDisk /* = true */)
 {
-  if (addonInfo == nullptr)
+  if (addon == nullptr)
     return false;
 
   if (!g_passwordManager.CheckMenuLock(WINDOW_ADDON_BROWSER))
     return false;
 
-  /*!
-   * @todo it use currently the bad way to get the real add-on class to identify
-   * the presence of settings.
-   * NEED TO IMPROVE ASAP!
-   */
-  ADDON::AddonPtr addon;
-  ADDON::CAddonMgr::GetInstance().GetAddon(addonInfo->ID(), addon, addonInfo->MainType());
   if (!addon->HasSettings())
   {
     // addon does not support settings, inform user

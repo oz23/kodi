@@ -22,29 +22,22 @@
 #include <memory>
 #include <vector>
 
-#include "addons/AddonInfo.h"
+#include "IAddon.h"
 #include "addons/settings/AddonSettings.h"
 #include "addons/AddonVersion.h"
 #include "utils/XBMCTinyXML.h"
 #include "guilib/LocalizeStrings.h"
 #include "utils/ISerializable.h"
 
-
 class TiXmlElement;
 class CAddonCallbacksAddon;
 class CVariant;
-class CAddonSettings;
 
 typedef struct cp_plugin_info_t cp_plugin_info_t;
 typedef struct cp_extension_t cp_extension_t;
 
 namespace ADDON
 {
-  class CAddon;
-  typedef std::shared_ptr<CAddon> AddonPtr;
-  class CSkinInfo;
-  typedef std::shared_ptr<CSkinInfo> SkinPtr;
-
   typedef std::vector<AddonPtr> VECADDONS;
   typedef std::vector<AddonPtr>::iterator IVECADDONS;
 
@@ -57,47 +50,51 @@ void OnPostInstall(const AddonPtr& addon, bool update, bool modal);
 void OnPreUnInstall(const AddonPtr& addon);
 void OnPostUnInstall(const AddonPtr& addon);
 
-class CAddon : public std::enable_shared_from_this<CAddon>
+class CAddon : public IAddon
 {
 public:
-  explicit CAddon(AddonInfoPtr addonInfo);
+  explicit CAddon(CAddonInfo addonInfo);
   virtual ~CAddon() {}
 
-  virtual TYPE MainType() const { return m_addonInfo->MainType(); }
-  virtual std::string MainLibPath() const { return m_addonInfo->MainLibPath(); }
+  TYPE Type() const override { return m_addonInfo.MainType(); }
+  TYPE FullType() const override { return Type(); }
+  bool IsType(TYPE type) const override { return type == m_addonInfo.MainType(); }
+  std::string ID() const override{ return m_addonInfo.ID(); }
+  std::string Name() const override { return m_addonInfo.Name(); }
+  bool IsInUse() const override{ return false; };
+  AddonVersion Version() const override { return m_addonInfo.Version(); }
+  AddonVersion MinVersion() const override { return m_addonInfo.MinVersion(); }
+  std::string Summary() const override { return m_addonInfo.Summary(); }
+  std::string Description() const override { return m_addonInfo.Description(); }
+  std::string Path() const override { return m_addonInfo.Path(); }
+  std::string Profile() const override { return m_profilePath; }
+  std::string LibPath() const override;
+  std::string Author() const override { return m_addonInfo.Author(); }
+  std::string ChangeLog() const override { return m_addonInfo.ChangeLog(); }
+  std::string Icon() const override { return m_addonInfo.Icon(); };
+  ArtMap Art() const override { return m_addonInfo.Art(); }
+  std::vector<std::string> Screenshots() const override { return m_addonInfo.Screenshots(); };
+  std::string Disclaimer() const override { return m_addonInfo.Disclaimer(); }
+  std::string Broken() const override { return m_addonInfo.Broken(); }
+  CDateTime InstallDate() const override { return m_addonInfo.InstallDate(); }
+  CDateTime LastUpdated() const override { return m_addonInfo.LastUpdated(); }
+  CDateTime LastUsed() const override { return m_addonInfo.LastUsed(); }
+  std::string Origin() const override { return m_addonInfo.Origin(); }
+  uint64_t PackageSize() const override { return m_addonInfo.PackageSize(); }
+  const InfoMap& ExtraInfo() const override { return m_addonInfo.extrainfo; }
+  const ADDONDEPS& GetDeps() const override { return m_addonInfo.GetDeps(); }
 
-  virtual bool IsType(TYPE type) const { return m_addonInfo->IsType(type); }
-  virtual const CAddonType* Type(TYPE type) const { return m_addonInfo->Type(type); }
-
-  virtual std::string ID() const { return m_addonInfo->ID(); }
-  virtual std::string Name() const { return m_addonInfo->Name(); }
-  virtual bool IsInUse() const { return false; };
-  virtual AddonVersion Version() const { return m_addonInfo->Version(); }
-  virtual AddonVersion MinVersion() const { return m_addonInfo->MinVersion(); }
-  virtual std::string Summary() const { return m_addonInfo->Summary(); }
-  virtual std::string Description() const { return m_addonInfo->Description(); }
-  virtual std::string Path() const { return m_addonInfo->Path(); }
-  virtual std::string Profile() const { return m_profilePath; }
-  virtual std::string Author() const { return m_addonInfo->Author(); }
-  virtual std::string ChangeLog() const { return m_addonInfo->ChangeLog(); }
-  virtual std::string Icon() const { return m_addonInfo->Icon(); };
-  virtual ArtMap Art() const { return m_addonInfo->Art(); };
-  virtual std::string FanArt() const { return m_addonInfo->FanArt(); }
-  virtual std::vector<std::string> Screenshots() const { return m_addonInfo->Screenshots(); };
-  virtual std::string Disclaimer() const { return m_addonInfo->Disclaimer(); }
-  virtual std::string Broken() const { return m_addonInfo->Broken(); }
-  virtual CDateTime InstallDate() const { return m_addonInfo->InstallDate(); }
-  virtual CDateTime LastUpdated() const { return m_addonInfo->LastUpdated(); }
-  virtual CDateTime LastUsed() const { return m_addonInfo->LastUsed(); }
-  virtual std::string Origin() const { return m_addonInfo->Origin(); }
-  virtual uint64_t PackageSize() const { return m_addonInfo->PackageSize(); }
-  virtual const ADDONDEPS& GetDeps() const { return m_addonInfo->GetDeps(); }
+  std::string FanArt() const override
+  {
+    auto it = m_addonInfo.Art().find("fanart");
+    return it != m_addonInfo.Art().end() ? it->second : "";
+  }
 
   /*! \brief Check whether the this addon can be configured or not
    \return true if the addon has settings, false otherwise
    \sa LoadSettings, LoadUserSettings, SaveSettings, HasUserSettings, GetSetting, UpdateSetting
    */
-  virtual bool HasSettings();
+  bool HasSettings() override;
 
   /*! \brief Check whether the user has configured this addon or not
    \return true if previously saved settings are found, false otherwise
@@ -108,42 +105,42 @@ public:
   /*! \brief Save any user configured settings
    \sa LoadSettings, LoadUserSettings, HasSettings, HasUserSettings, GetSetting, UpdateSetting
    */
-  virtual void SaveSettings();
+  void SaveSettings() override;
 
   /*! \brief Update a user-configured setting with a new value
    \param key the id of the setting to update
    \param value the value that the setting should take
    \sa LoadSettings, LoadUserSettings, SaveSettings, HasSettings, HasUserSettings, GetSetting
    */
-  virtual void UpdateSetting(const std::string& key, const std::string& value);
+  void UpdateSetting(const std::string& key, const std::string& value) override;
 
   /*! \brief Update a user-configured setting with a new boolean value
   \param key the id of the setting to update
   \param value the value that the setting should take
   \sa LoadSettings, LoadUserSettings, SaveSettings, HasSettings, HasUserSettings, GetSetting
   */
-  virtual bool UpdateSettingBool(const std::string& key, bool value);
+  bool UpdateSettingBool(const std::string& key, bool value) override;
 
   /*! \brief Update a user-configured setting with a new integer value
   \param key the id of the setting to update
   \param value the value that the setting should take
   \sa LoadSettings, LoadUserSettings, SaveSettings, HasSettings, HasUserSettings, GetSetting
   */
-  virtual bool UpdateSettingInt(const std::string& key, int value);
+  bool UpdateSettingInt(const std::string& key, int value) override;
 
   /*! \brief Update a user-configured setting with a new number value
   \param key the id of the setting to update
   \param value the value that the setting should take
   \sa LoadSettings, LoadUserSettings, SaveSettings, HasSettings, HasUserSettings, GetSetting
   */
-  virtual bool UpdateSettingNumber(const std::string& key, double value);
+  bool UpdateSettingNumber(const std::string& key, double value) override;
 
   /*! \brief Update a user-configured setting with a new string value
   \param key the id of the setting to update
   \param value the value that the setting should take
   \sa LoadSettings, LoadUserSettings, SaveSettings, HasSettings, HasUserSettings, GetSetting
   */
-  virtual bool UpdateSettingString(const std::string& key, const std::string& value);
+  bool UpdateSettingString(const std::string& key, const std::string& value) override;
 
   /*! \brief Retrieve a particular settings value
    If a previously configured user setting is available, we return it's value, else we return the default (if available)
@@ -151,7 +148,7 @@ public:
    \return the current value of the setting, or the default if the setting has yet to be configured.
    \sa LoadSettings, LoadUserSettings, SaveSettings, HasSettings, HasUserSettings, UpdateSetting
    */
-  virtual std::string GetSetting(const std::string& key);
+  std::string GetSetting(const std::string& key) override;
 
   /*! \brief Retrieve a particular settings value as boolean
   If a previously configured user setting is available, we return it's value, else we return the default (if available)
@@ -160,7 +157,7 @@ public:
   \return true if the setting's value was retrieved, false otherwise.
   \sa LoadSettings, LoadUserSettings, SaveSettings, HasSettings, HasUserSettings, UpdateSetting
   */
-  virtual bool GetSettingBool(const std::string& key, bool& value);
+  bool GetSettingBool(const std::string& key, bool& value) override;
 
   /*! \brief Retrieve a particular settings value as integer
   If a previously configured user setting is available, we return it's value, else we return the default (if available)
@@ -169,7 +166,7 @@ public:
   \return true if the setting's value was retrieved, false otherwise.
   \sa LoadSettings, LoadUserSettings, SaveSettings, HasSettings, HasUserSettings, UpdateSetting
   */
-  virtual bool GetSettingInt(const std::string& key, int& value);
+  bool GetSettingInt(const std::string& key, int& value) override;
 
   /*! \brief Retrieve a particular settings value as number
   If a previously configured user setting is available, we return it's value, else we return the default (if available)
@@ -178,7 +175,7 @@ public:
   \return true if the setting's value was retrieved, false otherwise.
   \sa LoadSettings, LoadUserSettings, SaveSettings, HasSettings, HasUserSettings, UpdateSetting
   */
-  virtual bool GetSettingNumber(const std::string& key, double& value);
+  bool GetSettingNumber(const std::string& key, double& value) override;
 
   /*! \brief Retrieve a particular settings value as string
   If a previously configured user setting is available, we return it's value, else we return the default (if available)
@@ -187,43 +184,41 @@ public:
   \return true if the setting's value was retrieved, false otherwise.
   \sa LoadSettings, LoadUserSettings, SaveSettings, HasSettings, HasUserSettings, UpdateSetting
   */
-  virtual bool GetSettingString(const std::string& key, std::string& value);
+  bool GetSettingString(const std::string& key, std::string& value) override;
 
-  virtual CAddonSettings* GetSettings() const;
+  CAddonSettings* GetSettings() const override;
 
   /*! \brief get the required version of a dependency.
    \param dependencyID the addon ID of the dependency.
    \return the version this addon requires.
    */
-  virtual AddonVersion GetDependencyVersion(const std::string &dependencyID) const;
+  AddonVersion GetDependencyVersion(const std::string &dependencyID) const override;
 
   /*! \brief return whether or not this addon satisfies the given version requirements
    \param version the version to meet.
    \return true if  min_version <= version <= current_version, false otherwise.
    */
-  virtual bool MeetsVersion(const AddonVersion &version) const { return m_addonInfo->MeetsVersion(version); }
-  virtual bool ReloadSettings();
+  bool MeetsVersion(const AddonVersion &version) const override { return m_addonInfo.MeetsVersion(version); }
+  bool ReloadSettings() override;
 
   /*! \brief callback for when this add-on is disabled.
    Use to perform any needed actions (e.g. stop a service)
    */
-  virtual void OnDisabled() {};
+  void OnDisabled() override {};
 
   /*! \brief callback for when this add-on is enabled.
    Use to perform any needed actions (e.g. start a service)
    */
-  virtual void OnEnabled() {};
+  void OnEnabled() override {};
 
   /*! \brief retrieve the running instance of an add-on if it persists while running.
    */
-  virtual AddonPtr GetRunningInstance() const { return AddonPtr(); }
+  AddonPtr GetRunningInstance() const override { return AddonPtr(); }
 
-  virtual void OnPreInstall() {};
-  virtual void OnPostInstall(bool update, bool modal) {};
-  virtual void OnPreUnInstall() {};
-  virtual void OnPostUnInstall() {};
-
-  const AddonInfoPtr AddonInfo() const { return m_addonInfo; }
+  void OnPreInstall() override {};
+  void OnPostInstall(bool update, bool modal) override {};
+  void OnPreUnInstall() override {};
+  void OnPostUnInstall() override {};
 
 protected:
   /*! \brief Whether or not the settings have been initialized. */
@@ -265,15 +260,16 @@ protected:
    */
   virtual bool SettingsToXML(CXBMCTinyXML &doc) const;
 
-  const AddonInfoPtr m_addonInfo;
+  const CAddonInfo m_addonInfo;
+  std::string m_userSettingsPath;
 
 private:
   bool m_loadSettingsFailed;
   bool m_hasUserSettings;
 
   std::string m_profilePath;
-  std::string m_userSettingsPath;
   mutable std::shared_ptr<CAddonSettings> m_settings;
 };
 
 }; /* namespace ADDON */
+

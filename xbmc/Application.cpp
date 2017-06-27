@@ -53,7 +53,7 @@
 #include "addons/BinaryAddonCache.h"
 #include "addons/LanguageResource.h"
 #include "addons/Skin.h"
-#include "addons/interfaces/kodi/addon-instance/VFSEntry.h"
+#include "addons/VFSEntry.h"
 #include "interfaces/generic/ScriptInvocationManager.h"
 #ifdef HAS_PYTHON
 #include "interfaces/python/XBPython.h"
@@ -1442,13 +1442,15 @@ void CApplication::OnSettingAction(std::shared_ptr<const CSetting> setting)
     ActivateScreenSaver(true);
   else if (settingId == CSettings::SETTING_SCREENSAVER_SETTINGS)
   {
-    AddonInfoPtr addon = CAddonMgr::GetInstance().GetInstalledAddonInfo(m_ServiceManager->GetSettings().GetString(CSettings::SETTING_SCREENSAVER_MODE), ADDON_SCREENSAVER);
-    CGUIDialogAddonSettings::ShowForAddon(addon);
+    AddonPtr addon;
+    if (CAddonMgr::GetInstance().GetAddon(m_ServiceManager->GetSettings().GetString(CSettings::SETTING_SCREENSAVER_MODE), addon, ADDON_SCREENSAVER))
+      CGUIDialogAddonSettings::ShowForAddon(addon);
   }
   else if (settingId == CSettings::SETTING_AUDIOCDS_SETTINGS)
   {
-    AddonInfoPtr addon = CAddonMgr::GetInstance().GetInstalledAddonInfo(m_ServiceManager->GetSettings().GetString(CSettings::SETTING_AUDIOCDS_ENCODER), ADDON_AUDIOENCODER);
-    CGUIDialogAddonSettings::ShowForAddon(addon);
+    AddonPtr addon;
+    if (CAddonMgr::GetInstance().GetAddon(m_ServiceManager->GetSettings().GetString(CSettings::SETTING_AUDIOCDS_ENCODER), addon, ADDON_AUDIOENCODER))
+      CGUIDialogAddonSettings::ShowForAddon(addon);
   }
   else if (settingId == CSettings::SETTING_VIDEOSCREEN_GUICALIBRATION)
     g_windowManager.ActivateWindow(WINDOW_SCREEN_CALIBRATION);
@@ -2899,9 +2901,14 @@ void CApplication::Stop(int exitCode)
 #ifdef HAS_FILESYSTEM_SFTP
     CSFTPSessionManager::DisconnectAllSessions();
 #endif
-
-    for (const auto& vfsAddon : CServiceBroker::GetVFSAddonCache().GetAddonInstances())
-      vfsAddon->DisconnectAll();
+    VECADDONS addons;
+    CServiceBroker::GetBinaryAddonCache().GetAddons(addons, ADDON_VFS);
+    for (auto& it : addons)
+    {
+      AddonPtr addon = CServiceBroker::GetBinaryAddonCache().GetAddonInstance(it->ID(), ADDON_VFS);
+      VFSEntryPtr vfs = std::static_pointer_cast<CVFSEntry>(addon);
+      vfs->DisconnectAll();
+    }
 
 #if defined(TARGET_POSIX) && defined(HAS_FILESYSTEM_SMB)
     smb.Deinit();
@@ -3008,8 +3015,8 @@ bool CApplication::PlayMedia(const CFileItem& item, const std::string &player, i
   CURL path(item.GetPath());
   if (path.GetProtocol() == "game")
   {
-    AddonInfoPtr addon = CAddonMgr::GetInstance().GetInstalledAddonInfo(path.GetHostName(), ADDON_GAMEDLL);
-    if (addon)
+    AddonPtr addon;
+    if (CAddonMgr::GetInstance().GetAddon(path.GetHostName(), addon, ADDON_GAMEDLL))
     {
       CFileItem addonItem(addon);
       return PlayFile(addonItem, player, false) == PLAYBACK_OK;
@@ -3974,7 +3981,7 @@ bool CApplication::WakeUpScreenSaver(bool bPowerOffKeyPressed /* = false */)
         * makes sure the addon gets terminated after we've moved out of the screensaver window.
         * If we don't do this, we may simply lockup.
         */
-        g_alarmClock.Start(SCRIPT_ALARM, SCRIPT_TIMEOUT, "StopScript(" + m_pythonScreenSaver->Type(ADDON_SCREENSAVER)->LibPath() + ")", true, false);
+        g_alarmClock.Start(SCRIPT_ALARM, SCRIPT_TIMEOUT, "StopScript(" + m_pythonScreenSaver->LibPath() + ")", true, false);
         m_pythonScreenSaver.reset();
       }
       if (g_windowManager.GetActiveWindow() == WINDOW_SCREENSAVER)
@@ -4079,7 +4086,7 @@ void CApplication::ActivateScreenSaver(bool forceType /*= false */)
     return;
   else if (CAddonMgr::GetInstance().GetAddon(m_screensaverIdInUse, m_pythonScreenSaver, ADDON_SCREENSAVER))
   {
-    std::string libPath = m_pythonScreenSaver->Type(ADDON_SCREENSAVER)->LibPath();
+    std::string libPath = m_pythonScreenSaver->LibPath();
     if (CScriptInvocationManager::GetInstance().HasLanguageInvoker(libPath))
     {
       CLog::Log(LOGDEBUG, "using python screensaver add-on %s", m_screensaverIdInUse.c_str());
@@ -4088,7 +4095,7 @@ void CApplication::ActivateScreenSaver(bool forceType /*= false */)
       g_alarmClock.Stop(SCRIPT_ALARM, true);
 
       if (!CScriptInvocationManager::GetInstance().Stop(libPath))
-        CScriptInvocationManager::GetInstance().ExecuteAsync(libPath, AddonPtr(new CAddon(*m_pythonScreenSaver)));
+        CScriptInvocationManager::GetInstance().ExecuteAsync(libPath, AddonPtr(new CAddon(dynamic_cast<ADDON::CAddon&>(*m_pythonScreenSaver))));
       return;
     }
     m_pythonScreenSaver.reset();
@@ -4569,8 +4576,15 @@ void CApplication::ProcessSlow()
 #ifdef HAS_FILESYSTEM_SFTP
   CSFTPSessionManager::ClearOutIdleSessions();
 #endif
-  for (const auto& vfsAddon : CServiceBroker::GetVFSAddonCache().GetAddonInstances())
-    vfsAddon->ClearOutIdle();
+
+  VECADDONS addons;
+  CServiceBroker::GetBinaryAddonCache().GetAddons(addons, ADDON_VFS);
+  for (auto& it : addons)
+  {
+    AddonPtr addon = CServiceBroker::GetBinaryAddonCache().GetAddonInstance(it->ID(), ADDON_VFS);
+    VFSEntryPtr vfs = std::static_pointer_cast<CVFSEntry>(addon);
+    vfs->ClearOutIdle();
+  }
 
   g_mediaManager.ProcessEvents();
 
@@ -5206,8 +5220,14 @@ void CApplication::CloseNetworkShares()
   CSFTPSessionManager::DisconnectAllSessions();
 #endif
 
-  for (const auto& vfsAddon : CServiceBroker::GetVFSAddonCache().GetAddonInstances())
-    vfsAddon->DisconnectAll();
+  VECADDONS addons;
+  CServiceBroker::GetBinaryAddonCache().GetAddons(addons, ADDON_VFS);
+  for (auto& it : addons)
+  {
+    AddonPtr addon = CServiceBroker::GetBinaryAddonCache().GetAddonInstance(it->ID(), ADDON_VFS);
+    VFSEntryPtr vfs = std::static_pointer_cast<CVFSEntry>(addon);
+    vfs->DisconnectAll();
+  }
 }
 
 void CApplication::RegisterActionListener(IActionListener *listener)

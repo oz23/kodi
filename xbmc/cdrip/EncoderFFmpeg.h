@@ -34,7 +34,7 @@ public:
   CEncoderFFmpeg();
   virtual ~CEncoderFFmpeg() {}
 
-  bool Init(AddonToKodiFuncTable_AudioEncoder &callbacks);
+  bool Init(audioenc_callbacks &callbacks);
   int Encode(int nNumBytesRead, uint8_t *pbtStream);
   bool Close();
 private:
@@ -67,7 +67,7 @@ private:
   AVFrame          *m_ResampledFrame;
   bool              m_NeedConversion;
 
-  AddonToKodiFuncTable_AudioEncoder m_callbacks;
+  audioenc_callbacks m_callbacks;
 
   bool WriteFrame();
 };

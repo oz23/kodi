@@ -20,7 +20,7 @@
 #pragma once
 
 #include "ControllerTypes.h"
-#include "addons/Addon.h"
+#include "addons/IAddon.h"
 
 #include <map>
 #include <set>

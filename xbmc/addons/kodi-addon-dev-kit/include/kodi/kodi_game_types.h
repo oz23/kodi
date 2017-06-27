@@ -20,7 +20,8 @@
 #ifndef KODI_GAME_TYPES_H_
 #define KODI_GAME_TYPES_H_
 
-#include "AddonBase.h"
+#include "versions.h"
+#include "xbmc_addon_types.h"
 
 #include <stddef.h>
 #include <stdint.h>

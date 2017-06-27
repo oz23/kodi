@@ -30,7 +30,7 @@
  * @subsection sec1_1 General
  * @li The basic support on the addon is supplied with the
  * AE_DSP_ADDON_CAPABILITIES data which becomes asked over
- * GetCapabilities(...), further the addon must register his available
+ * GetAddonCapabilities(...), further the addon must register his available
  * modes on startup with the RegisterMode(...) callback function (see
  * libKODI_adsp.h). If one of this two points is not set the addon becomes
  * ignored for the chain step.
@@ -103,9 +103,10 @@ extern "C"
    * to call, etc.
    * All capabilities that the add-on supports should be set to true.
    * @param pCapabilities The add-ons capabilities.
+   * @return AE_DSP_ERROR_NO_ERROR if the properties were fetched successfully.
    * @remarks Valid implementation required.
    */
-  void GetCapabilities(AE_DSP_ADDON_CAPABILITIES *pCapabilities);
+  AE_DSP_ERROR GetAddonCapabilities(AE_DSP_ADDON_CAPABILITIES *pCapabilities);
 
   /*!
    * @return The name reported by the back end that will be displayed in the
@@ -201,7 +202,7 @@ extern "C"
    * @param samples Amount of samples inside array_in
    * @return true if work was OK
    * @remarks Optional. Is set by AE_DSP_ADDON_CAPABILITIES and asked with
-   * GetCapabilities
+   * GetAddonCapabilities
    */
   bool InputProcess(const ADDON_HANDLE handle, const float **array_in, unsigned int samples);
   //@}
@@ -217,7 +218,7 @@ extern "C"
    * @param handle identification data for stream
    * @return The needed size of output array or 0 if no changes within it
    * @remarks Optional. Is set by AE_DSP_ADDON_CAPABILITIES and asked with
-   * GetCapabilities
+   * GetAddonCapabilities
    */
   unsigned int InputResampleProcessNeededSamplesize(const ADDON_HANDLE handle);
 
@@ -231,7 +232,7 @@ extern "C"
    * @param samples Amount of samples inside array_in
    * @return Amount of samples processed
    * @remarks Optional. Is set by AE_DSP_ADDON_CAPABILITIES and asked with
-   * GetCapabilities
+   * GetAddonCapabilities
    */
   unsigned int InputResampleProcess(const ADDON_HANDLE handle, float **array_in, float **array_out, unsigned int samples);
 
@@ -241,7 +242,7 @@ extern "C"
    * @param handle identification data for stream
    * @return The new sample rate
    * @remarks Optional. Is set by AE_DSP_ADDON_CAPABILITIES and asked with
-   * GetCapabilities
+   * GetAddonCapabilities
    */
   int InputResampleSampleRate(const ADDON_HANDLE handle);
 
@@ -251,7 +252,7 @@ extern "C"
    * @param handle identification data for stream
    * @return the delay in seconds
    * @remarks Optional. Is set by AE_DSP_ADDON_CAPABILITIES and asked with
-   * GetCapabilities
+   * GetAddonCapabilities
    */
   float InputResampleGetDelay(const ADDON_HANDLE handle);
   //@}
@@ -271,7 +272,7 @@ extern "C"
    * pointer or anything else what is needed to find it.
    * @return The needed size of output array or 0 if no changes within it
    * @remarks Optional. Is set by AE_DSP_ADDON_CAPABILITIES and asked with
-   * GetCapabilities
+   * GetAddonCapabilities
    */
   unsigned int PreProcessNeededSamplesize(const ADDON_HANDLE handle, unsigned int mode_id);
 
@@ -285,7 +286,7 @@ extern "C"
    * pointer or anything else what is needed to find it.
    * @return the delay in seconds
    * @remarks Optional. Is set by AE_DSP_ADDON_CAPABILITIES and asked with
-   * GetCapabilities
+   * GetAddonCapabilities
    */
   float PreProcessGetDelay(const ADDON_HANDLE handle, unsigned int mode_id);
 
@@ -302,7 +303,7 @@ extern "C"
    * @param samples Amount of samples inside array_in
    * @return Amount of samples processed
    * @remarks Optional. Is set by AE_DSP_ADDON_CAPABILITIES and asked with
-   * GetCapabilities
+   * GetAddonCapabilities
    */
   unsigned int PreProcess(const ADDON_HANDLE handle, unsigned int mode_id, float **array_in, float **array_out, unsigned int samples);
   //@}
@@ -319,7 +320,7 @@ extern "C"
    * @param unique_db_mode_id The Mode unique id generated from DSP database.
    * @return AE_DSP_ERROR_NO_ERROR if the setup was successful
    * @remarks Optional. Is set by AE_DSP_ADDON_CAPABILITIES and asked with
-   * GetCapabilities
+   * GetAddonCapabilities
    */
   AE_DSP_ERROR MasterProcessSetMode(const ADDON_HANDLE handle, AE_DSP_STREAMTYPE type, unsigned int mode_id, int unique_db_mode_id);
 
@@ -330,7 +331,7 @@ extern "C"
    * @param handle identification data for stream
    * @return The needed size of output array or 0 if no changes within it
    * @remarks Optional. Is set by AE_DSP_ADDON_CAPABILITIES and asked with
-   * GetCapabilities
+   * GetAddonCapabilities
    */
   unsigned int MasterProcessNeededSamplesize(const ADDON_HANDLE handle);
 
@@ -340,7 +341,7 @@ extern "C"
    * @param handle identification data for stream
    * @return the delay in seconds
    * @remarks Optional. Is set by AE_DSP_ADDON_CAPABILITIES and asked with
-   * GetCapabilities
+   * GetAddonCapabilities
    */
   float MasterProcessGetDelay(const ADDON_HANDLE handle);
 
@@ -365,7 +366,7 @@ extern "C"
    * @param samples Amount of samples inside array_in
    * @return Amount of samples processed
    * @remarks Optional. Is set by AE_DSP_ADDON_CAPABILITIES and asked with
-   * GetCapabilities
+   * GetAddonCapabilities
    */
   unsigned int MasterProcess(const ADDON_HANDLE handle, float **array_in, float **array_out, unsigned int samples);
 
@@ -373,7 +374,7 @@ extern "C"
    * Used to get a information string about the processed work to show on skin
    * @return A string to show
    * @remarks Optional. Is set by AE_DSP_ADDON_CAPABILITIES and asked with
-   * GetCapabilities
+   * GetAddonCapabilities
    */
   const char *MasterProcessGetStreamInfoString(const ADDON_HANDLE handle);
   //@}
@@ -393,7 +394,7 @@ extern "C"
    * pointer or anything else what is needed to find it.
    * @return The needed size of output array or 0 if no changes within it
    * @remarks Optional. Is set by AE_DSP_ADDON_CAPABILITIES and asked with
-   * GetCapabilities
+   * GetAddonCapabilities
    */
   unsigned int PostProcessNeededSamplesize(const ADDON_HANDLE handle, unsigned int mode_id);
 
@@ -407,7 +408,7 @@ extern "C"
    * pointer or anything else what is needed to find it.
    * @return the delay in seconds
    * @remarks Optional. Is set by AE_DSP_ADDON_CAPABILITIES and asked with
-   * GetCapabilities
+   * GetAddonCapabilities
    */
   float PostProcessGetDelay(const ADDON_HANDLE handle, unsigned int mode_id);
 
@@ -427,7 +428,7 @@ extern "C"
    * @param samples Amount of samples inside array_in
    * @return Amount of samples processed
    * @remarks Optional. Is set by AE_DSP_ADDON_CAPABILITIES and asked with
-   * GetCapabilities
+   * GetAddonCapabilities
    */
   unsigned int PostProcess(const ADDON_HANDLE handle, unsigned int mode_id, float **array_in, float **array_out, unsigned int samples);
   //@}
@@ -443,7 +444,7 @@ extern "C"
    * @param handle identification data for stream
    * @return The needed size of output array or 0 if no changes within it
    * @remarks Optional. Is set by AE_DSP_ADDON_CAPABILITIES and asked with
-   * GetCapabilities
+   * GetAddonCapabilities
    */
   unsigned int OutputResampleProcessNeededSamplesize(const ADDON_HANDLE handle);
 
@@ -457,7 +458,7 @@ extern "C"
    * @param samples Amount of samples inside array_in
    * @return Amount of samples processed
    * @remarks Optional. Is set by AE_DSP_ADDON_CAPABILITIES and asked with
-   * GetCapabilities
+   * GetAddonCapabilities
    */
   unsigned int OutputResampleProcess(const ADDON_HANDLE handle, float **array_in, float **array_out, unsigned int samples);
 
@@ -467,7 +468,7 @@ extern "C"
    * @param handle identification data for stream
    * @return The new sample rate
    * @remarks Optional. Is set by AE_DSP_ADDON_CAPABILITIES and asked with
-   * GetCapabilities
+   * GetAddonCapabilities
    */
   int OutputResampleSampleRate(const ADDON_HANDLE handle);
 
@@ -477,7 +478,7 @@ extern "C"
    * @param handle identification data for stream
    * @return the delay in seconds
    * @remarks Optional. Is set by AE_DSP_ADDON_CAPABILITIES and asked with
-   * GetCapabilities
+   * GetAddonCapabilities
    */
   float OutputResampleGetDelay(const ADDON_HANDLE handle);
   //@}
@@ -487,7 +488,7 @@ extern "C"
   {
     KodiToAddonFuncTable_AudioDSP* pDSP = static_cast<KodiToAddonFuncTable_AudioDSP*>(ptr);
 
-    pDSP->GetCapabilities = GetCapabilities;
+    pDSP->GetAddonCapabilities                  = GetAddonCapabilities;
     pDSP->GetDSPName                            = GetDSPName;
     pDSP->GetDSPVersion                         = GetDSPVersion;
     pDSP->MenuHook                              = CallMenuHook;

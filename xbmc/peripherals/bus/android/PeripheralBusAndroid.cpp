@@ -119,7 +119,7 @@ void CPeripheralBusAndroid::Initialise(void)
 
 void CPeripheralBusAndroid::ProcessEvents()
 {
-  std::vector<kodi::addon::PeripheralEvent> events;
+  std::vector<ADDON::PeripheralEvent> events;
   {
     CSingleLock lock(m_critSectionStates);
     for (const auto& joystickState : m_joystickStates)

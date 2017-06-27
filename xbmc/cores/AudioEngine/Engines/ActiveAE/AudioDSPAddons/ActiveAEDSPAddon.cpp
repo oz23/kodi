@@ -35,8 +35,8 @@ using namespace ActiveAE;
 
 #define DEFAULT_INFO_STRING_VALUE "unknown"
 
-CActiveAEDSPAddon::CActiveAEDSPAddon(AddonInfoPtr addonInfo) :
-    CAddonDll(addonInfo)
+CActiveAEDSPAddon::CActiveAEDSPAddon(CAddonInfo addonInfo) :
+    CAddonDll(std::move(addonInfo))
 {
   ResetProperties();
 }
@@ -196,7 +196,12 @@ bool CActiveAEDSPAddon::GetAddonProperties(void)
 
   /* get the capabilities */
   memset(&addonCapabilities, 0, sizeof(addonCapabilities));
-  m_struct.toAddon.GetCapabilities(&addonCapabilities);
+  AE_DSP_ERROR retVal = m_struct.toAddon.GetAddonCapabilities(&addonCapabilities);
+  if (retVal != AE_DSP_ERROR_NO_ERROR)
+  {
+    CLog::Log(LOGERROR, "ActiveAE DSP - couldn't get the capabilities for add-on '%s'. Please contact the developer of this add-on: %s", GetFriendlyName().c_str(), Author().c_str());
+    return false;
+  }
 
   /* get the name of the dsp addon */
   std::string strDSPName = m_struct.toAddon.GetDSPName();

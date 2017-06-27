@@ -93,7 +93,8 @@
 #endif
 #include "ResourceDirectory.h"
 #include "ServiceBroker.h"
-#include "addons/interfaces/kodi/addon-instance/VFSEntry.h"
+#include "addons/VFSEntry.h"
+#include "addons/BinaryAddonCache.h"
 
 using namespace ADDON;
 
@@ -191,10 +192,14 @@ IDirectory* CDirectoryFactory::Create(const CURL& url)
 
   if (!url.GetProtocol().empty() && CServiceBroker::IsBinaryAddonCacheUp())
   {
-    for (const auto& vfsAddon : CServiceBroker::GetVFSAddonCache().GetAddonInstances())
+    VECADDONS addons;
+    ADDON::CBinaryAddonCache &addonCache = CServiceBroker::GetBinaryAddonCache();
+    addonCache.GetAddons(addons, ADDON::ADDON_VFS);
+    for (size_t i=0;i<addons.size();++i)
     {
-      if (vfsAddon->HasDirectories() && vfsAddon->GetProtocols().find(url.GetProtocol()) != std::string::npos)
-        return new CVFSEntryIDirectoryWrapper(vfsAddon);
+      VFSEntryPtr vfs(std::static_pointer_cast<CVFSEntry>(addons[i]));
+      if (vfs->HasDirectories() && vfs->GetProtocols().find(url.GetProtocol()) != std::string::npos)
+        return new CVFSEntryIDirectoryWrapper(vfs);
     }
   }
 

@@ -35,7 +35,7 @@
 
 #include <cstddef>
 
-#include "AddonBase.h"
+#include "xbmc_addon_types.h"
 
 #undef ATTRIBUTE_PACKED
 #undef PRAGMA_PACK_BEGIN
@@ -488,7 +488,11 @@ extern "C" {
 
   typedef struct KodiToAddonFuncTable_AudioDSP
   {
-    void (__cdecl* GetCapabilities)(AE_DSP_ADDON_CAPABILITIES*);
+    const char*  (__cdecl* GetAudioDSPAPIVersion)                (void);
+    const char*  (__cdecl* GetMinimumAudioDSPAPIVersion)         (void);
+    const char*  (__cdecl* GetGUIAPIVersion)                     (void);
+    const char*  (__cdecl* GetMinimumGUIAPIVersion)              (void);
+    AE_DSP_ERROR (__cdecl* GetAddonCapabilities)                 (AE_DSP_ADDON_CAPABILITIES*);
     const char*  (__cdecl* GetDSPName)                           (void);
     const char*  (__cdecl* GetDSPVersion)                        (void);
     AE_DSP_ERROR (__cdecl* MenuHook)                             (const AE_DSP_MENUHOOK&, const AE_DSP_MENUHOOK_DATA&);

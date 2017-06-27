@@ -8028,7 +8028,7 @@ this.Kodi.module("AddonApp.Pvr", function(Pvr, App, Backbone, Marionette, $, _) 
   API = {
     isEnabled: function() {
       return App.request("addon:isEnabled", {
-        type: 'kodi.pvrclient'
+        type: 'xbmc.pvrclient'
       });
     }
   };
@@ -19155,7 +19155,7 @@ this.Kodi.module("SettingsApp.Show.Kodi", function(Kodi, App, Backbone, Marionet
         'services.webskin': 'xbmc.webinterface',
         'subtitles.tv': 'xbmc.subtitle.module',
         'subtitles.movie': 'xbmc.subtitle.module',
-        'audiocds.encoder': 'kodi.audioencoder'
+        'audiocds.encoder': 'xbmc.audioencoder'
       },
       actionLookups: {
         "musiclibrary.cleanup": "command:kodi:audio:clean",
