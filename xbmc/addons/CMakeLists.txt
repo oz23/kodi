@@ -30,7 +30,7 @@ set(SOURCES Addon.cpp
             Skin.cpp
             UISoundsResource.cpp
             VFSEntry.cpp
-            Visualisation.cpp
+            Visualization.cpp
             Webinterface.cpp)
 
 set(HEADERS Addon.h
@@ -70,7 +70,7 @@ set(HEADERS Addon.h
             Skin.h
             UISoundsResource.h
             VFSEntry.h
-            Visualisation.h
+            Visualization.h
             Webinterface.h)
 
 core_add_library(addons)

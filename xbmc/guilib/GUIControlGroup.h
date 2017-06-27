@@ -67,7 +67,6 @@ public:
 
   int GetFocusedControlID() const;
   CGUIControl *GetFocusedControl() const;
-  virtual CGUIControl *GetControl(int id, std::vector<CGUIControl*> *idCollector = nullptr);
   virtual CGUIControl *GetFirstFocusableControl(int id);
 
   virtual void AddControl(CGUIControl *control, int position = -1);

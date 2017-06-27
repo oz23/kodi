@@ -402,31 +402,6 @@ void CGUIControlGroup::UnfocusFromPoint(const CPoint &point)
   CGUIControl::UnfocusFromPoint(point);
 }
 
-CGUIControl *CGUIControlGroup::GetControl(int iControl, std::vector<CGUIControl*> *idCollector)
-{
-  if (idCollector)
-    idCollector->clear();
-
-  CGUIControl* pPotential(nullptr);
-
-  LookupMap::const_iterator first = m_lookup.find(iControl);
-  if (first != m_lookup.end())
-  {
-    LookupMap::const_iterator last = m_lookup.upper_bound(iControl);
-    for (LookupMap::const_iterator i = first; i != last; ++i)
-    {
-      CGUIControl *control = i->second;
-      if (control->IsVisible())
-        return control;
-      else if (idCollector)
-        idCollector->push_back(control);
-      else if (!pPotential)
-        pPotential = control;
-    }
-  }
-  return pPotential;
-}
-
 int CGUIControlGroup::GetFocusedControlID() const
 {
   if (m_focusedControl) return m_focusedControl;

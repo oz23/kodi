@@ -138,7 +138,7 @@ namespace ActiveAE
      * @param bRestart If true, restart the addon.
      * @return True if the it was found, false otherwise.
      */
-    bool StopAudioDSPAddon(const ADDON::AddonInfoPtr addon, bool bRestart);
+    bool StopAudioDSPAddon(ADDON::AddonPtr addon, bool bRestart);
 
     /*!
      * @return The amount of enabled audio dsp addons.
