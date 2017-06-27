@@ -45,6 +45,7 @@ public:
   bool Map(CVaapiRenderPicture *pic);
   void Unmap();
   void Init(InteropInfo &interop);
+  static bool TestInterop(VADisplay vaDpy, EGLDisplay eglDisplay);
 
   GLuint m_texture = 0;
   GLuint m_textureY = 0;
