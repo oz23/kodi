@@ -32,7 +32,7 @@ public:
   virtual ~CRendererVAAPI();
 
   static CBaseRenderer* Create(CVideoBuffer *buffer);
-  static bool Register();
+  static void Register(VADisplay vaDpy, EGLDisplay eglDisplay, bool &general, bool &hevc);
 
   virtual bool Configure(const VideoPicture &picture, float fps, unsigned flags, unsigned int orientation) override;
 

@@ -225,8 +225,12 @@ bool CWinSystemX11GLContext::RefreshGLContext(bool force)
     if (gpuvendor.compare(0, 5, "intel") == 0)
     {
 #if defined (HAVE_LIBVA)
-      VAAPI::CDecoder::Register(static_cast<CGLContextEGL*>(m_pGLContext)->m_eglDisplay);
-      CRendererVAAPI::Register();
+      EGLDisplay eglDpy = static_cast<CGLContextEGL*>(m_pGLContext)->m_eglDisplay;
+      VADisplay vaDpy = GetVaDisplay();
+      bool general, hevc;
+      CRendererVAAPI::Register(vaDpy, eglDpy, general, hevc);
+      if (general)
+        VAAPI::CDecoder::Register(hevc);
 #endif
       return success;
     }
