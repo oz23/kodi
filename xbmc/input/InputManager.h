@@ -34,6 +34,7 @@
 #include "windowing/XBMC_events.h"
 #include "input/KeyboardStat.h"
 #include "input/MouseStat.h"
+#include "interfaces/IActionListener.h"
 #include "settings/lib/ISettingCallback.h"
 #include "threads/CriticalSection.h"
 
@@ -67,13 +68,14 @@ namespace MOUSE
  * \copydoc keyboard
  * \copydoc mouse
  */
-class CInputManager : public ISettingCallback
+class CInputManager : public ISettingCallback,
+                      public IActionListener
 {
 private:
   CInputManager();
   CInputManager(const CInputManager&);
   CInputManager const& operator=(CInputManager const&);
-  virtual ~CInputManager();
+  ~CInputManager() override;
 
 public:
   /*! \brief static method to get the current instance of the class. Creates a new instance the first time it's called.
@@ -108,14 +110,6 @@ public:
   \return true if event is handled, false otherwise
   */
   bool ProcessPeripherals(float frameTime);
-
-  /*! \brief Dispatch actions queued since the last call to Process()
-   */
-  void ProcessQueuedActions();
-
-  /*! \brief Queue an action to be processed on the next call to Process()
-   */
-  void QueueAction(const CAction& action);
 
   /*! \brief Process all inputs
    *
@@ -241,7 +235,11 @@ public:
    */
   int ExecuteBuiltin(const std::string& execute, const std::vector<std::string>& params);
 
-  virtual void OnSettingChanged(std::shared_ptr<const CSetting> setting) override;
+  // implementation of ISettingCallback
+  void OnSettingChanged(std::shared_ptr<const CSetting> setting) override;
+
+  // implementation of IActionListener
+  bool OnAction(const CAction& action) override;
 
   /*! \brief Registers a handler to be called on keyboard input (e.g a game client).
    *
@@ -303,6 +301,14 @@ private:
   * \sa CAction
   */
   bool ExecuteInputAction(const CAction &action);
+
+  /*! \brief Dispatch actions queued since the last call to Process()
+   */
+  void ProcessQueuedActions();
+
+  /*! \brief Queue an action to be processed on the next call to Process()
+   */
+  void QueueAction(const CAction& action);
 
   CKeyboardStat m_Keyboard;
   CMouseStat m_Mouse;

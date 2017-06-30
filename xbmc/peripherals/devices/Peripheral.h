@@ -23,6 +23,8 @@
 #include <set>
 #include <string>
 #include <vector>
+
+#include "input/joysticks/IInputProvider.h"
 #include "peripherals/PeripheralTypes.h"
 
 class TiXmlDocument;
@@ -53,13 +55,13 @@ namespace PERIPHERALS
     STATE_STANDBY
   } CecStateChange;
 
-  class CPeripheral
+  class CPeripheral : public KODI::JOYSTICK::IInputProvider
   {
     friend class CGUIDialogPeripheralSettings;
 
   public:
     CPeripheral(CPeripherals& manager, const PeripheralScanResult& scanResult, CPeripheralBus* bus);
-    virtual ~CPeripheral(void);
+    ~CPeripheral(void) override;
 
     bool operator ==(const CPeripheral &right) const;
     bool operator !=(const CPeripheral &right) const;
@@ -199,8 +201,9 @@ namespace PERIPHERALS
     virtual void RegisterJoystickDriverHandler(KODI::JOYSTICK::IDriverHandler* handler, bool bPromiscuous) { }
     virtual void UnregisterJoystickDriverHandler(KODI::JOYSTICK::IDriverHandler* handler) { }
 
-    virtual void RegisterJoystickInputHandler(KODI::JOYSTICK::IInputHandler* handler, bool bPromiscuous);
-    virtual void UnregisterJoystickInputHandler(KODI::JOYSTICK::IInputHandler* handler);
+    // implementation of IInputProvider
+    void RegisterInputHandler(KODI::JOYSTICK::IInputHandler* handler, bool bPromiscuous) override;
+    void UnregisterInputHandler(KODI::JOYSTICK::IInputHandler* handler) override;
 
     virtual void RegisterJoystickButtonMapper(KODI::JOYSTICK::IButtonMapper* mapper);
     virtual void UnregisterJoystickButtonMapper(KODI::JOYSTICK::IButtonMapper* mapper);
