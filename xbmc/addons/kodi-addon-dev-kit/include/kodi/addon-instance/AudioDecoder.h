@@ -1,7 +1,7 @@
 #pragma once
 /*
- *      Copyright (C) 2005-2013 Team XBMC
- *      http://xbmc.org
+ *      Copyright (C) 2005-2017 Team Kodi
+ *      http://kodi.tv
  *
  *  This Program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -14,19 +14,18 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with XBMC; see the file COPYING.  If not, see
+ *  along with Kodi; see the file COPYING.  If not, see
  *  <http://www.gnu.org/licenses/>.
  *
  */
 
 #include "../AddonBase.h"
-
-#include <stdint.h>
 #ifdef BUILD_KODI_ADDON
 #include "../AEChannelData.h"
 #else
 #include "cores/AudioEngine/Utils/AEChannelData.h"
 #endif
+#include <stdint.h>
 
 namespace kodi { namespace addon { class CInstanceAudioDecoder; }}
 
@@ -47,18 +46,18 @@ extern "C"
   typedef struct KodiToAddonFuncTable_AudioDecoder
   {
     kodi::addon::CInstanceAudioDecoder* addonInstance;
-    bool (__cdecl* Init) (AddonInstance_AudioDecoder* instance,
+    bool (__cdecl* init) (const AddonInstance_AudioDecoder* instance,
                           const char* file, unsigned int filecache,
                           int* channels, int* samplerate,
                           int* bitspersample, int64_t* totaltime,
                           int* bitrate, AEDataFormat* format,
                           const AEChannel** info);
-    int  (__cdecl* ReadPCM) (AddonInstance_AudioDecoder* instance, uint8_t* buffer, int size, int* actualsize);
-    int64_t  (__cdecl* Seek) (AddonInstance_AudioDecoder* instance, int64_t time);
-    bool (__cdecl* ReadTag) (AddonInstance_AudioDecoder* instance,
-                             const char* file, char* title,
-                             char* artist, int* length);
-    int  (__cdecl* TrackCount) (AddonInstance_AudioDecoder* instance, const char* file);
+    int  (__cdecl* read_pcm) (const AddonInstance_AudioDecoder* instance, uint8_t* buffer, int size, int* actualsize);
+    int64_t  (__cdecl* seek) (const AddonInstance_AudioDecoder* instance, int64_t time);
+    bool (__cdecl* read_tag) (const AddonInstance_AudioDecoder* instance,
+                              const char* file, char* title,
+                              char* artist, int* length);
+    int  (__cdecl* track_count) (const AddonInstance_AudioDecoder* instance, const char* file);
   } KodiToAddonFuncTable_AudioDecoder;
 
   typedef struct AddonInstance_AudioDecoder
@@ -110,11 +109,11 @@ namespace addon
     /// @return                         true if successfully done, otherwise
     ///                                 false
     ///
-    virtual bool Init(std::string filename, unsigned int filecache,
+    virtual bool Init(const std::string& filename, unsigned int filecache,
                       int& channels, int& samplerate,
                       int& bitspersample, int64_t& totaltime,
                       int& bitrate, AEDataFormat& format,
-                      std::vector<AEChannel>& channellist)=0;
+                      std::vector<AEChannel>& channellist) = 0;
     //--------------------------------------------------------------------------
 
     //==========================================================================
@@ -131,7 +130,7 @@ namespace addon
     ///                                 |  -1   | on end of stream
     ///                                 |   1   | on failure
     ///
-    virtual int ReadPCM(uint8_t* buffer, int size, int& actualsize)=0;
+    virtual int ReadPCM(uint8_t* buffer, int size, int& actualsize) = 0;
     //--------------------------------------------------------------------------
 
     //==========================================================================
@@ -154,7 +153,7 @@ namespace addon
     /// @param[out] length              Length of file
     /// @return                         True on success, false on failure
     ///
-    virtual bool ReadTag(std::string file, std::string& title, std::string& artist, int& length) { return false; }
+    virtual bool ReadTag(const std::string& file, std::string& title, std::string& artist, int& length) { return false; }
     //--------------------------------------------------------------------------
 
     //==========================================================================
@@ -164,7 +163,7 @@ namespace addon
     /// @param[in] file                 File to read tag for
     /// @return                         Number of tracks in file
     ///
-    virtual int TrackCount(std::string file) { return 1; }
+    virtual int TrackCount(const std::string& file) { return 1; }
     //--------------------------------------------------------------------------
 
   private:
@@ -174,15 +173,16 @@ namespace addon
         throw std::logic_error("kodi::addon::CInstanceAudioDecoder: Creation with empty addon structure not allowed, table must be given from Kodi!");
 
       m_instanceData = static_cast<AddonInstance_AudioDecoder*>(instance);
+
       m_instanceData->toAddon.addonInstance = this;
-      m_instanceData->toAddon.Init = ADDON_Init;
-      m_instanceData->toAddon.ReadPCM = ADDON_ReadPCM;
-      m_instanceData->toAddon.Seek = ADDON_Seek;
-      m_instanceData->toAddon.ReadTag = ADDON_ReadTag;
-      m_instanceData->toAddon.TrackCount = ADDON_TrackCount;
+      m_instanceData->toAddon.init = ADDON_Init;
+      m_instanceData->toAddon.read_pcm = ADDON_ReadPCM;
+      m_instanceData->toAddon.seek = ADDON_Seek;
+      m_instanceData->toAddon.read_tag = ADDON_ReadTag;
+      m_instanceData->toAddon.track_count = ADDON_TrackCount;
     }
 
-    inline static bool ADDON_Init(AddonInstance_AudioDecoder* instance, const char* file, unsigned int filecache,
+    inline static bool ADDON_Init(const AddonInstance_AudioDecoder* instance, const char* file, unsigned int filecache,
                                   int* channels, int* samplerate,
                                   int* bitspersample, int64_t* totaltime,
                                   int* bitrate, AEDataFormat* format,
@@ -204,22 +204,20 @@ namespace addon
       return ret;
     }
 
-    inline static int ADDON_ReadPCM(AddonInstance_AudioDecoder* instance, uint8_t* buffer, int size, int* actualsize)
+    inline static int ADDON_ReadPCM(const AddonInstance_AudioDecoder* instance, uint8_t* buffer, int size, int* actualsize)
     {
       return instance->toAddon.addonInstance->ReadPCM(buffer, size, *actualsize);
     }
 
-    inline static int64_t ADDON_Seek(AddonInstance_AudioDecoder* instance, int64_t time)
+    inline static int64_t ADDON_Seek(const AddonInstance_AudioDecoder* instance, int64_t time)
     {
       return instance->toAddon.addonInstance->Seek(time);
     }
 
-    inline static bool ADDON_ReadTag(AddonInstance_AudioDecoder* instance, const char* file, char* title, char* artist, int* length)
+    inline static bool ADDON_ReadTag(const AddonInstance_AudioDecoder* instance, const char* file, char* title, char* artist, int* length)
     {
       std::string intTitle;
       std::string intArtist;
-      memset(title, 0, ADDON_STANDARD_STRING_LENGTH_SMALL);
-      memset(artist, 0, ADDON_STANDARD_STRING_LENGTH_SMALL);
       bool ret = instance->toAddon.addonInstance->ReadTag(file, intTitle, intArtist, *length);
       if (ret)
       {
@@ -229,7 +227,7 @@ namespace addon
       return ret;
     }
 
-    inline static int ADDON_TrackCount(AddonInstance_AudioDecoder* instance, const char* file)
+    inline static int ADDON_TrackCount(const AddonInstance_AudioDecoder* instance, const char* file)
     {
       return instance->toAddon.addonInstance->TrackCount(file);
     }
