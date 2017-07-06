@@ -133,7 +133,7 @@ void CVideoBufferFFmpeg::Unref()
 class CVideoBufferPoolFFmpeg : public IVideoBufferPool
 {
 public:
-  ~CVideoBufferPoolFFmpeg();
+  virtual ~CVideoBufferPoolFFmpeg();
   virtual void Return(int id) override;
   virtual CVideoBuffer* Get() override;
 
@@ -1279,12 +1279,3 @@ IHardwareDecoder* CDVDVideoCodecFFmpeg::GetHWAccel()
   return m_pHardware;
 }
 
-//------------------------------------------------------------------------------
-// Stubs for platform specific overrides
-//------------------------------------------------------------------------------
-
-IHardwareDecoder* CDVDVideoCodecFFmpeg::CreateVideoDecoderHW(AVPixelFormat pixfmt, CProcessInfo &processInfo)
-{
-  auto hwaccels = CDVDFactoryCodec::GetHWAccels();
-  return nullptr;
-}

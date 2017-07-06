@@ -50,4 +50,3 @@ struct CRenderInfo
   // Can be used for initialising video codec with information from renderer (e.g. a shared image pool)
   void *opaque_pointer;
 };
-

@@ -21,8 +21,11 @@
 
 #include "IPixelConverter.h"
 
+#include <memory>
 #include <stdint.h>
 
+class CPixelBufferPoolFFmpeg;
+struct AVFrame;
 struct VideoPicture;
 struct SwsContext;
 
@@ -39,9 +42,17 @@ public:
   void GetPicture(VideoPicture& dvdVideoPicture) override;
 
 protected:
-  //ERenderFormat m_renderFormat;
+  bool AllocateBuffers(AVFrame *pFrame) const;
+
+  struct delete_buffer_pool
+  {
+    void operator()(CPixelBufferPoolFFmpeg *p) const;
+  };
+
+  AVPixelFormat m_targetFormat;
   unsigned int m_width;
   unsigned int m_height;
   SwsContext* m_swsContext;
-  VideoPicture* m_buf;
+  AVFrame *m_pFrame;
+  std::unique_ptr<CPixelBufferPoolFFmpeg, delete_buffer_pool> m_pixelBufferPool;
 };

@@ -24,6 +24,7 @@
 #include "cores/playercorefactory/PlayerCoreFactory.h"
 #include "cores/DataCacheCore.h"
 #include "guilib/GUIWindowManager.h"
+#include "cores/DataCacheCore.h"
 #include "Application.h"
 #include "PlayListPlayer.h"
 #include "ServiceBroker.h"
@@ -127,10 +128,10 @@ PlayBackRet CApplicationPlayer::OpenFile(const CFileItem& item, const CPlayerOpt
   return iResult;
 }
 
-bool CApplicationPlayer::HasPlayer() const 
-{ 
+bool CApplicationPlayer::HasPlayer() const
+{
   std::shared_ptr<IPlayer> player = GetInternal();
-  return player != NULL; 
+  return player != NULL;
 }
 
 int CApplicationPlayer::GetChapter()
@@ -138,7 +139,7 @@ int CApplicationPlayer::GetChapter()
   std::shared_ptr<IPlayer> player = GetInternal();
   if (player)
     return player->GetChapter();
-  else 
+  else
     return -1;
 }
 
@@ -147,7 +148,7 @@ int CApplicationPlayer::GetChapterCount()
   std::shared_ptr<IPlayer> player = GetInternal();
   if (player)
     return player->GetChapterCount();
-  else 
+  else
     return 0;
 }
 

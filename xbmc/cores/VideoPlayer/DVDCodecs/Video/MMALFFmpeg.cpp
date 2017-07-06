@@ -91,6 +91,13 @@ void CMMALYUVBuffer::GetStrides(int(&strides)[YuvImage::MAX_PLANES])
   strides[2] = geo.stride_c;
 }
 
+void CMMALYUVBuffer::SetDimensions(int width, int height, int alignedWidth, int alignedHeight)
+{
+  std::shared_ptr<CMMALPool> pool = std::dynamic_pointer_cast<CMMALPool>(m_pool);
+  assert(pool);
+  pool->SetDimensions(width, height, alignedWidth, alignedHeight);
+}
+
 //-----------------------------------------------------------------------------
 // MMAL Decoder
 //-----------------------------------------------------------------------------
@@ -232,7 +239,7 @@ bool CDecoder::Open(AVCodecContext *avctx, AVCodecContext* mainctx, enum AVPixel
   m_fmt = fmt;
 
   /* Create dummy component with attached pool */
-  m_pool = std::make_shared<CMMALPool>(MMAL_COMPONENT_DEFAULT_VIDEO_DECODER, false, MMAL_NUM_OUTPUT_BUFFERS, 0, MMAL_ENCODING_I420, MMALStateFFDec);
+  m_pool = std::make_shared<CMMALPool>(MMAL_COMPONENT_DEFAULT_VIDEO_DECODER, false, MMAL_NUM_OUTPUT_BUFFERS, 0, MMAL_ENCODING_UNKNOWN, MMALStateFFDec);
   if (!m_pool)
   {
     CLog::Log(LOGERROR, "%s::%s Failed to create pool for decoder output", CLASSNAME, __func__);
@@ -277,8 +284,6 @@ CDVDVideoCodec::VCReturn CDecoder::Decode(AVCodecContext* avctx, AVFrame* frame)
     assert(m_renderBuffer && m_renderBuffer->mmal_buffer);
     if (m_renderBuffer)
     {
-      m_renderBuffer->mmal_buffer->data = (uint8_t *)m_gmem->m_vc_handle;
-      m_renderBuffer->mmal_buffer->alloc_size = m_renderBuffer->mmal_buffer->length = m_gmem->m_numbytes;
       m_renderBuffer->m_stills = m_hints.stills;
       if (g_advancedSettings.CanLogComponent(LOGVIDEO))
         CLog::Log(LOGDEBUG, "%s::%s - mmal:%p buf:%p old:%p gpu:%p %dx%d (%dx%d)", CLASSNAME, __FUNCTION__, m_renderBuffer->mmal_buffer, m_renderBuffer, old, m_renderBuffer->GetMem(),  m_renderBuffer->Width(), m_renderBuffer->Height(), m_renderBuffer->AlignedWidth(), m_renderBuffer->AlignedHeight());

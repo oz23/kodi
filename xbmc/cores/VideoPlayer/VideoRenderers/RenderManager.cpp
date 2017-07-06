@@ -567,7 +567,7 @@ bool CRenderManager::RenderCaptureGetPixels(unsigned int captureId, unsigned int
   {
     if (!millis)
       millis = 1000;
-    
+
     CSingleExit exitlock(m_captCritSect);
     if (!it->second->GetEvent().WaitMSec(millis))
     {
@@ -1171,7 +1171,7 @@ void CRenderManager::PrepareNextRender()
       m_lateframes += lateframes;
     else
       m_lateframes = 0;
-    
+
     m_presentstep = PRESENT_FLIP;
     m_discard.push_back(m_presentsource);
     m_presentsource = idx;

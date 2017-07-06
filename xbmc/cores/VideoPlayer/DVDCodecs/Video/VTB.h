@@ -19,7 +19,11 @@
  */
 #pragma once
 
+#ifdef HAS_GL
 #include <OpenGL/gl.h>
+#else
+#include <OpenGLES/ES2/gl.h>
+#endif
 
 #include "DVDVideoCodecFFmpeg.h"
 #include "cores/VideoPlayer/DVDCodecs/Video/DVDVideoCodec.h"
@@ -52,7 +56,7 @@ class CDecoder: public IHardwareDecoder
 {
 public:
   CDecoder(CProcessInfo& processInfo);
- ~CDecoder();
+  virtual ~CDecoder();
   static IHardwareDecoder* Create(CDVDStreamInfo &hint, CProcessInfo &processInfo, AVPixelFormat fmt);
   static bool Register();
   virtual bool Open(AVCodecContext* avctx, AVCodecContext* mainctx,

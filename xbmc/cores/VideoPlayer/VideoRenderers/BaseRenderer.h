@@ -134,5 +134,5 @@ protected:
 
   // rendering flags
   unsigned m_iFlags;
-  AVPixelFormat m_format;
+  AVPixelFormat m_format = AV_PIX_FMT_NONE;
 };

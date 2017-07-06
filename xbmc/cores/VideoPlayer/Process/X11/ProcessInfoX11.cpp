@@ -64,4 +64,3 @@ std::vector<AVPixelFormat> CProcessInfoX11::GetRenderFormats()
 
   return formats;
 }
-

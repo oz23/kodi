@@ -21,7 +21,6 @@
 #include "VideoBuffer.h"
 #include "threads/SingleLock.h"
 #include <string.h>
-#include <assert.h>
 
 //-----------------------------------------------------------------------------
 // CVideoBuffer
@@ -46,8 +45,7 @@ void CVideoBuffer::Acquire(std::shared_ptr<IVideoBufferPool> pool)
 
 void CVideoBuffer::Release()
 {
-  m_refCount--;
-  if (m_refCount <= 0)
+  if (--m_refCount <= 0)
   {
     std::shared_ptr<IVideoBufferPool> pool = m_pool->GetPtr();
     m_pool = nullptr;
@@ -66,7 +64,7 @@ bool CVideoBuffer::CopyPicture(YuvImage* pDst, YuvImage *pSrc)
   uint8_t *d = pDst->plane[0];
   int w = pDst->width * pDst->bpp;
   int h = pDst->height;
-  if ((w == pSrc->stride[0]) && ((unsigned int) pSrc->stride[0] == pDst->stride[0]))
+  if ((w == pSrc->stride[0]) && (pSrc->stride[0] == pDst->stride[0]))
   {
     memcpy(d, s, w*h);
   }
@@ -83,7 +81,7 @@ bool CVideoBuffer::CopyPicture(YuvImage* pDst, YuvImage *pSrc)
   d = pDst->plane[1];
   w =(pDst->width  >> pDst->cshift_x) * pDst->bpp;
   h =(pDst->height >> pDst->cshift_y);
-  if ((w==pSrc->stride[1]) && ((unsigned int) pSrc->stride[1]==pDst->stride[1]))
+  if ((w == pSrc->stride[1]) && (pSrc->stride[1] == pDst->stride[1]))
   {
     memcpy(d, s, w*h);
   }
@@ -98,7 +96,7 @@ bool CVideoBuffer::CopyPicture(YuvImage* pDst, YuvImage *pSrc)
   }
   s = pSrc->plane[2];
   d = pDst->plane[2];
-  if ((w==pSrc->stride[2]) && ((unsigned int) pSrc->stride[2]==pDst->stride[2]))
+  if ((w == pSrc->stride[2]) && (pSrc->stride[2] == pDst->stride[2]))
   {
     memcpy(d, s, w*h);
   }
@@ -122,7 +120,7 @@ bool CVideoBuffer::CopyNV12Picture(YuvImage* pDst, YuvImage *pSrc)
   int w = pDst->width;
   int h = pDst->height;
   // Copy Y
-  if ((w == pSrc->stride[0]) && ((unsigned int) pSrc->stride[0] == pDst->stride[0]))
+  if ((w == pSrc->stride[0]) && (pSrc->stride[0] == pDst->stride[0]))
   {
     memcpy(d, s, w*h);
   }
@@ -141,7 +139,7 @@ bool CVideoBuffer::CopyNV12Picture(YuvImage* pDst, YuvImage *pSrc)
   w = pDst->width;
   h = pDst->height >> 1;
   // Copy packed UV (width is same as for Y as it's both U and V components)
-  if ((w==pSrc->stride[1]) && ((unsigned int) pSrc->stride[1]==pDst->stride[1]))
+  if ((w == pSrc->stride[1]) && (pSrc->stride[1] == pDst->stride[1]))
   {
     memcpy(d, s, w*h);
   }
@@ -166,7 +164,7 @@ bool CVideoBuffer::CopyYUV422PackedPicture(YuvImage* pDst, YuvImage *pSrc)
   int h = pDst->height;
 
   // Copy YUYV
-  if ((w * 2 == pSrc->stride[0]) && ((unsigned int) pSrc->stride[0] == pDst->stride[0]))
+  if ((w * 2 == pSrc->stride[0]) && (pSrc->stride[0] == pDst->stride[0]))
   {
     memcpy(d, s, w*h*2);
   }
@@ -319,11 +317,19 @@ void CVideoBufferPoolSysMem::Return(int id)
   m_free.push_back(id);
 }
 
-void CVideoBufferPoolSysMem::Configure(AVPixelFormat format, int width, int height)
+void CVideoBufferPoolSysMem::SetDimensions(int width, int height, int alignedWidth, int alignedHeight)
 {
-  m_pixFormat = format;
   m_width = width;
   m_height = height;
+  m_alignedWidth = alignedWidth;
+  m_alignedHeight = alignedHeight;
+  m_configured = true;
+}
+
+void CVideoBufferPoolSysMem::Configure(AVPixelFormat format, int size)
+{
+  m_pixFormat = format;
+  m_size = size;
   m_configured = true;
 }
 
@@ -332,11 +338,10 @@ inline bool CVideoBufferPoolSysMem::IsConfigured()
   return m_configured;
 }
 
-bool CVideoBufferPoolSysMem::IsCompatible(AVPixelFormat format, int width, int height)
+bool CVideoBufferPoolSysMem::IsCompatible(AVPixelFormat format, int size)
 {
   if (m_pixFormat == format &&
-      m_width == width &&
-      m_height == height)
+      m_size == size)
     return true;
 
   return false;
@@ -348,18 +353,21 @@ bool CVideoBufferPoolSysMem::IsCompatible(AVPixelFormat format, int width, int h
 
 CVideoBufferManager::CVideoBufferManager()
 {
+  CSingleLock lock(m_critSection);
   std::shared_ptr<IVideoBufferPool> pool = std::make_shared<CVideoBufferPoolSysMem>();
   RegisterPool(pool);
 }
 
 void CVideoBufferManager::RegisterPool(std::shared_ptr<IVideoBufferPool> pool)
 {
+  CSingleLock lock(m_critSection);
   // preferred pools are to the front
   m_pools.push_front(pool);
 }
 
 void CVideoBufferManager::ReleasePools()
 {
+  CSingleLock lock(m_critSection);
   std::list<std::shared_ptr<IVideoBufferPool>> pools = m_pools;
   m_pools.clear();
   std::shared_ptr<IVideoBufferPool> pool = std::make_shared<CVideoBufferPoolSysMem>();
@@ -367,19 +375,20 @@ void CVideoBufferManager::ReleasePools()
 
   for (auto pool : pools)
   {
-    pool->Released();
+    pool->Released(*this);
   }
 }
 
-CVideoBuffer* CVideoBufferManager::Get(AVPixelFormat format, int width, int height)
+CVideoBuffer* CVideoBufferManager::Get(AVPixelFormat format, int size)
 {
+  CSingleLock lock(m_critSection);
   for (auto pool: m_pools)
   {
     if (!pool->IsConfigured())
     {
-      pool->Configure(format, width, height);
+      pool->Configure(format, size);
     }
-    if (pool->IsCompatible(format, width, height))
+    if (pool->IsCompatible(format, size))
     {
       return pool->Get();
     }

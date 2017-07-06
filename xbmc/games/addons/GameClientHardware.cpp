@@ -1,6 +1,6 @@
 /*
- *      Copyright (C) 2005-2016 Team XBMC
- *      http://xbmc.org
+ *      Copyright (C) 2015-2017 Team Kodi
+ *      http://kodi.tv
  *
  *  This Program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -13,22 +13,28 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with XBMC; see the file COPYING.  If not, see
+ *  along with this Program; see the file COPYING.  If not, see
  *  <http://www.gnu.org/licenses/>.
  *
  */
-#pragma once
 
-#include "cores/IPlayer.h"
-#include "../../ProcessInfo.h"
+#include "GameClientHardware.h"
+#include "GameClient.h"
+#include "utils/log.h"
 
-class CProcessInfoPi : public CProcessInfo
+#include <assert.h>
+
+using namespace KODI;
+using namespace GAME;
+
+CGameClientHardware::CGameClientHardware(CGameClient* gameClient) :
+  m_gameClient(gameClient)
 {
-public:
-  virtual ~CProcessInfoPi();
-  EINTERLACEMETHOD GetFallbackDeintMethod() override;
-  bool AllowDTSHDDecode() override;
+  assert(m_gameClient != nullptr);
+}
 
-//protected:
-  CProcessInfoPi();
-};
+void CGameClientHardware::OnResetButton(unsigned int port)
+{
+  CLog::Log(LOGDEBUG, "%s: Port %d sending hardware reset", m_gameClient->ID().c_str(), port);
+  m_gameClient->Reset(port);
+}

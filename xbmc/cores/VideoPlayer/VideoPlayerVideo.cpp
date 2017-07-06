@@ -351,8 +351,6 @@ void CVideoPlayerVideo::Process()
 
     onlyPrioMsgs = false;
 
-    onlyPrioMsgs = false;
-
     if (MSGQ_IS_ERROR(ret))
     {
       CLog::Log(LOGERROR, "Got MSGQ_ABORT or MSGO_IS_ERROR return true");
