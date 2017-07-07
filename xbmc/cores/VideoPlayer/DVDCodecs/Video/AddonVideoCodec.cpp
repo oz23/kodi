@@ -218,11 +218,12 @@ CDVDVideoCodec::VCReturn CAddonVideoCodec::GetPicture(VideoPicture* pVideoPictur
     pVideoPicture->videoBuffer = m_map[picture.decodedData];
     assert(pVideoPicture->videoBuffer);
     pVideoPicture->videoBuffer->Acquire();
-    int strides[YuvImage::MAX_PLANES];
-    for (int i = 0; i<YuvImage::MAX_PLANES; ++i)
-      strides[i] = picture.stride[i];
-    pVideoPicture->videoBuffer->SetDimensions(picture.width, picture.height, strides);
-
+    {
+      int strides[YuvImage::MAX_PLANES] = { };
+      for (int i = 0; i<YuvImage::MAX_PLANES; ++i)
+        strides[i] = picture.stride[i];
+      pVideoPicture->videoBuffer->SetDimensions(picture.width, picture.height, strides);
+    }
     pVideoPicture->iDisplayWidth = pVideoPicture->iWidth;
     pVideoPicture->iDisplayHeight = pVideoPicture->iHeight;
     if (m_displayAspect > 0.0)

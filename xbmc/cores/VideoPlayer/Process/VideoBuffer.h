@@ -125,7 +125,7 @@ public:
 protected:
   int m_width = 0;
   int m_height = 0;
-  int m_strides[YuvImage::MAX_PLANES];
+  int m_strides[YuvImage::MAX_PLANES] = { };
   int m_size = 0;
   uint8_t *m_data = nullptr;
   YuvImage m_image;

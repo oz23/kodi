@@ -268,7 +268,7 @@ void CVideoBufferSysMem::SetDimensions(int width, int height, const int (&stride
 
   m_image.plane[0] = m_data;
   m_image.plane[1] = m_data + m_image.planesize[0];
-  m_image.plane[2] = m_data + m_image.planesize[1];
+  m_image.plane[2] = m_image.plane[1] + m_image.planesize[1];
 }
 
 bool CVideoBufferSysMem::Alloc()
