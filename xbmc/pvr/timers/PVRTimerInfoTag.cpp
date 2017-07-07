@@ -22,6 +22,7 @@
 
 #include "ServiceBroker.h"
 #include "dialogs/GUIDialogOK.h"
+#include "guilib/LocalizeStrings.h"
 #include "messaging/ApplicationMessenger.h"
 #include "messaging/helpers/DialogHelper.h"
 #include "settings/AdvancedSettings.h"
@@ -216,9 +217,7 @@ bool CPVRTimerInfoTag::operator ==(const CPVRTimerInfoTag& right) const
           m_bHasChildErrors     == right.m_bHasChildErrors);
 }
 
-CPVRTimerInfoTag::~CPVRTimerInfoTag(void)
-{
-}
+CPVRTimerInfoTag::~CPVRTimerInfoTag(void) = default;
 
 /**
  * Compare not equal for two CPVRTimerInfoTag

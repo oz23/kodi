@@ -45,10 +45,7 @@ bool CRendererVDPAU::Register()
   return true;
 }
 
-CRendererVDPAU::CRendererVDPAU()
-{
-
-}
+CRendererVDPAU::CRendererVDPAU() = default;
 
 CRendererVDPAU::~CRendererVDPAU()
 {
@@ -477,4 +474,3 @@ bool CRendererVDPAU::UploadVDPAUTexture420(int index)
   glDisable(m_textureTarget);
   return true;
 }
-

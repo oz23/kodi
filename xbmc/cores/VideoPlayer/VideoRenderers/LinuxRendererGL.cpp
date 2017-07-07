@@ -107,10 +107,7 @@ CLinuxRendererGL::YUVBUFFER::YUVBUFFER()
   loaded = false;
 }
 
-CLinuxRendererGL::YUVBUFFER::~YUVBUFFER()
-{
-
-}
+CLinuxRendererGL::YUVBUFFER::~YUVBUFFER() = default;
 
 CBaseRenderer* CLinuxRendererGL::Create(CVideoBuffer *buffer)
 {

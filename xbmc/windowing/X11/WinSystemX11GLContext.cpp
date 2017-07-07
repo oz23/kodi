@@ -38,9 +38,7 @@
 #include "cores/VideoPlayer/Process/X11/ProcessInfoX11.h"
 #include "cores/VideoPlayer/VideoRenderers/RenderFactory.h"
 
-CWinSystemX11GLContext::CWinSystemX11GLContext()
-{
-}
+CWinSystemX11GLContext::CWinSystemX11GLContext() = default;
 
 CWinSystemX11GLContext::~CWinSystemX11GLContext()
 {

@@ -35,6 +35,7 @@
 #include "dialogs/GUIDialogSelect.h"
 #include "dialogs/GUIDialogYesNo.h"
 #include "games/GameUtils.h"
+#include "guilib/LocalizeStrings.h"
 #include "GUIUserMessages.h"
 #include "guilib/GUIWindowManager.h"
 #include "input/Key.h"
@@ -72,9 +73,7 @@ CGUIDialogAddonInfo::CGUIDialogAddonInfo(void)
   m_loadType = KEEP_IN_MEMORY;
 }
 
-CGUIDialogAddonInfo::~CGUIDialogAddonInfo(void)
-{
-}
+CGUIDialogAddonInfo::~CGUIDialogAddonInfo(void) = default;
 
 bool CGUIDialogAddonInfo::OnMessage(CGUIMessage& message)
 {

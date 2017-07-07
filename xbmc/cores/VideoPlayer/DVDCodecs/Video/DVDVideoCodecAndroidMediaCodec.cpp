@@ -396,7 +396,7 @@ std::atomic<bool> CDVDVideoCodecAndroidMediaCodec::m_InstanceGuard(false);
 bool CDVDVideoCodecAndroidMediaCodec::Open(CDVDStreamInfo &hints, CDVDCodecOptions &options)
 {
   int num_codecs;
-  bool needSecureDecoder;
+  bool needSecureDecoder(false);
 
   m_opened = false;
   // allow only 1 instance here
@@ -608,6 +608,7 @@ bool CDVDVideoCodecAndroidMediaCodec::Open(CDVDStreamInfo &hints, CDVDCodecOptio
       CLog::Log(LOGERROR, "CDVDVideoCodecAndroidMediaCodec::Open: MediaCrypto creation failed");
       goto FAIL;
     }
+    needSecureDecoder = AMediaCrypto_requiresSecureDecoderComponent(m_mime.c_str()) && (m_hints.cryptoSession->flags & DemuxCryptoSession::FLAG_SECURE_DECODER) != 0;
   }
 
   if (m_render_surface)
@@ -631,7 +632,6 @@ bool CDVDVideoCodecAndroidMediaCodec::Open(CDVDStreamInfo &hints, CDVDCodecOptio
   m_codec = nullptr;
   m_colorFormat = -1;
   num_codecs = CJNIMediaCodecList::getCodecCount();
-  needSecureDecoder = m_crypto && AMediaCrypto_requiresSecureDecoderComponent(m_mime.c_str());
 
   for (int i = 0; i < num_codecs; i++)
   {
