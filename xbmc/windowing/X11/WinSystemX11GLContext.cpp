@@ -49,7 +49,7 @@ void CWinSystemX11GLContext::PresentRenderImpl(bool rendered)
 {
   if (rendered)
     m_pGLContext->SwapBuffers();
-  
+
   if (m_delayDispReset && m_dispResetTimer.IsTimePast())
   {
     m_delayDispReset = false;

@@ -125,7 +125,7 @@ bool CDVDVideoPPFFmpeg::Process(VideoPicture* pPicture)
     return false;
   }
 
-  int strides[YuvImage::MAX_PLANES];
+  int strides[YuvImage::MAX_PLANES] = { };
   strides[0] = pPicture->iWidth;
   m_pTarget.videoBuffer->SetDimensions(pPicture->iWidth, pPicture->iHeight, strides);
   int pict_type = (m_pSource->qscale_type != DVP_QSCALE_MPEG1) ?
@@ -169,4 +169,3 @@ bool CDVDVideoPPFFmpeg::GetPicture(VideoPicture* pPicture)
   }
   return false;
 }
-

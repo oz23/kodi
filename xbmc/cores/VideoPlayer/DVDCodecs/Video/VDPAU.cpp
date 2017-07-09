@@ -66,7 +66,7 @@ static struct SInterlaceMapping
 {
   const EINTERLACEMETHOD     method;
   const VdpVideoMixerFeature feature;
-} g_interlace_mapping[] = 
+} g_interlace_mapping[] =
 { {VS_INTERLACEMETHOD_VDPAU_TEMPORAL             , VDP_VIDEO_MIXER_FEATURE_DEINTERLACE_TEMPORAL}
 , {VS_INTERLACEMETHOD_VDPAU_TEMPORAL_HALF        , VDP_VIDEO_MIXER_FEATURE_DEINTERLACE_TEMPORAL}
 , {VS_INTERLACEMETHOD_VDPAU_TEMPORAL_SPATIAL     , VDP_VIDEO_MIXER_FEATURE_DEINTERLACE_TEMPORAL_SPATIAL}
@@ -553,7 +553,7 @@ bool CDecoder::Open(AVCodecContext* avctx, AVCodecContext* mainctx, const enum A
 
       if (!CDVDCodecUtils::IsVP3CompatibleWidth(avctx->coded_width))
         CLog::Log(LOGWARNING,"VDPAU::Open width %i might not be supported because of hardware bug", avctx->width);
-   
+
       // attempt to create a decoder with this width/height, some sizes are not supported by hw
       vdp_st = m_vdpauConfig.context->GetProcs().vdp_decoder_create(m_vdpauConfig.context->GetDevice(), profile, avctx->coded_width, avctx->coded_height, 5, &m_vdpauConfig.vdpDecoder);
 
@@ -783,7 +783,7 @@ void CDecoder::FiniVDPAUOutput()
   if (CheckStatus(vdp_st, __LINE__))
     return;
   m_vdpauConfig.vdpDecoder = VDP_INVALID_HANDLE;
-  
+
   if (g_advancedSettings.CanLogComponent(LOGVIDEO))
     CLog::Log(LOGDEBUG, "CVDPAU::FiniVDPAUOutput destroying %d video surfaces", m_videoSurfaces.Size());
 
@@ -1285,9 +1285,9 @@ class VDPAU::CVdpauBufferPool : public IVideoBufferPool
 {
 public:
   CVdpauBufferPool(CDecoder &decoder);
-  virtual ~CVdpauBufferPool();
-  virtual CVideoBuffer* Get();
-  virtual void Return(int id);
+  ~CVdpauBufferPool() override;
+  CVideoBuffer* Get() override;
+  void Return(int id) override;
   CVdpauRenderPicture* GetVdpau();
   bool HasFree();
   void QueueReturnPicture(CVdpauRenderPicture *pic);
@@ -3306,4 +3306,3 @@ bool COutput::CheckStatus(VdpStatus vdp_st, int line)
   }
   return false;
 }
-

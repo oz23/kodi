@@ -274,3 +274,4 @@ bool CDataCacheCore::IsPlayerStateChanged()
 
   return ret;
 }
+
