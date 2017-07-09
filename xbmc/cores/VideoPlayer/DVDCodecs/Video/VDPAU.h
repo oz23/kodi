@@ -540,9 +540,6 @@ public:
   static IHardwareDecoder* Create(CDVDStreamInfo &hint, CProcessInfo &processInfo, AVPixelFormat fmt);
   static void Register();
 
-  static IHardwareDecoder* Create(CDVDStreamInfo &hint, CProcessInfo &processInfo, AVPixelFormat fmt);
-  static void Register();
-
 protected:
   void SetWidthHeight(int width, int height);
   bool ConfigVDPAU(AVCodecContext *avctx, int ref_frames);
