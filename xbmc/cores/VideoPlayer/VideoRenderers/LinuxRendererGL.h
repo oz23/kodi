@@ -110,7 +110,6 @@ public:
   void AddVideoPicture(const VideoPicture &picture, int index) override;
   void FlipPage(int source) override;
   void UnInit() override;
-  void Reset() override;
   void Flush() override;
   void SetBufferSize(int numBuffers) override { m_NumYV12Buffers = numBuffers; }
   void ReleaseBuffer(int idx) override;

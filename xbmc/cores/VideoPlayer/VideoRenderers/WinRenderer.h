@@ -167,7 +167,6 @@ public:
   void AddVideoPicture(const VideoPicture &picture, int index) override;
   void FlipPage(int source) override;
   void UnInit() override;
-  void Reset() override; /* resets renderer after seek for example */
   bool IsConfigured() override { return m_bConfigured; }
   void Flush() override;
   CRenderInfo GetRenderInfo() override;

@@ -116,7 +116,6 @@ public:
   virtual void AddVideoPicture(const VideoPicture &picture, int index) override;
   virtual void FlipPage(int source) override;
   virtual void UnInit() override;
-  virtual void Reset() override;
   virtual void Flush() override;
   virtual void ReorderDrawPoints() override;
   virtual void SetBufferSize(int numBuffers) override { m_NumYV12Buffers = numBuffers; }

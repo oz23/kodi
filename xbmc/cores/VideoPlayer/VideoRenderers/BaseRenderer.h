@@ -70,7 +70,6 @@ public:
   virtual bool IsPictureHW(const VideoPicture &picture) { return false; };
   virtual void FlipPage(int source) = 0;
   virtual void UnInit() = 0;
-  virtual void Reset() = 0;
   virtual void Flush() {};
   virtual void SetBufferSize(int numBuffers) { }
   virtual void ReleaseBuffer(int idx) { }
