@@ -30,8 +30,6 @@
 
 using namespace kodi::addon;
 
-#define ALIGN(value, alignment) (((value)+(alignment-1))&~(alignment-1))
-
 CAddonVideoCodec::CAddonVideoCodec(CProcessInfo &processInfo, ADDON::BinaryAddonBasePtr& addonInfo, kodi::addon::IAddonInstance* parentInstance)
   : CDVDVideoCodec(processInfo),
     IAddonInstanceHandler(ADDON_INSTANCE_VIDEOCODEC, addonInfo, parentInstance)
