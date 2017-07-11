@@ -1003,7 +1003,7 @@ int CRenderManager::AddVideoPicture(const VideoPicture& pic)
   if (!m_pRenderer)
     return -1;
 
-  m_pRenderer->AddVideoPicture(pic, index);
+  m_pRenderer->AddVideoPicture(pic, index, m_dvdClock.GetClock());
 
   return index;
 }

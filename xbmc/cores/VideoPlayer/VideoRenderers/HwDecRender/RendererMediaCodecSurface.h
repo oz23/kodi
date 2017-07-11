@@ -24,7 +24,6 @@
 
 #include "system.h"
 #include "cores/VideoPlayer/VideoRenderers/BaseRenderer.h"
-#include <chrono>
 
 class CMediaCodecVideoBuffer;
 
@@ -38,7 +37,7 @@ public:
   static bool Register();
 
   virtual bool RenderCapture(CRenderCapture* capture) override;
-  virtual void AddVideoPicture(const VideoPicture &picture, int index) override;
+  virtual void AddVideoPicture(const VideoPicture &picture, int index, double currentClock) override;
   virtual void ReleaseBuffer(int idx) override;
   virtual bool Configure(const VideoPicture &picture, float fps, unsigned flags, unsigned int orientation) override;
   virtual bool IsConfigured() override { return m_bConfigured; };
@@ -62,36 +61,8 @@ protected:
   virtual void ReorderDrawPoints() override;
 
 private:
-
-  int m_iRenderBuffer;
-  static const int m_numRenderBuffers = 4;
-
-  struct BUFFER
-  {
-    BUFFER() : videoBuffer(nullptr) {};
-    CMediaCodecVideoBuffer *videoBuffer;
-    int duration;
-  } m_buffers[m_numRenderBuffers];
-
-<<<<<<< HEAD
-  std::chrono::time_point<std::chrono::system_clock> m_prevTime;
   bool m_bConfigured;
-  unsigned int m_updateCount;
-<<<<<<< HEAD
   CRect m_surfDestRect;
-=======
-=======
-  // textures
-  virtual bool UploadTexture(int index);
-  virtual void DeleteTexture(int index);
-  virtual bool CreateTexture(int index);
-  
-  // hooks for hw dec renderer
-  virtual bool LoadShadersHook();
-  virtual bool RenderHook(int index);  
-  virtual int  GetImageHook(YuvImage *image, int source = AUTOSOURCE, bool readonly = false);
->>>>>>> 3548552... VideoPlayer: rename and move YuvImage
->>>>>>> ab3767c29e... VideoPlayer: rename and move YuvImage
 };
 
 #endif

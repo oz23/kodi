@@ -41,8 +41,7 @@ CBaseRenderer* CRendererVAAPI::Create(CVideoBuffer *buffer)
 
 void CRendererVAAPI::Register(VADisplay vaDpy, EGLDisplay eglDisplay, bool &general, bool &hevc)
 {
-  general = CVaapiTexture::TestInterop(vaDpy, eglDisplay);
-  hevc = CVaapiTexture::TestInteropHevc(vaDpy, eglDisplay);
+  CVaapiTexture::TestInterop(vaDpy, eglDisplay, general, hevc);
   if (general)
     VIDEOPLAYER::CRendererFactory::RegisterRenderer("vaapi", CRendererVAAPI::Create);
 }
@@ -230,7 +229,7 @@ void CRendererVAAPI::AfterRenderHook(int idx)
   if (glIsSync(m_fences[idx]))
   {
     glDeleteSync(m_fences[idx]);
-    m_fences[idx] = None;
+    m_fences[idx] = GL_NONE;
   }
   m_fences[idx] = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
 }

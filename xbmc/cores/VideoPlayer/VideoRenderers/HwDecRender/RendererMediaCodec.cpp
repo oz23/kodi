@@ -69,7 +69,7 @@ bool CRendererMediaCodec::Register()
   return true;
 }
 
-void CRendererMediaCodec::AddVideoPicture(const VideoPicture &picture, int index)
+void CRendererMediaCodec::AddVideoPicture(const VideoPicture &picture, int index, double currentClock)
 {
   YUVBUFFER &buf = m_buffers[index];
   CMediaCodecVideoBuffer *videoBuffer;
@@ -83,7 +83,7 @@ void CRendererMediaCodec::AddVideoPicture(const VideoPicture &picture, int index
     // releaseOutputBuffer must be in same thread as
     // dequeueOutputBuffer. We are in VideoPlayerVideo
     // thread here, so we are safe.
-    videoBuffer->ReleaseOutputBuffer(true);
+    videoBuffer->ReleaseOutputBuffer(true, 0);
   }
   else
    buf.fields[0][0].id = 0;

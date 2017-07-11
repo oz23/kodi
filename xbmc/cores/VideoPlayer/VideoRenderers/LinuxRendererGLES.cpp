@@ -22,7 +22,7 @@
 
 #include "system.h"
 
-#if HAS_GLES == 2
+#if HAS_GLES >= 2
 #include "system_gl.h"
 
 #include <locale.h>
@@ -197,7 +197,7 @@ int CLinuxRendererGLES::NextYV12Texture()
   return (m_iYV12RenderBuffer + 1) % m_NumYV12Buffers;
 }
 
-void CLinuxRendererGLES::AddVideoPicture(const VideoPicture &picture, int index)
+void CLinuxRendererGLES::AddVideoPicture(const VideoPicture &picture, int index, double currentClock)
 {
   YUVBUFFER &buf = m_buffers[index];
   buf.videoBuffer = picture.videoBuffer;
@@ -327,6 +327,14 @@ void CLinuxRendererGLES::LoadPlane(YUVPLANE& plane, int type,
                    , (unsigned char*)pixelData + bps * (width-1));
 
   glBindTexture(m_textureTarget, 0);
+}
+
+void CLinuxRendererGLES::Reset()
+{
+  for(int i=0; i<m_NumYV12Buffers; i++)
+  {
+    ReleaseBuffer(i);
+  }
 }
 
 void CLinuxRendererGLES::Flush()
@@ -683,7 +691,7 @@ void CLinuxRendererGLES::Render(DWORD flags, int index)
       break;
     }
   }
-
+  
   AfterRenderHook(index);
 }
 
@@ -1319,3 +1327,4 @@ bool CLinuxRendererGLES::IsGuiLayer()
 }
 
 #endif
+

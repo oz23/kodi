@@ -91,11 +91,11 @@ void CMMALYUVBuffer::GetStrides(int(&strides)[YuvImage::MAX_PLANES])
   strides[2] = geo.stride_c;
 }
 
-void CMMALYUVBuffer::SetDimensions(int width, int height, int alignedWidth, int alignedHeight)
+void CMMALYUVBuffer::SetDimensions(int width, int height, const int (&strides)[YuvImage::MAX_PLANES])
 {
   std::shared_ptr<CMMALPool> pool = std::dynamic_pointer_cast<CMMALPool>(m_pool);
   assert(pool);
-  pool->SetDimensions(width, height, alignedWidth, alignedHeight);
+  pool->SetDimensions(width, height, strides[0], height);
 }
 
 //-----------------------------------------------------------------------------
@@ -266,7 +266,7 @@ CDVDVideoCodec::VCReturn CDecoder::Decode(AVCodecContext* avctx, AVFrame* frame)
 
   if (frame)
   {
-    if ((frame->format != AV_PIX_FMT_YUV420P && frame->format != AV_PIX_FMT_SAND128 && frame->format != AV_PIX_FMT_BGR0 && frame->format != AV_PIX_FMT_RGB565LE) ||
+    if ((frame->format != AV_PIX_FMT_YUV420P && frame->format != AV_PIX_FMT_BGR0 && frame->format != AV_PIX_FMT_RGB565LE) ||
         frame->buf[1] != nullptr || frame->buf[0] == nullptr)
     {
       CLog::Log(LOGERROR, "%s::%s frame format invalid format:%d buf:%p,%p", CLASSNAME, __func__, frame->format, frame->buf[0], frame->buf[1]);

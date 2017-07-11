@@ -55,10 +55,10 @@ public:
   virtual CVideoBuffer* Get() override;
   virtual void Return(int id) override;
   virtual void Configure(AVPixelFormat format, int size) override;
-  virtual void SetDimensions(int width, int height, int alignedWidth, int alignedHeight) override;
   virtual bool IsConfigured() override;
   virtual bool IsCompatible(AVPixelFormat format, int size) override;
 
+  void SetDimensions(int width, int height, int alignedWidth, int alignedHeight);
   MMAL_COMPONENT_T *GetComponent() { return m_component; }
   CMMALBuffer *GetBuffer(uint32_t timeout);
   void Prime();
@@ -156,7 +156,7 @@ public:
   virtual void         Reset() override; /* resets renderer after seek for example */
   virtual void         Flush() override;
   virtual bool         IsConfigured() override { return m_bConfigured; }
-  virtual void         AddVideoPicture(const VideoPicture& pic, int index) override;
+  virtual void         AddVideoPicture(const VideoPicture& pic, int index, double currentClock) override;
   virtual bool         IsPictureHW(const VideoPicture &picture) override { return false; };
   virtual CRenderInfo GetRenderInfo() override;
 

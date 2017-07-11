@@ -44,8 +44,7 @@ CProcessInfo* CProcessInfo::CreateInstance()
     if (ret)
       return ret;
   }
-  if (!ret)
-    return new CProcessInfo();
+  return new CProcessInfo();
 }
 
 void CProcessInfo::SetDataCache(CDataCacheCore *cache)

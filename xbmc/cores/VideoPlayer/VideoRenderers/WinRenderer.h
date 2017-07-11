@@ -91,7 +91,7 @@ struct SVideoBuffer
   virtual void Clear() {};              // clear the buffer with solid black
   virtual bool IsReadyToRender() { return true; };
 
-  CVideoBuffer* videoBuffer;
+  CVideoBuffer* videoBuffer = nullptr;
 };
 
 // YV12 decoder textures
@@ -164,9 +164,10 @@ public:
 
   // Player functions
   bool Configure(const VideoPicture &picture, float fps, unsigned flags, unsigned int orientation) override;
-  void AddVideoPicture(const VideoPicture &picture, int index) override;
+  void AddVideoPicture(const VideoPicture &picture, int index, double currentClock) override;
   void FlipPage(int source) override;
   void UnInit() override;
+  void Reset() override; /* resets renderer after seek for example */
   bool IsConfigured() override { return m_bConfigured; }
   void Flush() override;
   CRenderInfo GetRenderInfo() override;

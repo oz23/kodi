@@ -20,7 +20,14 @@
 
 #pragma once
 
+#if defined(HAVE_LIBGL)
 #include <GL/gl.h>
+#elif defined(HAVE_LIBGLESV2)
+#include <GLES2/gl2.h>
+#include <GLES2/gl2ext.h>
+#include <GLES3/gl3.h>
+#endif
+
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
 #include <va/va.h>
@@ -45,8 +52,7 @@ public:
   bool Map(CVaapiRenderPicture *pic);
   void Unmap();
   void Init(InteropInfo &interop);
-  static bool TestInterop(VADisplay vaDpy, EGLDisplay eglDisplay);
-  static bool TestInteropHevc(VADisplay vaDpy, EGLDisplay eglDisplay);
+  static void TestInterop(VADisplay vaDpy, EGLDisplay eglDisplay, bool &general, bool &hevc);
 
   GLuint m_texture = 0;
   GLuint m_textureY = 0;
@@ -55,6 +61,8 @@ public:
   int m_texHeight = 0;
 
 protected:
+  static bool TestInteropHevc(VADisplay vaDpy, EGLDisplay eglDisplay);
+
   InteropInfo m_interop;
   CVaapiRenderPicture *m_vaapiPic = nullptr;
   struct GLSurface

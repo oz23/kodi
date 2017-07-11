@@ -689,12 +689,6 @@ bool CRenderSystemDX::CreateDevice()
   m_needNewDevice = false;
 
   // register platform dependent objects
-  CDVDFactoryCodec::ClearHWAccels();
-  DXVA::CDecoder::Register();
-  VIDEOPLAYER::CRendererFactory::ClearRenderer();
-  CWinRenderer::Register();
-
-  // register platform dependent objects
 #if defined(TARGET_WIN10)
   VIDEOPLAYER::CProcessInfoWin10::Register();
 #else

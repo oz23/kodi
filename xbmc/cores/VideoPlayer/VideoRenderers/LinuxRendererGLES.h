@@ -21,7 +21,7 @@
  *
  */
 
-#if HAS_GLES == 2
+#if HAS_GLES >= 2
 #include <vector>
 
 #include "system_gl.h"
@@ -113,9 +113,10 @@ public:
   // Player functions
   virtual bool Configure(const VideoPicture &picture, float fps, unsigned flags, unsigned int orientation) override;
   virtual bool IsConfigured() override { return m_bConfigured; }
-  virtual void AddVideoPicture(const VideoPicture &picture, int index) override;
+  virtual void AddVideoPicture(const VideoPicture &picture, int index, double currentClock) override;
   virtual void FlipPage(int source) override;
   virtual void UnInit() override;
+  virtual void Reset() override;
   virtual void Flush() override;
   virtual void ReorderDrawPoints() override;
   virtual void SetBufferSize(int numBuffers) override { m_NumYV12Buffers = numBuffers; }
@@ -153,7 +154,7 @@ protected:
   bool CreateYV12Texture(int index);
   virtual bool SkipUploadYV12(int index) { return false; }
 
-  void UploadNV12Texture(int index);
+  bool UploadNV12Texture(int index);
   void DeleteNV12Texture(int index);
   bool CreateNV12Texture(int index);
 
