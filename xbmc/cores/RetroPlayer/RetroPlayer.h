@@ -35,6 +35,7 @@ namespace KODI
 namespace RETRO
 {
   class CRetroPlayerAudio;
+  class CRetroPlayerAutoSave;
   class CRetroPlayerVideo;
 
   class CRetroPlayer : public IPlayer,
@@ -107,7 +108,6 @@ namespace RETRO
     //virtual int GetSourceBitrate() override { return 0; }
     bool GetStreamDetails(CStreamDetails &details) override;
     void SetSpeed(float speed) override;
-    float GetSpeed() override;
     //virtual bool IsCaching() const override { return false; }
     //virtual int GetCacheLevel() const override { return -1; }
     //virtual bool IsInMenu() const override { return false; }
@@ -173,6 +173,7 @@ namespace RETRO
     std::unique_ptr<CProcessInfo>      m_processInfo;
     std::unique_ptr<CRetroPlayerAudio> m_audio;
     std::unique_ptr<CRetroPlayerVideo> m_video;
+    std::unique_ptr<CRetroPlayerAutoSave> m_autoSave;
     GAME::GameClientPtr                m_gameClient;
     CCriticalSection                   m_mutex;
   };

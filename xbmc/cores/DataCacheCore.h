@@ -66,11 +66,14 @@ public:
   // player states
   void SetStateSeeking(bool active);
   bool IsSeeking();
+  void SetSpeed(float tempo, float speed);
+  float GetSpeed();
+  float GetTempo();
+  bool IsPlayerStateChanged();
   void SetGuiRender(bool gui);
   bool GetGuiRender();
   void SetVideoRender(bool video);
   bool GetVideoRender();
-  bool IsPlayerStateChanged();
 
 protected:
   std::atomic_bool m_hasAVInfoChanges;
@@ -110,5 +113,7 @@ protected:
     bool m_stateSeeking;
     bool m_renderGuiLayer;
     bool m_renderVideoLayer;
+    float m_tempo;
+    float m_speed;
   } m_stateInfo;
 };
