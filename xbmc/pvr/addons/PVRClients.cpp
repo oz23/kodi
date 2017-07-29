@@ -47,7 +47,6 @@ using namespace KODI::MESSAGING;
 #define PVR_CLIENT_AVAHI_SLEEP_TIME_MS     (250)
 
 CPVRClients::CPVRClients(void) :
-    m_bIsSwitchingChannels(false),
     m_playingClientId(-EINVAL),
     m_bIsPlayingLiveTV(false),
     m_bIsPlayingRecording(false)
@@ -977,6 +976,15 @@ bool CPVRClients::SupportsTimers() const
 bool CPVRClients::GetPlayingClient(PVR_CLIENT &client) const
 {
   return GetCreatedClient(GetPlayingClientID(), client);
+}
+
+std::string CPVRClients::GetLiveStreamURL(const CPVRChannelPtr &channel)
+{
+  PVR_CLIENT client;
+  if (GetCreatedClient(channel->ClientID(), client))
+    return client->GetLiveStreamURL(channel);
+
+  return std::string();
 }
 
 bool CPVRClients::OpenStream(const CPVRChannelPtr &channel, bool bIsSwitchingChannel)
