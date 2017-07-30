@@ -32,7 +32,7 @@ namespace ADDON
   {
   public:
     CAddonDll(CAddonInfo addonInfo, BinaryAddonBasePtr addonBase);
-    CAddonDll(CAddonInfo addonInfo);
+    explicit CAddonDll(CAddonInfo addonInfo);
     ~CAddonDll() override;
 
     virtual ADDON_STATUS GetStatus();
@@ -122,10 +122,16 @@ namespace ADDON
     static char* get_addon_path(void* kodiBase);
     static char* get_base_user_path(void* kodiBase);
     static void addon_log_msg(void* kodiBase, const int addonLogLevel, const char* strMessage);
-    static bool get_setting(void* kodiBase, const char* settingName, void* settingValue);
-    static bool set_setting(void* kodiBase, const char* settingName, const char* settingValue);
+    static bool get_setting_bool(void* kodiBase, const char* id, bool* value);
+    static bool get_setting_int(void* kodiBase, const char* id, int* value);
+    static bool get_setting_float(void* kodiBase, const char* id, float* value);
+    static bool get_setting_string(void* kodiBase, const char* id, char** value);
+    static bool set_setting_bool(void* kodiBase, const char* id, bool value);
+    static bool set_setting_int(void* kodiBase, const char* id, int value);
+    static bool set_setting_float(void* kodiBase, const char* id, float value);
+    static bool set_setting_string(void* kodiBase, const char* id, const char* value);
     static void free_string(void* kodiBase, char* str);
     //@}
   };
-
+  
 }; /* namespace ADDON */
