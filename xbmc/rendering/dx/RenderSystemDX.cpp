@@ -22,9 +22,10 @@
 #include "Application.h"
 #include "cores/VideoPlayer/DVDCodecs/DVDFactoryCodec.h"
 #include "cores/VideoPlayer/DVDCodecs/Video/DXVA.h"
-#include "cores/VideoPlayer/Process/windows/ProcessInfoWin.h"
-#if defined(TARGET_WIN10)
+#if defined(TARGET_WINDOWS_STORE)
 #include "cores/VideoPlayer/Process/windows/ProcessInfoWin10.h"
+#else
+#include "cores/VideoPlayer/Process/windows/ProcessInfoWin.h"
 #endif
 #include "cores/VideoPlayer/VideoRenderers/RenderFactory.h"
 #include "cores/VideoPlayer/VideoRenderers/WinRenderer.h"
@@ -74,7 +75,7 @@ bool CRenderSystemDX::InitRenderSystem()
   m_deviceResources->RegisterDeviceNotify(this);
 
   // register platform dependent objects
-#if defined(TARGET_WIN10)
+#if defined(TARGET_WINDOWS_STORE)
   VIDEOPLAYER::CProcessInfoWin10::Register();
 #else
   VIDEOPLAYER::CProcessInfoWin::Register();
@@ -264,14 +265,12 @@ bool CRenderSystemDX::CreateStates()
 
 void CRenderSystemDX::PresentRender(bool rendered, bool videoLayer)
 {
-  if (!rendered)
-    return;
-
   if (!m_bRenderCreated)
     return;
 
-  if ( m_stereoMode == RENDER_STEREO_MODE_INTERLACED
-    || m_stereoMode == RENDER_STEREO_MODE_CHECKERBOARD)
+  if ( rendered 
+    && ( m_stereoMode == RENDER_STEREO_MODE_INTERLACED
+      || m_stereoMode == RENDER_STEREO_MODE_CHECKERBOARD))
   {
     auto m_pContext = m_deviceResources->GetD3DContext();
 

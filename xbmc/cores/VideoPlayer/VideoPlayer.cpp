@@ -1355,8 +1355,7 @@ void CVideoPlayer::Prepare()
 
   UpdatePlayState(0);
 
-  if (m_playerOptions.identify == false)
-    m_callback.OnPlayBackStarted();
+  m_callback.OnPlayBackStarted();
 
   // we are done initializing now, set the readyevent
   m_openEvent.Set();
@@ -2354,8 +2353,6 @@ void CVideoPlayer::CheckAutoSceneSkip()
     return;
 
   const int64_t clock = GetTime();
-  int lastPos = m_Edl.GetLastCheckASSTime();
-  m_Edl.SetLastCheckASSTime(clock);
 
   CEdl::Cut cut;
   if (!m_Edl.InCut(clock, &cut))
@@ -2386,10 +2383,12 @@ void CVideoPlayer::CheckAutoSceneSkip()
   else if (cut.action == CEdl::COMM_BREAK)
   {
     // marker for commbrak may be inaccurate. allow user to skip into break from the back
-    if (m_playSpeed >= 0 && lastPos <= cut.start && clock < cut.end - 1000)
+    if (m_playSpeed >= 0 && m_Edl.GetLastCutTime() != cut.start && clock < cut.end - 1000)
     {
       std::string strTimeString = StringUtils::SecondsToTimeString((cut.end - cut.start) / 1000, TIME_FORMAT_MM_SS);
       CGUIDialogKaiToast::QueueNotification(g_localizeStrings.Get(25011), strTimeString);
+
+      m_Edl.SetLastCutTime(cut.start);
 
       if (m_SkipCommercials)
       {
@@ -2488,13 +2487,10 @@ void CVideoPlayer::OnExit()
 
   m_bStop = true;
   // if we didn't stop playing, advance to the next item in xbmc's playlist
-  if (m_playerOptions.identify == false)
-  {
-    if (m_bAbortRequest)
-      m_callback.OnPlayBackStopped();
-    else
-      m_callback.OnPlayBackEnded();
-  }
+  if (m_bAbortRequest)
+    m_callback.OnPlayBackStopped();
+  else
+    m_callback.OnPlayBackEnded();
 
   // set event to inform openfile something went wrong in case openfile is still waiting for this event
   m_openEvent.Set();
@@ -3070,7 +3066,7 @@ void CVideoPlayer::Seek(bool bPlus, bool bLargeStep, bool bChapterOverride)
   }
 
   int64_t seekTarget;
-  if (g_advancedSettings.m_videoUseTimeSeeking && GetTotalTime() > 2000*g_advancedSettings.m_videoTimeSeekForwardBig)
+  if (g_advancedSettings.m_videoUseTimeSeeking && m_processInfo->GetMaxTime() > 2000*g_advancedSettings.m_videoTimeSeekForwardBig)
   {
     if (bLargeStep)
       seekTarget = bPlus ? g_advancedSettings.m_videoTimeSeekForwardBig :
@@ -3088,14 +3084,15 @@ void CVideoPlayer::Seek(bool bPlus, bool bLargeStep, bool bChapterOverride)
       percent = bPlus ? g_advancedSettings.m_videoPercentSeekForwardBig : g_advancedSettings.m_videoPercentSeekBackwardBig;
     else
       percent = bPlus ? g_advancedSettings.m_videoPercentSeekForward : g_advancedSettings.m_videoPercentSeekBackward;
-    seekTarget = (int64_t)(GetTotalTime()*(GetPercentage()+percent)/100);
+
+    seekTarget = (int64_t)(m_processInfo->GetMaxTime()*(GetPercentage()+percent)/100);
   }
 
   bool restore = true;
 
   int64_t time = GetTime();
   if(g_application.CurrentFileItem().IsStack() &&
-     (seekTarget > GetTotalTime() || seekTarget < 0))
+     (seekTarget > m_processInfo->GetMaxTime() || seekTarget < 0))
   {
     g_application.SeekTime((seekTarget - time) * 0.001 + g_application.GetTime());
     // warning, don't access any VideoPlayer variables here as
@@ -3214,7 +3211,7 @@ void CVideoPlayer::GetGeneralInfo(std::string& strGeneralInfo)
 
 void CVideoPlayer::SeekPercentage(float iPercent)
 {
-  int64_t iTotalTime = GetTotalTime();
+  int64_t iTotalTime = m_processInfo->GetMaxTime();
 
   if (!iTotalTime)
     return;
@@ -3224,7 +3221,7 @@ void CVideoPlayer::SeekPercentage(float iPercent)
 
 float CVideoPlayer::GetPercentage()
 {
-  int64_t iTotalTime = GetTotalTime();
+  int64_t iTotalTime = m_processInfo->GetMaxTime();
 
   if (!iTotalTime)
     return 0.0f;
@@ -3471,13 +3468,6 @@ int64_t CVideoPlayer::GetTime()
 {
   CSingleLock lock(m_StateSection);
   return llrint(m_State.time);
-}
-
-// return length in msec
-int64_t CVideoPlayer::GetTotalTime()
-{
-  CSingleLock lock(m_StateSection);
-  return llrint(m_State.time_total);
 }
 
 void CVideoPlayer::SetSpeed(float speed)
@@ -4786,6 +4776,9 @@ void CVideoPlayer::UpdatePlayState(double timeout)
   else if (m_CurrentAudio.startpts != DVD_NOPTS_VALUE)
     state.dts = m_CurrentAudio.startpts;
 
+  state.startTime = 0;
+  state.timeMin = 0;
+
   if (m_pDemuxer)
   {
     if (IsInMenuInternal())
@@ -4805,7 +4798,7 @@ void CVideoPlayer::UpdatePlayState(double timeout)
     }
 
     state.time = DVD_TIME_TO_MSEC(m_clock.GetClock(false));
-    state.time_total = m_pDemuxer->GetStreamLength();
+    state.timeMax = m_pDemuxer->GetStreamLength();
   }
 
   state.canpause = true;
@@ -4823,8 +4816,19 @@ void CVideoPlayer::UpdatePlayState(double timeout)
       state.recording = pvrStream->IsRecording();
     }
 
+    CDVDInputStream::ITimes* pTimes = m_pInputStream->GetITimes();
     CDVDInputStream::IDisplayTime* pDisplayTime = m_pInputStream->GetIDisplayTime();
-    if (pDisplayTime && pDisplayTime->GetTotalTime() > 0)
+
+    CDVDInputStream::ITimes::Times times;
+    if (pTimes && pTimes->GetTimes(times))
+    {
+      state.startTime = times.startTime;
+      state.time = (m_clock.GetClock(false) - times.ptsStart) * 1000 / DVD_TIME_BASE;
+      state.timeMax = (times.ptsEnd - times.ptsStart) * 1000 / DVD_TIME_BASE;
+      state.timeMin = (times.ptsBegin - times.ptsStart) * 1000 / DVD_TIME_BASE;
+      state.time_offset = 0;
+    }
+    else if (pDisplayTime && pDisplayTime->GetTotalTime() > 0)
     {
       if (state.dts != DVD_NOPTS_VALUE)
       {
@@ -4837,7 +4841,7 @@ void CVideoPlayer::UpdatePlayState(double timeout)
         state.time_offset = DVD_MSEC_TO_TIME(dispTime) - state.dts;
       }
       state.time += DVD_TIME_TO_MSEC(state.time_offset);
-      state.time_total = pDisplayTime->GetTotalTime();
+      state.timeMax = pDisplayTime->GetTotalTime();
     }
     else
     {
@@ -4852,7 +4856,7 @@ void CVideoPlayer::UpdatePlayState(double timeout)
       if (m_dvd.state == DVDSTATE_STILL)
       {
         state.time = XbmcThreads::SystemClockMillis() - m_dvd.iDVDStillStartTime;
-        state.time_total = m_dvd.iDVDStillTime;
+        state.timeMax = m_dvd.iDVDStillTime;
         state.isInMenu = true;
       }
       else if (IsInMenuInternal())
@@ -4871,10 +4875,10 @@ void CVideoPlayer::UpdatePlayState(double timeout)
   if (m_Edl.HasCut())
   {
     state.time        = (double) m_Edl.RemoveCutTime(llrint(state.time));
-    state.time_total  = (double) m_Edl.RemoveCutTime(llrint(state.time_total));
+    state.timeMax  = (double) m_Edl.RemoveCutTime(llrint(state.timeMax));
   }
 
-  if (state.time_total <= 0)
+  if (state.timeMax <= 0)
     state.canseek  = false;
 
   if (m_caching > CACHESTATE_DONE && m_caching < CACHESTATE_PLAY)
@@ -4893,21 +4897,23 @@ void CVideoPlayer::UpdatePlayState(double timeout)
   {
     state.cache_delay  = 0.0;
     state.cache_level  = std::min(1.0, GetQueueTime() / 8000.0);
-    state.cache_offset = GetQueueTime() / state.time_total;
+    state.cache_offset = GetQueueTime() / state.timeMax;
   }
 
   XFILE::SCacheStatus status;
   if (m_pInputStream && m_pInputStream->GetCacheStatus(&status))
   {
     state.cache_bytes = status.forward;
-    if(state.time_total)
-      state.cache_bytes += m_pInputStream->GetLength() * (int64_t) (GetQueueTime() / state.time_total);
+    if(state.timeMax)
+      state.cache_bytes += m_pInputStream->GetLength() * (int64_t) (GetQueueTime() / state.timeMax);
   }
   else
     state.cache_bytes = 0;
 
   state.timestamp = m_clock.GetAbsoluteClock();
 
+  m_processInfo->SetPlayTimes(state.startTime, state.time, state.timeMin, state.timeMax);
+  
   CSingleLock lock(m_StateSection);
   m_State = state;
 }
@@ -4986,7 +4992,7 @@ bool CVideoPlayer::GetStreamDetails(CStreamDetails &details)
       if (aspect > 0.0f)
         ((CStreamDetailVideo*)details.GetNthStream(CStreamDetail::VIDEO,0))->m_fAspect = aspect;
 
-      int64_t duration = GetTotalTime() / 1000;
+      int64_t duration = m_processInfo->GetMaxTime() / 1000;
       if (duration > 0)
         ((CStreamDetailVideo*)details.GetNthStream(CStreamDetail::VIDEO,0))->m_iDuration = (int) duration;
     }

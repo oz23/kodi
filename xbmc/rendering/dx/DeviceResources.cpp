@@ -153,7 +153,7 @@ void DX::DeviceResources::GetDisplayMode(DXGI_MODE_DESC* mode) const
   mode->Scaling = scDesc.BufferDesc.Scaling;
   mode->ScanlineOrdering = scDesc.BufferDesc.ScanlineOrdering;
 
-#ifndef TARGET_WIN10
+#ifdef TARGET_WINDOWS_DESKTOP
   DEVMODEW sDevMode;
   memset(&sDevMode, 0, sizeof(sDevMode));
   sDevMode.dmSize = sizeof(sDevMode);
@@ -421,7 +421,7 @@ void DX::DeviceResources::CreateBackBuffer()
 HRESULT DX::DeviceResources::CreateSwapChain(DXGI_SWAP_CHAIN_DESC1& desc, DXGI_SWAP_CHAIN_FULLSCREEN_DESC& fsDesc, IDXGISwapChain1** ppSwapChain) const
 {
   HRESULT hr;
-#ifdef TARGET_WINDOWS
+#ifdef TARGET_WINDOWS_DESKTOP
   hr = m_dxgiFactory->CreateSwapChainForHwnd(
     m_d3dDevice.Get(),
     m_window,
@@ -434,7 +434,7 @@ HRESULT DX::DeviceResources::CreateSwapChain(DXGI_SWAP_CHAIN_DESC1& desc, DXGI_S
 #else
   hr = m_dxgiFactory->CreateSwapChainForCoreWindow(
     m_d3dDevice.Get(),
-    m_coreWindow,
+    reinterpret_cast<IUnknown*>(m_coreWindow.Get()),
     &desc,
     nullptr,
     ppSwapChain
@@ -591,15 +591,6 @@ void DX::DeviceResources::UpdateRenderTargetSize()
   m_outputSize.Height = std::max(m_outputSize.Height, 1.f);
 }
 
-// This method is called when the CoreWindow is created (or re-created).
-void DX::DeviceResources::SetWindow(HWND window)
-{
-  m_window = window;
-
-  CreateDeviceIndependentResources();
-  CreateDeviceResources();
-}
-
 void DX::DeviceResources::Register(ID3DResource* resource)
 {
   critical_section::scoped_lock lock(m_resourceSection);
@@ -633,7 +624,12 @@ void DX::DeviceResources::FinishCommandList(bool bExecute) const
 // This method is called in the event handler for the SizeChanged event.
 void DX::DeviceResources::SetLogicalSize(float width, float height)
 {
-  if (!m_window)
+  if
+#if defined(TARGET_WINDOWS_DESKTOP)
+  (!m_window)
+#else
+  (!m_coreWindow.Get())
+#endif
     return;
 
   CLog::LogFunction(LOGDEBUG, __FUNCTION__, "receive changing logical size to %f x %f", width, height);
@@ -903,7 +899,38 @@ bool DX::DeviceResources::IsStereoAvailable() const
   return false;
 }
 
-#if defined(TARGET_WIN10)
+#if defined(TARGET_WINDOWS_DESKTOP)
+// This method is called when the window (WND) is created (or re-created).
+void DX::DeviceResources::SetWindow(HWND window)
+{
+  m_window = window;
+
+  CreateDeviceIndependentResources();
+  CreateDeviceResources();
+}
+#elif defined(TARGET_WINDOWS_STORE)
+// This method is called when the CoreWindow is created (or re-created).
+void DX::DeviceResources::SetWindow(Windows::UI::Core::CoreWindow^ window)
+{
+  m_coreWindow = window;
+  auto dispatcher = m_coreWindow->Dispatcher;
+  auto handler = ref new Windows::UI::Core::DispatchedHandler([&]()
+  {
+    auto coreWindow = Windows::UI::Core::CoreWindow::GetForCurrentThread();
+    m_logicalSize = Windows::Foundation::Size(coreWindow->Bounds.Width, coreWindow->Bounds.Height);
+    m_dpi = Windows::Graphics::Display::DisplayInformation::GetForCurrentView()->LogicalDpi;
+  });
+  if (dispatcher->HasThreadAccess)
+    handler->Invoke();
+  else
+    Concurrency::create_task(dispatcher->RunAsync(Windows::UI::Core::CoreDispatcherPriority::High, handler)).wait();
+
+  CreateDeviceIndependentResources();
+  CreateDeviceResources();
+  // we have to call this because we will not get initial WM_SIZE
+  CreateWindowSizeDependentResources();
+}
+
 // Call this method when the app suspends. It provides a hint to the driver that the app 
 // is entering an idle state and that temporary buffers can be reclaimed for use by other apps.
 void DX::DeviceResources::Trim() const
@@ -914,16 +941,4 @@ void DX::DeviceResources::Trim() const
   dxgiDevice->Trim();
 }
 
-// This method is called when the CoreWindow is created (or re-created).
-void DX::DeviceResources::SetWindow(CoreWindow^ window)
-{
-  m_coreWindow = window;
-  m_logicalSize = Windows::Foundation::Size(window->Bounds.Width, window->Bounds.Height);
-  m_dpi = Windows::Graphics::Display::DisplayInformation::GetForCurrentView()->LogicalDpi;
-
-  CreateDeviceIndependentResources();
-  CreateDeviceResources();
-  // we have to call this because we will not get initial WM_SIZE
-  CreateWindowSizeDependentResources();
-}
 #endif
