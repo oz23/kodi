@@ -282,7 +282,6 @@ CApplication::CApplication(void)
   , m_volumeLevel(VOLUME_MAXIMUM)
   , m_pInertialScrollingHandler(new CInertialScrollingHandler())
   , m_network(nullptr)
-  , m_fallbackLanguageLoaded(false)
   , m_WaitingExternalCalls(0)
   , m_ProcessedExternalCalls(0)
 {
@@ -3207,14 +3206,6 @@ PlayBackRet CApplication::PlayFile(CFileItem item, const std::string& player, bo
     return PLAYBACK_FAIL;
   }
 
-  // a disc image might be Blu-Ray disc
-  if (item.IsBDFile() || item.IsDiscImage())
-  {
-    //check if we must show the simplified bd menu
-    if (!CGUIDialogSimpleMenu::ShowPlaySelection(const_cast<CFileItem&>(item)))
-      return PLAYBACK_CANCELED;
-  }
-
 #ifdef HAS_UPNP
   if (URIUtils::IsUPnP(item.GetPath()))
   {
@@ -3314,6 +3305,14 @@ PlayBackRet CApplication::PlayFile(CFileItem item, const std::string& player, bo
 
       dbs.Close();
     }
+  }
+
+  // a disc image might be Blu-Ray disc
+  if (!(options.startpercent > 0.0f || options.starttime > 0.0f) && (item.IsBDFile() || item.IsDiscImage()))
+  {
+    //check if we must show the simplified bd menu
+    if (!CGUIDialogSimpleMenu::ShowPlaySelection(const_cast<CFileItem&>(item)))
+      return PLAYBACK_CANCELED;
   }
 
   // this really aught to be inside !bRestart, but since PlayStack
@@ -4159,9 +4158,6 @@ bool CApplication::OnMessage(CGUIMessage& message)
         // show the volumebar if the volume is muted
         if (IsMuted() || GetVolume(false) <= VOLUME_MINIMUM)
           ShowVolumeBar();
-
-        if (m_fallbackLanguageLoaded)
-          CGUIDialogOK::ShowAndGetInput(CVariant{24133}, CVariant{24134});
 
         if (!m_incompatibleAddons.empty())
         {
@@ -5164,7 +5160,7 @@ bool CApplication::SetLanguage(const std::string &strLanguage)
 bool CApplication::LoadLanguage(bool reload)
 {
   // load the configured langauge
-  if (!g_langInfo.SetLanguage(m_fallbackLanguageLoaded, "", reload))
+  if (!g_langInfo.SetLanguage("", reload))
     return false;
 
   // set the proper audio and subtitle languages
