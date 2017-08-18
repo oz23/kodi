@@ -266,10 +266,10 @@ std::unique_ptr<CVideoSync> CWinSystemX11GLContext::GetVideoSync(void *clock)
   return pVSync;
 }
 
-uint64_t CWinSystemX11GLContext::GetTimeSinceVblank()
+uint64_t CWinSystemX11GLContext::GetFrameLatencyAdjustment()
 {
   if (m_pGLContext)
-    return m_pGLContext->GetTimeSinceVblank();
+    return m_pGLContext->GetFrameLatencyAdjustment();
 
   return 0;
 }

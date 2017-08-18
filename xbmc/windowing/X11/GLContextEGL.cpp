@@ -415,7 +415,7 @@ void CGLContextEGL::SwapBuffers()
 
 }
 
-uint64_t CGLContextEGL::GetTimeSinceVblank()
+uint64_t CGLContextEGL::GetFrameLatencyAdjustment()
 {
   struct timespec nowTs;
   uint64_t now;

@@ -36,7 +36,7 @@ public:
   void SetVSync(bool enable) override;
   void SwapBuffers() override;
   void QueryExtensions() override;
-  uint64_t GetTimeSinceVblank() override;
+  uint64_t GetFrameLatencyAdjustment() override;
   XVisualInfo* GetVisual();
   EGLDisplay m_eglDisplay;
   EGLSurface m_eglSurface;
