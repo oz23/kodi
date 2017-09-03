@@ -2392,7 +2392,7 @@ CSampleBuffer* CActiveAE::SyncStream(CActiveAEStream *stream)
           }
         }
 
-        if (!ret->pkt->nb_samples & !ret->pkt->pause_burst_ms)
+        if ((ret->pkt->nb_samples == 0) && (ret->pkt->pause_burst_ms == 0))
         {
           ret->Return();
           ret = nullptr;
@@ -2470,7 +2470,8 @@ CSampleBuffer* CActiveAE::SyncStream(CActiveAEStream *stream)
   {
     stream->m_processingBuffers->SetRR(1.0, m_settings.atempoThreshold);
   }
-  stream->m_syncError.SetInterval(stream->GetErrorInterval());
+
+  stream->m_syncError.SetErrorInterval(stream->GetErrorInterval());
 
   return ret;
 }

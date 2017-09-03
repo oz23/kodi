@@ -26,7 +26,6 @@
 #include "dialogs/GUIDialogBusy.h"
 #include "input/Key.h"
 #include "messaging/ApplicationMessenger.h"
-#include "settings/AdvancedSettings.h"
 #include "settings/Settings.h"
 #include "threads/SingleLock.h"
 #include "utils/log.h"
@@ -334,6 +333,8 @@ bool CGUIWindowPVRGuideBase::OnMessage(CGUIMessage& message)
                       // past event
                       if (tag->HasRecording())
                         CServiceBroker::GetPVRManager().GUIActions()->PlayRecording(pItem, true);
+                      else if (tag->IsPlayable())
+                        CServiceBroker::GetPVRManager().GUIActions()->PlayEpgTag(pItem);
                       else
                         CServiceBroker::GetPVRManager().GUIActions()->ShowEPGInfo(pItem);
                     }
@@ -494,7 +495,8 @@ bool CGUIWindowPVRGuideBase::RefreshTimelineItems()
         endDate = startDate;
 
       // limit start to linger time
-      const CDateTime maxPastDate(currentDate - CDateTimeSpan(0, 0, g_advancedSettings.m_iEpgLingerTime, 0));
+      int iPastDays = CServiceBroker::GetPVRManager().EpgContainer().GetPastDaysToDisplay();
+      const CDateTime maxPastDate(currentDate - CDateTimeSpan(iPastDays, 0, 0, 0));
       if (startDate < maxPastDate)
         startDate = maxPastDate;
 
