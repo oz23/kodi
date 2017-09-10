@@ -16383,8 +16383,20 @@ msgctxt "#34128"
 msgid "192.0"
 msgstr ""
 
+#. SPDIF max sampling rate
+#: system/settings/settings.xml
+msgctxt "#34129"
+msgid "352.8"
+msgstr ""
+
+#. SPDIF max sampling rate
+#: system/settings/settings.xml
+msgctxt "#34130"
+msgid "384.0"
+msgstr ""
+
 #empty strings from id 34129 to 34200
-#34129-34200 reserved for future use
+#34131-34200 reserved for future use
 
 #: xbmc/PlayListPlayer.cpp
 msgctxt "#34201"
@@ -20656,7 +20668,13 @@ msgctxt "#38208"
 msgid "If EXIF information exists (date, time, camera used, etc.), it will be displayed."
 msgstr ""
 
-#empty strings from id 38209 to 38999
+#. Contextmenu entry to remove the resume point of the currently selected item
+#: xbmc/video/ContextMenus.h
+msgctxt "#38209"
+msgid "Reset resume position"
+msgstr ""
+
+#empty strings from id 38210 to 38999
 
 #: system/settings/settings.xml
 msgctxt "#39000"
