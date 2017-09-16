@@ -72,7 +72,6 @@
 #include "utils/StreamUtils.h"
 #include "utils/Variant.h"
 #include "storage/MediaManager.h"
-#include "dialogs/GUIDialogBusy.h"
 #include "dialogs/GUIDialogKaiToast.h"
 #include "utils/StringUtils.h"
 #include "Util.h"
@@ -675,6 +674,7 @@ CVideoPlayer::CVideoPlayer(IPlayerCallback& callback)
   CreatePlayers();
 
   m_displayLost = false;
+  m_error = false;
   g_Windowing.Register(this);
 }
 
@@ -688,42 +688,31 @@ CVideoPlayer::~CVideoPlayer()
 
 bool CVideoPlayer::OpenFile(const CFileItem& file, const CPlayerOptions &options)
 {
-  CLog::Log(LOGNOTICE, "VideoPlayer: Opening: %s", CURL::GetRedacted(file.GetPath()).c_str());
+  CLog::Log(LOGNOTICE, "VideoPlayer::OpenFile: %s", CURL::GetRedacted(file.GetPath()).c_str());
 
-  // if playing a file close it first
-  // this has to be changed so we won't have to close it.
   if (IsRunning())
   {
-    m_openEvent.Reset();
     CDVDMsgOpenFile::FileParams params;
     params.m_item = file;
     params.m_options = options;
     params.m_item.SetMimeTypeForInternetFile();
     m_messenger.Put(new CDVDMsgOpenFile(params), 1);
 
-    if (m_openEvent.WaitMSec(2000))
-    {
-      if (!m_bStop && !m_bAbortRequest)
-        return true;
-    }
-    CloseFile();
+    return true;
   }
 
-  m_playerOptions = options;
   m_item = file;
+  m_callback.OnPlayBackStarted(m_item);
+
+  m_playerOptions = options;
   // Try to resolve the correct mime type
   m_item.SetMimeTypeForInternetFile();
 
   m_bAbortRequest = false;
+  m_error = false;
   m_renderManager.PreInit();
 
-  m_openEvent.Reset();
   Create();
-  CGUIDialogBusy::WaitOnEvent(m_openEvent, g_advancedSettings.m_videoBusyDialogDelay_ms, false);
-
-  // Playback might have been stopped due to some error
-  if (m_bStop || m_bAbortRequest)
-    return false;
 
   return true;
 }
@@ -870,7 +859,7 @@ bool CVideoPlayer::OpenDemuxStream()
   CLog::Log(LOGNOTICE, "Creating Demuxer");
 
   int attempts = 10;
-  while(!m_bStop && attempts-- > 0)
+  while (!m_bStop && attempts-- > 0)
   {
     m_pDemuxer = CDVDFactoryDemuxer::CreateDemuxer(m_pInputStream);
     if(!m_pDemuxer && m_pInputStream->IsStreamType(DVDSTREAM_TYPE_PVRMANAGER))
@@ -885,7 +874,7 @@ bool CVideoPlayer::OpenDemuxStream()
     break;
   }
 
-  if(!m_pDemuxer)
+  if (!m_pDemuxer)
   {
     CLog::Log(LOGERROR, "%s - Error creating demuxer", __FUNCTION__);
     return false;
@@ -1242,6 +1231,7 @@ void CVideoPlayer::Prepare()
   if (!OpenInputStream())
   {
     m_bAbortRequest = true;
+    m_error = true;
     return;
   }
 
@@ -1259,9 +1249,10 @@ void CVideoPlayer::Prepare()
     CMediaSettings::GetInstance().GetCurrentVideoSettings().m_SubtitleCached = true;
   }
 
-  if(!OpenDemuxStream())
+  if (!OpenDemuxStream())
   {
     m_bAbortRequest = true;
+    m_error = true;
     return;
   }
   // give players a chance to reconsider now codecs are known
@@ -1355,11 +1346,6 @@ void CVideoPlayer::Prepare()
   }
 
   UpdatePlayState(0);
-
-  m_callback.OnPlayBackStarted();
-
-  // we are done initializing now, set the readyevent
-  m_openEvent.Set();
 
   SetCaching(CACHESTATE_FLUSH);
 }
@@ -2479,17 +2465,15 @@ void CVideoPlayer::OnExit()
     m_OmxPlayerState.av_clock.OMXDeinitialize();
   }
 
+  CFFmpegLog::ClearLogLevel();
   m_bStop = true;
-  // if we didn't stop playing, advance to the next item in xbmc's playlist
-  if (m_bAbortRequest)
+
+  if (m_error)
+    m_callback.OnPlayBackError();
+  else if (m_bAbortRequest)
     m_callback.OnPlayBackStopped();
   else
     m_callback.OnPlayBackEnded();
-
-  // set event to inform openfile something went wrong in case openfile is still waiting for this event
-  m_openEvent.Set();
-
-  CFFmpegLog::ClearLogLevel();
 }
 
 void CVideoPlayer::HandleMessages()
@@ -2503,6 +2487,13 @@ void CVideoPlayer::HandleMessages()
     {
       CDVDMsgOpenFile &msg(*static_cast<CDVDMsgOpenFile*>(pMsg));
 
+      m_item = msg.GetItem();
+      m_playerOptions = msg.GetOptions();
+
+      CJobManager::GetInstance().Submit([this]() {
+        m_callback.OnPlayBackStarted(m_item);
+      }, CJob::PRIORITY_NORMAL);
+
       FlushBuffers(DVD_NOPTS_VALUE, true, true);
       m_renderManager.Flush(false);
       CloseDemuxer();
@@ -2510,8 +2501,6 @@ void CVideoPlayer::HandleMessages()
       SAFE_DELETE(m_pCCDemuxer);
       SAFE_DELETE(m_pInputStream);
 
-      m_item = msg.GetItem();
-      m_playerOptions = msg.GetOptions();
       Prepare();
     }
     else if (pMsg->IsType(CDVDMsg::PLAYER_SEEK) &&
@@ -2959,8 +2948,6 @@ void CVideoPlayer::SetCaching(ECacheState state)
     m_VideoPlayerVideo->SetSpeed(DVD_PLAYSPEED_PAUSE);
     m_streamPlayerSpeed = DVD_PLAYSPEED_PAUSE;
 
-    m_pInputStream->ResetScanTimeout((unsigned int) CServiceBroker::GetSettings().GetInt(CSettings::SETTING_PVRPLAYBACK_SCANTIME) * 1000);
-
     m_cachingTimer.Set(5000);
   }
 
@@ -2971,7 +2958,6 @@ void CVideoPlayer::SetCaching(ECacheState state)
     m_VideoPlayerAudio->SetSpeed(m_playSpeed);
     m_VideoPlayerVideo->SetSpeed(m_playSpeed);
     m_streamPlayerSpeed = m_playSpeed;
-    m_pInputStream->ResetScanTimeout(0);
   }
   m_caching = state;
 

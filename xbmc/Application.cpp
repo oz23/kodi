@@ -250,8 +250,6 @@ CApplication::CApplication(void)
   , m_Autorun(new CAutorun())
 #endif
   , m_iScreenSaveLock(0)
-  , m_bPlaybackStarting(false)
-  , m_ePlayState(PLAY_STATE_NONE)
   , m_confirmSkinChange(true)
   , m_ignoreSkinSettingChanges(false)
   , m_saveSkinOnUnloading(true)
@@ -3377,10 +3375,6 @@ PlayBackRet CApplication::PlayFile(CFileItem item, const std::string& player, bo
   CMediaSettings::GetInstance().SetVideoStartWindowed(false);
 
   {
-    CSingleLock lock(m_playStateMutex);
-    // tell system we are starting a file
-    m_bPlaybackStarting = true;
-
     // for playing a new item, previous playing item's callback may already
     // pushed some delay message into the threadmessage list, they are not
     // expected be processed after or during the new item playback starting.
@@ -3412,10 +3406,6 @@ PlayBackRet CApplication::PlayFile(CFileItem item, const std::string& player, bo
   // We should restart the player, unless the previous and next tracks are using
   // one of the players that allows gapless playback (paplayer, VideoPlayer)
   m_pPlayer->ClosePlayerGapless(newPlayer);
-
-  // now reset play state to starting, since we already stopped the previous playing item if there is.
-  // and from now there should be no playback callback from previous playing item be called.
-  m_ePlayState = PLAY_STATE_STARTING;
 
   m_pPlayer->CreatePlayer(newPlayer, *this);
 
@@ -3477,60 +3467,12 @@ PlayBackRet CApplication::PlayFile(CFileItem item, const std::string& player, bo
       CServiceBroker::GetPlaylistPlayer().SetCurrentPlaylist(PLAYLIST_NONE);
   }
 
-  CSingleLock lock(m_playStateMutex);
-  m_bPlaybackStarting = false;
-
-  if (iResult == PLAYBACK_OK)
-  {
-    // play state: none, starting; playing; stopped; ended.
-    // last 3 states are set by playback callback, they are all ignored during starting,
-    // but we recorded the state, here we can make up the callback for the state.
-    CLog::LogF(LOGDEBUG,"OpenFile succeed, play state %d", m_ePlayState);
-    switch (m_ePlayState)
-    {
-      case PLAY_STATE_PLAYING:
-        OnPlayBackStarted();
-        break;
-      // FIXME: it seems no meaning to callback started here if there was an started callback
-      //        before this stopped/ended callback we recorded. if we callback started here
-      //        first, it will delay send OnPlay announce, but then we callback stopped/ended
-      //        which will send OnStop announce at once, so currently, just call stopped/ended.
-      case PLAY_STATE_ENDED:
-        OnPlayBackEnded();
-        break;
-      case PLAY_STATE_STOPPED:
-        OnPlayBackStopped();
-        break;
-      case PLAY_STATE_STARTING:
-        // neither started nor stopped/ended callback be called, that means the item still
-        // not started, we need not make up any callback, just leave this and
-        // let the player callback do its work.
-        break;
-      default:
-        break;
-    }
-  }
-  else if (iResult == PLAYBACK_FAIL)
-  {
-    // we send this if it isn't playlistplayer that is doing this
-    int next = CServiceBroker::GetPlaylistPlayer().GetNextSong();
-    int size = CServiceBroker::GetPlaylistPlayer().GetPlaylist(CServiceBroker::GetPlaylistPlayer().GetCurrentPlaylist()).size();
-    if(next < 0
-    || next >= size)
-      OnPlayBackStopped();
-    m_ePlayState = PLAY_STATE_NONE;
-  }
-
   return iResult;
 }
 
 void CApplication::OnPlayBackEnded()
 {
-  CSingleLock lock(m_playStateMutex);
-  CLog::LogF(LOGDEBUG,"play state was %d, starting %d", m_ePlayState, m_bPlaybackStarting);
-  m_ePlayState = PLAY_STATE_ENDED;
-  if(m_bPlaybackStarting)
-    return;
+  CLog::LogF(LOGDEBUG ,"CApplication::OnPlayBackEnded");
 
   // informs python script currently running playback has ended
   // (does nothing if python is not loaded)
@@ -3551,24 +3493,21 @@ void CApplication::OnPlayBackEnded()
   g_windowManager.SendThreadMessage(msg);
 }
 
-void CApplication::OnPlayBackStarted()
+void CApplication::OnPlayBackStarted(const CFileItem &file)
 {
-  CSingleLock lock(m_playStateMutex);
-  CLog::LogF(LOGDEBUG,"play state was %d, starting %d", m_ePlayState, m_bPlaybackStarting);
-  m_ePlayState = PLAY_STATE_PLAYING;
-  if(m_bPlaybackStarting)
-    return;
+  CLog::LogF(LOGDEBUG,"CApplication::OnPlayBackStarted");
 
 #ifdef HAS_PYTHON
   // informs python script currently running playback has started
   // (does nothing if python is not loaded)
-  g_pythonParser.OnPlayBackStarted();
+  g_pythonParser.OnPlayBackStarted(file);
 #endif
 #if defined(TARGET_DARWIN_IOS)
   if (m_pPlayer->IsPlayingVideo())
     CDarwinUtils::EnableOSScreenSaver(false);
 #endif
 
+  m_itemCurrentFile.reset(new CFileItem(file));
   CServiceBroker::GetPVRManager().OnPlaybackStarted(m_itemCurrentFile);
 
   CGUIMessage msg(GUI_MSG_PLAYBACK_STARTED, 0, 0);
@@ -3577,10 +3516,8 @@ void CApplication::OnPlayBackStarted()
 
 void CApplication::OnQueueNextItem()
 {
-  CSingleLock lock(m_playStateMutex);
-  CLog::LogF(LOGDEBUG,"play state was %d, starting %d", m_ePlayState, m_bPlaybackStarting);
-  if(m_bPlaybackStarting)
-    return;
+  CLog::LogF(LOGDEBUG,"CApplication::OnQueueNextItem");
+
   // informs python script currently running that we are requesting the next track
   // (does nothing if python is not loaded)
 #ifdef HAS_PYTHON
@@ -3593,11 +3530,7 @@ void CApplication::OnQueueNextItem()
 
 void CApplication::OnPlayBackStopped()
 {
-  CSingleLock lock(m_playStateMutex);
-  CLog::LogF(LOGDEBUG, "play state was %d, starting %d", m_ePlayState, m_bPlaybackStarting);
-  m_ePlayState = PLAY_STATE_STOPPED;
-  if(m_bPlaybackStarting)
-    return;
+  CLog::LogF(LOGDEBUG, "CApplication::OnPlayBackStopped");
 
   // informs python script currently running playback has ended
   // (does nothing if python is not loaded)
@@ -3616,6 +3549,14 @@ void CApplication::OnPlayBackStopped()
 
   CGUIMessage msg( GUI_MSG_PLAYBACK_STOPPED, 0, 0 );
   g_windowManager.SendThreadMessage(msg);
+}
+
+void CApplication::OnPlayBackError()
+{
+  //@todo Playlists can be continued by calling OnPlaybackEnded instead
+  // open error dialog
+  HELPERS::ShowOKDialogText(CVariant{16026}, CVariant{16027});
+  OnPlayBackStopped();
 }
 
 void CApplication::OnPlayBackPaused()
@@ -3814,15 +3755,15 @@ void CApplication::LoadVideoSettings(const CFileItem& item)
 void CApplication::StopPlaying()
 {
   int iWin = g_windowManager.GetActiveWindow();
-  if ( m_pPlayer->IsPlaying() )
+  if (m_pPlayer->IsPlaying())
   {
-    m_pPlayer->CloseFile();
+    m_pPlayer->ClosePlayer();
 
     // turn off visualisation window when stopping
-    if ((iWin == WINDOW_VISUALISATION
-    || iWin == WINDOW_FULLSCREEN_VIDEO
-    || iWin == WINDOW_FULLSCREEN_GAME)
-    && !m_bStop)
+    if ((iWin == WINDOW_VISUALISATION ||
+         iWin == WINDOW_FULLSCREEN_VIDEO ||
+         iWin == WINDOW_FULLSCREEN_GAME) &&
+         !m_bStop)
       g_windowManager.PreviousWindow();
 
     g_partyModeManager.Disable();
@@ -4325,11 +4266,8 @@ bool CApplication::OnMessage(CGUIMessage& message)
 
       if (message.GetMessage() == GUI_MSG_PLAYBACK_ENDED)
       {
-        CServiceBroker::GetPlaylistPlayer().PlayNext(1, true);
-      }
-      else
-      {
-        m_pPlayer->ClosePlayer();
+        if (!CServiceBroker::GetPlaylistPlayer().PlayNext(1, true))
+          m_pPlayer->ClosePlayer();
       }
 
       if (!m_pPlayer->IsPlaying())
