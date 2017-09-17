@@ -269,7 +269,10 @@ std::unique_ptr<CVideoSync> CWinSystemX11GLContext::GetVideoSync(void *clock)
 float CWinSystemX11GLContext::GetFrameLatencyAdjustment()
 {
   if (m_pGLContext)
-    return m_pGLContext->GetFrameLatencyAdjustment();
+  {
+    float micros = m_pGLContext->GetFrameLatencyAdjustment();
+    return micros / 1000;
+  }
 
   return 0;
 }
