@@ -37,7 +37,7 @@ public:
   void SwapBuffers() override;
   void QueryExtensions() override;
   uint64_t GetFrameLatencyAdjustment() override;
-  XVisualInfo* GetVisual();
+
   EGLDisplay m_eglDisplay;
   EGLSurface m_eglSurface;
   EGLContext m_eglContext;

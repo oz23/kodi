@@ -21,7 +21,11 @@
 #pragma once
 
 #include "WinSystemX11.h"
+
+#ifdef HAS_GLX
 #include "GL/glx.h"
+#endif // HAS_GLX
+
 #include "EGL/egl.h"
 #include "rendering/gl/RenderSystemGL.h"
 #include "utils/GlobalsHandling.h"
@@ -45,8 +49,10 @@ public:
   std::unique_ptr<CVideoSync> GetVideoSync(void *clock) override;
   float GetFrameLatencyAdjustment() override;
 
+#ifdef HAS_GLX
   GLXWindow GetWindow() const;
   GLXContext GetGlxContext() const;
+#endif // HAS_GLX
   EGLDisplay GetEGLDisplay() const;
   EGLSurface GetEGLSurface() const;
   EGLContext GetEGLContext() const;

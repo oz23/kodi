@@ -524,6 +524,13 @@ void CApplicationPlayer::SetTempo(float tempo)
     player->SetTempo(tempo);
 }
 
+void CApplicationPlayer::FrameAdvance(int frames)
+{
+  std::shared_ptr<IPlayer> player = GetInternal();
+  if (player)
+    player->FrameAdvance(frames);
+}
+
 void CApplicationPlayer::DoAudioWork()
 {
   std::shared_ptr<IPlayer> player = GetInternal();
