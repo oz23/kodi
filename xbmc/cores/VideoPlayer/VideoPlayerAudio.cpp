@@ -508,9 +508,9 @@ bool CVideoPlayerAudio::ProcessDecoderOutput(DVDAudioFrame &audioframe)
   // signal to our parent that we have initialized
   if (m_syncState == IDVDStreamPlayer::SYNC_STARTING)
   {
-    double cachetotal = DVD_SEC_TO_TIME(m_audioSink.GetCacheTotal());
-    double cachetime = m_audioSink.GetDelay();
-    if (cachetime >= cachetotal * 0.5)
+    double cachetotal = m_audioSink.GetCacheTotal();
+    double cachetime = m_audioSink.GetCacheTime();
+    if (cachetime >= cachetotal * 0.75)
     {
       m_syncState = IDVDStreamPlayer::SYNC_WAITSYNC;
       m_stalled = false;
