@@ -516,8 +516,8 @@ bool CVideoPlayerAudio::ProcessDecoderOutput(DVDAudioFrame &audioframe)
       m_stalled = false;
       SStartMsg msg;
       msg.player = VideoPlayer_AUDIO;
-      msg.cachetotal = cachetotal;
-      msg.cachetime = cachetime;
+      msg.cachetotal = m_audioSink.GetMaxDelay() * DVD_TIME_BASE;
+      msg.cachetime = m_audioSink.GetDelay();
       msg.timestamp = audioframe.hasTimestamp ? audioframe.pts : DVD_NOPTS_VALUE;
       m_messageParent.Put(new CDVDMsgType<SStartMsg>(CDVDMsg::PLAYER_STARTED, msg));
 
