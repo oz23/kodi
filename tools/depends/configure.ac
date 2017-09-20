@@ -322,6 +322,7 @@ case $host in
           10.10);;
           10.11);;
           10.12);;
+          10.13);;
           *)
             AC_MSG_ERROR(error in configure of --with-sdk=$use_sdk)
         esac
@@ -744,4 +745,3 @@ if test "$platform_os" == "android"; then
   echo -e "sdk-platform:\t $use_sdk"
   echo -e "build-tools:\t $build_tools_path"
 fi
-
