@@ -915,7 +915,7 @@ void CVideoPlayer::OpenDefaultStreams(bool reset)
 
   // open video stream
   valid   = false;
-  
+
   for (const auto &stream : m_SelectionStreams.Get(STREAM_VIDEO, PredicateVideoPriority))
   {
     if(OpenStream(m_CurrentVideo, stream.demuxerId, stream.id, stream.source, reset))
@@ -2468,13 +2468,16 @@ void CVideoPlayer::OnExit()
   CFFmpegLog::ClearLogLevel();
   m_bStop = true;
 
-  CJobManager::GetInstance().Submit([this]() {
-    if (m_error)
-      m_callback.OnPlayBackError();
-    else if (m_bAbortRequest)
-      m_callback.OnPlayBackStopped();
+  IPlayerCallback *cb = &m_callback;
+  bool error = m_error;
+  bool abort = m_bAbortRequest;
+  CJobManager::GetInstance().Submit([=]() {
+    if (error)
+      cb->OnPlayBackError();
+    else if (abort)
+      cb->OnPlayBackStopped();
     else
-      m_callback.OnPlayBackEnded();
+      cb->OnPlayBackEnded();
   }, CJob::PRIORITY_NORMAL);
 }
 
@@ -3498,7 +3501,7 @@ bool CVideoPlayer::OpenStream(CCurrentStream& current, int64_t demuxerId, int iS
     stream = m_pSubtitleDemuxer->GetStream(demuxerId, iStream);
     if(!stream || stream->disabled)
       return false;
-    
+
     m_pSubtitleDemuxer->EnableStream(demuxerId, iStream, true);
 
     hint.Assign(*stream, true);
@@ -4346,12 +4349,12 @@ bool CVideoPlayer::OnAction(const CAction &action)
       case ACTION_NEXT_ITEM:
       case ACTION_CHANNEL_UP:
       {
-        if (m_Edl.HasCut()) 
+        if (m_Edl.HasCut())
         {
           // If the clip has an EDL, we'll search through that instead of sending a CHANNEL message
           const int64_t clock = m_omxplayer_mode ? GetTime() : DVD_TIME_TO_MSEC(std::min(m_CurrentAudio.dts, m_CurrentVideo.dts) + m_offset_pts);
           CEdl::Cut cut;
-          if (m_Edl.GetNearestCut(true, clock, &cut)) 
+          if (m_Edl.GetNearestCut(true, clock, &cut))
           {
             CDVDMsgPlayerSeek::CMode mode;
             mode.time = cut.end + 1;
@@ -4377,7 +4380,7 @@ bool CVideoPlayer::OnAction(const CAction &action)
           // If the clip has an EDL, we'll search through that instead of sending a CHANNEL message
           const int64_t clock = m_omxplayer_mode ? GetTime() : DVD_TIME_TO_MSEC(std::min(m_CurrentAudio.dts, m_CurrentVideo.dts) + m_offset_pts);
           CEdl::Cut cut;
-          if (m_Edl.GetNearestCut(false, clock, &cut)) 
+          if (m_Edl.GetNearestCut(false, clock, &cut))
           {
             CDVDMsgPlayerSeek::CMode mode;
             mode.time = cut.start - 1;
@@ -4848,7 +4851,7 @@ void CVideoPlayer::UpdatePlayState(double timeout)
   state.timestamp = m_clock.GetAbsoluteClock();
 
   m_processInfo->SetPlayTimes(state.startTime, state.time, state.timeMin, state.timeMax);
-  
+
   CSingleLock lock(m_StateSection);
   m_State = state;
 }
