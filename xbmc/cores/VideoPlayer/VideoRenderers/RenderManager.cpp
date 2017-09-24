@@ -348,12 +348,9 @@ void CRenderManager::PreInit()
   {
     m_initEvent.Reset();
     CApplicationMessenger::GetInstance().PostMsg(TMSG_RENDERER_PREINIT);
-    if (wait)
+    if (!m_initEvent.WaitMSec(2000))
     {
-      if (!m_initEvent.WaitMSec(2000))
-      {
-        CLog::Log(LOGERROR, "%s - timed out waiting for renderer to preinit", __FUNCTION__);
-      }
+      CLog::Log(LOGERROR, "%s - timed out waiting for renderer to preinit", __FUNCTION__);
     }
   }
 
@@ -379,12 +376,9 @@ void CRenderManager::UnInit()
   {
     m_initEvent.Reset();
     CApplicationMessenger::GetInstance().PostMsg(TMSG_RENDERER_UNINIT);
-    if (wait)
+    if (!m_initEvent.WaitMSec(2000))
     {
-      if (!m_initEvent.WaitMSec(2000))
-      {
-        CLog::Log(LOGERROR, "%s - timed out waiting for renderer to uninit", __FUNCTION__);
-      }
+      CLog::Log(LOGERROR, "%s - timed out waiting for renderer to uninit", __FUNCTION__);
     }
   }
 
