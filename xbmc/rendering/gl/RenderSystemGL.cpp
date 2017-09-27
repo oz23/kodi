@@ -123,7 +123,8 @@ bool CRenderSystemGL::InitRenderSystem()
     GLint i;
     for (i = 0; i < n; i++)
     {
-      m_RenderExtensions += (char*)glGetStringi(GL_EXTENSIONS, i);
+      m_RenderExtensions += (const char*)glGetStringi(GL_EXTENSIONS, i);
+      m_RenderExtensions += " ";
     }
   }
 #endif
