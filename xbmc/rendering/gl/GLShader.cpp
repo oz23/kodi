@@ -36,6 +36,13 @@ CGLShader::CGLShader(const char *shader) : CGLSLShaderProgram("gl_shader_vert.gl
   m_clipPossible = false;
 }
 
+CGLShader::CGLShader(const char *vshader, const char *fshader) : CGLSLShaderProgram(vshader, fshader)
+{
+  m_proj = nullptr;
+  m_model  = nullptr;
+  m_clipPossible = false;
+}
+
 void CGLShader::OnCompiledAndLinked()
 {
   // This is called after CompileAndLink()

@@ -685,7 +685,7 @@ bool CRenderSystemGL::SupportsStereo(RENDER_STEREO_MODE mode) const
 // -----------------------------------------------------------------------------
 void CRenderSystemGL::InitialiseShader()
 {
-  m_pShader[SM_DEFAULT] = new CGLShader("gl_shader_frag_default.glsl");
+  m_pShader[SM_DEFAULT] = new CGLShader("gl_shader_vert_default.glsl", "gl_shader_frag_default.glsl");
   if (!m_pShader[SM_DEFAULT]->CompileAndLink())
   {
     m_pShader[SM_DEFAULT]->Free();

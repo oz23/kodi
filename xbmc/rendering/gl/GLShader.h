@@ -26,6 +26,7 @@ class CGLShader : public Shaders::CGLSLShaderProgram
 {
 public:
   CGLShader(const char *shader);
+  CGLShader(const char *vshader, const char *fshader);
   void OnCompiledAndLinked();
   bool OnEnabled();
   void Free();
