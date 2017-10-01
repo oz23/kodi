@@ -1200,17 +1200,28 @@ void* CWinSystemOSX::CreateWindowedContext(void* shareCtx)
 {
   NSOpenGLContext* newContext = NULL;
 
+  NSOpenGLPixelFormatAttribute wattrs_gl3[] =
+  {
+    NSOpenGLPFADoubleBuffer,
+    NSOpenGLPFAOpenGLProfile, NSOpenGLProfileVersion3_2Core,
+    NSOpenGLPFANoRecovery,
+    NSOpenGLPFAAccelerated,
+    NSOpenGLPFADepthSize, (NSOpenGLPixelFormatAttribute)24,
+    (NSOpenGLPixelFormatAttribute)0
+  };
+
   NSOpenGLPixelFormatAttribute wattrs[] =
   {
     NSOpenGLPFADoubleBuffer,
-    NSOpenGLPFAWindow,
     NSOpenGLPFANoRecovery,
     NSOpenGLPFAAccelerated,
     NSOpenGLPFADepthSize, (NSOpenGLPixelFormatAttribute)8,
     (NSOpenGLPixelFormatAttribute)0
   };
 
-  NSOpenGLPixelFormat* pixFmt = [[NSOpenGLPixelFormat alloc] initWithAttributes:wattrs];
+  NSOpenGLPixelFormat* pixFmt = [[NSOpenGLPixelFormat alloc] initWithAttributes:wattrs_gl3];
+  if (!getenv("KODI_GL_PROFILE_3_2"))
+    pixFmt = [[NSOpenGLPixelFormat alloc] initWithAttributes:wattrs];
 
   newContext = [[NSOpenGLContext alloc] initWithFormat:(NSOpenGLPixelFormat*)pixFmt
     shareContext:(NSOpenGLContext*)shareCtx];
@@ -1222,7 +1233,6 @@ void* CWinSystemOSX::CreateWindowedContext(void* shareCtx)
     NSOpenGLPixelFormatAttribute wattrs2[] =
     {
       NSOpenGLPFADoubleBuffer,
-      NSOpenGLPFAWindow,
       NSOpenGLPFANoRecovery,
       NSOpenGLPFADepthSize, (NSOpenGLPixelFormatAttribute)8,
       (NSOpenGLPixelFormatAttribute)0
@@ -1247,10 +1257,20 @@ void* CWinSystemOSX::CreateFullScreenContext(int screen_index, void* shareCtx)
   CGGetActiveDisplayList(MAX_DISPLAYS, displayArray, &numDisplays);
   displayID = displayArray[screen_index];
 
+  NSOpenGLPixelFormatAttribute fsattrs_gl3[] =
+  {
+    NSOpenGLPFADoubleBuffer,
+    NSOpenGLPFANoRecovery,
+    NSOpenGLPFAAccelerated,
+    NSOpenGLPFADepthSize,  (NSOpenGLPixelFormatAttribute)24,
+    NSOpenGLPFAOpenGLProfile, NSOpenGLProfileVersion3_2Core,
+    NSOpenGLPFAScreenMask, (NSOpenGLPixelFormatAttribute)CGDisplayIDToOpenGLDisplayMask(displayID),
+    (NSOpenGLPixelFormatAttribute)0
+  };
+
   NSOpenGLPixelFormatAttribute fsattrs[] =
   {
     NSOpenGLPFADoubleBuffer,
-    NSOpenGLPFAFullScreen,
     NSOpenGLPFANoRecovery,
     NSOpenGLPFAAccelerated,
     NSOpenGLPFADepthSize,  (NSOpenGLPixelFormatAttribute)8,
@@ -1258,7 +1278,11 @@ void* CWinSystemOSX::CreateFullScreenContext(int screen_index, void* shareCtx)
     (NSOpenGLPixelFormatAttribute)0
   };
 
-  NSOpenGLPixelFormat* pixFmt = [[NSOpenGLPixelFormat alloc] initWithAttributes:fsattrs];
+  NSOpenGLPixelFormat* pixFmt = [[NSOpenGLPixelFormat alloc] initWithAttributes:fsattrs_gl3];
+  if (!getenv("KODI_GL_PROFILE_3_2"))
+    pixFmt = [[NSOpenGLPixelFormat alloc] initWithAttributes:fsattrs];
+
+  pixFmt = [[NSOpenGLPixelFormat alloc] initWithAttributes:fsattrs];
   if (!pixFmt)
     return nil;
 
