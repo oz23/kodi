@@ -909,9 +909,7 @@ void CLinuxRendererGL::LoadShaders(int field)
   {
     if (!g_Windowing.IsExtSupported("GL_ARB_texture_rectangle"))
     {
-      CLog::Log(LOGNOTICE, "GL: GL_ARB_texture_rectangle not supported and OpenGL version is not 2.x");
-      CLog::Log(LOGNOTICE, "GL: Reverting to POT textures");
-      m_renderMethod |= RENDER_POT;
+      CLog::Log(LOGWARNING, "GL: GL_ARB_texture_rectangle not supported and OpenGL version is not 2.x");
     }
     else
       CLog::Log(LOGNOTICE, "GL: NPOT textures are supported through GL_ARB_texture_rectangle extension");
@@ -1836,15 +1834,6 @@ bool CLinuxRendererGL::CreateYV12Texture(int index)
       planes[p].pixpertex_y = 1;
     }
 
-    if(m_renderMethod & RENDER_POT)
-    {
-      for(int p = 0; p < 3; p++)
-      {
-        planes[p].texwidth  = NP2(planes[p].texwidth);
-        planes[p].texheight = NP2(planes[p].texheight);
-      }
-    }
-
     for (int p = 0; p < 3; p++)
     {
       YUVPLANE &plane = planes[p];
@@ -2159,15 +2148,6 @@ bool CLinuxRendererGL::CreateNV12Texture(int index)
       planes[p].pixpertex_y = 1;
     }
 
-    if(m_renderMethod & RENDER_POT)
-    {
-      for(int p = 0; p < 3; p++)
-      {
-        planes[p].texwidth  = NP2(planes[p].texwidth);
-        planes[p].texheight = NP2(planes[p].texheight);
-      }
-    }
-
     for(int p = 0; p < 2; p++)
     {
       YUVPLANE &plane = planes[p];
@@ -2431,15 +2411,6 @@ bool CLinuxRendererGL::CreateYUV422PackedTexture(int index)
       planes[p].pixpertex_y = 1;
     }
 
-    if(m_renderMethod & RENDER_POT)
-    {
-      for(int p = 0; p < 3; p++)
-      {
-        planes[p].texwidth  = NP2(planes[p].texwidth);
-        planes[p].texheight = NP2(planes[p].texheight);
-      }
-    }
-
     YUVPLANE &plane = planes[0];
     if (plane.texwidth * plane.texheight == 0)
       continue;
@@ -2485,14 +2456,12 @@ bool CLinuxRendererGL::Supports(ERENDERFEATURE feature)
 {
   if(feature == RENDERFEATURE_BRIGHTNESS)
   {
-    return (m_renderMethod & RENDER_GLSL) ||
-           (m_renderMethod & RENDER_ARB);
+    return (m_renderMethod & RENDER_GLSL);
   }
   
   if(feature == RENDERFEATURE_CONTRAST)
   {
-    return (m_renderMethod & RENDER_GLSL) ||
-           (m_renderMethod & RENDER_ARB);
+    return (m_renderMethod & RENDER_GLSL);
   }
 
   if(feature == RENDERFEATURE_GAMMA)
@@ -2508,7 +2477,7 @@ bool CLinuxRendererGL::Supports(ERENDERFEATURE feature)
 
   if (feature == RENDERFEATURE_NONLINSTRETCH)
   {
-    if ((m_renderMethod & RENDER_GLSL) && !(m_renderMethod & RENDER_POT))
+    if (m_renderMethod & RENDER_GLSL)
       return true;
   }
 
