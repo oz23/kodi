@@ -1008,17 +1008,14 @@ void CLinuxRendererGL::RenderSinglePass(int index, int field)
 
   // Y
   glActiveTextureARB(GL_TEXTURE0);
-  glEnable(m_textureTarget);
   glBindTexture(m_textureTarget, planes[0].id);
 
   // U
   glActiveTextureARB(GL_TEXTURE1);
-  glEnable(m_textureTarget);
   glBindTexture(m_textureTarget, planes[1].id);
 
   // V
   glActiveTextureARB(GL_TEXTURE2);
-  glEnable(m_textureTarget);
   glBindTexture(m_textureTarget, planes[2].id);
 
   glActiveTextureARB(GL_TEXTURE0);
@@ -1135,15 +1132,6 @@ void CLinuxRendererGL::RenderSinglePass(int index, int field)
   m_pYUVShader->Disable();
   VerifyGLState();
 
-  glActiveTexture(GL_TEXTURE1);
-  glDisable(m_textureTarget);
-
-  glActiveTexture(GL_TEXTURE2);
-  glDisable(m_textureTarget);
-
-  glActiveTexture(GL_TEXTURE0);
-  glDisable(m_textureTarget);
-
   VerifyGLState();
 }
 
@@ -1165,7 +1153,7 @@ void CLinuxRendererGL::RenderToFBO(int index, int field, bool weave /*= false*/)
       return;
     }
 
-    if (!m_fbo.fbo.CreateAndBindToTexture(GL_TEXTURE_2D, m_sourceWidth, m_sourceHeight, GL_RGBA16, GL_SHORT))
+    if (!m_fbo.fbo.CreateAndBindToTexture(GL_TEXTURE_2D, m_sourceWidth, m_sourceHeight, GL_RGBA, GL_SHORT))
     {
       CLog::Log(LOGERROR, "GL: Error creating texture and binding to FBO");
       return;
@@ -1175,20 +1163,17 @@ void CLinuxRendererGL::RenderToFBO(int index, int field, bool weave /*= false*/)
   glDisable(GL_DEPTH_TEST);
 
   // Y
-  glEnable(m_textureTarget);
   glActiveTextureARB(GL_TEXTURE0);
   glBindTexture(m_textureTarget, planes[0].id);
   VerifyGLState();
 
   // U
   glActiveTextureARB(GL_TEXTURE1);
-  glEnable(m_textureTarget);
   glBindTexture(m_textureTarget, planes[1].id);
   VerifyGLState();
 
   // V
   glActiveTextureARB(GL_TEXTURE2);
-  glEnable(m_textureTarget);
   glBindTexture(m_textureTarget, planes[2].id);
   VerifyGLState();
 
@@ -1353,13 +1338,6 @@ void CLinuxRendererGL::RenderToFBO(int index, int field, bool weave /*= false*/)
   m_fbo.fbo.EndRender();
 
   VerifyGLState();
-
-  glActiveTextureARB(GL_TEXTURE1);
-  glDisable(m_textureTarget);
-  glActiveTextureARB(GL_TEXTURE2);
-  glDisable(m_textureTarget);
-  glActiveTextureARB(GL_TEXTURE0);
-  glDisable(m_textureTarget);
 }
 
 void CLinuxRendererGL::RenderFromFBO()
@@ -1471,7 +1449,6 @@ void CLinuxRendererGL::RenderFromFBO()
   VerifyGLState();
 
   glBindTexture(GL_TEXTURE_2D, 0);
-  glDisable(GL_TEXTURE_2D);
   VerifyGLState();
 }
 
@@ -1505,7 +1482,6 @@ void CLinuxRendererGL::RenderRGB(int index, int field)
 {
   YUVPLANE &plane = m_buffers[index].fields[FIELD_FULL][0];
 
-  glEnable(m_textureTarget);
   glActiveTextureARB(GL_TEXTURE0);
 
   glBindTexture(m_textureTarget, plane.id);
@@ -1584,7 +1560,6 @@ void CLinuxRendererGL::RenderRGB(int index, int field)
   m_pVideoFilterShader->Disable();
 
   glBindTexture(m_textureTarget, 0);
-  glDisable(m_textureTarget);
 }
 
 bool CLinuxRendererGL::RenderCapture(CRenderCapture* capture)
@@ -1800,7 +1775,6 @@ bool CLinuxRendererGL::CreateYV12Texture(int index)
       im.plane[i] = new uint8_t[im.planesize[i]];
   }
 
-  glEnable(m_textureTarget);
   for(int f = 0;f<MAX_FIELDS;f++)
   {
     for(p = 0;p<YuvImage::MAX_PLANES;p++)
@@ -1852,7 +1826,6 @@ bool CLinuxRendererGL::CreateYV12Texture(int index)
       VerifyGLState();
     }
   }
-  glDisable(m_textureTarget);
   return true;
 }
 
@@ -1867,7 +1840,6 @@ bool CLinuxRendererGL::UploadYV12Texture(int source)
   else
     deinterlacing = true;
 
-  glEnable(m_textureTarget);
   VerifyGLState();
 
   glPixelStorei(GL_UNPACK_ALIGNMENT,1);
@@ -1924,7 +1896,6 @@ bool CLinuxRendererGL::UploadYV12Texture(int source)
 
   CalculateTextureSourceRects(source, 3);
 
-  glDisable(m_textureTarget);
   return true;
 }
 
@@ -1989,7 +1960,6 @@ bool CLinuxRendererGL::UploadNV12Texture(int source)
   else
     deinterlacing = true;
 
-  glEnable(m_textureTarget);
   VerifyGLState();
 
   glPixelStorei(GL_UNPACK_ALIGNMENT, im->bpp);
@@ -2034,7 +2004,6 @@ bool CLinuxRendererGL::UploadNV12Texture(int source)
 
   CalculateTextureSourceRects(source, 3);
 
-  glDisable(m_textureTarget);
   return true;
 }
 
@@ -2113,7 +2082,6 @@ bool CLinuxRendererGL::CreateNV12Texture(int index)
       im.plane[i] = new uint8_t[im.planesize[i]];
   }
 
-  glEnable(m_textureTarget);
   for(int f = 0;f<MAX_FIELDS;f++)
   {
     for(int p = 0;p<2;p++)
@@ -2167,7 +2135,6 @@ bool CLinuxRendererGL::CreateNV12Texture(int index)
       VerifyGLState();
     }
   }
-  glDisable(m_textureTarget);
 
   return true;
 }
@@ -2234,7 +2201,6 @@ bool CLinuxRendererGL::UploadYUV422PackedTexture(int source)
   else
     deinterlacing = true;
 
-  glEnable(m_textureTarget);
   VerifyGLState();
 
   glPixelStorei(GL_UNPACK_ALIGNMENT,1);
@@ -2262,7 +2228,6 @@ bool CLinuxRendererGL::UploadYUV422PackedTexture(int source)
 
   CalculateTextureSourceRects(source, 3);
 
-  glDisable(m_textureTarget);
   return true;
 }
 
@@ -2379,7 +2344,6 @@ bool CLinuxRendererGL::CreateYUV422PackedTexture(int index)
     im.plane[0] = new uint8_t[im.planesize[0]];
   }
 
-  glEnable(m_textureTarget);
   for(int f = 0;f<MAX_FIELDS;f++)
   {
     if (!glIsTexture(buf.fields[f][0].id))
@@ -2425,7 +2389,6 @@ bool CLinuxRendererGL::CreateYUV422PackedTexture(int index)
     glTexParameteri(m_textureTarget, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     VerifyGLState();
   }
-  glDisable(m_textureTarget);
 
   return true;
 }
@@ -2629,7 +2592,7 @@ bool CLinuxRendererGL::LoadCLUT()
   glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
   // load 3DLUT data
-  glTexImage3D(GL_TEXTURE_3D, 0, GL_RGB16, m_CLUTsize, m_CLUTsize, m_CLUTsize, 0, GL_RGB, GL_UNSIGNED_SHORT, m_CLUT);
+  glTexImage3D(GL_TEXTURE_3D, 0, GL_RGB16, m_CLUTsize, m_CLUTsize, m_CLUTsize, 0, GL_RGB16, GL_UNSIGNED_SHORT, m_CLUT);
   free(m_CLUT);
   glActiveTexture(GL_TEXTURE0);
   return true;
