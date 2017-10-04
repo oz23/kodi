@@ -133,7 +133,7 @@ void CGUITextureGL::End()
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IndexVBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(ushort)*m_idx.size(), m_idx.data(), GL_STATIC_DRAW);
 
-    glDrawElements(GL_TRIANGLE_STRIP, m_packedVertices.size(), GL_UNSIGNED_SHORT, BUFFER_OFFSET(0));
+    glDrawElements(GL_TRIANGLES, m_packedVertices.size()*6 / 4, GL_UNSIGNED_SHORT, 0);
 
     if (m_diffuse.size())
       glDisableVertexAttribArray(tex1Loc);
@@ -234,13 +234,15 @@ void CGUITextureGL::Draw(float *x, float *y, float *z, const CRect &texture, con
     m_packedVertices.push_back(vertices[i]);
   }
 
-  if (m_packedVertices.size() > m_idx.size())
+  if ((m_packedVertices.size() / 4) > (m_idx.size() / 6))
   {
     size_t i = m_packedVertices.size() - 4;
     m_idx.push_back(i+0);
     m_idx.push_back(i+1);
-    m_idx.push_back(i+3);
     m_idx.push_back(i+2);
+    m_idx.push_back(i+2);
+    m_idx.push_back(i+3);
+    m_idx.push_back(i+0);
   }
 }
 
