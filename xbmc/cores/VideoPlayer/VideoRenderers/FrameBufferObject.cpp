@@ -54,7 +54,7 @@ bool CFrameBufferObject::Initialize()
 
   Cleanup();
 
-  glGenFramebuffersEXT(1, &m_fbo);
+  glGenFramebuffers(1, &m_fbo);
   VerifyGLState();
 
   if (!m_fbo)
@@ -70,7 +70,7 @@ void CFrameBufferObject::Cleanup()
     return;
 
   if (m_fbo)
-    glDeleteFramebuffersEXT(1, &m_fbo);
+    glDeleteFramebuffers(1, &m_fbo);
 
   if (m_texid)
     glDeleteTextures(1, &m_texid);
@@ -105,7 +105,7 @@ bool CFrameBufferObject::CreateAndBindToTexture(GLenum target, int width, int he
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, target, m_texid, 0);
   VerifyGLState();
   GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-  glBindFramebufferEXT(GL_FRAMEBUFFER, 0);
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
   if (status != GL_FRAMEBUFFER_COMPLETE)
   {
     VerifyGLState();

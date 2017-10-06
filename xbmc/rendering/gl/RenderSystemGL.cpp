@@ -21,7 +21,6 @@
 
 #include "system.h"
 
-
 #include "RenderSystemGL.h"
 #include "guilib/GraphicContext.h"
 #include "settings/AdvancedSettings.h"
@@ -48,7 +47,7 @@ void CRenderSystemGL::CheckOpenGLQuirks()
 {
 #ifdef TARGET_DARWIN_OSX
   if (m_RenderVendor.find("NVIDIA") != std::string::npos)
-  {             
+  {
     // Nvidia 7300 (AppleTV) and 7600 cannot do DXT with NPOT under OSX
     // Nvidia 9400M is slow as a dog
     if (m_renderCaps & RENDER_CAPS_DXT_NPOT)
@@ -96,7 +95,7 @@ void CRenderSystemGL::CheckOpenGLQuirks()
 
     m_renderQuirks |= RENDER_QUIRKS_BROKEN_OCCLUSION_QUERY;
   }
-}	
+}
 
 bool CRenderSystemGL::InitRenderSystem()
 {
@@ -171,12 +170,12 @@ bool CRenderSystemGL::InitRenderSystem()
   if (IsExtSupported("GL_ARB_texture_non_power_of_two"))
   {
     m_renderCaps |= RENDER_CAPS_NPOT;
-    if (m_renderCaps & RENDER_CAPS_DXT) 
+    if (m_renderCaps & RENDER_CAPS_DXT)
       m_renderCaps |= RENDER_CAPS_DXT_NPOT;
   }
   //Check OpenGL quirks and revert m_renderCaps as needed
   CheckOpenGLQuirks();
-	
+
   m_bRenderCreated = true;
 
   if (m_RenderVersionMajor > 3 ||
