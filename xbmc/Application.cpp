@@ -3445,14 +3445,6 @@ PlayBackRet CApplication::PlayFile(CFileItem item, const std::string& player, bo
       if (g_windowManager.GetActiveWindow() == WINDOW_FULLSCREEN_VIDEO)
         g_windowManager.ActivateWindow(WINDOW_VISUALISATION);
     }
-    else if(m_pPlayer->IsPlayingVideo())
-    {
-      // if player didn't manage to switch to fullscreen by itself do it here
-      if (options.fullscreen && m_pPlayer->IsRenderingVideo() &&
-          g_windowManager.GetActiveWindow() != WINDOW_FULLSCREEN_VIDEO &&
-          g_windowManager.GetActiveWindow() != WINDOW_FULLSCREEN_GAME)
-       SwitchToFullScreen(true);
-    }
     else
     {
       if (g_windowManager.GetActiveWindow() == WINDOW_VISUALISATION ||
