@@ -20,7 +20,7 @@
  *
  */
 
-#include "../TimingConstants.h"
+#include "TimingConstants.h"
 #include <cstdint>
 #include <memory>
 
