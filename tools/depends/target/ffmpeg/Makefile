@@ -54,7 +54,6 @@ ifeq ($(OS), ios)
   ffmpg_config += --target-os=darwin
 endif
 ifeq ($(OS), osx)
-  ffmpg_config += --disable-outdev=sdl
   ffmpg_config += --disable-decoder=mpeg_xvmc --disable-vda --disable-crystalhd --enable-videotoolbox
   ffmpg_config += --target-os=darwin
   ffmpg_config += --disable-securetransport

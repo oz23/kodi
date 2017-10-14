@@ -58,8 +58,7 @@ elseif(CORE_SYSTEM_NAME STREQUAL ios)
   list(APPEND ffmpeg_conf --disable-decoder=mpeg_xvmc --disable-vda --disable-crystalhd --enable-videotoolbox
                           --target-os=darwin)
 elseif(CORE_SYSTEM_NAME STREQUAL osx)
-  list(APPEND ffmpeg_conf --disable-outdev=sdl
-                          --disable-decoder=mpeg_xvmc --disable-vda --disable-crystalhd --enable-videotoolbox
+  list(APPEND ffmpeg_conf --disable-decoder=mpeg_xvmc --disable-vda --disable-crystalhd --enable-videotoolbox
                           --target-os=darwin
                           --disable-securetransport)
 endif()
