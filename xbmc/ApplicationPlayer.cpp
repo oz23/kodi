@@ -634,7 +634,6 @@ void CApplicationPlayer::SetAudioStream(int iStream)
     player->SetAudioStream(iStream);
     m_iAudioStream = iStream;
     m_audioStreamUpdate.Set(1000);
-    CMediaSettings::GetInstance().GetCurrentVideoSettings().m_AudioStream = iStream;
   }
 }
 
@@ -653,7 +652,6 @@ void CApplicationPlayer::SetSubtitle(int iStream)
     player->SetSubtitle(iStream);
     m_iSubtitleStream = iStream;
     m_subtitleStreamUpdate.Set(1000);
-    CMediaSettings::GetInstance().GetCurrentVideoSettings().m_SubtitleStream = iStream;
   }
 }
 
@@ -663,8 +661,6 @@ void CApplicationPlayer::SetSubtitleVisible(bool bVisible)
   if (player)
   {
     player->SetSubtitleVisible(bVisible);
-    CMediaSettings::GetInstance().GetCurrentVideoSettings().m_SubtitleOn = bVisible;
-    CMediaSettings::GetInstance().GetCurrentVideoSettings().m_SubtitleStream = player->GetSubtitle();
   }
 }
 
@@ -690,7 +686,6 @@ void CApplicationPlayer::SetVideoStream(int iStream)
     player->SetVideoStream(iStream);
     m_iVideoStream = iStream;
     m_videoStreamUpdate.Set(1000);
-    CMediaSettings::GetInstance().GetCurrentVideoSettings().m_VideoStream = iStream;
   }
 }
 
@@ -822,11 +817,11 @@ void CApplicationPlayer::FlushRenderer()
     player->FlushRenderer();
 }
 
-void CApplicationPlayer::SetRenderViewMode(int mode)
+void CApplicationPlayer::SetRenderViewMode(int mode, float zoom, float par, float shift, bool stretch)
 {
   std::shared_ptr<IPlayer> player = GetInternal();
   if (player)
-    player->SetRenderViewMode(mode);
+    player->SetRenderViewMode(mode, zoom, par, shift, stretch);
 }
 
 float CApplicationPlayer::GetRenderAspectRatio()
@@ -949,4 +944,23 @@ bool CApplicationPlayer::IsExternalPlaying()
       return true;
   }
   return false;
+}
+
+CVideoSettings CApplicationPlayer::GetVideoSettings()
+{
+  std::shared_ptr<IPlayer> player = GetInternal();
+  if (player)
+  {
+    return player->GetVideoSettings();
+  }
+  return CVideoSettings();
+}
+
+void CApplicationPlayer::SetVideoSettings(CVideoSettings& settings)
+{
+  std::shared_ptr<IPlayer> player = GetInternal();
+  if (player)
+  {
+    return player->SetVideoSettings(settings);
+  }
 }
