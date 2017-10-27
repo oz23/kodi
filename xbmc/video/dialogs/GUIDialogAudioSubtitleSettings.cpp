@@ -84,7 +84,7 @@ void CGUIDialogAudioSubtitleSettings::FrameMove()
     const CVideoSettings videoSettings = g_application.m_pPlayer->GetVideoSettings();
     
     // these settings can change on the fly
-    //! @todo (needs special handling): GetSettingsManager()->SetInt(SETTING_AUDIO_STREAM, g_application.m_pPlayer->GetAudioStream());
+    //! @todo (needs special handling): m_settingsManager->SetInt(SETTING_AUDIO_STREAM, g_application.m_pPlayer->GetAudioStream());
     GetSettingsManager()->SetNumber(SETTING_AUDIO_DELAY, videoSettings.m_AudioDelay);
     GetSettingsManager()->SetBool(SETTING_AUDIO_PASSTHROUGH, CServiceBroker::GetSettings().GetBool(CSettings::SETTING_AUDIOOUTPUT_PASSTHROUGH));
 
