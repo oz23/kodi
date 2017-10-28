@@ -3440,7 +3440,6 @@ PlayBackRet CApplication::PlayFile(CFileItem item, const std::string& player, bo
     else
     {
       if (g_windowManager.GetActiveWindow() == WINDOW_VISUALISATION ||
-          g_windowManager.GetActiveWindow() == WINDOW_FULLSCREEN_VIDEO ||
           g_windowManager.GetActiveWindow() == WINDOW_FULLSCREEN_GAME)
         g_windowManager.PreviousWindow();
     }
