@@ -3256,7 +3256,7 @@ float CVideoPlayer::GetCachePercentage()
 
 void CVideoPlayer::SetAVDelay(float fValue)
 {
-  m_processInfo->UpdateVideoSettigs().SetAudioDelay(fValue);
+  m_processInfo->UpdateVideoSettings().SetAudioDelay(fValue);
   m_renderManager.SetDelay(static_cast<int>(fValue * 1000.0f));
 }
 
@@ -3267,7 +3267,7 @@ float CVideoPlayer::GetAVDelay()
 
 void CVideoPlayer::SetSubTitleDelay(float fValue)
 {
-  m_processInfo->UpdateVideoSettigs().SetAudioDelay(fValue);
+  m_processInfo->UpdateVideoSettings().SetAudioDelay(fValue);
   m_VideoPlayerVideo->SetSubtitleDelay(-fValue * DVD_TIME_BASE);
 }
 
@@ -3306,7 +3306,7 @@ void CVideoPlayer::GetSubtitleStreamInfo(int index, SPlayerSubtitleStreamInfo &i
 void CVideoPlayer::SetSubtitle(int iStream)
 {
   m_messenger.Put(new CDVDMsgPlayerSetSubtitleStream(iStream));
-  m_processInfo->UpdateVideoSettigs().SetSubtitleStream(iStream);
+  m_processInfo->UpdateVideoSettings().SetSubtitleStream(iStream);
 }
 
 bool CVideoPlayer::GetSubtitleVisible()
@@ -3323,7 +3323,7 @@ bool CVideoPlayer::GetSubtitleVisible()
 void CVideoPlayer::SetSubtitleVisible(bool bVisible)
 {
   m_messenger.Put(new CDVDMsgBool(CDVDMsg::PLAYER_SET_SUBTITLESTREAM_VISIBLE, bVisible));
-  m_processInfo->UpdateVideoSettigs().SetSubtitleVisible(bVisible);
+  m_processInfo->UpdateVideoSettings().SetSubtitleVisible(bVisible);
 }
 
 void CVideoPlayer::SetSubtitleVisibleInternal(bool bVisible)
@@ -3347,7 +3347,7 @@ int CVideoPlayer::GetAudioStream()
 void CVideoPlayer::SetAudioStream(int iStream)
 {
   m_messenger.Put(new CDVDMsgPlayerSetAudioStream(iStream));
-  m_processInfo->UpdateVideoSettigs().SetAudioStream(iStream);
+  m_processInfo->UpdateVideoSettings().SetAudioStream(iStream);
   SynchronizeDemuxer();
 }
 
@@ -3364,7 +3364,7 @@ int CVideoPlayer::GetVideoStream() const
 void CVideoPlayer::SetVideoStream(int iStream)
 {
   m_messenger.Put(new CDVDMsgPlayerSetVideoStream(iStream));
-  m_processInfo->UpdateVideoSettigs().SetVideoStream(iStream);
+  m_processInfo->UpdateVideoSettings().SetVideoStream(iStream);
   SynchronizeDemuxer();
 }
 
@@ -4918,7 +4918,7 @@ void CVideoPlayer::SetMute(bool bOnOff)
 
 void CVideoPlayer::SetDynamicRangeCompression(long drc)
 {
-  m_processInfo->UpdateVideoSettigs().SetVolumeAmplification(static_cast<float>(drc) / 100);
+  m_processInfo->UpdateVideoSettings().SetVolumeAmplification(static_cast<float>(drc) / 100);
   m_VideoPlayerAudio->SetDynamicRangeCompression(drc);
 }
 
@@ -4983,7 +4983,7 @@ void CVideoPlayer::FlushRenderer()
 
 void CVideoPlayer::SetRenderViewMode(int mode, float zoom, float par, float shift, bool stretch)
 {
-  m_processInfo->UpdateVideoSettigs().SetViewMode(mode, zoom, par, shift, stretch);
+  m_processInfo->UpdateVideoSettings().SetViewMode(mode, zoom, par, shift, stretch);
   m_renderManager.SetVideoSettings(m_processInfo->GetVideoSettings());
   m_renderManager.SetViewMode(mode);
 }
