@@ -398,6 +398,8 @@ bool CApplication::SetupNetwork()
   m_network = new CNetworkLinux();
 #elif defined(HAS_WIN32_NETWORK)
   m_network = new CNetworkWin32();
+#elif defined(HAS_WIN10_NETWORK)
+  m_network = new CNetworkWin10();
 #else
   m_network = new CNetwork();
 #endif
@@ -1709,7 +1711,7 @@ bool CApplication::LoadSkin(const std::string& skinID)
       break;
     }
   }
-  
+
   return true;
 }
 
@@ -2720,7 +2722,7 @@ void CApplication::FrameMove(bool processEvents, bool processGUI)
   if (processGUI && m_renderGUI)
   {
     m_skipGuiRender = false;
-#if defined(TARGET_RASPBERRY_PI) || defined(HAS_IMXVPU)
+#if defined(TARGET_RASPBERRY_PI)
     int fps = 0;
 
     // This code reduces rendering fps of the GUI layer when playing videos in fullscreen mode
@@ -3975,7 +3977,7 @@ void CApplication::CheckScreenSaverAndDPMS()
   {
     m_screensaverInhibitor.Release();
   }
-  
+
   // Has the screen saver window become active?
   if (maybeScreensaver && g_windowManager.IsWindowActive(WINDOW_SCREENSAVER))
   {
