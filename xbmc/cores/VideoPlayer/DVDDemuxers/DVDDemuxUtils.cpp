@@ -42,7 +42,7 @@ void CDVDDemuxUtils::FreeDemuxPacket(DemuxPacket* pPacket)
     {
       AVPacket avPkt;
       av_init_packet(&avPkt);
-      avPkt.side_data = reinterpret_cast<AVPacketSideData*>(pPacket->pSideData);
+      avPkt.side_data = static_cast<AVPacketSideData*>(pPacket->pSideData);
       avPkt.side_data_elems = pPacket->iSideDataElems;
       av_packet_free_side_data(&avPkt);
     }
