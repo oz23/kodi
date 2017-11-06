@@ -38,6 +38,9 @@ void CWinSystemOSXGL::PresentRenderImpl(bool rendered)
   if (rendered)
     FlushBuffer();
 
+  if (IsObscured())
+    usleep(10000);
+
   if (m_delayDispReset && m_dispResetTimer.IsTimePast())
   {
     m_delayDispReset = false;
