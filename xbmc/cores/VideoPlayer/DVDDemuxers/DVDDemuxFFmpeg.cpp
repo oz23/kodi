@@ -1092,9 +1092,9 @@ DemuxPacket* CDVDDemuxFFmpeg::Read()
     }
     if (!stream)
     {
-      CLog::Log(LOGERROR, "CDVDDemuxFFmpeg::AddStream - internal error, stream is null");
       CDVDDemuxUtils::FreeDemuxPacket(pPacket);
-      return NULL;
+      pPacket = CDVDDemuxUtils::AllocateDemuxPacket(0);
+      return pPacket;
     }
 
     pPacket->iStreamId = stream->uniqueId;
@@ -1371,7 +1371,7 @@ CDemuxStream* CDVDDemuxFFmpeg::AddStream(int streamIdx)
 
     switch (pStream->codecpar->codec_type)
     {
-    case AVMEDIA_TYPE_AUDIO:
+      case AVMEDIA_TYPE_AUDIO:
       {
         CDemuxStreamAudioFFmpeg* st = new CDemuxStreamAudioFFmpeg(pStream);
         stream = st;
@@ -1389,7 +1389,7 @@ CDemuxStream* CDVDDemuxFFmpeg::AddStream(int streamIdx)
 
         break;
       }
-    case AVMEDIA_TYPE_VIDEO:
+      case AVMEDIA_TYPE_VIDEO:
       {
         CDemuxStreamVideoFFmpeg* st = new CDemuxStreamVideoFFmpeg(pStream);
         stream = st;
@@ -1471,13 +1471,13 @@ CDemuxStream* CDVDDemuxFFmpeg::AddStream(int streamIdx)
 
         break;
       }
-    case AVMEDIA_TYPE_DATA:
+      case AVMEDIA_TYPE_DATA:
       {
         stream = new CDemuxStream();
         stream->type = STREAM_DATA;
         break;
       }
-    case AVMEDIA_TYPE_SUBTITLE:
+      case AVMEDIA_TYPE_SUBTITLE:
       {
         if (pStream->codecpar->codec_id == AV_CODEC_ID_DVB_TELETEXT && CServiceBroker::GetSettings().GetBool(CSettings::SETTING_VIDEOPLAYER_TELETEXTENABLED))
         {
@@ -1497,10 +1497,10 @@ CDemuxStream* CDVDDemuxFFmpeg::AddStream(int streamIdx)
           break;
         }
       }
-    case AVMEDIA_TYPE_ATTACHMENT:
+      case AVMEDIA_TYPE_ATTACHMENT:
       { //mkv attachments. Only bothering with fonts for now.
-        if(pStream->codecpar->codec_id == AV_CODEC_ID_TTF ||
-           pStream->codecpar->codec_id == AV_CODEC_ID_OTF)
+        if (pStream->codecpar->codec_id == AV_CODEC_ID_TTF ||
+            pStream->codecpar->codec_id == AV_CODEC_ID_OTF)
         {
           std::string fileName = "special://temp/fonts/";
           XFILE::CDirectory::Create(fileName);
@@ -1529,11 +1529,11 @@ CDemuxStream* CDVDDemuxFFmpeg::AddStream(int streamIdx)
         stream->type = STREAM_NONE;
         break;
       }
-    default:
+      default:
       {
-        stream = new CDemuxStream();
-        stream->type = STREAM_NONE;
-        break;
+        CLog::Log(LOGDEBUG, "CDVDDemuxFFmpeg::AddStream - discarding unknown stream with id: %d", pStream->index);
+        pStream->discard = AVDISCARD_ALL;
+        return nullptr;;
       }
     }
 
@@ -1623,7 +1623,7 @@ CDemuxStream* CDVDDemuxFFmpeg::AddStream(int streamIdx)
     return stream;
   }
   else
-    return NULL;
+    return nullptr;
 }
 
 /**
@@ -1644,8 +1644,7 @@ void CDVDDemuxFFmpeg::AddStream(int streamIdx, CDemuxStream* stream)
     delete res.first->second;
     res.first->second = stream;
   }
-  if(g_advancedSettings.m_logLevel > LOG_LEVEL_NORMAL)
-    CLog::Log(LOGDEBUG, "CDVDDemuxFFmpeg::AddStream ID: %d", streamIdx);
+  CLog::Log(LOGDEBUG, "CDVDDemuxFFmpeg::AddStream ID: %d", streamIdx);
 }
 
 
