@@ -651,7 +651,8 @@ bool CVideoPlayerVideo::ProcessDecoderOutput(double &frametime, double &pts)
 
   if (decoderState == CDVDVideoCodec::VC_EOF)
   {
-    if (m_syncState == IDVDStreamPlayer::SYNC_STARTING)
+    if (m_syncState == IDVDStreamPlayer::SYNC_STARTING &&
+        m_messageQueue.GetPacketCount(CDVDMsg::GENERAL_STREAMCHANGE) == 0)
     {
       SStartMsg msg;
       msg.player = VideoPlayer_VIDEO;
