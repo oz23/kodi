@@ -242,9 +242,14 @@ void CExternalPlayer::Process()
 #endif
     strFName = m_filename;
 
+#if defined(TARGET_POSIX)
+  strFArgs.append(m_filename);
+  strFArgs.append(" ");
+#else
   strFArgs.append("\"");
   strFArgs.append(m_filename);
   strFArgs.append("\" ");
+#endif
   strFArgs.append(m_args);
 
   int nReplaced = StringUtils::Replace(strFArgs, "{0}", mainFile);
