@@ -1643,8 +1643,6 @@ void CVideoPlayer::Process()
     // process the packet
     ProcessPacket(pStream, pPacket);
   }
-
-  g_Windowing.UnregisterRenderLoop(this);
 }
 
 bool CVideoPlayer::CheckIsCurrent(CCurrentStream& current, CDemuxStream* stream, DemuxPacket* pkg)
@@ -2475,6 +2473,8 @@ void CVideoPlayer::OnExit()
   // subtitles are added from video player. after video player has finished, overlays have to be cleared.
   CloseStream(m_CurrentSubtitle, false);  // clear overlay container
 
+  g_Windowing.UnregisterRenderLoop(this);
+    
   // destroy objects
   SAFE_DELETE(m_pDemuxer);
   SAFE_DELETE(m_pSubtitleDemuxer);
