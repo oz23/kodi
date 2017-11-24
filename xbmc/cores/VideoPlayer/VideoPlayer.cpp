@@ -56,11 +56,6 @@
 #include "cores/VideoPlayer/VideoRenderers/RenderManager.h"
 #include "cores/VideoPlayer/VideoRenderers/RenderFlags.h"
 #include "cores/VideoPlayer/Process/ProcessInfo.h"
-#ifdef HAS_PERFORMANCE_SAMPLE
-#include "xbmc/utils/PerformanceSample.h"
-#else
-#define MEASURE_FUNCTION
-#endif
 #include "settings/AdvancedSettings.h"
 #include "FileItem.h"
 #include "GUIUserMessages.h"
@@ -767,7 +762,10 @@ bool CVideoPlayer::CloseFile(bool reopen)
   // wait for the main thread to finish up
   // since this main thread cleans up all other resources and threads
   // we are done after the StopThread call
-  StopThread();
+  {
+    CSingleExit exitlock(g_graphicsContext);
+    StopThread();
+  }
 
   m_Edl.Clear();
 

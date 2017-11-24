@@ -46,7 +46,7 @@
 #include <stdlib.h>
 #include <algorithm>
 
-#include "Application.h"
+#include "addons/VFSEntry.h"
 #include "ServiceBroker.h"
 #include "Util.h"
 #include "filesystem/PVRDirectory.h"
@@ -1516,6 +1516,18 @@ bool CUtil::SupportsWriteFileOperations(const std::string& strPath)
   if (URIUtils::IsMultiPath(strPath))
     return CMultiPathDirectory::SupportsWriteFileOperations(strPath);
 
+
+  if (CServiceBroker::IsBinaryAddonCacheUp())
+  {
+    CURL url(strPath);
+    for (const auto& addon : CServiceBroker::GetVFSAddonCache().GetAddonInstances())
+    {
+      const auto& info = addon->GetProtocolInfo();
+      if (info.type == url.GetProtocol() && info.supportWrite)
+        return true;
+    }
+  }
+
   return false;
 }
 
@@ -1996,7 +2008,7 @@ void CUtil::ScanForExternalSubtitles(const std::string& strMovie, std::vector<st
 
   if (!CMediaSettings::GetInstance().GetAdditionalSubtitleDirectoryChecked() && !CServiceBroker::GetSettings().GetString(CSettings::SETTING_SUBTITLES_CUSTOMPATH).empty()) // to avoid checking non-existent directories (network) every time..
   {
-    if (!g_application.getNetwork().IsAvailable() && !URIUtils::IsHD(CServiceBroker::GetSettings().GetString(CSettings::SETTING_SUBTITLES_CUSTOMPATH)))
+    if (!CServiceBroker::GetNetwork().IsAvailable() && !URIUtils::IsHD(CServiceBroker::GetSettings().GetString(CSettings::SETTING_SUBTITLES_CUSTOMPATH)))
     {
       CLog::Log(LOGINFO, "CUtil::CacheSubtitles: disabling alternate subtitle directory for this session, it's inaccessible");
       CMediaSettings::GetInstance().SetAdditionalSubtitleDirectoryChecked(-1); // disabled

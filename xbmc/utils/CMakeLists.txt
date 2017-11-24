@@ -39,8 +39,6 @@ set(SOURCES ActorProtocol.cpp
             md5.cpp
             Mime.cpp
             Observer.cpp
-            PerformanceSample.cpp
-            PerformanceStats.cpp
             POUtils.cpp
             RecentlyAddedJob.cpp
             RegExp.cpp
@@ -56,7 +54,6 @@ set(SOURCES ActorProtocol.cpp
             SeekHandler.cpp
             SortUtils.cpp
             Speed.cpp
-            Splash.cpp
             Stopwatch.cpp
             StreamDetails.cpp
             StreamUtils.cpp
@@ -130,8 +127,6 @@ set(HEADERS ActorProtocol.h
             Mime.h
             Observer.h
             params_check_macros.h
-            PerformanceSample.h
-            PerformanceStats.h
             POUtils.h
             ProgressJob.h
             RecentlyAddedJob.h
@@ -148,7 +143,6 @@ set(HEADERS ActorProtocol.h
             SeekHandler.h
             SortUtils.h
             Speed.h
-            Splash.h
             Stopwatch.h
             StreamDetails.h
             StreamUtils.h

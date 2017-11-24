@@ -71,9 +71,6 @@ namespace PLAYLIST
 #include "platform/win32/WIN32Util.h"
 #endif
 #include "utils/Stopwatch.h"
-#ifdef HAS_PERFORMANCE_SAMPLE
-#include "utils/PerformanceStats.h"
-#endif
 #include "windowing/OSScreenSaver.h"
 #include "windowing/XBMC_events.h"
 #include "threads/Thread.h"
@@ -86,7 +83,6 @@ class CInertialScrollingHandler;
 class DPMSSupport;
 class CSplash;
 class CBookmark;
-class CNetwork;
 class IActionListener;
 
 namespace VIDEO
@@ -203,7 +199,6 @@ public:
   // Checks whether the screensaver and / or DPMS should become active.
   void CheckScreenSaverAndDPMS();
   void ActivateScreenSaver(bool forceType = false);
-  bool SetupNetwork();
   void CloseNetworkShares();
 
   void ShowAppMigrationMessage();
@@ -256,8 +251,9 @@ public:
   /*!
    \brief Starts a video library cleanup.
    \param userInitiated Whether the action was initiated by the user (either via GUI or any other method) or not.  It is meant to hide or show dialogs.
+   \param content Content type to clean, blank for everything
    */
-  void StartVideoCleanup(bool userInitiated = true);
+  void StartVideoCleanup(bool userInitiated = true, const std::string& content = "");
 
   /*!
    \brief Starts a video library update.
@@ -288,12 +284,6 @@ public:
   bool ExecuteXBMCAction(std::string action, const CGUIListItemPtr &item = NULL);
 
   bool OnEvent(XBMC_Event& newEvent);
-
-  CNetwork& getNetwork();
-
-#ifdef HAS_PERFORMANCE_SAMPLE
-  CPerformanceStats &GetPerformanceStats();
-#endif
 
   std::unique_ptr<CApplicationPlayer> m_pPlayer;
 
@@ -504,10 +494,6 @@ protected:
   void HandleShutdownMessage();
 
   CInertialScrollingHandler *m_pInertialScrollingHandler;
-  CNetwork    *m_network;
-#ifdef HAS_PERFORMANCE_SAMPLE
-  CPerformanceStats m_perfStats;
-#endif
 
   ReplayGainSettings m_replayGainSettings;
   std::vector<IActionListener *> m_actionListeners;

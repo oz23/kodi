@@ -27,7 +27,6 @@
 #include "interfaces/builtins/Builtins.h"
 #include "utils/JobManager.h"
 #include "utils/Variant.h"
-#include "utils/Splash.h"
 #include "LangInfo.h"
 #include "utils/Screenshot.h"
 #include "Util.h"
@@ -165,12 +164,6 @@
 #include "music/tags/MusicInfoTagLoaderFactory.h"
 #include "CompileInfo.h"
 
-#ifdef HAS_PERFORMANCE_SAMPLE
-#include "utils/PerformanceSample.h"
-#else
-#define MEASURE_FUNCTION
-#endif
-
 #ifdef TARGET_WINDOWS
 #include "win32util.h"
 #endif
@@ -281,7 +274,6 @@ CApplication::CApplication(void)
   , m_muted(false)
   , m_volumeLevel(VOLUME_MAXIMUM)
   , m_pInertialScrollingHandler(new CInertialScrollingHandler())
-  , m_network(nullptr)
   , m_WaitingExternalCalls(0)
   , m_ProcessedExternalCalls(0)
 {
@@ -400,23 +392,6 @@ void CApplication::Preflight()
 #endif
 }
 
-bool CApplication::SetupNetwork()
-{
-#if defined(TARGET_ANDROID)
-  m_network = new CNetworkAndroid();
-#elif defined(HAS_LINUX_NETWORK)
-  m_network = new CNetworkLinux();
-#elif defined(HAS_WIN32_NETWORK)
-  m_network = new CNetworkWin32();
-#elif defined(HAS_WIN10_NETWORK)
-  m_network = new CNetworkWin10();
-#else
-  m_network = new CNetwork();
-#endif
-
-  return m_network != NULL;
-}
-
 bool CApplication::Create(const CAppParamParser &params)
 {
   // Grab a handle to our thread to be used later in identifying the render thread.
@@ -428,7 +403,6 @@ bool CApplication::Create(const CAppParamParser &params)
     return false;
   }
 
-  SetupNetwork();
   Preflight();
 
   // here we register all global classes for the CApplicationMessenger,
@@ -554,7 +528,7 @@ bool CApplication::Create(const CAppParamParser &params)
   std::string executable = CUtil::ResolveExecutablePath();
   CLog::Log(LOGNOTICE, "The executable running is: %s", executable.c_str());
   std::string hostname("[unknown]");
-  m_network->GetHostName(hostname);
+  m_ServiceManager->GetNetwork().GetHostName(hostname);
   CLog::Log(LOGNOTICE, "Local hostname: %s", hostname.c_str());
   std::string lowerAppName = CCompileInfo::GetAppName();
   StringUtils::ToLower(lowerAppName);
@@ -736,7 +710,7 @@ bool CApplication::CreateGUI()
   if (sav_res)
     CDisplaySettings::GetInstance().SetCurrentResolution(RES_DESKTOP, true);
 
-  CSplash::GetInstance().Show();
+  g_Windowing.ShowSplash("");
 
   // The key mappings may already have been loaded by a peripheral
   CLog::Log(LOGINFO, "load keymapping");
@@ -1064,7 +1038,7 @@ bool CApplication::Initialize()
     StringUtils::Format(g_localizeStrings.Get(178).c_str(), g_sysinfo.GetAppName().c_str()),
     "special://xbmc/media/icon256x256.png", EventLevel::Basic)));
 
-  getNetwork().WaitForNet();
+  m_ServiceManager->GetNetwork().WaitForNet();
 
   // Load curl so curl_global_init gets called before any service threads
   // are started. Unloading will have no effect as curl is never fully unloaded.
@@ -1089,13 +1063,13 @@ bool CApplication::Initialize()
   while (!event.WaitMSec(1000))
   {
     if (CDatabaseManager::GetInstance().m_bIsUpgrading)
-      CSplash::GetInstance().Show(std::string(iDots, ' ') + localizedStr + std::string(iDots, '.'));
+      g_Windowing.ShowSplash(std::string(iDots, ' ') + localizedStr + std::string(iDots, '.'));
     if (iDots == 3)
       iDots = 1;
     else
       ++iDots;
   }
-  CSplash::GetInstance().Show();
+  g_Windowing.ShowSplash("");
 
   StartServices();
 
@@ -1124,13 +1098,13 @@ bool CApplication::Initialize()
     while (!event.WaitMSec(1000))
     {
       if (isMigratingAddons)
-        CSplash::GetInstance().Show(std::string(iDots, ' ') + localizedStr + std::string(iDots, '.'));
+        g_Windowing.ShowSplash(std::string(iDots, ' ') + localizedStr + std::string(iDots, '.'));
       if (iDots == 3)
         iDots = 1;
       else
         ++iDots;
     }
-    CSplash::GetInstance().Show();
+    g_Windowing.ShowSplash("");
     m_incompatibleAddons = incompatibleAddons;
     m_confirmSkinChange = true;
 
@@ -1300,7 +1274,7 @@ void CApplication::StartServices()
 
 void CApplication::StopServices()
 {
-  m_network->NetworkMessage(CNetwork::SERVICES_DOWN, 0);
+  m_ServiceManager->GetNetwork().NetworkMessage(CNetwork::SERVICES_DOWN, 0);
 
 #if !defined(TARGET_WINDOWS) && defined(HAS_DVD_DRIVE)
   CLog::Log(LOGNOTICE, "stop dvd detect media");
@@ -2465,7 +2439,7 @@ void CApplication::OnApplicationMessage(ThreadMessage* pMsg)
   break;
 
   case TMSG_NETWORKMESSAGE:
-    getNetwork().NetworkMessage((CNetwork::EMESSAGE)pMsg->param1, pMsg->param2);
+    m_ServiceManager->GetNetwork().NetworkMessage((CNetwork::EMESSAGE)pMsg->param1, pMsg->param2);
     break;
 
   case TMSG_SETLANGUAGE:
@@ -2677,8 +2651,6 @@ void CApplication::UnlockFrameMoveGuard()
 
 void CApplication::FrameMove(bool processEvents, bool processGUI)
 {
-  MEASURE_FUNCTION;
-
   if (processEvents)
   {
     // currently we calculate the repeat time (ie time from last similar keypress) just global as fps
@@ -2790,11 +2762,6 @@ bool CApplication::Cleanup()
 
     CLog::Log(LOGNOTICE, "unload sections");
 
-#ifdef HAS_PERFORMANCE_SAMPLE
-    CLog::Log(LOGNOTICE, "performance statistics");
-    m_perfStats.DumpStats();
-#endif
-
     //  Shutdown as much as possible of the
     //  application, to reduce the leaks dumped
     //  to the vc output window before calling
@@ -2830,9 +2797,6 @@ bool CApplication::Cleanup()
     _CrtDumpMemoryLeaks();
     while(1); // execution ends
 #endif
-
-    delete m_network;
-    m_network = NULL;
 
     // Cleanup was called more than once on exit during my tests
     if (m_ServiceManager)
@@ -4424,8 +4388,6 @@ void CApplication::ShowAppMigrationMessage()
 
 void CApplication::Process()
 {
-  MEASURE_FUNCTION;
-
   // dispatch the messages generated by python or other threads to the current window
   g_windowManager.DispatchThreadMessages();
 
@@ -5015,12 +4977,36 @@ void CApplication::StopMusicScan()
     m_musicInfoScanner->Stop();
 }
 
-void CApplication::StartVideoCleanup(bool userInitiated /* = true */)
+void CApplication::StartVideoCleanup(bool userInitiated /* = true */,
+                                     const std::string& content /* = "" */)
 {
   if (userInitiated && CVideoLibraryQueue::GetInstance().IsRunning())
     return;
 
   std::set<int> paths;
+  if (!content.empty())
+  {
+    CVideoDatabase db;
+    std::set<std::string> contentPaths;
+    if (db.Open() && db.GetPaths(contentPaths))
+    {
+      for (const std::string& path : contentPaths)
+      {
+        if (db.GetContentForPath(path) == content)
+        {
+          paths.insert(db.GetPathId(path));
+          std::vector<std::pair<int, std::string>> sub;
+          if (db.GetSubPaths(path, sub))
+          {
+            for (const auto& it : sub)
+              paths.insert(it.first);
+          }
+        }
+      }
+    }
+    if (paths.empty())
+      return;
+  }
   if (userInitiated)
     CVideoLibraryQueue::GetInstance().CleanLibraryModal(paths);
   else
@@ -5135,17 +5121,6 @@ void CApplication::SetRenderGUI(bool renderGUI)
     g_windowManager.MarkDirty();
   m_renderGUI = renderGUI;
 }
-
-CNetwork& CApplication::getNetwork()
-{
-  return *m_network;
-}
-#ifdef HAS_PERFORMANCE_SAMPLE
-CPerformanceStats &CApplication::GetPerformanceStats()
-{
-  return m_perfStats;
-}
-#endif
 
 bool CApplication::SetLanguage(const std::string &strLanguage)
 {
