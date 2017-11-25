@@ -217,24 +217,25 @@ bool CDVDDemuxFFmpeg::Open(CDVDInputStream* pInput, bool streaminfo, bool filein
 
   const AVIOInterruptCB int_cb = { interrupt_cb, this };
 
-  if (!pInput) return false;
+  if (!pInput)
+    return false;
 
   m_pInput = pInput;
   strFile = m_pInput->GetFileName();
 
-  if( m_pInput->GetContent().length() > 0 )
+  if (m_pInput->GetContent().length() > 0)
   {
     std::string content = m_pInput->GetContent();
     StringUtils::ToLower(content);
 
     /* check if we can get a hint from content */
-    if     ( content.compare("video/x-vobsub") == 0 )
+    if ( content.compare("video/x-vobsub") == 0)
       iformat = av_find_input_format("mpeg");
-    else if( content.compare("video/x-dvd-mpeg") == 0 )
+    else if (content.compare("video/x-dvd-mpeg") == 0)
       iformat = av_find_input_format("mpeg");
-    else if( content.compare("video/mp2t") == 0 )
+    else if (content.compare("video/mp2t") == 0)
       iformat = av_find_input_format("mpegts");
-    else if( content.compare("multipart/x-mixed-replace") == 0 )
+    else if (content.compare("multipart/x-mixed-replace") == 0)
       iformat = av_find_input_format("mjpeg");
   }
 
@@ -253,7 +254,7 @@ bool CDVDDemuxFFmpeg::Open(CDVDInputStream* pInput, bool streaminfo, bool filein
 
     CURL url = m_pInput->GetURL();
 
-    int result=-1;
+    int result = -1;
     if (url.IsProtocol("mms"))
     {
       // try mmsh, then mmst
@@ -266,12 +267,27 @@ bool CDVDDemuxFFmpeg::Open(CDVDInputStream* pInput, bool streaminfo, bool filein
         strFile = url.Get();
       }
     }
-    if (result < 0 && avformat_open_input(&m_pFormatContext, strFile.c_str(), iformat, &options) < 0 )
+    if (result < 0)
     {
-      CLog::Log(LOGDEBUG, "Error, could not open file %s", CURL::GetRedacted(strFile).c_str());
-      Dispose();
+      m_pFormatContext->flags |= AVFMT_FLAG_PRIV_OPT;
+      if (avformat_open_input(&m_pFormatContext, strFile.c_str(), iformat, &options) < 0)
+      {
+        CLog::Log(LOGDEBUG, "Error, could not open file %s", CURL::GetRedacted(strFile).c_str());
+        Dispose();
+        av_dict_free(&options);
+        return false;
+      }
       av_dict_free(&options);
-      return false;
+      m_pFormatContext->flags &= ~AVFMT_FLAG_PRIV_OPT;
+      AVDictionary *options = GetFFMpegOptionsFromInput();
+      av_dict_set_int(&options, "load_all_variants", 0, AV_OPT_SEARCH_CHILDREN);
+      if (avformat_open_input(&m_pFormatContext, strFile.c_str(), iformat, &options) < 0)
+      {
+        CLog::Log(LOGDEBUG, "Error, could not open file (2) %s", CURL::GetRedacted(strFile).c_str());
+        Dispose();
+        av_dict_free(&options);
+        return false;
+      }
     }
     av_dict_free(&options);
   }
@@ -295,7 +311,6 @@ bool CDVDDemuxFFmpeg::Open(CDVDInputStream* pInput, bool streaminfo, bool filein
     if( iformat == NULL )
     {
       // let ffmpeg decide which demuxer we have to open
-
       bool trySPDIFonly = (m_pInput->GetContent() == "audio/x-spdif-compressed");
 
       if (!trySPDIFonly)
@@ -1307,7 +1322,7 @@ void CDVDDemuxFFmpeg::CreateStreams(unsigned int program)
   if (m_pFormatContext->nb_programs)
   {
     // check if desired program is available
-    if (program < m_pFormatContext->nb_programs && m_pFormatContext->programs[program]->nb_stream_indexes > 0)
+    if (program < m_pFormatContext->nb_programs)
     {
       m_program = program;
     }
@@ -1322,11 +1337,13 @@ void CDVDDemuxFFmpeg::CreateStreams(unsigned int program)
         m_program = i;
       }
 
-      if(i != m_program)
+      if (i != m_program)
         m_pFormatContext->programs[i]->discard = AVDISCARD_ALL;
     }
     if (m_program != UINT_MAX)
     {
+      m_pFormatContext->programs[m_program]->discard = AVDISCARD_NONE;
+
       // add streams from selected program
       for (unsigned int i = 0; i < m_pFormatContext->programs[m_program]->nb_stream_indexes; i++)
       {
@@ -1850,7 +1867,7 @@ unsigned int CDVDDemuxFFmpeg::HLSSelectProgram()
       }
     }
 
-    if (strRes < selectedRes && selectedBitrate < bandwidth)
+    if ((strRes && strRes < selectedRes) && selectedBitrate < bandwidth)
       continue;
 
     bool want = false;
