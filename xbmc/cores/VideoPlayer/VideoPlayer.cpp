@@ -79,7 +79,7 @@
 #include "cores/omxplayer/OMXHelper.h"
 #endif
 #include "VideoPlayerAudio.h"
-#include "windowing/WindowingFactory.h"
+#include "windowing/WinSystem.h"
 #include "DVDCodecs/DVDCodecUtils.h"
 
 #include <iterator>
@@ -691,12 +691,12 @@ CVideoPlayer::CVideoPlayer(IPlayerCallback& callback)
 
   m_displayLost = false;
   m_error = false;
-  g_Windowing.Register(this);
+  CServiceBroker::GetWinSystem().Register(this);
 }
 
 CVideoPlayer::~CVideoPlayer()
 {
-  g_Windowing.Unregister(this);
+  CServiceBroker::GetWinSystem().Unregister(this);
 
   CloseFile();
   DestroyPlayers();
@@ -1376,7 +1376,7 @@ void CVideoPlayer::Prepare()
 
 void CVideoPlayer::Process()
 {
-  g_Windowing.RegisterRenderLoop(this);
+  CServiceBroker::GetWinSystem().RegisterRenderLoop(this);
 
   Prepare();
 
@@ -1647,10 +1647,10 @@ void CVideoPlayer::Process()
 
 bool CVideoPlayer::CheckIsCurrent(CCurrentStream& current, CDemuxStream* stream, DemuxPacket* pkg)
 {
-  if(current.id     == pkg->iStreamId
-  && current.demuxerId == stream->demuxerId
-  && current.source == stream->source
-  && current.type   == stream->type)
+  if(current.id == pkg->iStreamId &&
+     current.demuxerId == stream->demuxerId &&
+     current.source == stream->source &&
+     current.type == stream->type)
     return true;
   else
     return false;
@@ -2473,7 +2473,7 @@ void CVideoPlayer::OnExit()
   // subtitles are added from video player. after video player has finished, overlays have to be cleared.
   CloseStream(m_CurrentSubtitle, false);  // clear overlay container
 
-  g_Windowing.UnregisterRenderLoop(this);
+  CServiceBroker::GetWinSystem().UnregisterRenderLoop(this);
     
   // destroy objects
   SAFE_DELETE(m_pDemuxer);

@@ -23,7 +23,7 @@
 #include "CompileInfo.h"
 #include "threads/SingleLock.h"
 #include "ExternalPlayer.h"
-#include "windowing/WindowingFactory.h"
+#include "windowing/WinSystem.h"
 #include "dialogs/GUIDialogOK.h"
 #include "guilib/GUIWindowManager.h"
 #include "Application.h"
@@ -295,7 +295,7 @@ void CExternalPlayer::Process()
   if (m_hidexbmc && !m_islauncher)
   {
     CLog::Log(LOGNOTICE, "%s: Hiding %s window", __FUNCTION__, CCompileInfo::GetAppName());
-    g_Windowing.Hide();
+    CServiceBroker::GetWinSystem().Hide();
   }
 #if defined(TARGET_WINDOWS_DESKTOP)
   else if (currentStyle & WS_EX_TOPMOST)
@@ -341,7 +341,7 @@ void CExternalPlayer::Process()
     if (m_hidexbmc)
     {
       CLog::Log(LOGNOTICE, "%s: %s cannot stay hidden for a launcher process", __FUNCTION__, CCompileInfo::GetAppName());
-      g_Windowing.Show(false);
+      CServiceBroker::GetWinSystem().Show(false);
     }
 
     {
@@ -361,7 +361,7 @@ void CExternalPlayer::Process()
   CLog::Log(LOGNOTICE, "%s: Stop", __FUNCTION__);
 
 #if defined(TARGET_WINDOWS_DESKTOP)
-  g_Windowing.Restore();
+  CServiceBroker::GetWinSystem().Restore();
 
   if (currentStyle & WS_EX_TOPMOST)
   {
@@ -373,7 +373,7 @@ void CExternalPlayer::Process()
 #endif
   {
     CLog::Log(LOGNOTICE, "%s: Showing %s window", __FUNCTION__, CCompileInfo::GetAppName());
-    g_Windowing.Show();
+    CServiceBroker::GetWinSystem().Show();
   }
 
 #if defined(TARGET_WINDOWS_DESKTOP)

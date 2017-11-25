@@ -27,7 +27,6 @@
 #include "utils/SysfsUtils.h"
 #include "utils/ScreenshotAML.h"
 #include "settings/MediaSettings.h"
-#include "windowing/WindowingFactory.h"
 #include "cores/VideoPlayer/VideoRenderers/RenderCapture.h"
 #include "../RenderFactory.h"
 #include "settings/AdvancedSettings.h"
@@ -129,6 +128,7 @@ bool CRendererAML::Supports(ERENDERFEATURE feature)
   if (feature == RENDERFEATURE_ZOOM ||
       feature == RENDERFEATURE_CONTRAST ||
       feature == RENDERFEATURE_BRIGHTNESS ||
+      feature == RENDERFEATURE_NONLINSTRETCH ||
       feature == RENDERFEATURE_STRETCH ||
       feature == RENDERFEATURE_PIXEL_RATIO ||
       feature == RENDERFEATURE_ROTATION)
