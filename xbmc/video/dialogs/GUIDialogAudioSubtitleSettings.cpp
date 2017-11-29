@@ -434,7 +434,7 @@ void CGUIDialogAudioSubtitleSettings::AudioStreamsOptionFiller(SettingConstPtr s
     std::string strItem;
     std::string strLanguage;
 
-    SPlayerAudioStreamInfo info;
+    AudioStreamInfo info;
     g_application.m_pPlayer->GetAudioStreamInfo(i, info);
 
     if (!g_LangCodeExpander.Lookup(info.language, strLanguage))
@@ -445,6 +445,7 @@ void CGUIDialogAudioSubtitleSettings::AudioStreamsOptionFiller(SettingConstPtr s
     else
       strItem = StringUtils::Format("%s - %s", strLanguage.c_str(), info.name.c_str());
 
+    strItem += FormatFlags(info.flags);
     strItem += StringUtils::Format(" (%i/%i)", i + 1, audioStreamCount);
     list.push_back(make_pair(strItem, i));
   }
@@ -463,7 +464,7 @@ void CGUIDialogAudioSubtitleSettings::SubtitleStreamsOptionFiller(SettingConstPt
   // cycle through each subtitle and add it to our entry list
   for (int i = 0; i < subtitleStreamCount; ++i)
   {
-    SPlayerSubtitleStreamInfo info;
+    SubtitleStreamInfo info;
     g_application.m_pPlayer->GetSubtitleStreamInfo(i, info);
 
     std::string strItem;
@@ -477,6 +478,7 @@ void CGUIDialogAudioSubtitleSettings::SubtitleStreamsOptionFiller(SettingConstPt
     else
       strItem = StringUtils::Format("%s - %s", strLanguage.c_str(), info.name.c_str());
 
+    strItem += FormatFlags(info.flags);
     strItem += StringUtils::Format(" (%i/%i)", i + 1, subtitleStreamCount);
 
     list.push_back(make_pair(strItem, i));
@@ -516,4 +518,24 @@ std::string CGUIDialogAudioSubtitleSettings::SettingFormatterPercentAsDecibel(st
     formatString = g_localizeStrings.Get(control->GetFormatLabel());
 
   return StringUtils::Format(formatString.c_str(), CAEUtil::PercentToGain(value.asFloat()));
+}
+
+std::string CGUIDialogAudioSubtitleSettings::FormatFlags(StreamFlags flags)
+{
+  std::vector<std::string> localizedFlags;
+  if (flags & StreamFlags::FLAG_DEFAULT)
+    localizedFlags.emplace_back(g_localizeStrings.Get(39105));
+  if (flags & StreamFlags::FLAG_FORCED)
+    localizedFlags.emplace_back(g_localizeStrings.Get(39106));
+  if (flags & StreamFlags::FLAG_HEARING_IMPAIRED)
+    localizedFlags.emplace_back(g_localizeStrings.Get(39107));
+  if (flags &  StreamFlags::FLAG_VISUAL_IMPAIRED)
+    localizedFlags.emplace_back(g_localizeStrings.Get(39108));
+
+  std::string formated = StringUtils::Join(localizedFlags, ", ");
+
+  if (!formated.empty())
+    formated = StringUtils::Format(" [%s]", formated);
+
+  return formated;
 }

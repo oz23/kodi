@@ -345,7 +345,6 @@ void CExternalPlayer::Process()
     }
 
     {
-      CSingleLock lock(g_graphicsContext);
       m_dialog = g_windowManager.GetWindow<CGUIDialogOK>(WINDOW_DIALOG_OK);
       m_dialog->SetHeading(CVariant{23100});
       m_dialog->SetLine(1, CVariant{23104});
@@ -526,20 +525,6 @@ void CExternalPlayer::Seek(bool bPlus, bool bLargeStep, bool bChapterOverride)
 
 void CExternalPlayer::SeekPercentage(float iPercent)
 {
-}
-
-float CExternalPlayer::GetPercentage()
-{
-  int64_t iTime = 0;
-  int64_t iTotalTime = 0;
-
-  if (iTotalTime != 0)
-  {
-    CLog::Log(LOGDEBUG, "Percentage is %f", (iTime * 100 / (float)iTotalTime));
-    return iTime * 100 / (float)iTotalTime;
-  }
-
-  return 0.0f;
 }
 
 void CExternalPlayer::SetAVDelay(float fValue)

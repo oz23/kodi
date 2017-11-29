@@ -566,14 +566,14 @@ void CApplicationPlayer::OnNothingToQueueNotify()
     player->OnNothingToQueueNotify();
 }
 
-void CApplicationPlayer::GetVideoStreamInfo(int streamId, SPlayerVideoStreamInfo &info)
+void CApplicationPlayer::GetVideoStreamInfo(int streamId, VideoStreamInfo &info)
 {
   std::shared_ptr<IPlayer> player = GetInternal();
   if (player)
     player->GetVideoStreamInfo(streamId, info);
 }
 
-void CApplicationPlayer::GetAudioStreamInfo(int index, SPlayerAudioStreamInfo &info)
+void CApplicationPlayer::GetAudioStreamInfo(int index, AudioStreamInfo &info)
 {
   std::shared_ptr<IPlayer> player = GetInternal();
   if (player)
@@ -637,7 +637,7 @@ void CApplicationPlayer::SetAudioStream(int iStream)
   }
 }
 
-void CApplicationPlayer::GetSubtitleStreamInfo(int index, SPlayerSubtitleStreamInfo &info)
+void CApplicationPlayer::GetSubtitleStreamInfo(int index, SubtitleStreamInfo &info)
 {
   std::shared_ptr<IPlayer> player = GetInternal();
   if (player)
