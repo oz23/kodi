@@ -187,11 +187,17 @@ bool CPVRActionListener::OnAction(const CAction &action)
       int iChannelNumber = static_cast<int>(action.GetAmount(0));
       int iSubChannelNumber = static_cast<int>(action.GetAmount(1));
 
-      const CPVRChannelPtr currentChannel = CServiceBroker::GetPVRManager().GetCurrentChannel();
+      const CPVRChannelPtr currentChannel = CServiceBroker::GetPVRManager().GetPlayingChannel();
       const CPVRChannelGroupPtr selectedGroup = CServiceBroker::GetPVRManager().ChannelGroups()->Get(currentChannel->IsRadio())->GetSelectedGroup();
       const CFileItemPtr item(selectedGroup->GetByChannelNumber(CPVRChannelNumber(iChannelNumber, iSubChannelNumber)));
 
       CServiceBroker::GetPVRManager().GUIActions()->SwitchToChannel(item, false);
+      return true;
+    }
+
+    case ACTION_RECORD:
+    {
+      CServiceBroker::GetPVRManager().GUIActions()->ToggleRecordingOnPlayingChannel();
       return true;
     }
   }

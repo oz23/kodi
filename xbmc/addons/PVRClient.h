@@ -621,45 +621,38 @@ namespace PVR
      * @param channel The channel to stream.
      * @return PVR_ERROR_NO_ERROR on success, respective error code otherwise.
      */
-    PVR_ERROR OpenStream(const CPVRChannelPtr &channel);
+    PVR_ERROR OpenLiveStream(const CPVRChannelPtr &channel);
 
     /*!
-     * @brief Close an open live or recording stream.
+     * @brief Close an open live stream.
      * @return PVR_ERROR_NO_ERROR on success, respective error code otherwise.
      */
-    PVR_ERROR CloseStream();
+    PVR_ERROR CloseLiveStream();
 
     /*!
-     * @brief Read from an open live or recording stream.
+     * @brief Read from an open live stream.
      * @param lpBuf The buffer to store the data in.
      * @param uiBufSize The amount of bytes to read.
      * @param iRead The amount of bytes that were actually read from the stream.
      * @return PVR_ERROR_NO_ERROR on success, respective error code otherwise.
      */
-    PVR_ERROR ReadStream(void* lpBuf, int64_t uiBufSize, int &iRead);
+    PVR_ERROR ReadLiveStream(void* lpBuf, int64_t uiBufSize, int &iRead);
 
     /*!
-     * @brief Seek in a live or recording stream on a backend.
+     * @brief Seek in a live stream on a backend.
      * @param iFilePosition The position to seek to.
      * @param iWhence ?
      * @param iPosition The new position or -1 on error.
      * @return PVR_ERROR_NO_ERROR on success, respective error code otherwise.
      */
-    PVR_ERROR SeekStream(int64_t iFilePosition, int iWhence, int64_t &iPosition);
+    PVR_ERROR SeekLiveStream(int64_t iFilePosition, int iWhence, int64_t &iPosition);
 
     /*!
-     * @brief Get the position within the currently playing stream, if any.
-     * @param iPosition The position in the stream that's currently being read or -1 on error.
-     * @return PVR_ERROR_NO_ERROR on success, respective error code otherwise.
-     */
-    PVR_ERROR GetStreamPosition(int64_t &iPosition);
-
-    /*!
-     * @brief Get the lenght of the currently playing stream, if any.
+     * @brief Get the lenght of the currently playing live stream, if any.
      * @param iLength The total length of the stream that's currently being read or -1 on error.
      * @return PVR_ERROR_NO_ERROR on success, respective error code otherwise.
      */
-    PVR_ERROR GetStreamLength(int64_t &iLength);
+    PVR_ERROR GetLiveStreamLength(int64_t &iLength);
 
     /*!
      * @brief (Un)Pause a stream.
@@ -688,13 +681,6 @@ namespace PVR
      * @return PVR_ERROR_NO_ERROR on success, respective error code otherwise.
      */
     PVR_ERROR FillChannelStreamFileItem(CFileItem &fileItem);
-
-    /*!
-     * @brief Fill the file item for a recording with the properties required for playback. Values are obtained from the PVR backend.
-     * @param fileItem The file item to be filled.
-     * @return PVR_ERROR_NO_ERROR on success, respective error code otherwise.
-     */
-    PVR_ERROR FillRecordingStreamFileItem(CFileItem &fileItem);
 
     /*!
      * @brief Check whether PVR backend supports pausing the currently playing stream
@@ -737,7 +723,45 @@ namespace PVR
      * @param recording The recording to open.
      * @return PVR_ERROR_NO_ERROR on success, respective error code otherwise.
      */
-    PVR_ERROR OpenStream(const CPVRRecordingPtr &recording);
+    PVR_ERROR OpenRecordedStream(const CPVRRecordingPtr &recording);
+
+    /*!
+     * @brief Close an open recording stream.
+     * @return PVR_ERROR_NO_ERROR on success, respective error code otherwise.
+     */
+    PVR_ERROR CloseRecordedStream();
+
+    /*!
+     * @brief Read from an open recording stream.
+     * @param lpBuf The buffer to store the data in.
+     * @param uiBufSize The amount of bytes to read.
+     * @param iRead The amount of bytes that were actually read from the stream.
+     * @return PVR_ERROR_NO_ERROR on success, respective error code otherwise.
+     */
+    PVR_ERROR ReadRecordedStream(void* lpBuf, int64_t uiBufSize, int &iRead);
+
+    /*!
+     * @brief Seek in a recording stream on a backend.
+     * @param iFilePosition The position to seek to.
+     * @param iWhence ?
+     * @param iPosition The new position or -1 on error.
+     * @return PVR_ERROR_NO_ERROR on success, respective error code otherwise.
+     */
+    PVR_ERROR SeekRecordedStream(int64_t iFilePosition, int iWhence, int64_t &iPosition);
+
+    /*!
+     * @brief Get the lenght of the currently playing recording stream, if any.
+     * @param iLength The total length of the stream that's currently being read or -1 on error.
+     * @return PVR_ERROR_NO_ERROR on success, respective error code otherwise.
+     */
+    PVR_ERROR GetRecordedStreamLength(int64_t &iLength);
+
+    /*!
+     * @brief Fill the file item for a recording with the properties required for playback. Values are obtained from the PVR backend.
+     * @param fileItem The file item to be filled.
+     * @return PVR_ERROR_NO_ERROR on success, respective error code otherwise.
+     */
+    PVR_ERROR FillRecordingStreamFileItem(CFileItem &fileItem);
 
     //@}
     /** @name PVR demultiplexer methods */
@@ -767,64 +791,6 @@ namespace PVR
      * @return PVR_ERROR_NO_ERROR on success, respective error code otherwise.
      */
     PVR_ERROR DemuxRead(DemuxPacket* &packet);
-
-    bool IsPlayingLiveStream(void) const;
-    bool IsPlayingLiveTV(void) const;
-    bool IsPlayingLiveRadio(void) const;
-    bool IsPlayingEncryptedChannel(void) const;
-    bool IsPlayingRecording(void) const;
-    bool IsPlaying(void) const;
-
-    /*!
-     * @brief Set the channel that is currently playing.
-     * @param channel The channel that is currently playing.
-     */
-    void SetPlayingChannel(const CPVRChannelPtr channel);
-
-    /*!
-     * @brief Clear the channel that is currently playing, if any.
-     */
-    void ClearPlayingChannel();
-
-    /*!
-     * @brief Get the channel that is currently playing.
-     * @return the channel that is currently playing, NULL otherwise.
-     */
-    CPVRChannelPtr GetPlayingChannel() const;
-
-    /*!
-     * @brief Set the recording that is currently playing.
-     * @param recording The recording that is currently playing.
-     */
-    void SetPlayingRecording(const CPVRRecordingPtr recording);
-
-    /*!
-     * @brief Get the recording that is currently playing.
-     * @return The recording that is currently playing, NULL otherwise.
-     */
-    CPVRRecordingPtr GetPlayingRecording() const;
-
-    /*!
-     * @brief Clear the recording that is currently playing, if any.
-     */
-    void ClearPlayingRecording();
-
-    /*!
-     * @brief Set the epg tag that is currently playing.
-     * @param epgTag The tag that is currently playing.
-     */
-    void SetPlayingEpgTag(const CPVREpgInfoTagPtr epgTag);
-
-    /*!
-     * @brief Clear the epg tag that is currently playing, if any.
-     */
-    void ClearPlayingEpgTag();
-
-    /*!
-     * @brief Get the epg tag that is currently playing.
-     * @return The tag that is currently playing, NULL otherwise.
-     */
-    CPVREpgInfoTagPtr GetPlayingEpgTag(void) const;
 
     static const char *ToString(const PVR_ERROR error);
 
@@ -960,13 +926,14 @@ namespace PVR
     /*!
      * @brief Wraps an addon function call in order to do common pre and post function invocation actions.
      * @param strFunctionName The function name, for logging purposes.
-     * @param function The function to wrap. It has to have return type PVR_ERROR and must not take any parameters.
+     * @param function The function to wrap. It has to have return type PVR_ERROR and must take one parameter of type const AddonInstance*.
      * @param bIsImplemented If false, this method will return PVR_ERROR_NOT_IMPLEMENTED.
      * @param bCheckReadyToUse If true, this method will check whether this instance is ready for use and return PVR_ERROR_SERVER_ERROR if it is not.
      * @return PVR_ERROR_NO_ERROR on success, any other PVR_ERROR_* value otherwise.
      */
+    typedef KodiToAddonFuncTable_PVR AddonInstance;
     PVR_ERROR DoAddonCall(const char* strFunctionName,
-                          std::function<PVR_ERROR()> function,
+                          std::function<PVR_ERROR(const AddonInstance*)> function,
                           bool bIsImplemented = true,
                           bool bCheckReadyToUse = true) const;
 
@@ -1135,13 +1102,6 @@ namespace PVR
     std::string            m_strClientPath;       /*!< @brief translated path to this add-on */
 
     CCriticalSection m_critSection;
-
-    bool                m_bIsPlayingTV;
-    CPVRChannelPtr      m_playingChannel;
-    bool                m_bIsPlayingRecording;
-    CPVRRecordingPtr    m_playingRecording;
-    bool                m_bIsPlayingEpgTag;
-    CPVREpgInfoTagPtr   m_playingEpgTag;
 
     AddonInstance_PVR m_struct;
   };

@@ -476,6 +476,15 @@ namespace PVR
 
   } // unnamed namespace
 
+  bool CPVRGUIActions::ToggleRecordingOnPlayingChannel()
+  {
+    const CPVRChannelPtr channel = CServiceBroker::GetPVRManager().GetPlayingChannel();
+    if (channel && channel->CanRecord())
+      return SetRecordingOnChannel(channel, !channel->IsRecording());
+
+    return false;
+  }
+
   bool CPVRGUIActions::SetRecordingOnChannel(const CPVRChannelPtr &channel, bool bOnOff)
   {
     bool bReturn = false;
@@ -1671,7 +1680,7 @@ namespace PVR
   {
     if (channelNumber.IsValid() && CServiceBroker::GetPVRManager().IsPlaying())
     {
-      const CPVRChannelPtr playingChannel(CServiceBroker::GetPVRManager().GetCurrentChannel());
+      const CPVRChannelPtr playingChannel(CServiceBroker::GetPVRManager().GetPlayingChannel());
       if (playingChannel)
       {
         if (channelNumber != playingChannel->ChannelNumber())
@@ -1695,7 +1704,7 @@ namespace PVR
   {
     if (CServiceBroker::GetPVRManager().IsPlaying())
     {
-      const CPVRChannelPtr playingChannel(CServiceBroker::GetPVRManager().GetCurrentChannel());
+      const CPVRChannelPtr playingChannel(CServiceBroker::GetPVRManager().GetPlayingChannel());
       if (playingChannel)
       {
         const CPVRChannelGroupPtr group(CServiceBroker::GetPVRManager().ChannelGroups()->GetPreviousPlayedGroup());

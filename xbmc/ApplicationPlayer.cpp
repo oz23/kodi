@@ -319,15 +319,6 @@ void CApplicationPlayer::SeekTimeRelative(int64_t iTime)
   }
 }
 
-std::string CApplicationPlayer::GetPlayingTitle()
-{
-  std::shared_ptr<IPlayer> player = GetInternal();
-  if (player)
-    return player->GetPlayingTitle();
-  else
-    return "";
-}
-
 int64_t CApplicationPlayer::GetTime() const
 {
   std::shared_ptr<IPlayer> player = GetInternal();
@@ -450,22 +441,10 @@ bool CApplicationPlayer::GetSubtitleVisible()
   return (player && player->GetSubtitleVisible());
 }
 
-bool CApplicationPlayer::CanRecord()
-{
-  std::shared_ptr<IPlayer> player = GetInternal();
-  return (player && player->CanRecord());
-}
-
 bool CApplicationPlayer::CanPause()
 {
   std::shared_ptr<IPlayer> player = GetInternal();
   return (player && player->CanPause());
-}
-
-bool CApplicationPlayer::IsRecording() const
-{
-  std::shared_ptr<IPlayer> player = GetInternal();
-  return (player && player->IsRecording());
 }
 
 TextCacheStruct_t* CApplicationPlayer::GetTeletextCache()
@@ -580,16 +559,35 @@ void CApplicationPlayer::GetAudioStreamInfo(int index, AudioStreamInfo &info)
     player->GetAudioStreamInfo(index, info);
 }
 
+int CApplicationPlayer::GetPrograms(std::vector<ProgramInfo> &programs)
+{
+  int ret = 0;
+  std::shared_ptr<IPlayer> player = GetInternal();
+  if (player)
+    ret = player->GetPrograms(programs);
+  return ret;
+}
+
+void CApplicationPlayer::SetProgram(int progId)
+{
+  std::shared_ptr<IPlayer> player = GetInternal();
+  if (player)
+    player->SetProgram(progId);
+}
+
+int CApplicationPlayer::GetProgramsCount()
+{
+  int ret = 0;
+  std::shared_ptr<IPlayer> player = GetInternal();
+  if (player)
+    ret = player->GetProgramsCount();
+  return ret;
+}
+
 bool CApplicationPlayer::OnAction(const CAction &action)
 {
   std::shared_ptr<IPlayer> player = GetInternal();
   return (player && player->OnAction(action));
-}
-
-bool CApplicationPlayer::Record(bool bOnOff)
-{
-  std::shared_ptr<IPlayer> player = GetInternal();
-  return (player && player->Record(bOnOff));
 }
 
 int  CApplicationPlayer::GetAudioStreamCount()

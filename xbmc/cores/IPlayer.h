@@ -117,9 +117,6 @@ public:
   virtual void SetMute(bool bOnOff){}
   virtual void SetVolume(float volume){}
   virtual void SetDynamicRangeCompression(long drc){}
-  virtual bool CanRecord() { return false;};
-  virtual bool IsRecording() { return false;};
-  virtual bool Record(bool bOnOff) { return false;};
 
   virtual void  SetAVDelay(float fValue = 0.0f) { return; }
   virtual float GetAVDelay()                    { return 0.0f;};
@@ -148,6 +145,10 @@ public:
   virtual int GetVideoStreamCount() const { return 0; }
   virtual void GetVideoStreamInfo(int streamId, VideoStreamInfo &info) {}
   virtual void SetVideoStream(int iStream) {}
+
+  virtual int GetPrograms(std::vector<ProgramInfo>& programs) { return 0; }
+  virtual void SetProgram(int progId) {}
+  virtual int GetProgramsCount() { return 0; }
 
   virtual TextCacheStruct_t* GetTeletextCache() { return NULL; };
   virtual void LoadPage(int p, int sp, unsigned char* buffer) {};
@@ -184,7 +185,6 @@ public:
    its not available in the underlaying decoder (airtunes for example)
    */
   virtual void SetTotalTime(int64_t time) { }
-  virtual int GetSourceBitrate(){ return 0;}
   virtual void SetSpeed(float speed) = 0;
   virtual void SetTempo(float tempo) { };
   virtual bool SupportsTempo() { return false; }
@@ -205,8 +205,6 @@ public:
   virtual std::string GetPlayerState() { return ""; };
   virtual bool SetPlayerState(const std::string& state) { return false;};
   
-  virtual std::string GetPlayingTitle() { return ""; };
-
   virtual void GetAudioCapabilities(std::vector<int> &audioCaps) { audioCaps.assign(1,IPC_AUD_ALL); };
   /*!
    \brief define the subtitle capabilities of the player

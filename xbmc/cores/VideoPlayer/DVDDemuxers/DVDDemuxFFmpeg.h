@@ -105,6 +105,8 @@ public:
   CDemuxStream* GetStream(int iStreamId) const override;
   std::vector<CDemuxStream*> GetStreams() const override;
   int GetNrOfStreams() const override;
+  int GetPrograms(std::vector<ProgramInfo>& programs) override;
+  void SetProgram(int progId) override;
 
   bool SeekChapter(int chapter, double* startpts = NULL) override;
   int GetChapterCount() override;
@@ -154,7 +156,9 @@ protected:
   bool     m_bSup;
   int      m_speed;
   unsigned int m_program;
-  int m_streamsInProgram;
+  unsigned int m_streamsInProgram;
+  unsigned int m_newProgram;
+
   XbmcThreads::EndTime  m_timeout;
 
   // Due to limitations of ffmpeg, we only can detect a program change
