@@ -623,11 +623,11 @@ void CDVDDemuxFFmpeg::Dispose()
   m_pInput = NULL;
 }
 
-void CDVDDemuxFFmpeg::Reset()
+bool CDVDDemuxFFmpeg::Reset()
 {
   CDVDInputStream* pInputStream = m_pInput;
   Dispose();
-  Open(pInputStream, m_streaminfo);
+  return Open(pInputStream, m_streaminfo);
 }
 
 void CDVDDemuxFFmpeg::Flush()
@@ -1283,7 +1283,7 @@ int CDVDDemuxFFmpeg::GetPrograms(std::vector<ProgramInfo>& programs)
   if (!m_pFormatContext || m_pFormatContext->nb_programs <= 1)
     return 0;
   
-  for (int i = 0; i < m_pFormatContext->nb_programs; i++)
+  for (unsigned int i = 0; i < m_pFormatContext->nb_programs; i++)
   {
     std::ostringstream os;
     ProgramInfo prog;
@@ -1300,7 +1300,7 @@ int CDVDDemuxFFmpeg::GetPrograms(std::vector<ProgramInfo>& programs)
     while (tag)
     {
       os << " - " << tag->key << ": " << tag->value;
-      tag = av_dict_get(m_pFormatContext->programs[i]->metadata, nullptr, tag, AV_DICT_IGNORE_SUFFIX);
+      tag = av_dict_get(m_pFormatContext->programs[i]->metadata, "", tag, AV_DICT_IGNORE_SUFFIX);
     }
     prog.name = os.str();
     programs.push_back(prog);

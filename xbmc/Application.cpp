@@ -264,9 +264,6 @@ CApplication::CApplication(void)
   , m_threadID(0)
   , m_bInitializing(true)
   , m_bPlatformDirectories(true)
-  , m_progressTrackingVideoResumeBookmark(*new CBookmark)
-  , m_progressTrackingItem(new CFileItem)
-  , m_progressTrackingPlayCountUpdate(false)
   , m_currentStackPosition(0)
   , m_nextPlaylistItem(-1)
   , m_lastRenderTime(0)
@@ -291,8 +288,6 @@ CApplication::CApplication(void)
 
 CApplication::~CApplication(void)
 {
-  delete &m_progressTrackingVideoResumeBookmark;
-
   delete m_pInertialScrollingHandler;
 
   m_actionListeners.clear();
@@ -758,7 +753,7 @@ bool CApplication::InitWindow(RESOLUTION res)
     return false;
   }
   // set GUI res and force the clear of the screen
-  g_graphicsContext.SetVideoResolution(res);
+  g_graphicsContext.SetVideoResolution(res, false);
   return true;
 }
 
@@ -1389,6 +1384,11 @@ void CApplication::OnSettingChanged(std::shared_ptr<const CSetting> setting)
     {
       CApplicationMessenger::GetInstance().PostMsg(TMSG_MEDIA_RESTART);
     }
+  }
+  else if (settingId == CSettings::SETTING_VIDEOSCREEN_FAKEFULLSCREEN)
+  {
+    if (g_graphicsContext.IsFullScreenRoot())
+      g_graphicsContext.SetVideoResolution(g_graphicsContext.GetVideoResolution(), true);
   }
   else if (StringUtils::EqualsNoCase(settingId, CSettings::SETTING_MUSICPLAYER_REPLAYGAINTYPE))
     m_replayGainSettings.iType = std::static_pointer_cast<const CSettingInt>(setting)->GetValue();
@@ -2028,7 +2028,7 @@ bool CApplication::OnAction(const CAction &action)
   if (action.GetID() == ACTION_BUILT_IN_FUNCTION)
   {
     if (!CBuiltins::GetInstance().IsSystemPowerdownCommand(action.GetName()) ||
-        CServiceBroker::GetPVRManager().CanSystemPowerdown())
+        CServiceBroker::GetPVRManager().GUIActions()->CanSystemPowerdown())
     {
       CBuiltins::GetInstance().Execute(action.GetName());
       m_navigationTimer.StartZero();
@@ -2359,7 +2359,7 @@ void CApplication::OnApplicationMessage(ThreadMessage* pMsg)
   uint32_t msg = pMsg->dwMessage;
   if (msg == TMSG_SYSTEM_POWERDOWN)
   {
-    if (CServiceBroker::GetPVRManager().CanSystemPowerdown())
+    if (CServiceBroker::GetPVRManager().GUIActions()->CanSystemPowerdown())
       msg = pMsg->param1; // perform requested shutdown action
     else
       return; // no shutdown
@@ -2527,8 +2527,6 @@ void CApplication::OnApplicationMessage(ThreadMessage* pMsg)
     g_application.ResetScreenSaver();
     g_application.WakeUpScreenSaverAndDPMS();
 
-    g_graphicsContext.Lock();
-
     if (g_windowManager.GetActiveWindow() != WINDOW_SLIDESHOW)
       g_windowManager.ActivateWindow(WINDOW_SLIDESHOW);
     if (URIUtils::IsZIP(pMsg->strParam) || URIUtils::IsRAR(pMsg->strParam)) // actually a cbz/cbr
@@ -2558,7 +2556,6 @@ void CApplication::OnApplicationMessage(ThreadMessage* pMsg)
       pSlideShow->Add(&item);
       pSlideShow->Select(pMsg->strParam);
     }
-    g_graphicsContext.Unlock();
   }
   break;
 
@@ -2570,7 +2567,6 @@ void CApplication::OnApplicationMessage(ThreadMessage* pMsg)
     if (g_application.m_pPlayer->IsPlayingVideo())
       g_application.StopPlaying();
 
-    g_graphicsContext.Lock();
     pSlideShow->Reset();
 
     CFileItemList items;
@@ -2598,7 +2594,6 @@ void CApplication::OnApplicationMessage(ThreadMessage* pMsg)
         g_windowManager.ActivateWindow(WINDOW_SLIDESHOW);
     }
 
-    g_graphicsContext.Unlock();
   }
   break;
 
@@ -2647,13 +2642,13 @@ void CApplication::LockFrameMoveGuard()
   ++m_WaitingExternalCalls;
   m_frameMoveGuard.lock();
   ++m_ProcessedExternalCalls;
-  g_graphicsContext.Lock();
+  g_graphicsContext.lock();
 };
 
 void CApplication::UnlockFrameMoveGuard()
 {
   --m_WaitingExternalCalls;
-  g_graphicsContext.Unlock();
+  g_graphicsContext.unlock();
   m_frameMoveGuard.unlock();
 };
 
@@ -2670,7 +2665,7 @@ void CApplication::FrameMove(bool processEvents, bool processGUI)
 
     if (processGUI && m_renderGUI)
     {
-      g_graphicsContext.Lock();
+      CSingleLock lock(g_graphicsContext);
       // check if there are notifications to display
       CGUIDialogKaiToast *toast = g_windowManager.GetWindow<CGUIDialogKaiToast>(WINDOW_DIALOG_KAI_TOAST);
       if (toast && toast->DoWork())
@@ -2680,7 +2675,6 @@ void CApplication::FrameMove(bool processEvents, bool processGUI)
           toast->Open();
         }
       }
-      g_graphicsContext.Unlock();
     }
 
     HandleWinEvents();
@@ -2834,8 +2828,6 @@ void CApplication::Stop(int exitCode)
 
     // Abort any active screensaver
     WakeUpScreenSaverAndDPMS();
-
-    SaveFileState(true);
 
     g_alarmClock.StopThread();
 
@@ -3180,8 +3172,6 @@ PlayBackRet CApplication::PlayFile(CFileItem item, const std::string& player, bo
 
   if (!bRestart)
   {
-    SaveFileState(true);
-
     m_pPlayer->SetPlaySpeed(1);
 
     m_itemCurrentFile.reset(new CFileItem(item));
@@ -3452,9 +3442,6 @@ void CApplication::OnPlayBackEnded()
 #ifdef HAS_PYTHON
   g_pythonParser.OnPlayBackEnded();
 #endif
-#if defined(TARGET_DARWIN_IOS)
-  CDarwinUtils::EnableOSScreenSaver(true);
-#endif
 
   CServiceBroker::GetPVRManager().OnPlaybackEnded(m_itemCurrentFile);
 
@@ -3475,16 +3462,57 @@ void CApplication::OnPlayBackStarted(const CFileItem &file)
   // (does nothing if python is not loaded)
   g_pythonParser.OnPlayBackStarted(file);
 #endif
-#if defined(TARGET_DARWIN_IOS)
-  if (m_pPlayer->IsPlayingVideo())
-    CDarwinUtils::EnableOSScreenSaver(false);
-#endif
 
   m_itemCurrentFile.reset(new CFileItem(file));
   CServiceBroker::GetPVRManager().OnPlaybackStarted(m_itemCurrentFile);
 
   CGUIMessage msg(GUI_MSG_PLAYBACK_STARTED, 0, 0);
   g_windowManager.SendThreadMessage(msg);
+}
+
+void CApplication::OnPlayerCloseFile(const CFileItem &file, const CBookmark &bookmark)
+{
+  CFileItem fileItem(file);
+  CBookmark resumeBookmark;
+  bool playCountUpdate = false;
+
+  float percent = bookmark.timeInSeconds / bookmark.totalTimeInSeconds * 100;
+
+  if ((fileItem.IsAudio() && g_advancedSettings.m_audioPlayCountMinimumPercent > 0 &&
+       percent >= g_advancedSettings.m_audioPlayCountMinimumPercent) ||
+      (fileItem.IsVideo() && g_advancedSettings.m_videoPlayCountMinimumPercent > 0 &&
+       percent >= g_advancedSettings.m_videoPlayCountMinimumPercent))
+  {
+    playCountUpdate = true;
+  }
+
+  if (!(fileItem.IsDiscImage() || fileItem.IsDVDFile()) || bookmark.totalTimeInSeconds > 15*60)
+  {
+    if (fileItem.IsStack())
+      fileItem.GetVideoInfoTag()->m_streamDetails.SetVideoDuration(0, bookmark.totalTimeInSeconds);
+  }
+
+  if (g_advancedSettings.m_videoIgnorePercentAtEnd > 0 &&
+      bookmark.totalTimeInSeconds - bookmark.timeInSeconds <
+        0.01f * g_advancedSettings.m_videoIgnorePercentAtEnd * bookmark.totalTimeInSeconds)
+  {
+    resumeBookmark.timeInSeconds = -1.0f;
+  }
+  else if (bookmark.timeInSeconds > g_advancedSettings.m_videoIgnoreSecondsAtStart)
+  {
+    resumeBookmark.timeInSeconds = bookmark.timeInSeconds;
+    resumeBookmark.totalTimeInSeconds = bookmark.totalTimeInSeconds;
+  }
+  else
+  {
+    resumeBookmark.timeInSeconds = 0.0f;
+  }
+
+  if (CProfilesManager::GetInstance().GetCurrentProfile().canWriteDatabases())
+  {
+    CSaveFileState::DoWork(fileItem, *m_stackFileItemToUpdate,
+                           resumeBookmark, playCountUpdate);
+  }
 }
 
 void CApplication::OnQueueNextItem()
@@ -3642,105 +3670,6 @@ bool CApplication::IsFullScreen()
   return IsPlayingFullScreenVideo() ||
         (g_windowManager.GetActiveWindow() == WINDOW_VISUALISATION) ||
          g_windowManager.GetActiveWindow() == WINDOW_SLIDESHOW;
-}
-
-void CApplication::SaveFileState(bool bForeground /* = false */)
-{
-  if (!CProfilesManager::GetInstance().GetCurrentProfile().canWriteDatabases())
-    return;
-
-  CJob* job = new CSaveFileStateJob(*m_progressTrackingItem,
-                                    *m_stackFileItemToUpdate,
-                                    m_progressTrackingVideoResumeBookmark,
-                                    m_progressTrackingPlayCountUpdate);
-
-  if (bForeground)
-  {
-    // Run job in the foreground to make sure it finishes
-    job->DoWork();
-    delete job;
-  }
-  else
-    CJobManager::GetInstance().AddJob(job, NULL, CJob::PRIORITY_NORMAL);
-}
-
-void CApplication::UpdateFileState()
-{
-  // Did the file change?
-  if (m_progressTrackingItem->GetPath() != "" && m_progressTrackingItem->GetPath() != CurrentFile())
-  {
-    // Also ignore video playlists containing multiple items: video settings have already been saved in PlayFile()
-    // and we'd overwrite them with settings for the *previous* item.
-    //! @todo these "exceptions" should be removed and the whole logic of saving settings be revisited and
-    //! possibly moved out of CApplication.  See PRs 5842, 5958, http://trac.kodi.tv/ticket/15704#comment:3
-    int playlist = CServiceBroker::GetPlaylistPlayer().GetCurrentPlaylist();
-    if (!(playlist == PLAYLIST_VIDEO && CServiceBroker::GetPlaylistPlayer().GetPlaylist(playlist).size() > 1))
-      SaveFileState();
-
-    // Reset tracking item
-    m_progressTrackingItem->Reset();
-  }
-  else
-  {
-    if (m_pPlayer->IsPlaying())
-    {
-      if (m_progressTrackingItem->GetPath() == "")
-      {
-        // Init some stuff
-        *m_progressTrackingItem = CurrentFileItem();
-        m_progressTrackingPlayCountUpdate = false;
-      }
-
-      if ((m_progressTrackingItem->IsAudio() && g_advancedSettings.m_audioPlayCountMinimumPercent > 0 &&
-          GetPercentage() >= g_advancedSettings.m_audioPlayCountMinimumPercent) ||
-          (m_progressTrackingItem->IsVideo() && g_advancedSettings.m_videoPlayCountMinimumPercent > 0 &&
-          GetPercentage() >= g_advancedSettings.m_videoPlayCountMinimumPercent))
-      {
-        m_progressTrackingPlayCountUpdate = true;
-      }
-
-      // Check whether we're *really* playing video else we may race when getting eg. stream details
-      if (m_pPlayer->IsPlayingVideo() && !m_pPlayer->IsPlayingGame())
-      {
-        /* Always update streamdetails, except for DVDs where we only update
-           streamdetails if total duration > 15m (Should yield more correct info) */
-        if (!(m_progressTrackingItem->IsDiscImage() || m_progressTrackingItem->IsDVDFile()) || m_pPlayer->GetTotalTime() > 15*60*1000)
-        {
-          if (m_progressTrackingItem->IsStack())
-            m_progressTrackingItem->GetVideoInfoTag()->m_streamDetails.SetVideoDuration(0, (int)GetTotalTime()); // Overwrite with CApp's totaltime as it takes into account total stack time
-        }
-
-        // Update bookmark for save
-        m_progressTrackingVideoResumeBookmark.player = m_pPlayer->GetCurrentPlayer();
-        m_progressTrackingVideoResumeBookmark.playerState = m_pPlayer->GetPlayerState();
-        m_progressTrackingVideoResumeBookmark.thumbNailImage.clear();
-
-        if (g_advancedSettings.m_videoIgnorePercentAtEnd > 0 &&
-            GetTotalTime() - GetTime() < 0.01f * g_advancedSettings.m_videoIgnorePercentAtEnd * GetTotalTime())
-        {
-          // Delete the bookmark
-          m_progressTrackingVideoResumeBookmark.timeInSeconds = -1.0f;
-        }
-        else
-        if (GetTime() > g_advancedSettings.m_videoIgnoreSecondsAtStart)
-        {
-          // Update the bookmark
-          m_progressTrackingVideoResumeBookmark.timeInSeconds = GetTime();
-          m_progressTrackingVideoResumeBookmark.totalTimeInSeconds = GetTotalTime();
-        }
-        else
-        {
-          // Do nothing
-          m_progressTrackingVideoResumeBookmark.timeInSeconds = 0.0f;
-        }
-      }
-      if (m_pPlayer->IsPlayingAudio() && !m_pPlayer->IsPlayingGame())
-      {
-        if (m_progressTrackingItem->IsAudioBook())
-          m_progressTrackingVideoResumeBookmark.timeInSeconds = GetTime();
-      }
-    }
-  }
 }
 
 void CApplication::StopPlaying()
@@ -4067,7 +3996,7 @@ void CApplication::CheckShutdown()
       || m_musicInfoScanner->IsScanning()
       || CVideoLibraryQueue::GetInstance().IsRunning()
       || g_windowManager.IsWindowActive(WINDOW_DIALOG_PROGRESS) // progress dialog is onscreen
-      || !CServiceBroker::GetPVRManager().CanSystemPowerdown(false))
+      || !CServiceBroker::GetPVRManager().GUIActions()->CanSystemPowerdown(false))
   {
     m_shutdownTimer.StartZero();
     return;
@@ -4243,14 +4172,6 @@ bool CApplication::OnMessage(CGUIMessage& message)
         }
       }
 
-      // In case playback ended due to user eg. skipping over the end, clear
-      // our resume bookmark here
-      if (message.GetMessage() == GUI_MSG_PLAYBACK_ENDED && m_progressTrackingPlayCountUpdate && g_advancedSettings.m_videoIgnorePercentAtEnd > 0)
-      {
-        // Delete the bookmark
-        m_progressTrackingVideoResumeBookmark.timeInSeconds = -1.0f;
-      }
-
       // reset the current playing file
       m_itemCurrentFile->Reset();
       g_infoManager.ResetCurrentItem();
@@ -4276,7 +4197,6 @@ bool CApplication::OnMessage(CGUIMessage& message)
         }
         else
         {
-          CSingleLock lock(g_graphicsContext);
           //  resets to res_desktop or look&feel resolution (including refreshrate)
           g_graphicsContext.SetFullScreenVideo(false);
         }
@@ -4340,7 +4260,7 @@ bool CApplication::ExecuteXBMCAction(std::string actionStr, const CGUIListItemPt
   if (CBuiltins::GetInstance().HasCommand(actionStr))
   {
     if (!CBuiltins::GetInstance().IsSystemPowerdownCommand(actionStr) ||
-        CServiceBroker::GetPVRManager().CanSystemPowerdown())
+        CServiceBroker::GetPVRManager().GUIActions()->CanSystemPowerdown())
       CBuiltins::GetInstance().Execute(actionStr);
   }
   else
@@ -4475,9 +4395,6 @@ void CApplication::ProcessSlow()
     CJobManager::GetInstance().UnPauseJobs();
   }
 
-  // Store our file state for use on close()
-  UpdateFileState();
-
   // Check if we need to activate the screensaver / DPMS.
   CheckScreenSaverAndDPMS();
 
@@ -4593,8 +4510,6 @@ void CApplication::Restart(bool bSamePosition)
 
   if( !m_pPlayer->HasPlayer() )
     return ;
-
-  SaveFileState();
 
   // do we want to return to the current position in the file
   if (false == bSamePosition)

@@ -48,12 +48,10 @@ public:
   bool ResizeWindow(int newWidth, int newHeight, int newLeft, int newTop) override;
   bool SetFullScreen(bool fullScreen, RESOLUTION_INFO& res, bool blankOtherDisplays) override;
 
-  void FlipPage(CGLContextEGL *m_pGLContext);
+  void FlipPage();
   void WaitVBlank();
 
   void UpdateResolutions() override;
-
-  void* GetVaDisplay();
 
   bool Hide() override;
   bool Show(bool raise = true) override;

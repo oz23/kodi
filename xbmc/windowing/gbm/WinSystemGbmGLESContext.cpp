@@ -28,6 +28,7 @@
 #include "cores/VideoPlayer/VideoRenderers/RenderFactory.h"
 
 #include "WinSystemGbmGLESContext.h"
+#include "OptionalsReg.h"
 #include "utils/log.h"
 
 using namespace KODI;
@@ -37,26 +38,6 @@ std::unique_ptr<CWinSystemBase> CWinSystemBase::CreateWinSystem()
   std::unique_ptr<CWinSystemBase> winSystem(new CWinSystemGbmGLESContext());
   return winSystem;
 }
-
-#if defined (HAVE_LIBVA)
-#include <va/va_drm.h>
-#include "cores/VideoPlayer/DVDCodecs/Video/VAAPI.h"
-#include "cores/VideoPlayer/VideoRenderers/HwDecRender/RendererVAAPIGLES.h"
-
-class CVaapiProxy : public VAAPI::IVaapiWinSystem
-{
-public:
-  CVaapiProxy(CWinSystemGbmGLESContext &winSystem) : m_winSystem(winSystem) {};
-  VADisplay GetVADisplay() override { return m_winSystem.GetVaDisplay(); };
-  void *GetEGLDisplay() override { return m_winSystem.GetEGLDisplay(); };
-protected:
-  CWinSystemGbmGLESContext &m_winSystem;
-};
-#else
-class CVaapiProxy
-{
-};
-#endif
 
 bool CWinSystemGbmGLESContext::InitWindowSystem()
 {
@@ -76,16 +57,15 @@ bool CWinSystemGbmGLESContext::InitWindowSystem()
     return false;
   }
 
-#if defined (HAVE_LIBVA)
-  m_vaapiProxy.reset(new CVaapiProxy(*this));
-  VADisplay vaDpy = static_cast<VADisplay>(CWinSystemGbm::GetVaDisplay());
   bool general, hevc;
-  CRendererVAAPI::Register(m_vaapiProxy.get(), vaDpy, m_pGLContext.m_eglDisplay, general, hevc);
+  m_vaapiProxy.reset(GBM::VaapiProxyCreate());
+  GBM::VaapiProxyConfig(m_vaapiProxy.get(), m_pGLContext.m_eglDisplay);
+  GBM::VAAPIRegisterRender(m_vaapiProxy.get(), general, hevc);
+
   if (general)
   {
-    VAAPI::CDecoder::Register(m_vaapiProxy.get(), hevc);
+    GBM::VAAPIRegister(m_vaapiProxy.get(), hevc);
   }
-#endif
 
   CRendererDRMPRIME::Register();
   CDVDVideoCodecDRMPRIME::Register();
@@ -98,12 +78,7 @@ bool CWinSystemGbmGLESContext::DestroyWindowSystem()
   CDVDFactoryCodec::ClearHWAccels();
   VIDEOPLAYER::CRendererFactory::ClearRenderer();
 
-  if (!CWinSystemGbm::DestroyWindowSystem())
-  {
-    return false;
-  }
-
-  return true;
+  return CWinSystemGbm::DestroyWindowSystem();
 }
 
 bool CWinSystemGbmGLESContext::CreateNewWindow(const std::string& name,
@@ -170,12 +145,17 @@ void CWinSystemGbmGLESContext::PresentRender(bool rendered, bool videoLayer)
   if (rendered)
   {
     m_pGLContext.SwapBuffers();
-    CWinSystemGbm::FlipPage(&m_pGLContext);
+    CWinSystemGbm::FlipPage();
   }
   else
   {
     CWinSystemGbm::WaitVBlank();
   }
+}
+
+void CWinSystemGbmGLESContext::delete_CVaapiProxy::operator()(CVaapiProxy *p) const
+{
+  GBM::VaapiProxyDelete(p);
 }
 
 EGLDisplay CWinSystemGbmGLESContext::GetEGLDisplay() const

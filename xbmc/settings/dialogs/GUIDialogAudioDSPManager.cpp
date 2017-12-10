@@ -435,8 +435,6 @@ bool CGUIDialogAudioDSPManager::OnMessage(CGUIMessage& message)
 
 void CGUIDialogAudioDSPManager::OnWindowLoaded(void)
 {
-  g_graphicsContext.Lock();
-
   m_availableViewControl.Reset();
   m_availableViewControl.SetParentWindow(GetID());
   m_availableViewControl.AddView(GetControl(CONTROL_LIST_AVAILABLE));
@@ -444,8 +442,6 @@ void CGUIDialogAudioDSPManager::OnWindowLoaded(void)
   m_activeViewControl.Reset();
   m_activeViewControl.SetParentWindow(GetID());
   m_activeViewControl.AddView(GetControl(CONTROL_LIST_ACTIVE));
-
-  g_graphicsContext.Unlock();
 
   CGUIDialog::OnWindowLoaded();
 }
@@ -728,8 +724,6 @@ void CGUIDialogAudioDSPManager::Update()
 
 void CGUIDialogAudioDSPManager::SetSelectedModeType(void)
 {
-  /* lock our display, as this window is rendered from the player thread */
-  g_graphicsContext.Lock();
   if (m_iCurrentType > AE_DSP_MODE_TYPE_UNDEFINED && m_iCurrentType < AE_DSP_MODE_TYPE_MAX && !m_bMovingMode)
   {
     m_availableViewControl.SetCurrentView(CONTROL_LIST_AVAILABLE);
@@ -738,8 +732,6 @@ void CGUIDialogAudioDSPManager::SetSelectedModeType(void)
     m_availableViewControl.SetItems(*m_availableItems[m_iCurrentType]);
     m_activeViewControl.SetItems(*m_activeItems[m_iCurrentType]);
   }
-
-  g_graphicsContext.Unlock();
 }
 
 void CGUIDialogAudioDSPManager::Clear(void)
