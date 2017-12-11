@@ -87,13 +87,6 @@ enum RenderQuality
 #define FIELD_TOP 1
 #define FIELD_BOT 2
 
-extern YUVRANGE yuv_range_lim;
-extern YUVRANGE yuv_range_full;
-extern YUVCOEF yuv_coef_bt601;
-extern YUVCOEF yuv_coef_bt709;
-extern YUVCOEF yuv_coef_ebu;
-extern YUVCOEF yuv_coef_smtp240m;
-
 class CLinuxRendererGL : public CBaseRenderer
 {
 public:

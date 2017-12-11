@@ -22,6 +22,9 @@
 #include <string>
 #include <map>
 
+extern "C" {
+#include "libavutil/pixdesc.h"
+}
 
 namespace RenderManager {
 
@@ -29,19 +32,19 @@ namespace RenderManager {
   {
     switch(color_matrix)
     {
-      case 10: // BT2020_CL
-      case  9: // BT2020_NCL
+      case AVCOL_SPC_BT2020_CL:
+      case AVCOL_SPC_BT2020_NCL:
         return CONF_FLAGS_YUVCOEF_BT2020;
-      case  7: // SMPTE 240M (1987)
+      case AVCOL_SPC_SMPTE240M:
         return CONF_FLAGS_YUVCOEF_240M;
-      case  6: // SMPTE 170M
-      case  5: // ITU-R BT.470-2
-      case  4: // FCC
+      case AVCOL_SPC_SMPTE170M:
+      case AVCOL_SPC_BT470BG:
+      case AVCOL_SPC_FCC:
         return CONF_FLAGS_YUVCOEF_BT601;
-      case  1: // ITU-R Rec.709 (1990) -- BT.709
+      case AVCOL_SPC_BT709:
         return CONF_FLAGS_YUVCOEF_BT709;
-      case  3: // RESERVED
-      case  2: // UNSPECIFIED
+      case AVCOL_SPC_RESERVED:
+      case AVCOL_SPC_UNSPECIFIED:
       default:
         if(width > 1024 || height >= 600)
           return CONF_FLAGS_YUVCOEF_BT709;
