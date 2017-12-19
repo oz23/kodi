@@ -34,8 +34,8 @@
 #include "input/InputManager.h"
 #include "input/touch/generic/GenericTouchActionHandler.h"
 #include "input/touch/generic/GenericTouchInputHandler.h"
-#include "linux/PlatformConstants.h"
-#include "linux/TimeUtils.h"
+#include "platform/linux/PlatformConstants.h"
+#include "platform/linux/TimeUtils.h"
 #include "messaging/ApplicationMessenger.h"
 #include "OSScreenSaverIdleInhibitUnstableV1.h"
 #include "Registry.h"
@@ -147,19 +147,26 @@ CWinSystemWayland::CWinSystemWayland()
   std::string envSink;
   if (getenv("AE_SINK"))
     envSink = getenv("AE_SINK");
-  if (StringUtils::CompareNoCase(envSink, "ALSA"))
+  if (StringUtils::EqualsNoCase(envSink, "ALSA"))
   {
     ::WAYLAND::ALSARegister();
   }
-  else if (StringUtils::CompareNoCase(envSink, "PULSE"))
+  else if (StringUtils::EqualsNoCase(envSink, "PULSE"))
   {
     ::WAYLAND::PulseAudioRegister();
+  }
+  else if (StringUtils::EqualsNoCase(envSink, "SNDIO"))
+  {
+    ::WAYLAND::SndioRegister();
   }
   else
   {
     if (!::WAYLAND::PulseAudioRegister())
     {
-      ::WAYLAND::ALSARegister();
+      if (!::WAYLAND::ALSARegister())
+      {
+        ::WAYLAND::SndioRegister();
+      }
     }
   }
   m_winEvents.reset(new CWinEventsWayland());

@@ -44,7 +44,7 @@ public:
   EGLConfig m_eglConfig;
 protected:
   bool IsSuitableVisual(XVisualInfo *vInfo);
-  EGLConfig getEGLConfig(EGLDisplay eglDisplay, XVisualInfo *vInfo);
+  EGLConfig GetEGLConfig(EGLDisplay eglDisplay, XVisualInfo *vInfo);
   PFNEGLGETSYNCVALUESCHROMIUMPROC eglGetSyncValuesCHROMIUM = nullptr;
 
   struct Sync
@@ -57,4 +57,5 @@ protected:
     uint64_t sbc2 = 0;
     uint64_t interval = 0;
   } m_sync;
+
 };

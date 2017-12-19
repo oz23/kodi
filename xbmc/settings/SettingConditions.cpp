@@ -347,8 +347,7 @@ void CSettingConditions::Initialize()
     m_simpleConditions.insert("isstandalone");
 #endif
 
-  if(ActiveAE::CActiveAESettings::SupportsQualitySetting())
-    m_simpleConditions.insert("has_ae_quality_levels");
+  m_simpleConditions.insert("has_ae_quality_levels");
 
   // add complex conditions
   m_complexConditions.insert(std::pair<std::string, SettingConditionCheck>("addonhassettings",              AddonHasSettings));

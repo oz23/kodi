@@ -55,19 +55,26 @@ CWinSystemX11GLContext::CWinSystemX11GLContext()
   std::string envSink;
   if (getenv("AE_SINK"))
     envSink = getenv("AE_SINK");
-  if (StringUtils::CompareNoCase(envSink, "ALSA"))
+  if (StringUtils::EqualsNoCase(envSink, "ALSA"))
   {
     X11::ALSARegister();
   }
-  else if (StringUtils::CompareNoCase(envSink, "PULSE"))
+  else if (StringUtils::EqualsNoCase(envSink, "PULSE"))
   {
     X11::PulseAudioRegister();
+  }
+  else if (StringUtils::EqualsNoCase(envSink, "SNDIO"))
+  {
+    X11::SndioRegister();
   }
   else
   {
     if (!X11::PulseAudioRegister())
     {
-      X11::ALSARegister();
+      if (!X11::ALSARegister())
+      {
+        X11::SndioRegister();
+      }
     }
   }
 }

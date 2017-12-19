@@ -39,7 +39,7 @@
 #include "guilib/StereoscopicsManager.h"
 #include "input/KeyboardLayoutManager.h"
 #if defined(TARGET_POSIX)
-#include "linux/LinuxTimezone.h"
+#include "platform/linux/LinuxTimezone.h"
 #endif // defined(TARGET_POSIX)
 #include "network/NetworkServices.h"
 #include "network/upnp/UPnPSettings.h"
@@ -54,7 +54,7 @@
 #include "SettingAddon.h"
 #endif
 #if defined(TARGET_RASPBERRY_PI)
-#include "linux/RBP.h"
+#include "platform/linux/RBP.h"
 #endif
 #if defined(HAS_LIBAMCODEC)
 #include "utils/AMLUtils.h"
@@ -662,11 +662,6 @@ void CSettings::InitializeDefaults()
   // the front
   if (g_sysinfo.IsAeroDisabled())
     std::static_pointer_cast<CSettingBool>(GetSettingsManager()->GetSetting(CSettings::SETTING_VIDEOSCREEN_FAKEFULLSCREEN))->SetDefault(false);
-#endif
-
-#if !defined(TARGET_WINDOWS)
-  std::static_pointer_cast<CSettingString>(GetSettingsManager()->GetSetting(CSettings::SETTING_AUDIOOUTPUT_AUDIODEVICE))->SetDefault(CServiceBroker::GetActiveAE().GetDefaultDevice(false));
-  std::static_pointer_cast<CSettingString>(GetSettingsManager()->GetSetting(CSettings::SETTING_AUDIOOUTPUT_PASSTHROUGHDEVICE))->SetDefault(CServiceBroker::GetActiveAE().GetDefaultDevice(true));
 #endif
 
   if (g_application.IsStandAlone())

@@ -87,19 +87,16 @@ void X11::VaapiProxyDelete(CVaapiProxy *proxy)
 
 void X11::VaapiProxyConfig(CVaapiProxy *proxy, void *dpy, void *eglDpy)
 {
-
 }
 
-void X11::RegisterVAAPI(CVaapiProxy *winSystem, bool hevc)
+void X11::VAAPIRegister(CVaapiProxy *winSystem, bool hevc)
 {
-
 }
 
-void X11::RegisterVAAPIRender(CVaapiProxy *winSystem, void* dpy,
-                         void* eglDisplay, bool &general, bool &hevc)
+void X11::VAAPIRegisterRender(CVaapiProxy *winSystem, bool &general, bool &hevc)
 {
-
 }
+
 #endif
 
 //-----------------------------------------------------------------------------
@@ -212,11 +209,29 @@ bool X11::ALSARegister()
 #include "cores/AudioEngine/Sinks/AESinkPULSE.h"
 bool X11::PulseAudioRegister()
 {
-  CAESinkPULSE::Register();
-  return true;
+  bool ret = CAESinkPULSE::Register();
+  return ret;
 }
 #else
 bool X11::PulseAudioRegister()
+{
+  return false;
+}
+#endif
+
+//-----------------------------------------------------------------------------
+// sndio
+//-----------------------------------------------------------------------------
+
+#ifdef HAS_SNDIO
+#include "cores/AudioEngine/Sinks/AESinkSNDIO.h"
+bool X11::SndioRegister()
+{
+  CAESinkSNDIO::Register();
+  return true;
+}
+#else
+bool X11::SndioRegister()
 {
   return false;
 }

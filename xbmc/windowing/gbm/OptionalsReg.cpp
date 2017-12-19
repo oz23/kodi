@@ -101,7 +101,7 @@ class CVaapiProxy
 {
 };
 
-CVaapiProxy* VaapiProxyCreate()
+CVaapiProxy* GBM::VaapiProxyCreate()
 {
   return nullptr;
 }
@@ -110,18 +110,17 @@ void GBM::VaapiProxyDelete(CVaapiProxy *proxy)
 {
 }
 
-void GBM::VaapiProxyConfig(CVaapiProxy *proxy, void *dpy, void *eglDpy)
+void GBM::VaapiProxyConfig(CVaapiProxy *proxy, void *eglDpy)
 {
 
 }
 
-void GBM::RegisterVAAPI(CVaapiProxy *winSystem, bool hevc)
+void GBM::VAAPIRegister(CVaapiProxy *winSystem, bool hevc)
 {
 
 }
 
-void GBM::RegisterVAAPIRender(CVaapiProxy *winSystem, void* dpy,
-                         void* eglDisplay, bool &general, bool &hevc)
+void GBM::VAAPIRegisterRender(CVaapiProxy *winSystem, bool &general, bool &hevc)
 {
 
 }
@@ -153,11 +152,29 @@ bool GBM::ALSARegister()
 #include "cores/AudioEngine/Sinks/AESinkPULSE.h"
 bool GBM::PulseAudioRegister()
 {
-  CAESinkPULSE::Register();
-  return true;
+  bool ret = CAESinkPULSE::Register();
+  return ret;
 }
 #else
 bool GBM::PulseAudioRegister()
+{
+  return false;
+}
+#endif
+
+//-----------------------------------------------------------------------------
+// sndio
+//-----------------------------------------------------------------------------
+
+#ifdef HAS_SNDIO
+#include "cores/AudioEngine/Sinks/AESinkSNDIO.h"
+bool GBM::SndioRegister()
+{
+  CAESinkSNDIO::Register();
+  return true;
+}
+#else
+bool GBM::SndioRegister()
 {
   return false;
 }

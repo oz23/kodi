@@ -88,13 +88,12 @@ void WAYLAND::VaapiProxyConfig(CVaapiProxy *proxy, void *dpy, void *eglDpy)
 
 }
 
-void WAYLAND::RegisterVAAPI(CVaapiProxy *winSystem, bool hevc)
+void WAYLAND::VAAPIRegister(CVaapiProxy *winSystem, bool hevc)
 {
 
 }
 
-void WAYLAND::RegisterVAAPIRender(CVaapiProxy *winSystem, void* dpy,
-                         void* eglDisplay, bool &general, bool &hevc)
+void WAYLAND::VAAPIRegisterRender(CVaapiProxy *winSystem, bool &general, bool &hevc)
 {
 
 }
@@ -126,11 +125,29 @@ bool WAYLAND::ALSARegister()
 #include "cores/AudioEngine/Sinks/AESinkPULSE.h"
 bool WAYLAND::PulseAudioRegister()
 {
-  CAESinkPULSE::Register();
-  return true;
+  bool ret = CAESinkPULSE::Register();
+  return ret;
 }
 #else
 bool WAYLAND::PulseAudioRegister()
+{
+  return false;
+}
+#endif
+
+//-----------------------------------------------------------------------------
+// sndio
+//-----------------------------------------------------------------------------
+
+#ifdef HAS_SNDIO
+#include "cores/AudioEngine/Sinks/AESinkSNDIO.h"
+bool WAYLAND::SndioRegister()
+{
+  CAESinkSNDIO::Register();
+  return true;
+}
+#else
+bool WAYLAND::SndioRegister()
 {
   return false;
 }

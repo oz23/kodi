@@ -41,7 +41,7 @@
 #endif
 
 #ifdef TARGET_POSIX
-#include "linux/XTimeUtils.h"
+#include "platform/linux/XTimeUtils.h"
 #endif
 
 #define AE_MIN_PERIODSIZE 256
@@ -110,7 +110,7 @@ CAESinkALSA::~CAESinkALSA()
 void CAESinkALSA::Register()
 {
   AE::AESinkRegEntry entry;
-  entry.sinkName = "PULSE";
+  entry.sinkName = "ALSA";
   entry.createFunc = CAESinkALSA::Create;
   entry.enumerateFunc = CAESinkALSA::EnumerateDevicesEx;
   AE::CAESinkFactory::RegisterSink(entry);

@@ -33,7 +33,7 @@
 #include <algorithm>
 
 #ifdef TARGET_POSIX
-#include "linux/XMemUtils.h"
+#include "platform/linux/XMemUtils.h"
 #endif
 
 using namespace AE;
@@ -737,26 +737,6 @@ void CActiveAESink::EnumerateOutputDevices(AEDeviceList &devices, bool passthrou
   }
 }
 
-std::string CActiveAESink::GetDefaultDevice(bool passthrough)
-{
-  EnumerateSinkList(false);
-
-  for (auto itt = m_sinkInfoList.begin(); itt != m_sinkInfoList.end(); ++itt)
-  {
-    AESinkInfo sinkInfo = *itt;
-    for (AEDeviceInfoList::iterator itt2 = sinkInfo.m_deviceInfoList.begin(); itt2 != sinkInfo.m_deviceInfoList.end(); ++itt2)
-    {
-      CAEDeviceInfo devInfo = *itt2;
-      if (passthrough && devInfo.m_deviceType == AE_DEVTYPE_PCM)
-        continue;
-
-      std::string device = sinkInfo.m_sinkName + ":" + devInfo.m_deviceName;
-      return device;
-    }
-  }
-  return "default";
-}
-
 void CActiveAESink::GetDeviceFriendlyName(std::string &device)
 {
   m_deviceFriendlyName = "Device not found";
@@ -833,16 +813,6 @@ void CActiveAESink::OpenSink()
       device = driver + ":" + device;
     m_sinkFormat = m_requestedFormat;
     CLog::Log(LOGDEBUG, "CActiveAESink::OpenSink - trying to open device %s", device.c_str());
-    m_sink = CAESinkFactory::Create(device, m_sinkFormat);
-  }
-
-  // open NULL sink
-  //! @todo should not be required by ActiveAE
-  if (!m_sink)
-  {
-    device = "NULL:NULL";
-    m_sinkFormat = m_requestedFormat;
-    CLog::Log(LOGDEBUG, "CActiveAESink::OpenSink - open NULL sink");
     m_sink = CAESinkFactory::Create(device, m_sinkFormat);
   }
 
