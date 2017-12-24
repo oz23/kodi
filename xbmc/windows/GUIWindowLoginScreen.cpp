@@ -38,9 +38,7 @@
 #include "guilib/StereoscopicsManager.h"
 #include "input/Key.h"
 #include "interfaces/builtins/Builtins.h"
-#ifdef HAS_JSONRPC
 #include "interfaces/json-rpc/JSONRPC.h"
-#endif
 #include "messaging/ApplicationMessenger.h"
 #include "messaging/helpers/DialogOKHelper.h"
 #include "network/Network.h"
@@ -53,9 +51,9 @@
 #include "settings/Settings.h"
 #include "utils/log.h"
 #include "utils/StringUtils.h"
-#include "utils/Weather.h"
 #include "utils/Variant.h"
 #include "view/ViewState.h"
+#include "weather/WeatherManager.h"
 
 using namespace KODI::MESSAGING;
 
@@ -317,11 +315,9 @@ void CGUIWindowLoginScreen::LoadProfile(unsigned int profile)
     return;
   }
 
-  g_weatherManager.Refresh();
+  CServiceBroker::GetWeatherManager().Refresh();
 
-#ifdef HAS_JSONRPC
   JSONRPC::CJSONRPC::Initialize();
-#endif
 
   // Restart context menu manager
   CServiceBroker::GetContextMenuManager().Init();

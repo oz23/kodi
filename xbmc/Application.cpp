@@ -18,6 +18,7 @@
  *
  */
 
+#include "network/EventServer.h"
 #include "network/Network.h"
 #include "threads/SystemClock.h"
 #include "system.h"
@@ -95,7 +96,7 @@
 #include "utils/CPUInfo.h"
 #include "utils/FileExtensionProvider.h"
 #include "utils/log.h"
-#include "utils/SeekHandler.h"
+#include "SeekHandler.h"
 #include "ServiceBroker.h"
 
 #include "input/KeyboardLayoutManager.h"
@@ -118,15 +119,10 @@
 #ifndef TARGET_POSIX
 #include "threads/platform/win/Win32Exception.h"
 #endif
-#ifdef HAS_EVENT_SERVER
-#include "network/EventServer.h"
-#endif
 #ifdef HAS_DBUS
 #include <dbus/dbus.h>
 #endif
-#ifdef HAS_JSONRPC
 #include "interfaces/json-rpc/JSONRPC.h"
-#endif
 #include "interfaces/AnnouncementManager.h"
 #include "peripherals/Peripherals.h"
 #include "peripherals/devices/PeripheralImon.h"
@@ -225,12 +221,8 @@ using namespace MEDIA_DETECT;
 using namespace PLAYLIST;
 using namespace VIDEO;
 using namespace MUSIC_INFO;
-#ifdef HAS_EVENT_SERVER
 using namespace EVENTSERVER;
-#endif
-#ifdef HAS_JSONRPC
 using namespace JSONRPC;
-#endif
 using namespace ANNOUNCEMENT;
 using namespace PVR;
 using namespace PERIPHERALS;
@@ -402,7 +394,7 @@ bool CApplication::Create(const CAppParamParser &params)
   // some of the serives depend on the WinSystem :(
   std::unique_ptr<CWinSystemBase> winSystem = CWinSystemBase::CreateWinSystem();
   m_ServiceManager->SetWinSystem(std::move(winSystem));
-  
+
   if (!m_ServiceManager->InitStageOne())
   {
     return false;
@@ -575,8 +567,6 @@ bool CApplication::Create(const CAppParamParser &params)
   avformat_network_init();
   // set avutil callback
   av_log_set_callback(ff_avutil_log);
-
-  g_powerManager.Initialize();
 
   // Initialize default Settings - don't move
   CLog::Log(LOGNOTICE, "load settings...");
@@ -1159,9 +1149,7 @@ bool CApplication::Initialize()
     }
     else
     {
-#ifdef HAS_JSONRPC
       CJSONRPC::Initialize();
-#endif
       CServiceBroker::GetServiceAddons().StartBeforeLogin();
 
       // activate the configured start window
@@ -1187,9 +1175,7 @@ bool CApplication::Initialize()
   }
   else //No GUI Created
   {
-#ifdef HAS_JSONRPC
     CJSONRPC::Initialize();
-#endif
     CServiceBroker::GetServiceAddons().StartBeforeLogin();
   }
 
@@ -1207,10 +1193,10 @@ bool CApplication::Initialize()
   m_slowTimer.StartZero();
 
   // configure seek handler
-  CSeekHandler::GetInstance().Configure();
+  m_pPlayer->GetSeekHandler().Configure();
 
   // register action listeners
-  RegisterActionListener(&CSeekHandler::GetInstance());
+  RegisterActionListener(&m_pPlayer->GetSeekHandler());
   RegisterActionListener(&CPlayerController::GetInstance());
 
   CServiceBroker::GetRepositoryUpdater().Start();
@@ -2376,7 +2362,7 @@ void CApplication::OnApplicationMessage(ThreadMessage* pMsg)
   {
   case TMSG_POWERDOWN:
     Stop(EXITCODE_POWERDOWN);
-    g_powerManager.Powerdown();
+    CServiceBroker::GetPowerManager().Powerdown();
     break;
 
   case TMSG_QUIT:
@@ -2392,17 +2378,17 @@ void CApplication::OnApplicationMessage(ThreadMessage* pMsg)
     break;
 
   case TMSG_HIBERNATE:
-    g_powerManager.Hibernate();
+    CServiceBroker::GetPowerManager().Hibernate();
     break;
 
   case TMSG_SUSPEND:
-    g_powerManager.Suspend();
+    CServiceBroker::GetPowerManager().Suspend();
     break;
 
   case TMSG_RESTART:
   case TMSG_RESET:
     Stop(EXITCODE_REBOOT);
-    g_powerManager.Reboot();
+    CServiceBroker::GetPowerManager().Reboot();
     break;
 
   case TMSG_RESTARTAPP:
@@ -2690,7 +2676,7 @@ void CApplication::FrameMove(bool processEvents, bool processGUI)
     if (processGUI && m_renderGUI)
     {
       m_pInertialScrollingHandler->ProcessInertialScroll(frameTime);
-      CSeekHandler::GetInstance().FrameMove();
+      m_pPlayer->GetSeekHandler().FrameMove();
     }
 
     // Open the door for external calls e.g python exactly here.
@@ -2783,9 +2769,7 @@ bool CApplication::Cleanup()
     g_charsetConverter.clear();
     g_directoryCache.Clear();
     //CServiceBroker::GetInputManager().ClearKeymaps(); //! @todo
-#ifdef HAS_EVENT_SERVER
     CEventServer::RemoveInstance();
-#endif
     DllLoaderContainer::Clear();
     CServiceBroker::GetPlaylistPlayer().Clear();
 
@@ -2913,7 +2897,7 @@ void CApplication::Stop(int exitCode)
     CServiceBroker::GetServiceAddons().Stop();
 
     // unregister action listeners
-    UnregisterActionListener(&CSeekHandler::GetInstance());
+    UnregisterActionListener(&m_pPlayer->GetSeekHandler());
     UnregisterActionListener(&CPlayerController::GetInstance());
 
     g_audioManager.DeInitialize();
@@ -4374,7 +4358,7 @@ void CApplication::Process()
 // We get called every 500ms
 void CApplication::ProcessSlow()
 {
-  g_powerManager.ProcessEvents();
+  CServiceBroker::GetPowerManager().ProcessEvents();
 
 #if defined(TARGET_DARWIN_OSX)
   // There is an issue on OS X that several system services ask the cursor to become visible

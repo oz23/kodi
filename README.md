@@ -1,9 +1,6 @@
-* Tarvis-CI for OS X, iOS, Linux [![Build Status](https://travis-ci.org/FernetMenta/kodi-agile.svg?branch=master)](https://travis-ci.org/FernetMenta/kodi-agile)
-* AppVeyor for Windows [![Build status](https://ci.appveyor.com/api/projects/status/yj28c984cj2qe78q?svg=true)](https://ci.appveyor.com/project/FernetMenta/kodi-agile)
-
 [![Documentation](https://codedocs.xyz/xbmc/xbmc.svg)](https://codedocs.xyz/xbmc/xbmc/)
 
-![Kodi logo](https://raw.githubusercontent.com/xbmc/xbmc-forum/master/xbmc/images/logo-sbs-black.png)
+![Kodi logo](media/banner.png)
 # Kodi Home Theater Software
 
 **Welcome to Kodi!**

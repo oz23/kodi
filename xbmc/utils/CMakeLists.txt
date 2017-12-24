@@ -16,6 +16,7 @@ set(SOURCES ActorProtocol.cpp
             DatabaseUtils.cpp
             EndianSwap.cpp
             Environment.cpp
+            EmbeddedArt.cpp
             FileExtensionProvider.cpp
             Fanart.cpp
             FileOperationJob.cpp
@@ -51,7 +52,6 @@ set(SOURCES ActorProtocol.cpp
             ScraperParser.cpp
             ScraperUrl.cpp
             Screenshot.cpp
-            SeekHandler.cpp
             SortUtils.cpp
             Speed.cpp
             Stopwatch.cpp
@@ -70,7 +70,6 @@ set(SOURCES ActorProtocol.cpp
             Variant.cpp
             VC1BitstreamParser.cpp
             Vector.cpp
-            Weather.cpp
             XBMCTinyXML.cpp
             XMLUtils.cpp)
 
@@ -140,7 +139,6 @@ set(HEADERS ActorProtocol.h
             ScraperParser.h
             ScraperUrl.h
             Screenshot.h
-            SeekHandler.h
             SortUtils.h
             Speed.h
             Stopwatch.h
@@ -159,7 +157,6 @@ set(HEADERS ActorProtocol.h
             Variant.h
             VC1BitstreamParser.h
             Vector.h
-            Weather.h
             XBMCTinyXML.h
             XMLUtils.h)
 

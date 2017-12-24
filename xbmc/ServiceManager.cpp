@@ -42,6 +42,8 @@
 #include "settings/Settings.h"
 #include "utils/FileExtensionProvider.h"
 #include "windowing/WinSystem.h"
+#include "powermanagement/PowerManager.h"
+#include "weather/WeatherManager.h"
 
 using namespace KODI;
 
@@ -143,6 +145,12 @@ bool CServiceManager::InitStageTwo(const CAppParamParser &params)
 
   m_fileExtensionProvider.reset(new CFileExtensionProvider());
 
+  m_powerManager.reset(new CPowerManager());
+  m_powerManager->Initialize();
+  m_powerManager->SetDefaults();
+
+  m_weatherManager.reset(new CWeatherManager());
+
   init_level = 2;
   return true;
 }
@@ -207,6 +215,8 @@ void CServiceManager::DeinitStageTwo()
 {
   init_level = 1;
 
+  m_weatherManager.reset();
+  m_powerManager.reset();
   m_fileExtensionProvider.reset();
   m_gameRenderManager.reset();
   m_peripherals.reset();
@@ -362,6 +372,11 @@ void CServiceManager::SetWinSystem(std::unique_ptr<CWinSystemBase> winSystem)
   m_winSystem = std::move(winSystem);
 }
 
+CPowerManager &CServiceManager::GetPowerManager()
+{
+  return *m_powerManager;
+}
+
 // deleters for unique_ptr
 void CServiceManager::delete_dataCacheCore::operator()(CDataCacheCore *p) const
 {
@@ -401,5 +416,10 @@ CNetwork* CServiceManager::SetupNetwork() const
 CNetwork& CServiceManager::GetNetwork()
 {
   return *m_network;
+}
+
+CWeatherManager& CServiceManager::GetWeatherManager()
+{
+  return *m_weatherManager;
 }
 

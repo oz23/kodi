@@ -32,7 +32,7 @@
 #include "ServiceBroker.h"
 #include "Util.h"
 #include "utils/URIUtils.h"
-#include "utils/Weather.h"
+#include "weather/WeatherManager.h"
 #include "PartyModeManager.h"
 #include "guilib/GUIVisualisationControl.h"
 #include "input/WindowTranslator.h"
@@ -53,6 +53,7 @@
 #include "profiles/ProfilesManager.h"
 #include "windowing/WinSystem.h"
 #include "powermanagement/PowerManager.h"
+#include "SeekHandler.h"
 #include "settings/AdvancedSettings.h"
 #include "settings/DisplaySettings.h"
 #include "settings/GameSettings.h"
@@ -65,7 +66,6 @@
 #include "utils/CPUInfo.h"
 #include "utils/SortUtils.h"
 #include "utils/StringUtils.h"
-#include "utils/SeekHandler.h"
 #include "URL.h"
 #include "addons/Skin.h"
 #include <algorithm>
@@ -6020,19 +6020,19 @@ std::string CGUIInfoManager::GetLabel(int info, int contextWindow, std::string *
     strLabel = CServiceBroker::GetPVRManager().GUIActions()->GetChannelNumberInputHandler().GetChannelNumberAsString();
     break;
   case WEATHER_CONDITIONS:
-    strLabel = g_weatherManager.GetInfo(WEATHER_LABEL_CURRENT_COND);
+    strLabel = CServiceBroker::GetWeatherManager().GetInfo(WEATHER_LABEL_CURRENT_COND);
     StringUtils::Trim(strLabel);
     break;
   case WEATHER_TEMPERATURE:
     strLabel = StringUtils::Format("%s%s",
-                                   g_weatherManager.GetInfo(WEATHER_LABEL_CURRENT_TEMP).c_str(),
+                                   CServiceBroker::GetWeatherManager().GetInfo(WEATHER_LABEL_CURRENT_TEMP).c_str(),
                                    g_langInfo.GetTemperatureUnitString().c_str());
     break;
   case WEATHER_LOCATION:
-    strLabel = g_weatherManager.GetInfo(WEATHER_LABEL_LOCATION);
+    strLabel = CServiceBroker::GetWeatherManager().GetInfo(WEATHER_LABEL_LOCATION);
     break;
   case WEATHER_FANART_CODE:
-    strLabel = URIUtils::GetFileName(g_weatherManager.GetInfo(WEATHER_IMAGE_CURRENT_ICON));
+    strLabel = URIUtils::GetFileName(CServiceBroker::GetWeatherManager().GetInfo(WEATHER_IMAGE_CURRENT_ICON));
     URIUtils::RemoveExtension(strLabel);
     break;
   case WEATHER_PLUGIN:
@@ -6895,7 +6895,7 @@ bool CGUIInfoManager::GetInt(int &value, int info, int contextWindow, const CGUI
       value = CServiceBroker::GetPVRManager().TranslateIntInfo(info);
       return true;
     case SYSTEM_BATTERY_LEVEL:
-      value = g_powerManager.BatteryLevel();
+      value = CServiceBroker::GetPowerManager().BatteryLevel();
       return true;
   }
   return false;
@@ -7037,13 +7037,13 @@ bool CGUIInfoManager::GetBool(int condition1, int contextWindow, const CGUIListI
     bReturn = g_mediaManager.GetDriveStatus() == DRIVE_OPEN;
 #endif
   else if (condition == SYSTEM_CAN_POWERDOWN)
-    bReturn = g_powerManager.CanPowerdown();
+    bReturn = CServiceBroker::GetPowerManager().CanPowerdown();
   else if (condition == SYSTEM_CAN_SUSPEND)
-    bReturn = g_powerManager.CanSuspend();
+    bReturn = CServiceBroker::GetPowerManager().CanSuspend();
   else if (condition == SYSTEM_CAN_HIBERNATE)
-    bReturn = g_powerManager.CanHibernate();
+    bReturn = CServiceBroker::GetPowerManager().CanHibernate();
   else if (condition == SYSTEM_CAN_REBOOT)
-    bReturn = g_powerManager.CanReboot();
+    bReturn = CServiceBroker::GetPowerManager().CanReboot();
   else if (condition == SYSTEM_SCREENSAVER_ACTIVE)
     bReturn = g_application.IsInScreenSaver();
   else if (condition == SYSTEM_DPMS_ACTIVE)
@@ -7097,7 +7097,7 @@ bool CGUIInfoManager::GetBool(int condition1, int contextWindow, const CGUIListI
   else if (condition == SYSTEM_HAS_VISIBLE_MODAL_DIALOG)
     bReturn = g_windowManager.HasVisibleModalDialog();
   else if (condition == WEATHER_IS_FETCHED)
-    bReturn = g_weatherManager.IsFetched();
+    bReturn = CServiceBroker::GetWeatherManager().IsFetched();
   else if (condition >= PVR_CONDITIONS_START && condition <= PVR_CONDITIONS_END)
     bReturn = CServiceBroker::GetPVRManager().TranslateBoolInfo(condition);
   else if (condition == SYSTEM_INTERNET_STATE)
@@ -7305,7 +7305,7 @@ bool CGUIInfoManager::GetBool(int condition1, int contextWindow, const CGUIListI
       }
     break;
     case PLAYER_SEEKING:
-      bReturn = CSeekHandler::GetInstance().InProgress();
+      bReturn = g_application.m_pPlayer->GetSeekHandler().InProgress();
     break;
     case PLAYER_SHOWTIME:
       bReturn = m_playerShowTime;
@@ -8046,7 +8046,7 @@ std::string CGUIInfoManager::GetMultiInfoLabel(const GUIInfo &info, int contextW
   }
   else if (info.m_info == PLAYER_SEEKSTEPSIZE)
   {
-    int seekSize = CSeekHandler::GetInstance().GetSeekSize();
+    int seekSize = g_application.m_pPlayer->GetSeekHandler().GetSeekSize();
     std::string strSeekSize = StringUtils::SecondsToTimeString(abs(seekSize), (TIME_FORMAT)info.GetData1());
     if (seekSize < 0)
       return "-" + strSeekSize;
@@ -8055,9 +8055,9 @@ std::string CGUIInfoManager::GetMultiInfoLabel(const GUIInfo &info, int contextW
   }
   else if (info.m_info == PLAYER_SEEKNUMERIC)
   {
-    if (!CSeekHandler::GetInstance().HasTimeCode())
+    if (!g_application.m_pPlayer->GetSeekHandler().HasTimeCode())
       return "";
-    int seekTimeCode = CSeekHandler::GetInstance().GetTimeCodeSeconds();
+    int seekTimeCode = g_application.m_pPlayer->GetSeekHandler().GetTimeCodeSeconds();
     TIME_FORMAT format = (TIME_FORMAT)info.GetData1();
     if (format == TIME_FORMAT_GUESS && seekTimeCode >= 3600)
       format = TIME_FORMAT_HH_MM_SS;
@@ -8209,7 +8209,7 @@ std::string CGUIInfoManager::GetImage(int info, int contextWindow, std::string *
     return GetMultiInfoLabel(m_multiInfo[info - MULTI_INFO_START], contextWindow, fallback);
   }
   else if (info == WEATHER_CONDITIONS)
-    return g_weatherManager.GetInfo(WEATHER_IMAGE_CURRENT_ICON);
+    return CServiceBroker::GetWeatherManager().GetInfo(WEATHER_IMAGE_CURRENT_ICON);
   else if (info == SYSTEM_PROFILETHUMB)
   {
     std::string thumb = CProfilesManager::GetInstance().GetCurrentProfile().getThumb();
@@ -8982,7 +8982,7 @@ std::string CGUIInfoManager::GetCurrentSeekTime(TIME_FORMAT format) const
 {
   if (format == TIME_FORMAT_GUESS && GetTotalPlayTime() >= 3600)
     format = TIME_FORMAT_HH_MM_SS;
-  return StringUtils::SecondsToTimeString(g_application.GetTime() + CSeekHandler::GetInstance().GetSeekSize(), format);
+  return StringUtils::SecondsToTimeString(g_application.GetTime() + g_application.m_pPlayer->GetSeekHandler().GetSeekSize(), format);
 }
 
 int CGUIInfoManager::GetTotalPlayTime() const
@@ -9004,7 +9004,7 @@ float CGUIInfoManager::GetSeekPercent() const
 
   float percentPlayTime = static_cast<float>(GetPlayTime()) / GetTotalPlayTime() * 0.1f;
   float percentPerSecond = 100.0f / static_cast<float>(GetTotalPlayTime());
-  float percent = percentPlayTime + percentPerSecond * CSeekHandler::GetInstance().GetSeekSize();
+  float percent = percentPlayTime + percentPerSecond * g_application.m_pPlayer->GetSeekHandler().GetSeekSize();
 
   if (percent > 100.0f)
     percent = 100.0f;

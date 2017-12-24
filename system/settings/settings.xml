@@ -1279,6 +1279,11 @@
   <section id="pvr" label="14204" help="36201">
     <category id="pvrmanager" label="128" help="36202">
       <group id="1" label="14301">
+        <setting id="pvrmanager.preselectplayingchannel" type="boolean" label="19269" help="36214">
+          <level>1</level>
+          <default>false</default>
+          <control type="toggle" />
+        </setting>
         <setting id="pvrmanager.syncchannelgroups" type="boolean" label="19221" help="36204">
           <level>1</level>
           <default>true</default>
@@ -1764,19 +1769,12 @@
         </setting>
       </group>
       <group id="2" label="14275">
-      <requirement>
-        <or>
-          <condition>HAS_EVENT_SERVER</condition>
-          <condition>HAS_JSONRPC</condition>
-        </or>
-      </requirement>
         <setting id="services.esenabled" type="boolean" label="14276" help="36334">
           <level>1</level>
           <default>true</default>
           <control type="toggle" />
         </setting>
         <setting id="services.esport" type="integer" label="792" help="36335">
-          <requirement>HAS_EVENT_SERVER</requirement>
           <level>4</level>
           <default>9777</default>
           <constraints>
@@ -1790,7 +1788,6 @@
           <control type="edit" format="integer" />
         </setting>
         <setting id="services.esportrange" type="integer" label="793" help="36336">
-          <requirement>HAS_EVENT_SERVER</requirement>
           <level>4</level>
           <default>10</default>
           <constraints>
@@ -1804,7 +1801,6 @@
           <control type="spinner" format="integer" />
         </setting>
         <setting id="services.esmaxclients" type="integer" label="797" help="36337">
-          <requirement>HAS_EVENT_SERVER</requirement>
           <level>4</level>
           <default>20</default>
           <constraints>
@@ -1828,7 +1824,6 @@
           <control type="toggle" />
         </setting>
         <setting id="services.esinitialdelay" type="integer" label="795" help="36339">
-          <requirement>HAS_EVENT_SERVER</requirement>
           <level>4</level>
           <default>750</default>
           <constraints>
@@ -1842,7 +1837,6 @@
           <control type="spinner" format="integer" />
         </setting>
         <setting id="services.escontinuousdelay" type="integer" label="796" help="36340">
-          <requirement>HAS_EVENT_SERVER</requirement>
           <level>4</level>
           <default>25</default>
           <constraints>
