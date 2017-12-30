@@ -42,7 +42,7 @@ extern "C"
   /*!
    * @brief InputStream add-on capabilities. All capabilities are set to "false" as default.
    */
-  typedef struct INPUTSTREAM_CAPABILITIES
+  struct INPUTSTREAM_CAPABILITIES
   {
     enum MASKTYPE: uint32_t
     {
@@ -59,17 +59,20 @@ extern "C"
       SUPPORTS_SEEK = (1 << 3),
 
       /// supports pause
-      SUPPORTS_PAUSE = (1 << 4)
+      SUPPORTS_PAUSE = (1 << 4),
+
+      /// supports interface ITime
+      SUPPORTS_ITIME = (1 << 5)
     };
 
     /// set of supported capabilities
     uint32_t m_mask;
-  } INPUTSTREAM_CAPABILITIES;
+  };
 
   /*!
    * @brief structure of key/value pairs passed to addon on Open()
    */
-  typedef struct INPUTSTREAM
+  struct INPUTSTREAM
   {
     static const unsigned int MAX_INFO_COUNT = 8;
 
@@ -84,22 +87,22 @@ extern "C"
 
     const char *m_libFolder;
     const char *m_profileFolder;
-  } INPUTSTREAM;
+  };
 
   /*!
    * @brief Array of stream IDs
    */
-  typedef struct INPUTSTREAM_IDS
+  struct INPUTSTREAM_IDS
   {
     static const unsigned int MAX_STREAM_COUNT = 32;
     unsigned int m_streamCount;
     unsigned int m_streamIds[MAX_STREAM_COUNT];
-  } INPUTSTREAM_IDS;
+  };
 
   /*!
    * @brief stream properties
    */
-  typedef struct INPUTSTREAM_INFO
+  struct INPUTSTREAM_INFO
   {
     enum STREAM_TYPE
     {
@@ -131,6 +134,7 @@ extern "C"
     };
     uint32_t m_flags;
 
+    char m_name[256];                    /*!< @brief (optinal) name of the stream, \0 for default handling */
     char m_codecName[32];                /*!< @brief (required) name of codec according to ffmpeg */
     char m_codecInternalName[32];        /*!< @brief (optional) internal name of codec (selectionstream info) */
     STREAMCODEC_PROFILE m_codecProfile;  /*!< @brief (optional) the profile of the codec */
@@ -154,7 +158,15 @@ extern "C"
     unsigned int m_BlockAlign;
 
     CRYPTO_INFO m_cryptoInfo;
-  } INPUTSTREAM_INFO;
+  };
+
+  struct INPUTSTREAM_TIMES
+  {
+    time_t startTime;
+    double ptsStart;
+    double ptsBegin;
+    double ptsEnd;
+  };
 
   /*!
    * @brief Structure to transfer the methods from xbmc_inputstream_dll.h to XBMC
@@ -201,6 +213,9 @@ extern "C"
     // IDisplayTime
     int (__cdecl* get_total_time)(const AddonInstance_InputStream* instance);
     int (__cdecl* get_time)(const AddonInstance_InputStream* instance);
+
+    // ITime
+    bool(__cdecl* get_times)(const AddonInstance_InputStream* instance, INPUTSTREAM_TIMES *times);
 
     // IPosTime
     bool (__cdecl* pos_time)(const AddonInstance_InputStream* instance, int ms);
@@ -365,6 +380,12 @@ namespace addon
     virtual int GetTime() { return -1; }
 
     /*!
+    * Get current timing values in PTS scale
+    * @remarks
+    */
+    virtual bool GetTimes(INPUTSTREAM_TIMES &times) { return false; }
+
+    /*!
      * Positions inputstream to playing time given in ms
      * @remarks
      */
@@ -484,6 +505,8 @@ namespace addon
       m_instanceData->toAddon.get_total_time = ADDON_GetTotalTime;
       m_instanceData->toAddon.get_time = ADDON_GetTime;
 
+      m_instanceData->toAddon.get_times = ADDON_GetTimes;
+
       m_instanceData->toAddon.pos_time = ADDON_PosTime;
 
       m_instanceData->toAddon.can_pause_stream = ADDON_CanPauseStream;
@@ -581,6 +604,11 @@ namespace addon
       return instance->toAddon.addonInstance->GetTime();
     }
 
+    // ITime
+    inline static bool ADDON_GetTimes(const AddonInstance_InputStream* instance, INPUTSTREAM_TIMES *times)
+    {
+      return instance->toAddon.addonInstance->GetTimes(*times);
+    }
 
     // IPosTime
     inline static bool ADDON_PosTime(const AddonInstance_InputStream* instance, int ms)
