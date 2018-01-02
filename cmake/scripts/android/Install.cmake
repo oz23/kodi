@@ -26,6 +26,16 @@ configure_file(${CMAKE_SOURCE_DIR}/tools/android/packaging/apksign
                ${CMAKE_BINARY_DIR}/tools/android/packaging/apksign COPYONLY)
 configure_file(${CMAKE_SOURCE_DIR}/tools/android/packaging/make_symbols.sh
                ${CMAKE_BINARY_DIR}/tools/android/packaging/make_symbols.sh COPYONLY)
+configure_file(${CMAKE_SOURCE_DIR}/tools/android/packaging/build.gradle
+               ${CMAKE_BINARY_DIR}/tools/android/packaging/build.gradle COPYONLY)
+configure_file(${CMAKE_SOURCE_DIR}/tools/android/packaging/gradlew
+               ${CMAKE_BINARY_DIR}/tools/android/packaging/gradlew COPYONLY)
+configure_file(${CMAKE_SOURCE_DIR}/tools/android/packaging/settings.gradle
+               ${CMAKE_BINARY_DIR}/tools/android/packaging/settings.gradle COPYONLY)
+configure_file(${CMAKE_SOURCE_DIR}/tools/android/packaging/gradle/wrapper/gradle-wrapper.jar
+               ${CMAKE_BINARY_DIR}/tools/android/packaging/gradle/wrapper/gradle-wrapper.jar COPYONLY)
+configure_file(${CMAKE_SOURCE_DIR}/tools/android/packaging/gradle/wrapper/gradle-wrapper.properties
+               ${CMAKE_BINARY_DIR}/tools/android/packaging/gradle/wrapper/gradle-wrapper.properties COPYONLY)
 file(WRITE ${CMAKE_BINARY_DIR}/tools/depends/Makefile.include
      "$(PREFIX)/lib/${APP_NAME_LC}/lib${APP_NAME_LC}.so: ;\n")
 
@@ -43,28 +53,45 @@ endif()
 unset(patch)
 
 set(package_files strings.xml
-                  activity_main.xml
                   colors.xml
                   searchable.xml
                   AndroidManifest.xml
-                  src/Main.java
+                  build.gradle
                   src/Splash.java
+                  src/Main.java
                   src/XBMCBroadcastReceiver.java
-                  src/XBMCImageContentProvider.java
                   src/XBMCInputDeviceListener.java
                   src/XBMCJsonRPC.java
-                  src/XBMCMediaContentProvider.java
                   src/XBMCMediaSession.java
                   src/XBMCRecommendationBuilder.java
                   src/XBMCSearchableActivity.java
                   src/XBMCSettingsContentObserver.java
                   src/XBMCProperties.java
                   src/XBMCVideoView.java
+                  src/channels/SyncChannelJobService.java
+                  src/channels/SyncProgramsJobService.java
+                  src/channels/model/XBMCDatabase.java
+                  src/channels/model/Subscription.java
+                  src/channels/util/SharedPreferencesHelper.java
+                  src/channels/util/TvUtil.java
                   src/interfaces/XBMCAudioManagerOnAudioFocusChangeListener.java
                   src/interfaces/XBMCSurfaceTextureOnFrameAvailableListener.java
-                  src/interfaces/XBMCNsdManagerDiscoveryListener.java
-                  src/interfaces/XBMCNsdManagerRegistrationListener.java
                   src/interfaces/XBMCNsdManagerResolveListener.java
+                  src/interfaces/XBMCNsdManagerRegistrationListener.java
+                  src/interfaces/XBMCNsdManagerDiscoveryListener.java
+                  src/model/TVEpisode.java
+                  src/model/Movie.java
+                  src/model/TVShow.java
+                  src/model/File.java
+                  src/model/Album.java
+                  src/model/Song.java
+                  src/model/MusicVideo.java
+                  src/model/Media.java
+                  src/content/XBMCFileContentProvider.java
+                  src/content/XBMCMediaContentProvider.java
+                  src/content/XBMCContentProvider.java
+                  src/content/XBMCImageContentProvider.java
+                  src/content/XBMCYTDLContentProvider.java
                   )
 foreach(file IN LISTS package_files)
   configure_file(${CMAKE_SOURCE_DIR}/tools/android/packaging/xbmc/${file}.in
