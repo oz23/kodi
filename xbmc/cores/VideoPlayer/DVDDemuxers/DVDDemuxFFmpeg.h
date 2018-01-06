@@ -89,7 +89,7 @@ public:
   CDVDDemuxFFmpeg();
   ~CDVDDemuxFFmpeg() override;
 
-  bool Open(CDVDInputStream* pInput, bool streaminfo = true, bool fileinfo = false);
+  bool Open(std::shared_ptr<CDVDInputStream> pInput, bool streaminfo = true, bool fileinfo = false);
   void Dispose();
   bool Reset() override ;
   void Flush() override;
@@ -118,7 +118,7 @@ public:
   bool Aborted();
 
   AVFormatContext* m_pFormatContext;
-  CDVDInputStream* m_pInput;
+  std::shared_ptr<CDVDInputStream> m_pInput;
 
 protected:
   friend class CDemuxStreamAudioFFmpeg;
