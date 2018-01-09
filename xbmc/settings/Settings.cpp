@@ -28,8 +28,6 @@
 #include "events/EventLog.h"
 #include "addons/AddonSystemSettings.h"
 #include "addons/Skin.h"
-#include "cores/AudioEngine/Interfaces/AE.h"
-#include "cores/AudioEngine/Engines/ActiveAE/ActiveAESettings.h"
 #include "cores/playercorefactory/PlayerCoreFactory.h"
 #include "cores/VideoPlayer/VideoRenderers/BaseRenderer.h"
 #include "filesystem/File.h"
@@ -81,7 +79,6 @@
 #include "SeekHandler.h"
 #include "utils/Variant.h"
 #include "view/ViewStateSettings.h"
-#include "weather/WeatherManager.h"
 #include "ServiceBroker.h"
 #include "DiscSettings.h"
 
@@ -325,6 +322,7 @@ const std::string CSettings::SETTING_SERVICES_WEBSERVER = "services.webserver";
 const std::string CSettings::SETTING_SERVICES_WEBSERVERPORT = "services.webserverport";
 const std::string CSettings::SETTING_SERVICES_WEBSERVERUSERNAME = "services.webserverusername";
 const std::string CSettings::SETTING_SERVICES_WEBSERVERPASSWORD = "services.webserverpassword";
+const std::string CSettings::SETTING_SERVICES_WEBSERVERSSL = "services.webserverssl";
 const std::string CSettings::SETTING_SERVICES_WEBSKIN = "services.webskin";
 const std::string CSettings::SETTING_SERVICES_ESENABLED = "services.esenabled";
 const std::string CSettings::SETTING_SERVICES_ESPORT = "services.esport";
@@ -341,7 +339,9 @@ const std::string CSettings::SETTING_SERVICES_AIRPLAYPASSWORD = "services.airpla
 const std::string CSettings::SETTING_SERVICES_AIRPLAYVIDEOSUPPORT = "services.airplayvideosupport";
 const std::string CSettings::SETTING_SMB_WINSSERVER = "smb.winsserver";
 const std::string CSettings::SETTING_SMB_WORKGROUP = "smb.workgroup";
+const std::string CSettings::SETTING_SMB_MINPROTOCOL = "smb.minprotocol";
 const std::string CSettings::SETTING_SMB_MAXPROTOCOL = "smb.maxprotocol";
+const std::string CSettings::SETTING_SMB_LEGACYSECURITY = "smb.legacysecurity";
 const std::string CSettings::SETTING_VIDEOSCREEN_MONITOR = "videoscreen.monitor";
 const std::string CSettings::SETTING_VIDEOSCREEN_SCREEN = "videoscreen.screen";
 const std::string CSettings::SETTING_VIDEOSCREEN_RESOLUTION = "videoscreen.resolution";
@@ -676,10 +676,6 @@ void CSettings::InitializeOptionFillers()
 #ifdef HAS_DVD_DRIVE
   GetSettingsManager()->RegisterSettingOptionsFiller("audiocdactions", MEDIA_DETECT::CAutorun::SettingOptionAudioCdActionsFiller);
 #endif
-  GetSettingsManager()->RegisterSettingOptionsFiller("aequalitylevels", ActiveAE::CActiveAESettings::SettingOptionsAudioQualityLevelsFiller);
-  GetSettingsManager()->RegisterSettingOptionsFiller("audiodevices", ActiveAE::CActiveAESettings::SettingOptionsAudioDevicesFiller);
-  GetSettingsManager()->RegisterSettingOptionsFiller("audiodevicespassthrough", ActiveAE::CActiveAESettings::SettingOptionsAudioDevicesPassthroughFiller);
-  GetSettingsManager()->RegisterSettingOptionsFiller("audiostreamsilence", ActiveAE::CActiveAESettings::SettingOptionsAudioStreamsilenceFiller);
   GetSettingsManager()->RegisterSettingOptionsFiller("charsets", CCharsetConverter::SettingOptionsCharsetsFiller);
   GetSettingsManager()->RegisterSettingOptionsFiller("fonts", GUIFontManager::SettingOptionsFontsFiller);
   GetSettingsManager()->RegisterSettingOptionsFiller("languagenames", CLangInfo::SettingOptionsLanguageNamesFiller);
@@ -725,10 +721,6 @@ void CSettings::UninitializeOptionFillers()
 {
   GetSettingsManager()->UnregisterSettingOptionsFiller("audiocdactions");
   GetSettingsManager()->UnregisterSettingOptionsFiller("audiocdencoders");
-  GetSettingsManager()->UnregisterSettingOptionsFiller("aequalitylevels");
-  GetSettingsManager()->UnregisterSettingOptionsFiller("audiodevices");
-  GetSettingsManager()->UnregisterSettingOptionsFiller("audiodevicespassthrough");
-  GetSettingsManager()->UnregisterSettingOptionsFiller("audiostreamsilence");
   GetSettingsManager()->UnregisterSettingOptionsFiller("charsets");
   GetSettingsManager()->UnregisterSettingOptionsFiller("fontheights");
   GetSettingsManager()->UnregisterSettingOptionsFiller("fonts");
@@ -826,7 +818,6 @@ void CSettings::UninitializeISettingsHandlers()
 #if defined(TARGET_LINUX)
   GetSettingsManager()->UnregisterCallback(&g_timezone);
 #endif // defined(TARGET_LINUX)
-  GetSettingsManager()->UnregisterCallback(&CServiceBroker::GetWeatherManager());
 #if defined(TARGET_DARWIN_OSX)
   GetSettingsManager()->UnregisterCallback(&XBMCHelper::GetInstance());
 #endif
@@ -902,26 +893,7 @@ void CSettings::InitializeISettingCallbacks()
   GetSettingsManager()->RegisterCallback(&CStereoscopicsManager::GetInstance(), settingSet);
 
   settingSet.clear();
-  settingSet.insert(CSettings::SETTING_AUDIOOUTPUT_CONFIG);
-  settingSet.insert(CSettings::SETTING_AUDIOOUTPUT_SAMPLERATE);
   settingSet.insert(CSettings::SETTING_AUDIOOUTPUT_PASSTHROUGH);
-  settingSet.insert(CSettings::SETTING_AUDIOOUTPUT_CHANNELS);
-  settingSet.insert(CSettings::SETTING_AUDIOOUTPUT_PROCESSQUALITY);
-  settingSet.insert(CSettings::SETTING_AUDIOOUTPUT_ATEMPOTHRESHOLD);
-  settingSet.insert(CSettings::SETTING_AUDIOOUTPUT_GUISOUNDMODE);
-  settingSet.insert(CSettings::SETTING_AUDIOOUTPUT_STEREOUPMIX);
-  settingSet.insert(CSettings::SETTING_AUDIOOUTPUT_AC3PASSTHROUGH);
-  settingSet.insert(CSettings::SETTING_AUDIOOUTPUT_AC3TRANSCODE);
-  settingSet.insert(CSettings::SETTING_AUDIOOUTPUT_EAC3PASSTHROUGH);
-  settingSet.insert(CSettings::SETTING_AUDIOOUTPUT_DTSPASSTHROUGH);
-  settingSet.insert(CSettings::SETTING_AUDIOOUTPUT_TRUEHDPASSTHROUGH);
-  settingSet.insert(CSettings::SETTING_AUDIOOUTPUT_DTSHDPASSTHROUGH);
-  settingSet.insert(CSettings::SETTING_AUDIOOUTPUT_AUDIODEVICE);
-  settingSet.insert(CSettings::SETTING_AUDIOOUTPUT_PASSTHROUGHDEVICE);
-  settingSet.insert(CSettings::SETTING_AUDIOOUTPUT_STREAMSILENCE);
-  settingSet.insert(CSettings::SETTING_AUDIOOUTPUT_STREAMNOISE);
-  settingSet.insert(CSettings::SETTING_AUDIOOUTPUT_MAINTAINORIGINALVOLUME);
-  settingSet.insert(CSettings::SETTING_AUDIOOUTPUT_DSPADDONSENABLED);
   settingSet.insert(CSettings::SETTING_LOOKANDFEEL_SKIN);
   settingSet.insert(CSettings::SETTING_LOOKANDFEEL_SKINSETTINGS);
   settingSet.insert(CSettings::SETTING_LOOKANDFEEL_FONT);
@@ -976,6 +948,7 @@ void CSettings::InitializeISettingCallbacks()
   settingSet.insert(CSettings::SETTING_SERVICES_WEBSERVERPORT);
   settingSet.insert(CSettings::SETTING_SERVICES_WEBSERVERUSERNAME);
   settingSet.insert(CSettings::SETTING_SERVICES_WEBSERVERPASSWORD);
+  settingSet.insert(CSettings::SETTING_SERVICES_WEBSERVERSSL);
   settingSet.insert(CSettings::SETTING_SERVICES_ZEROCONF);
   settingSet.insert(CSettings::SETTING_SERVICES_AIRPLAY);
   settingSet.insert(CSettings::SETTING_SERVICES_AIRPLAYVOLUMECONTROL);
@@ -993,7 +966,9 @@ void CSettings::InitializeISettingCallbacks()
   settingSet.insert(CSettings::SETTING_SERVICES_ESCONTINUOUSDELAY);
   settingSet.insert(CSettings::SETTING_SMB_WINSSERVER);
   settingSet.insert(CSettings::SETTING_SMB_WORKGROUP);
+  settingSet.insert(CSettings::SETTING_SMB_MINPROTOCOL);
   settingSet.insert(CSettings::SETTING_SMB_MAXPROTOCOL);
+  settingSet.insert(CSettings::SETTING_SMB_LEGACYSECURITY);
   GetSettingsManager()->RegisterCallback(&CNetworkServices::GetInstance(), settingSet);
 
   settingSet.clear();
@@ -1010,11 +985,6 @@ void CSettings::InitializeISettingCallbacks()
   settingSet.insert(CSettings::SETTING_LOCALE_TIMEZONECOUNTRY);
   GetSettingsManager()->RegisterCallback(&g_timezone, settingSet);
 #endif
-
-  settingSet.clear();
-  settingSet.insert(CSettings::SETTING_WEATHER_ADDON);
-  settingSet.insert(CSettings::SETTING_WEATHER_ADDONSETTINGS);
-  GetSettingsManager()->RegisterCallback(&CServiceBroker::GetWeatherManager(), settingSet);
 
 #if defined(TARGET_DARWIN_OSX)
   settingSet.clear();
@@ -1073,7 +1043,6 @@ void CSettings::UninitializeISettingCallbacks()
 #if defined(TARGET_LINUX)
   GetSettingsManager()->UnregisterCallback(&g_timezone);
 #endif // defined(TARGET_LINUX)
-  GetSettingsManager()->UnregisterCallback(&CServiceBroker::GetWeatherManager());
 #if defined(TARGET_DARWIN_OSX)
   GetSettingsManager()->UnregisterCallback(&XBMCHelper::GetInstance());
 #endif
