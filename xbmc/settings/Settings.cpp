@@ -31,7 +31,6 @@
 #include "cores/playercorefactory/PlayerCoreFactory.h"
 #include "cores/VideoPlayer/VideoRenderers/BaseRenderer.h"
 #include "filesystem/File.h"
-#include "games/GameSettings.h"
 #include "guilib/GUIAudioManager.h"
 #include "guilib/GUIFontManager.h"
 #include "guilib/StereoscopicsManager.h"
@@ -657,7 +656,6 @@ void CSettings::InitializeDefaults()
 #endif // defined(TARGET_POSIX)
 
 #if defined(TARGET_WINDOWS)
-  std::static_pointer_cast<CSettingString>(GetSettingsManager()->GetSetting(CSettings::SETTING_MUSICPLAYER_VISUALISATION))->SetDefault("visualization.milkdrop");
   // We prefer a fake fullscreen mode (window covering the screen rather than dedicated fullscreen)
   // as it works nicer with switching to other applications. However on some systems vsync is broken
   // when we do this (eg non-Aero on ATI in particular) and on others (AppleTV) we can't get XBMC to
@@ -1003,20 +1001,6 @@ void CSettings::InitializeISettingCallbacks()
   settingSet.insert(CSettings::SETTING_POWERMANAGEMENT_WAKEONACCESS);
   GetSettingsManager()->RegisterCallback(&CWakeOnAccess::GetInstance(), settingSet);
 
-  settingSet.clear();
-  settingSet.insert(CSettings::SETTING_GAMES_KEYBOARD_PLAYERS);
-  settingSet.insert(CSettings::SETTING_GAMES_KEYBOARD_PLAYERCONFIG_1);
-  settingSet.insert(CSettings::SETTING_GAMES_KEYBOARD_PLAYERCONFIG_2);
-  settingSet.insert(CSettings::SETTING_GAMES_KEYBOARD_PLAYERCONFIG_3);
-  settingSet.insert(CSettings::SETTING_GAMES_KEYBOARD_PLAYERCONFIG_4);
-  settingSet.insert(CSettings::SETTING_GAMES_KEYBOARD_PLAYERCONFIG_5);
-  settingSet.insert(CSettings::SETTING_GAMES_KEYBOARD_PLAYERCONFIG_6);
-  settingSet.insert(CSettings::SETTING_GAMES_KEYBOARD_PLAYERCONFIG_7);
-  settingSet.insert(CSettings::SETTING_GAMES_KEYBOARD_PLAYERCONFIG_8);
-  settingSet.insert(CSettings::SETTING_GAMES_ENABLEREWIND);
-  settingSet.insert(CSettings::SETTING_GAMES_REWINDTIME);
-  GetSettingsManager()->RegisterCallback(&GAME::CGameSettings::GetInstance(), settingSet);
-
 #ifdef HAVE_LIBBLURAY
   settingSet.clear();
   settingSet.insert(CSettings::SETTING_DISC_PLAYBACK);
@@ -1039,7 +1023,6 @@ void CSettings::UninitializeISettingCallbacks()
   GetSettingsManager()->UnregisterCallback(&CNetworkServices::GetInstance());
   GetSettingsManager()->UnregisterCallback(&g_passwordManager);
   GetSettingsManager()->UnregisterCallback(&CRssManager::GetInstance());
-  GetSettingsManager()->UnregisterCallback(&GAME::CGameSettings::GetInstance());
 #if defined(TARGET_LINUX)
   GetSettingsManager()->UnregisterCallback(&g_timezone);
 #endif // defined(TARGET_LINUX)

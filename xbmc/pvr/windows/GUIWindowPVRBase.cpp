@@ -47,9 +47,105 @@
 using namespace PVR;
 using namespace KODI::MESSAGING;
 
+namespace PVR
+{
+
+class CGUIPVRChannelGroupsSelector
+{
+public:
+  CGUIPVRChannelGroupsSelector() : m_control(nullptr) {};
+  virtual ~CGUIPVRChannelGroupsSelector() = default;
+
+  bool Initialize(CGUIWindow* parent, const CPVRChannelGroupPtr &activeGroup);
+
+  bool HasFocus() const;
+  CPVRChannelGroupPtr GetSelectedChannelGroup() const;
+  bool SelectChannelGroup(const CPVRChannelGroupPtr &newGroup);
+
+private:
+  CGUIControl *m_control;
+  std::vector<CPVRChannelGroupPtr> m_channelGroups;
+};
+
+} // namespace PVR
+
+bool CGUIPVRChannelGroupsSelector::Initialize(CGUIWindow* parent, const CPVRChannelGroupPtr &activeGroup)
+{
+  CGUIControl* control = parent->GetControl(CONTROL_LSTCHANNELGROUPS);
+  if (control && control->IsContainer())
+  {
+    m_control = control;
+    if (activeGroup)
+    {
+      m_channelGroups = CServiceBroker::GetPVRManager().ChannelGroups()->Get(activeGroup->IsRadio())->GetMembers(true);
+      CFileItemList channelGroupItems;
+      int iItemIndex = -1;
+      int iIndex = 0;
+      for (const auto& group : m_channelGroups)
+      {
+        CFileItemPtr item(new CFileItem(group->GetPath(), true));
+        item->m_strTitle = group->GroupName();
+        item->SetLabel(group->GroupName());
+        channelGroupItems.Add(item);
+
+        if (iItemIndex == -1 && *activeGroup == *group)
+          iItemIndex = iIndex;
+        else
+          ++iIndex;
+      }
+
+      CGUIMessage msg(GUI_MSG_LABEL_BIND, m_control->GetID(), CONTROL_LSTCHANNELGROUPS, iItemIndex, 0, &channelGroupItems);
+      m_control->OnMessage(msg);
+      return true;
+    }
+  }
+  return false;
+}
+
+bool CGUIPVRChannelGroupsSelector::HasFocus() const
+{
+  return m_control && m_control->HasFocus();
+}
+
+CPVRChannelGroupPtr CGUIPVRChannelGroupsSelector::GetSelectedChannelGroup() const
+{
+  if (m_control)
+  {
+    CGUIMessage msg(GUI_MSG_ITEM_SELECTED, m_control->GetID(), CONTROL_LSTCHANNELGROUPS);
+    m_control->OnMessage(msg);
+
+    const auto it = std::next(m_channelGroups.begin(), msg.GetParam1());
+    if (it != m_channelGroups.end())
+    {
+      return *it;
+    }
+  }
+  return CPVRChannelGroupPtr();
+}
+
+bool CGUIPVRChannelGroupsSelector::SelectChannelGroup(const CPVRChannelGroupPtr &newGroup)
+{
+  if (m_control && newGroup)
+  {
+    int iIndex = 0;
+    for (const auto& group : m_channelGroups)
+    {
+      if (*newGroup == *group)
+      {
+        CGUIMessage msg(GUI_MSG_ITEM_SELECT, m_control->GetID(), CONTROL_LSTCHANNELGROUPS, iIndex);
+        m_control->OnMessage(msg);
+        return true;
+      }
+      ++iIndex;
+    }
+  }
+  return false;
+}
+
 CGUIWindowPVRBase::CGUIWindowPVRBase(bool bRadio, int id, const std::string &xmlFile) :
   CGUIMediaWindow(id, xmlFile.c_str()),
   m_bRadio(bRadio),
+  m_channelGroupsSelector(new CGUIPVRChannelGroupsSelector),
   m_progressHandle(nullptr)
 {
   // prevent removable drives to appear in directory listing (base class default behavior).
@@ -105,9 +201,20 @@ bool CGUIWindowPVRBase::OnAction(const CAction &action)
   {
     case ACTION_PREVIOUS_CHANNELGROUP:
     case ACTION_NEXT_CHANNELGROUP:
+    {
       // switch to next or previous group
       SetChannelGroup(action.GetID() == ACTION_NEXT_CHANNELGROUP ? m_channelGroup->GetNextGroup() : m_channelGroup->GetPreviousGroup());
       return true;
+    }
+    case ACTION_MOVE_RIGHT:
+    case ACTION_MOVE_LEFT:
+    {
+      if (m_channelGroupsSelector->HasFocus() && CGUIMediaWindow::OnAction(action))
+      {
+        SetChannelGroup(m_channelGroupsSelector->GetSelectedChannelGroup());
+        return true;
+      }
+    }
   }
 
   return CGUIMediaWindow::OnAction(action);
@@ -133,6 +240,7 @@ void CGUIWindowPVRBase::ClearData()
 {
   CSingleLock lock(m_critSection);
   m_channelGroup.reset();
+  m_channelGroupsSelector.reset(new CGUIPVRChannelGroupsSelector);
 }
 
 void CGUIWindowPVRBase::OnInitWindow(void)
@@ -145,6 +253,9 @@ void CGUIWindowPVRBase::OnInitWindow(void)
 
     // mark item as selected by channel path
     m_viewControl.SetSelectedItem(CServiceBroker::GetPVRManager().GUIActions()->GetSelectedItemPath(m_bRadio));
+
+    // This has to be done after base class OnInitWindow to restore correct selection
+    m_channelGroupsSelector->Initialize(this, m_channelGroup);
   }
   else
   {
@@ -171,9 +282,23 @@ bool CGUIWindowPVRBase::OnMessage(CGUIMessage& message)
       {
         case CONTROL_BTNCHANNELGROUPS:
           return OpenChannelGroupSelectionDialog();
+
+        case CONTROL_LSTCHANNELGROUPS:
+        {
+          switch (message.GetParam1())
+          {
+            case ACTION_SELECT_ITEM:
+            case ACTION_MOUSE_LEFT_CLICK:
+            {
+              SetChannelGroup(m_channelGroupsSelector->GetSelectedChannelGroup());
+              bReturn = true;
+              break;
+            }
+          }
+        }
       }
+      break;
     }
-    break;
 
     case GUI_MSG_REFRESH_LIST:
     {
@@ -183,6 +308,7 @@ bool CGUIWindowPVRBase::OnMessage(CGUIMessage& message)
         {
           // late init
           InitChannelGroup();
+          m_channelGroupsSelector->Initialize(this, m_channelGroup);
           RegisterObservers();
           HideProgressDialog();
           Refresh(true);
@@ -197,8 +323,8 @@ bool CGUIWindowPVRBase::OnMessage(CGUIMessage& message)
         UpdateSelectedItemPath();
       }
       bReturn = true;
+      break;
     }
-    break;
 
     case GUI_MSG_NOTIFY_ALL:
     {
@@ -212,8 +338,8 @@ bool CGUIWindowPVRBase::OnMessage(CGUIMessage& message)
           break;
         }
       }
+      break;
     }
-    break;
   }
 
   return bReturn || CGUIMediaWindow::OnMessage(message);
@@ -356,7 +482,9 @@ bool CGUIWindowPVRBase::Update(const std::string &strDirectory, bool updateFilte
 void CGUIWindowPVRBase::UpdateButtons(void)
 {
   CGUIMediaWindow::UpdateButtons();
+
   SET_CONTROL_LABEL(CONTROL_BTNCHANNELGROUPS, g_localizeStrings.Get(19141) + ": " + m_channelGroup->GroupName());
+  m_channelGroupsSelector->SelectChannelGroup(m_channelGroup);
 }
 
 void CGUIWindowPVRBase::ShowProgressDialog(const std::string &strText, int iProgress)

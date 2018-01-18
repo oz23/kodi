@@ -51,7 +51,15 @@ CServiceManager::CServiceManager()
 {
 }
 
-CServiceManager::~CServiceManager() = default;
+CServiceManager::~CServiceManager()
+{
+  if (init_level > 2)
+    DeinitStageThree();
+  if (init_level > 1)
+    DeinitStageTwo();
+  if (init_level > 0)
+    DeinitStageOne();
+}
 
 bool CServiceManager::InitForTesting()
 {
@@ -139,7 +147,9 @@ bool CServiceManager::InitStageTwo(const CAppParamParser &params)
   m_inputManager.reset(new CInputManager(params));
   m_inputManager->InitializeInputs();
 
-  m_peripherals.reset(new PERIPHERALS::CPeripherals(*m_announcementManager));
+  m_peripherals.reset(new PERIPHERALS::CPeripherals(*m_announcementManager,
+                                                    *m_inputManager,
+                                                    *m_gameControllerManager));
 
   m_gameRenderManager.reset(new RETRO::CGUIGameRenderManager);
 
@@ -192,6 +202,7 @@ bool CServiceManager::InitStageThree()
 
   m_gameServices.reset(new GAME::CGameServices(*m_gameControllerManager,
     *m_gameRenderManager,
+    *m_settings,
     *m_peripherals));
 
   m_contextMenuManager->Init();

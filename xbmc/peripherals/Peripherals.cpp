@@ -46,7 +46,7 @@
 #include "dialogs/GUIDialogKaiToast.h"
 #include "FileItem.h"
 #include "bus/virtual/PeripheralBusApplication.h"
-#include "input/joysticks/IButtonMapper.h"
+#include "input/joysticks/interfaces/IButtonMapper.h"
 #include "interfaces/AnnouncementManager.h"
 #include "filesystem/Directory.h"
 #include "guilib/GUIWindowManager.h"
@@ -77,8 +77,12 @@ using namespace PERIPHERALS;
 using namespace XFILE;
 using namespace KODI::MESSAGING;
 
-CPeripherals::CPeripherals(ANNOUNCEMENT::CAnnouncementManager &announcements) :
+CPeripherals::CPeripherals(ANNOUNCEMENT::CAnnouncementManager &announcements,
+                           CInputManager &inputManager,
+                           GAME::CControllerManager &controllerProfiles) :
   m_announcements(announcements),
+  m_inputManager(inputManager),
+  m_controllerProfiles(controllerProfiles),
   m_eventScanner(this)
 {
   // Register settings
