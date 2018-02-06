@@ -1,6 +1,6 @@
 /*
  *      Copyright (C) 2005-2013 Team XBMC
- *      http://xbmc.org
+ *      http://kodi.tv
  *
  *  This Program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -5905,7 +5905,7 @@ int CGUIInfoManager::TranslateListItem(const Property &info)
     }
     if (info.name == "art")
       return AddListItemProp(info.param(), LISTITEM_ART_OFFSET);
-    if (info.name == "ratings")
+    if (info.name == "rating")
       return AddListItemProp(info.param(), LISTITEM_RATING_OFFSET);
     if (info.name == "votes")
       return AddListItemProp(info.param(), LISTITEM_VOTES_OFFSET);
@@ -5986,6 +5986,8 @@ std::string CGUIInfoManager::GetLabel(int info, int contextWindow, std::string *
 
     return strLabel;
   }
+
+  const CProfilesManager &profileManager = CServiceBroker::GetProfileManager();
 
   switch (info)
   {
@@ -6576,15 +6578,14 @@ std::string CGUIInfoManager::GetLabel(int info, int contextWindow, std::string *
     strLabel = StringUtils::Format("%i", g_graphicsContext.GetResInfo().iScreenHeight);
     break;
   case SYSTEM_CURRENT_WINDOW:
-    return g_localizeStrings.Get(g_windowManager.GetFocusedWindow());
-    break;
+    return g_localizeStrings.Get(g_windowManager.GetActiveWindowOrDialog());
   case SYSTEM_STARTUP_WINDOW:
     strLabel = StringUtils::Format("%i", CServiceBroker::GetSettings().GetInt(CSettings::SETTING_LOOKANDFEEL_STARTUPWINDOW));
     break;
   case SYSTEM_CURRENT_CONTROL:
   case SYSTEM_CURRENT_CONTROL_ID:
     {
-      CGUIWindow *window = g_windowManager.GetWindow(g_windowManager.GetFocusedWindow());
+      CGUIWindow *window = g_windowManager.GetWindow(g_windowManager.GetActiveWindowOrDialog());
       if (window)
       {
         CGUIControl *control = window->GetFocusedControl();
@@ -6616,15 +6617,15 @@ std::string CGUIInfoManager::GetLabel(int info, int contextWindow, std::string *
     }
     break;
   case SYSTEM_PROFILENAME:
-    strLabel = CProfilesManager::GetInstance().GetCurrentProfile().getName();
+    strLabel = profileManager.GetCurrentProfile().getName();
     break;
   case SYSTEM_PROFILECOUNT:
-    strLabel = StringUtils::Format("{0}", CProfilesManager::GetInstance().GetNumberOfProfiles());
+    strLabel = StringUtils::Format("{0}", profileManager.GetNumberOfProfiles());
     break;
   case SYSTEM_PROFILEAUTOLOGIN:
     {
-      int profileId = CProfilesManager::GetInstance().GetAutoLoginProfileId();
-      if ((profileId < 0) || (!CProfilesManager::GetInstance().GetProfileName(profileId, strLabel)))
+      int profileId = profileManager.GetAutoLoginProfileId();
+      if ((profileId < 0) || (!profileManager.GetProfileName(profileId, strLabel)))
         strLabel = g_localizeStrings.Get(37014); // Last used profile
     }
     break;
@@ -6955,7 +6956,10 @@ bool CGUIInfoManager::GetBool(int condition1, int contextWindow, const CGUIListI
       }
     }
   }
-  else {
+  else
+  {
+    const CProfilesManager &profileManager = CServiceBroker::GetProfileManager();
+
     switch (condition)
     {
       // Ethernet Link state checking
@@ -7073,7 +7077,7 @@ bool CGUIInfoManager::GetBool(int condition1, int contextWindow, const CGUIListI
         bReturn = IsPlayerChannelPreviewActive();
         break;
       case SYSTEM_HASLOCKS:
-        bReturn = CProfilesManager::GetInstance().GetMasterProfile().getLockMode() != LOCK_MODE_EVERYONE;
+        bReturn = profileManager.GetMasterProfile().getLockMode() != LOCK_MODE_EVERYONE;
         break;
       case SYSTEM_HAS_PVR:
         bReturn = true;
@@ -7097,7 +7101,7 @@ bool CGUIInfoManager::GetBool(int condition1, int contextWindow, const CGUIListI
 #endif
         break;
       case SYSTEM_ISMASTER:
-        bReturn = CProfilesManager::GetInstance().GetMasterProfile().getLockMode() != LOCK_MODE_EVERYONE && g_passwordManager.bMasterUser;
+        bReturn = profileManager.GetMasterProfile().getLockMode() != LOCK_MODE_EVERYONE && g_passwordManager.bMasterUser;
         break;
       case SYSTEM_ISFULLSCREEN:
         bReturn = CServiceBroker::GetWinSystem().IsFullScreen();
@@ -7118,7 +7122,7 @@ bool CGUIInfoManager::GetBool(int condition1, int contextWindow, const CGUIListI
         bReturn = g_advancedSettings.m_showExitButton;
         break;
       case SYSTEM_HAS_LOGINSCREEN:
-        bReturn = CProfilesManager::GetInstance().UsingLoginScreen();
+        bReturn = profileManager.UsingLoginScreen();
         break;
       case SYSTEM_HAS_ACTIVE_MODAL_DIALOG:
         bReturn = g_windowManager.HasModalDialog();
@@ -8253,7 +8257,9 @@ std::string CGUIInfoManager::GetImage(int info, int contextWindow, std::string *
     return CServiceBroker::GetWeatherManager().GetInfo(WEATHER_IMAGE_CURRENT_ICON);
   else if (info == SYSTEM_PROFILETHUMB)
   {
-    std::string thumb = CProfilesManager::GetInstance().GetCurrentProfile().getThumb();
+    const CProfilesManager &profileManager = CServiceBroker::GetProfileManager();
+
+    std::string thumb = profileManager.GetCurrentProfile().getThumb();
     if (thumb.empty())
       thumb = "DefaultUser.png";
     return thumb;

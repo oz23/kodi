@@ -1,6 +1,6 @@
 /*
  *      Copyright (C) 2005-2013 Team XBMC
- *      http://xbmc.org
+ *      http://kodi.tv
  *
  *  This Program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -39,6 +39,7 @@
 #include "music/MusicThumbLoader.h"
 #include "music/windows/GUIWindowMusicNav.h"
 #include "filesystem/Directory.h"
+#include "ServiceBroker.h"
 
 using namespace XFILE;
 
@@ -292,8 +293,10 @@ void CGUIDialogMusicInfo::Update()
 
   }
 
+  const CProfilesManager &profileManager = CServiceBroker::GetProfileManager();
+
   // disable the GetThumb button if the user isn't allowed it
-  CONTROL_ENABLE_ON_CONDITION(CONTROL_BTN_GET_THUMB, CProfilesManager::GetInstance().GetCurrentProfile().canWriteDatabases() || g_passwordManager.bMasterUser);
+  CONTROL_ENABLE_ON_CONDITION(CONTROL_BTN_GET_THUMB, profileManager.GetCurrentProfile().canWriteDatabases() || g_passwordManager.bMasterUser);
 }
 
 void CGUIDialogMusicInfo::SetLabel(int iControl, const std::string& strLabel)

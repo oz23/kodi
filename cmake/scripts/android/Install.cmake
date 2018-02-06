@@ -62,6 +62,7 @@ set(package_files strings.xml
                   src/XBMCBroadcastReceiver.java
                   src/XBMCInputDeviceListener.java
                   src/XBMCJsonRPC.java
+                  src/XBMCMainView.java
                   src/XBMCMediaSession.java
                   src/XBMCRecommendationBuilder.java
                   src/XBMCSearchableActivity.java
@@ -170,7 +171,6 @@ foreach(target apk obb apk-unsigned apk-obb apk-obb-unsigned apk-noobb apk-clean
               DEPENDS_PATH=${DEPENDS_PATH}
               NDKROOT=${NDKROOT}
               SDKROOT=${SDKROOT}
-              SDK_PLATFORM=${SDK_PLATFORM}
               STRIP=${CMAKE_STRIP}
               AAPT=${AAPT_EXECUTABLE}
               DX=${DX_EXECUTABLE}

@@ -1,6 +1,6 @@
 /*
  *      Copyright (C) 2005-2013 Team XBMC
- *      http://xbmc.org
+ *      http://kodi.tv
  *
  *  This Program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -34,6 +34,7 @@
 #include "cores/AudioEngine/Sinks/AESinkALSA.h"
 #include "guilib/GraphicContext.h"
 #include "guilib/Resolution.h"
+#include "powermanagement/linux/LinuxPowerSyscall.h"
 #include "settings/Settings.h"
 #include "settings/DisplaySettings.h"
 #include "guilib/DispResource.h"
@@ -78,6 +79,7 @@ CWinSystemAmlogic::CWinSystemAmlogic()
   // Register sink
   AE::CAESinkFactory::ClearSinks();
   CAESinkALSA::Register();
+  CLinuxPowerSyscall::Register();
 }
 
 CWinSystemAmlogic::~CWinSystemAmlogic()
@@ -97,6 +99,8 @@ bool CWinSystemAmlogic::InitWindowSystem()
   RETRO::CRPProcessInfoAmlogic::Register();
   RETRO::CRPProcessInfoAmlogic::RegisterRendererFactory(new RETRO::CRendererFactoryGuiTexture);
   CRendererAML::Register();
+
+  aml_set_framebuffer_resolution(1920, 1080, m_framebuffer_name);
 
   return CWinSystemBase::InitWindowSystem();
 }

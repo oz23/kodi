@@ -1,6 +1,6 @@
 /*
  *      Copyright (C) 2005-2013 Team XBMC
- *      http://xbmc.org
+ *      http://kodi.tv
  *
  *  This Program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -25,7 +25,6 @@
 #include "Autorun.h"
 #include "LangInfo.h"
 #include "Util.h"
-#include "events/EventLog.h"
 #include "addons/AddonSystemSettings.h"
 #include "addons/Skin.h"
 #include "cores/playercorefactory/PlayerCoreFactory.h"
@@ -433,15 +432,6 @@ const std::string CSettings::SETTING_GENERAL_ADDONBROKENFILTER = "general.addonb
 const std::string CSettings::SETTING_SOURCE_VIDEOS = "source.videos";
 const std::string CSettings::SETTING_SOURCE_MUSIC = "source.music";
 const std::string CSettings::SETTING_SOURCE_PICTURES = "source.pictures";
-const std::string CSettings::SETTING_GAMES_KEYBOARD_PLAYERS = "gameskeyboard.keyboardplayers";
-const std::string CSettings::SETTING_GAMES_KEYBOARD_PLAYERCONFIG_1 = "gameskeyboard.keyboardplayerconfig1";
-const std::string CSettings::SETTING_GAMES_KEYBOARD_PLAYERCONFIG_2 = "gameskeyboard.keyboardplayerconfig2";
-const std::string CSettings::SETTING_GAMES_KEYBOARD_PLAYERCONFIG_3 = "gameskeyboard.keyboardplayerconfig3";
-const std::string CSettings::SETTING_GAMES_KEYBOARD_PLAYERCONFIG_4 = "gameskeyboard.keyboardplayerconfig4";
-const std::string CSettings::SETTING_GAMES_KEYBOARD_PLAYERCONFIG_5 = "gameskeyboard.keyboardplayerconfig5";
-const std::string CSettings::SETTING_GAMES_KEYBOARD_PLAYERCONFIG_6 = "gameskeyboard.keyboardplayerconfig6";
-const std::string CSettings::SETTING_GAMES_KEYBOARD_PLAYERCONFIG_7 = "gameskeyboard.keyboardplayerconfig7";
-const std::string CSettings::SETTING_GAMES_KEYBOARD_PLAYERCONFIG_8 = "gameskeyboard.keyboardplayerconfig8";
 const std::string CSettings::SETTING_GAMES_ENABLE = "gamesgeneral.enable";
 const std::string CSettings::SETTING_GAMES_ENABLEREWIND = "gamesgeneral.enablerewind";
 const std::string CSettings::SETTING_GAMES_REWINDTIME = "gamesgeneral.rewindtime";
@@ -479,7 +469,9 @@ bool CSettings::Initialize()
 
 bool CSettings::Load()
 {
-  return Load(CProfilesManager::GetInstance().GetSettingsFile());
+  const CProfilesManager &profileManager = CServiceBroker::GetProfileManager();
+
+  return Load(profileManager.GetSettingsFile());
 }
 
 bool CSettings::Load(const std::string &file)
@@ -505,7 +497,9 @@ bool CSettings::Load(const std::string &file)
 
 bool CSettings::Save()
 {
-  return Save(CProfilesManager::GetInstance().GetSettingsFile());
+  const CProfilesManager &profileManager = CServiceBroker::GetProfileManager();
+
+  return Save(profileManager.GetSettingsFile());
 }
 
 bool CSettings::Save(const std::string &file)
@@ -763,7 +757,9 @@ void CSettings::UninitializeOptionFillers()
 
 void CSettings::InitializeConditions()
 {
-  CSettingConditions::Initialize();
+  const CProfilesManager &profileManager = CServiceBroker::GetProfileManager();
+
+  CSettingConditions::Initialize(profileManager);
 
   // add basic conditions
   const std::set<std::string> &simpleConditions = CSettingConditions::GetSimpleConditions();
@@ -776,14 +772,17 @@ void CSettings::InitializeConditions()
     GetSettingsManager()->AddCondition(itCondition->first, itCondition->second);
 }
 
+void CSettings::UninitializeConditions()
+{
+  CSettingConditions::Deinitialize();
+}
+
 void CSettings::InitializeISettingsHandlers()
 {
   // register ISettingsHandler implementations
   // The order of these matters! Handlers are processed in the order they were registered.
   GetSettingsManager()->RegisterSettingsHandler(&g_advancedSettings);
   GetSettingsManager()->RegisterSettingsHandler(&CMediaSourceSettings::GetInstance());
-  GetSettingsManager()->RegisterSettingsHandler(&CPlayerCoreFactory::GetInstance());
-  GetSettingsManager()->RegisterSettingsHandler(&CProfilesManager::GetInstance());
 #ifdef HAS_UPNP
   GetSettingsManager()->RegisterSettingsHandler(&CUPnPSettings::GetInstance());
 #endif
@@ -800,7 +799,6 @@ void CSettings::InitializeISettingsHandlers()
 void CSettings::UninitializeISettingsHandlers()
 {
   // unregister ISettingCallback implementations
-  GetSettingsManager()->UnregisterCallback(&CEventLog::GetInstance());
   GetSettingsManager()->UnregisterCallback(&g_advancedSettings);
   GetSettingsManager()->UnregisterCallback(&CMediaSettings::GetInstance());
   GetSettingsManager()->UnregisterCallback(&CDisplaySettings::GetInstance());
@@ -848,10 +846,6 @@ void CSettings::InitializeISettingCallbacks()
 {
   // register any ISettingCallback implementations
   std::set<std::string> settingSet;
-  settingSet.insert(CSettings::SETTING_EVENTLOG_SHOW);
-  GetSettingsManager()->RegisterCallback(&CEventLog::GetInstance(), settingSet);
-
-  settingSet.clear();
   settingSet.insert(CSettings::SETTING_DEBUG_SHOWLOGINFO);
   settingSet.insert(CSettings::SETTING_DEBUG_EXTRALOGGING);
   settingSet.insert(CSettings::SETTING_DEBUG_SETEXTRALOGLEVEL);
@@ -1010,7 +1004,6 @@ void CSettings::InitializeISettingCallbacks()
 
 void CSettings::UninitializeISettingCallbacks()
 {
-  GetSettingsManager()->UnregisterCallback(&CEventLog::GetInstance());
   GetSettingsManager()->UnregisterCallback(&g_advancedSettings);
   GetSettingsManager()->UnregisterCallback(&CMediaSettings::GetInstance());
   GetSettingsManager()->UnregisterCallback(&CDisplaySettings::GetInstance());
@@ -1037,7 +1030,10 @@ void CSettings::UninitializeISettingCallbacks()
 
 bool CSettings::Reset()
 {
-  std::string settingsFile = CProfilesManager::GetInstance().GetSettingsFile();
+  const CProfilesManager &profileManager = CServiceBroker::GetProfileManager();
+
+  std::string settingsFile = profileManager.GetSettingsFile();
+
   // try to delete the settings file
   if (XFILE::CFile::Exists(settingsFile, false) && !XFILE::CFile::Delete(settingsFile))
     CLog::Log(LOGWARNING, "Unable to delete old settings file at %s", settingsFile.c_str());

@@ -1,6 +1,6 @@
 /*
  *      Copyright (C) 2016 Christian Browet
- *      http://xbmc.org
+ *      http://kodi.tv
  *
  *  This Program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -54,20 +54,17 @@ void CJNIXBMCVideoView::RegisterNatives(JNIEnv* env)
 
 CJNIXBMCVideoView::CJNIXBMCVideoView()
   : m_callback(nullptr)
-  , m_surfaceCreated(nullptr)
 {
 }
 
 CJNIXBMCVideoView::CJNIXBMCVideoView(const jni::jhobject &object)
   : CJNIBase(object)
   , m_callback(nullptr)
-  , m_surfaceCreated(nullptr)
 {
 }
 
 CJNIXBMCVideoView::~CJNIXBMCVideoView()
 {
-  delete m_surfaceCreated;
 }
 
 CJNIXBMCVideoView* CJNIXBMCVideoView::createVideoView(CJNISurfaceHolderCallback* callback)
@@ -85,9 +82,8 @@ CJNIXBMCVideoView* CJNIXBMCVideoView::createVideoView(CJNISurfaceHolderCallback*
 
   add_instance(pvw->get_raw(), pvw);
   pvw->m_callback = callback;
-  pvw->m_surfaceCreated = new CEvent;
   if (pvw->isCreated())
-    pvw->m_surfaceCreated->Set();
+    pvw->m_surfaceCreated.Set();
   pvw->add();
 
   return pvw;
@@ -128,23 +124,21 @@ void CJNIXBMCVideoView::surfaceChanged(CJNISurfaceHolder holder, int format, int
 
 void CJNIXBMCVideoView::surfaceCreated(CJNISurfaceHolder holder)
 {
-  if (m_surfaceCreated)
-    m_surfaceCreated->Set();
   if (m_callback)
     m_callback->surfaceCreated(holder);
+  m_surfaceCreated.Set();
 }
 
 void CJNIXBMCVideoView::surfaceDestroyed(CJNISurfaceHolder holder)
 {
-  if (m_surfaceCreated)
-    m_surfaceCreated->Reset();
+  m_surfaceCreated.Reset();
   if (m_callback)
     m_callback->surfaceDestroyed(holder);
 }
 
 bool CJNIXBMCVideoView::waitForSurface(unsigned int millis)
 {
-  return m_surfaceCreated->WaitMSec(millis);
+  return m_surfaceCreated.WaitMSec(millis);
 }
 
 void CJNIXBMCVideoView::add()

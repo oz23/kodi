@@ -1,6 +1,6 @@
 /*
  *      Copyright (C) 2005-2013 Team XBMC
- *      http://xbmc.org
+ *      http://kodi.tv
  *
  *  This Program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -63,13 +63,13 @@ void CApplicationPlayer::CloseFile(bool reopen)
   }
 }
 
-void CApplicationPlayer::CreatePlayer(const std::string &player, IPlayerCallback& callback)
+void CApplicationPlayer::CreatePlayer(const CPlayerCoreFactory &factory, const std::string &player, IPlayerCallback& callback)
 {
   CSingleLock lock(m_playerLock);
   if (!m_pPlayer)
   {
     CDataCacheCore::GetInstance().Reset();
-    m_pPlayer.reset(CPlayerCoreFactory::GetInstance().CreatePlayer(player, callback));
+    m_pPlayer.reset(factory.CreatePlayer(player, callback));
   }
 }
 
@@ -84,14 +84,15 @@ std::string CApplicationPlayer::GetCurrentPlayer()
 }
 
 bool CApplicationPlayer::OpenFile(const CFileItem& item, const CPlayerOptions& options,
-                                         const std::string &playerName, IPlayerCallback& callback)
+                                  const CPlayerCoreFactory &factory,
+                                  const std::string &playerName, IPlayerCallback& callback)
 {
   // get player type
   std::string newPlayer;
   if (!playerName.empty())
     newPlayer = playerName;
   else
-    newPlayer = CPlayerCoreFactory::GetInstance().GetDefaultPlayer(item);
+    newPlayer = factory.GetDefaultPlayer(item);
 
   // check if we need to close current player
   // VideoPlayer can open a new file while playing
@@ -128,7 +129,7 @@ bool CApplicationPlayer::OpenFile(const CFileItem& item, const CPlayerOptions& o
 
   if (!player)
   {
-    CreatePlayer(newPlayer, callback);
+    CreatePlayer(factory, newPlayer, callback);
     player = GetInternal();
     if (!player)
       return false;
@@ -146,11 +147,12 @@ bool CApplicationPlayer::OpenFile(const CFileItem& item, const CPlayerOptions& o
   return ret;
 }
 
-void CApplicationPlayer::OpenNext()
+void CApplicationPlayer::OpenNext(const CPlayerCoreFactory &factory)
 {
   if (m_nextItem.pItem)
   {
     OpenFile(*m_nextItem.pItem, m_nextItem.options,
+             factory,
              m_nextItem.playerName, *m_nextItem.callback);
     m_nextItem.pItem.reset();
   }

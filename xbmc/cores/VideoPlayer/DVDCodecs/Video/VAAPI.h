@@ -1,6 +1,6 @@
 /*
  *      Copyright (C) 2005-2014 Team XBMC
- *      http://xbmc.org
+ *      http://kodi.tv
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -27,7 +27,7 @@
 #include "threads/Event.h"
 #include "threads/Thread.h"
 #include "utils/ActorProtocol.h"
-#include "guilib/Geometry.h"
+#include "utils/Geometry.h"
 #include <list>
 #include <map>
 #include <memory>

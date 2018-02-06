@@ -1,6 +1,6 @@
 /*
  *      Copyright (C) 2005-2013 Team XBMC
- *      http://xbmc.org
+ *      http://kodi.tv
  *
  *  This Program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -173,8 +173,9 @@ static bool IsOrphaned(const AddonPtr& addon, const VECADDONS& all)
 
   for (const AddonPtr& other : all)
   {
-    const auto& deps = other->GetDeps();
-    if (deps.find(addon->ID()) != deps.end())
+    const auto& deps = other->GetDependencies();
+    auto it = std::find_if(deps.begin(), deps.end(), [&](const DependencyInfo& dep){ return dep.id == addon->ID(); });
+    if (it != deps.end())
       return false;
   }
   return true;

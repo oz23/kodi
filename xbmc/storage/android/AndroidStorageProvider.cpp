@@ -1,6 +1,6 @@
 /*
  *      Copyright (C) 2012-2013 Team XBMC
- *      http://xbmc.org
+ *      http://kodi.tv
  *
  *  This Program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -58,6 +58,11 @@ static const char * deviceWL[] = {
   "/dev/fuse",
   "/mnt/media_rw"
 };
+
+IStorageProvider* IStorageProvider::CreateInstance()
+{
+  return new CAndroidStorageProvider();
+}
 
 CAndroidStorageProvider::CAndroidStorageProvider()
 {
@@ -280,28 +285,47 @@ std::set<std::string> CAndroidStorageProvider::GetRemovableDrivesLinux()
 
         // What mount points are rejected
         for (unsigned int i=0; i < ARRAY_SIZE(mountBL); ++i)
+        {
           if (StringUtils::StartsWithNoCase(mountStr, mountBL[i]))
+          {
             bl_ok = false;
+            break;
+          }
+        }
 
         if (bl_ok)
         {
           // What filesystems are accepted
           bool fsok = false;
           for (unsigned int i=0; i < ARRAY_SIZE(typeWL); ++i)
+          {
             if (StringUtils::StartsWithNoCase(fsStr, typeWL[i]))
-              continue;
-
+            {
+              fsok = true;
+              break;
+            }
+          }
           // What devices are accepted
           bool devok = false;
           for (unsigned int i=0; i < ARRAY_SIZE(deviceWL); ++i)
+          {
             if (StringUtils::StartsWithNoCase(deviceStr, deviceWL[i]))
+            {
               devok = true;
+              break;
+            }
+          }
 
           // What mount points are accepted
           bool mountok = false;
           for (unsigned int i=0; i < ARRAY_SIZE(mountWL); ++i)
+          {
             if (StringUtils::StartsWithNoCase(mountStr, mountWL[i]))
+            {
               mountok = true;
+              break;
+            }
+          }
 
           if(devok && (fsok || mountok))
           {

@@ -1,6 +1,6 @@
 /*
  *      Copyright (C) 2011-2013 Team XBMC
- *      http://xbmc.org
+ *      http://kodi.tv
  *
  *  This Program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -280,7 +280,7 @@ bool CAddonInstaller::InstallFromZip(const std::string &path)
   CURL zipDir = URIUtils::CreateArchivePath("zip", pathToUrl, "");
   if (!CDirectory::GetDirectory(zipDir, items) || items.Size() != 1 || !items[0]->m_bIsFolder)
   {
-    CEventLog::GetInstance().AddWithNotification(EventPtr(new CNotificationEvent(24045,
+    CServiceBroker::GetEventLog().AddWithNotification(EventPtr(new CNotificationEvent(24045,
         StringUtils::Format(g_localizeStrings.Get(24143).c_str(), path.c_str()),
         "special://xbmc/media/icon256x256.png", EventLevel::Error)));
     return false;
@@ -290,7 +290,7 @@ bool CAddonInstaller::InstallFromZip(const std::string &path)
   if (CServiceBroker::GetAddonMgr().LoadAddonDescription(items[0]->GetPath(), addon))
     return DoInstall(addon, RepositoryPtr());
 
-  CEventLog::GetInstance().AddWithNotification(EventPtr(new CNotificationEvent(24045,
+  CServiceBroker::GetEventLog().AddWithNotification(EventPtr(new CNotificationEvent(24045,
       StringUtils::Format(g_localizeStrings.Get(24143).c_str(), path.c_str()),
       "special://xbmc/media/icon256x256.png", EventLevel::Error)));
   return false;
@@ -323,12 +323,11 @@ bool CAddonInstaller::CheckDependencies(const AddonPtr &addon,
   if (!database.Open())
     return false;
 
-  ADDONDEPS deps = addon->GetDeps();
-  for (ADDONDEPS::const_iterator i = deps.begin(); i != deps.end(); ++i)
+  for (const auto& it : addon->GetDependencies())
   {
-    const std::string &addonID = i->first;
-    const AddonVersion &version = i->second.first;
-    bool optional = i->second.second;
+    const std::string &addonID = it.id;
+    const AddonVersion &version = it.requiredVersion;
+    bool optional = it.optional;
     AddonPtr dep;
     bool haveAddon = CServiceBroker::GetAddonMgr().GetAddon(addonID, dep);
     if ((haveAddon && !dep->MeetsVersion(version)) || (!haveAddon && !optional))
@@ -637,14 +636,14 @@ bool CAddonInstallJob::DoWork()
 
   bool notify = (CServiceBroker::GetSettings().GetBool(CSettings::SETTING_ADDONS_NOTIFICATIONS)
         || !m_isAutoUpdate) && !IsModal();
-  CEventLog::GetInstance().Add(
+  CServiceBroker::GetEventLog().Add(
       EventPtr(new CAddonManagementEvent(m_addon, m_isUpdate ? 24065 : 24084)), notify, false);
 
   if (m_isAutoUpdate && !m_addon->Broken().empty())
   {
     CLog::Log(LOGDEBUG, "CAddonInstallJob[%s]: auto-disabling due to being marked as broken", m_addon->ID().c_str());
     CServiceBroker::GetAddonMgr().DisableAddon(m_addon->ID());
-    CEventLog::GetInstance().Add(EventPtr(new CAddonManagementEvent(m_addon, 24094)), true, false);
+    CServiceBroker::GetEventLog().Add(EventPtr(new CAddonManagementEvent(m_addon, 24094)), true, false);
   }
 
   // and we're done!
@@ -705,20 +704,20 @@ bool CAddonInstallJob::DoFileOperation(FileAction action, CFileItemList &items, 
 bool CAddonInstallJob::Install(const std::string &installFrom, const AddonPtr& repo)
 {
   SetText(g_localizeStrings.Get(24079));
-  ADDONDEPS deps = m_addon->GetDeps();
+  auto deps = m_addon->GetDependencies();
 
   unsigned int totalSteps = static_cast<unsigned int>(deps.size());
   if (ShouldCancel(0, totalSteps))
     return false;
 
   // The first thing we do is install dependencies
-  for (ADDONDEPS::iterator it = deps.begin(); it != deps.end(); ++it)
+  for (auto it = deps.begin(); it != deps.end(); ++it)
   {
-    if (it->first != "xbmc.metadata")
+    if (it->id != "xbmc.metadata")
     {
-      const std::string &addonID = it->first;
-      const AddonVersion &version = it->second.first;
-      bool optional = it->second.second;
+      const std::string &addonID = it->id;
+      const AddonVersion &version = it->requiredVersion;
+      bool optional = it->optional;
       AddonPtr dependency;
       bool haveAddon = CServiceBroker::GetAddonMgr().GetAddon(addonID, dependency, ADDON_UNKNOWN, false);
       if ((haveAddon && !dependency->MeetsVersion(version)) || (!haveAddon && !optional))
@@ -776,7 +775,7 @@ bool CAddonInstallJob::Install(const std::string &installFrom, const AddonPtr& r
     }
 
     if (ShouldCancel(std::distance(deps.begin(), it), totalSteps))
-      return false;
+        return false;
   }
 
   SetText(g_localizeStrings.Get(24086));
@@ -829,7 +828,7 @@ void CAddonInstallJob::ReportInstallError(const std::string& addonID, const std:
       HELPERS::ShowOKDialogText(CVariant{fileName}, CVariant{msg});
   }
 
-  CEventLog::GetInstance().Add(activity, !IsModal(), false);
+  CServiceBroker::GetEventLog().Add(activity, !IsModal(), false);
 }
 
 CAddonUnInstallJob::CAddonUnInstallJob(const AddonPtr &addon, bool removeData)
@@ -865,7 +864,7 @@ bool CAddonUnInstallJob::DoWork()
   // if that doesn't work fall back to the local one
   if (!database.Open() || !database.GetAddon(m_addon->ID(), addon) || addon == NULL)
     addon = m_addon;
-  CEventLog::GetInstance().Add(EventPtr(new CAddonManagementEvent(addon, 24144)));
+  CServiceBroker::GetEventLog().Add(EventPtr(new CAddonManagementEvent(addon, 24144)));
 
   CServiceBroker::GetAddonMgr().OnPostUnInstall(m_addon->ID());
   database.OnPostUnInstall(m_addon->ID());

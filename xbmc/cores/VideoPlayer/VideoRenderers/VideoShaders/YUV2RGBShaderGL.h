@@ -1,6 +1,6 @@
 /*
  *      Copyright (C) 2007-2015 Team XBMC
- *      http://xbmc.org
+ *      http://kodi.tv
  *
  *  This Program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -27,26 +27,28 @@
 
 #include <memory>
 
-void CalculateYUVMatrix(TransformMatrix &matrix
-                        , unsigned int  flags
-                        , EShaderFormat format
-                        , float         black
-                        , float         contrast
-                        , bool          limited);
+extern "C" {
+#include "libavutil/pixfmt.h"
+}
+
+class CConvertMatrix;
 
 namespace Shaders {
 
 class BaseYUV2RGBGLSLShader : public CGLSLShaderProgram
 {
 public:
-  BaseYUV2RGBGLSLShader(bool rect, unsigned flags, EShaderFormat format, bool stretch, std::shared_ptr<GLSLOutput> output);
+  BaseYUV2RGBGLSLShader(bool rect, EShaderFormat format, bool stretch,
+                        AVColorPrimaries dst, AVColorPrimaries src,
+                        std::shared_ptr<GLSLOutput> output);
   virtual ~BaseYUV2RGBGLSLShader();
 
   void SetField(int field) { m_field  = field; }
   void SetWidth(int w) { m_width  = w; }
   void SetHeight(int h) { m_height = h; }
 
-  void SetBlack(float black) { m_black    = black; }
+  void SetColParams(AVColorSpace colSpace, int bits, bool limited, int textureBits);
+  void SetBlack(float black) { m_black = black; }
   void SetContrast(float contrast) { m_contrast = contrast; }
   void SetNonLinStretch(float stretch) { m_stretch = stretch; }
 
@@ -55,7 +57,7 @@ public:
   GLint GetVertexLoc() { return m_hVertex; }
   GLint GetYcoordLoc() { return m_hYcoord; }
   GLint GetUcoordLoc() { return m_hUcoord; }
-  GLint GetVcoordLoc()  { return m_hVcoord; }
+  GLint GetVcoordLoc() { return m_hVcoord; }
 
   void SetMatrices(GLfloat *p, GLfloat *m) { m_proj = p; m_model = m; }
   void SetAlpha(GLfloat alpha)  { m_alpha = alpha; }
@@ -68,7 +70,6 @@ protected:
   void Free();
 
   bool m_convertFullRange;
-  unsigned m_flags;
   EShaderFormat m_format;
   int m_width;
   int m_height;
@@ -80,19 +81,23 @@ protected:
 
   GLfloat *m_proj = nullptr;
   GLfloat *m_model = nullptr;
-  GLfloat  m_alpha = 1.0f;
+  GLfloat m_alpha = 1.0f;
 
   std::string m_defines;
 
   std::shared_ptr<Shaders::GLSLOutput> m_glslOutput;
+  std::shared_ptr<CConvertMatrix> m_pConvMatrix;
 
   // pixel shader attribute handles
   GLint m_hYTex = -1;
   GLint m_hUTex = -1;
   GLint m_hVTex = -1;
-  GLint m_hMatrix = -1;
+  GLint m_hYuvMat = -1;
   GLint m_hStretch = -1;
   GLint m_hStep = -1;
+  GLint m_hGammaSrc = -1;
+  GLint m_hGammaDstInv = -1;
+  GLint m_hPrimMat = -1;
 
   // vertex shader attribute handles
   GLint m_hVertex = -1;
@@ -108,9 +113,9 @@ class YUV2RGBProgressiveShader : public BaseYUV2RGBGLSLShader
 {
 public:
   YUV2RGBProgressiveShader(bool rect,
-                           unsigned flags,
                            EShaderFormat format,
                            bool stretch,
+                           AVColorPrimaries dstPrimaries, AVColorPrimaries srcPrimaries,
                            std::shared_ptr<GLSLOutput> output);
 };
 
@@ -118,9 +123,9 @@ class YUV2RGBFilterShader4 : public BaseYUV2RGBGLSLShader
 {
 public:
   YUV2RGBFilterShader4(bool rect,
-                       unsigned flags,
                        EShaderFormat format,
                        bool stretch,
+                       AVColorPrimaries dstPrimaries, AVColorPrimaries srcPrimaries,
                        ESCALINGMETHOD method,
                        std::shared_ptr<GLSLOutput> output);
   ~YUV2RGBFilterShader4() override;

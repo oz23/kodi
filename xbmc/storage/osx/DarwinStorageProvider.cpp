@@ -1,6 +1,6 @@
 /*
  *      Copyright (C) 2005-2013 Team XBMC
- *      http://xbmc.org
+ *      http://kodi.tv
  *
  *  This Program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -34,6 +34,11 @@
 #include "platform/darwin/osx/CocoaInterface.h"
 
 bool CDarwinStorageProvider::m_event = false;
+
+IStorageProvider* IStorageProvider::CreateInstance()
+{
+  return new CDarwinStorageProvider();
+}
 
 CDarwinStorageProvider::CDarwinStorageProvider()
 {
@@ -176,9 +181,9 @@ std::vector<std::string> CDarwinStorageProvider::GetDiskUsage()
   char line[1024];
 
 #ifdef TARGET_DARWIN_IOS
-  FILE* pipe = popen("df -ht hfs", "r");
+  FILE* pipe = popen("df -ht hfs,apfs", "r");
 #else
-  FILE* pipe = popen("df -hT ufs,cd9660,hfs,udf", "r");
+  FILE* pipe = popen("df -HT ufs,cd9660,hfs,apfs,udf", "r");
 #endif
 
   if (pipe)

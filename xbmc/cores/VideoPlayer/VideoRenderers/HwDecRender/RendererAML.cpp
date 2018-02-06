@@ -27,7 +27,8 @@
 #include "utils/ScreenshotAML.h"
 #include "settings/MediaSettings.h"
 #include "cores/VideoPlayer/VideoRenderers/RenderCapture.h"
-#include "../RenderFactory.h"
+#include "cores/VideoPlayer/VideoRenderers/RenderFactory.h"
+#include "cores/VideoPlayer/VideoRenderers/RenderFlags.h"
 #include "settings/AdvancedSettings.h"
 
 CRendererAML::CRendererAML()
@@ -55,14 +56,16 @@ bool CRendererAML::Register()
   return true;
 }
 
-bool CRendererAML::Configure(const VideoPicture &picture, float fps, unsigned flags, unsigned int orientation)
+bool CRendererAML::Configure(const VideoPicture &picture, float fps, unsigned int orientation)
 {
   m_sourceWidth = picture.iWidth;
   m_sourceHeight = picture.iHeight;
   m_renderOrientation = orientation;
 
-  // Save the flags.
-  m_iFlags = flags;
+  m_iFlags = GetFlagsChromaPosition(picture.chroma_position) |
+             GetFlagsColorMatrix(picture.color_space, picture.iWidth, picture.iHeight) |
+             GetFlagsColorPrimaries(picture.color_primaries) |
+             GetFlagsStereoMode(picture.stereoMode);
 
   // Calculate the input frame aspect ratio.
   CalculateFrameAspectRatio(picture.iDisplayWidth, picture.iDisplayHeight);

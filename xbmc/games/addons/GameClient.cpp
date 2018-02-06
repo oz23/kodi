@@ -37,9 +37,10 @@
 #include "guilib/GUIWindowManager.h"
 #include "guilib/LocalizeStrings.h"
 #include "guilib/WindowIDs.h"
+#include "input/Action.h"
+#include "input/ActionIDs.h"
 #include "messaging/ApplicationMessenger.h"
 #include "messaging/helpers/DialogOKHelper.h"
-#include "profiles/ProfilesManager.h"
 #include "settings/Settings.h"
 #include "threads/SingleLock.h"
 #include "utils/log.h"
@@ -228,7 +229,8 @@ bool CGameClient::Initialize(void)
     CDirectory::Create(Profile());
 
   // Ensure directory exists for savestates
-  std::string savestatesDir = URIUtils::AddFileToFolder(CProfilesManager::GetInstance().GetSavestatesFolder(), ID());
+  const CGameServices &gameServices = CServiceBroker::GetGameServices();
+  std::string savestatesDir = URIUtils::AddFileToFolder(gameServices.GetSavestatesFolder(), ID());
   if (!CDirectory::Exists(savestatesDir))
     CDirectory::Create(savestatesDir);
 
@@ -462,10 +464,10 @@ std::string CGameClient::GetMissingResource()
 
   std::string strAddonId;
 
-  const ADDONDEPS& dependencies = GetDeps();
-  for (ADDONDEPS::const_iterator it = dependencies.begin(); it != dependencies.end(); ++it)
+  const auto& dependencies = GetDependencies();
+  for (auto it = dependencies.begin(); it != dependencies.end(); ++it)
   {
-    const std::string& strDependencyId = it->first;
+    const std::string& strDependencyId = it->id;
     if (StringUtils::StartsWith(strDependencyId, "resource.games"))
     {
       AddonPtr addon;

@@ -1,7 +1,7 @@
 #pragma once
 /*
  *      Copyright (C) 2012-2013 Team XBMC
- *      http://xbmc.org
+ *      http://kodi.tv
  *
  *  This Program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -19,11 +19,14 @@
  *
  */
 
-#include "pvr/epg/EpgSearchFilter.h"
+#include <memory>
+
 #include "pvr/windows/GUIWindowPVRBase.h"
 
 namespace PVR
 {
+  class CPVREpgSearchFilter;
+
   class CGUIWindowPVRSearchBase : public CGUIWindowPVRBase
   {
   public:
@@ -50,7 +53,7 @@ namespace PVR
     void OpenDialogSearch();
 
     bool m_bSearchConfirmed;
-    CPVREpgSearchFilter m_searchfilter;
+    std::unique_ptr<CPVREpgSearchFilter> m_searchfilter;
   };
 
   class CGUIWindowPVRTVSearch : public CGUIWindowPVRSearchBase

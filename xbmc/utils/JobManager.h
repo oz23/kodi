@@ -1,7 +1,7 @@
 #pragma once
 /*
  *      Copyright (C) 2005-2013 Team XBMC
- *      http://xbmc.org
+ *      http://kodi.tv
  *
  *  This Program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -322,6 +322,7 @@ public:
 protected:
   friend class CJobWorker;
   friend class CJob;
+  friend class CJobQueue;
 
   /*!
    \brief Get a new job to process. Blocks until a new job is available, or a timeout has occurred.

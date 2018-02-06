@@ -10,7 +10,7 @@
 
 /*
  *      Copyright (C) 2005-2013 Team XBMC
- *      http://xbmc.org
+ *      http://kodi.tv
  *
  *  This Program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -208,8 +208,7 @@ public:
   int RemoveThreadMessageByMessageIds(int *pMessageIDList);
   void AddMsgTarget( IMsgTargetCallback* pMsgTarget );
   int GetActiveWindow() const;
-  int GetActiveWindowID() const;
-  int GetFocusedWindow() const;
+  int GetActiveWindowOrDialog() const;
   bool HasModalDialog(const std::vector<DialogModalityType>& types = std::vector<DialogModalityType>(), bool ignoreClosing = true) const;
   bool HasVisibleModalDialog(const std::vector<DialogModalityType>& types = std::vector<DialogModalityType>()) const;
   bool IsDialogTopmost(int id, bool modal = false) const;

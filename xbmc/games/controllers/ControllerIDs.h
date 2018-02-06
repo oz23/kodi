@@ -21,4 +21,5 @@
 
 // Default controller IDs
 #define DEFAULT_CONTROLLER_ID    "game.controller.default"
+#define DEFAULT_KEYBOARD_ID      "game.controller.keyboard"
 #define DEFAULT_REMOTE_ID        "game.controller.remote"

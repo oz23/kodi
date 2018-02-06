@@ -1,7 +1,7 @@
 #pragma once
 /*
  *      Copyright (C) 2005-2013 Team XBMC
- *      http://xbmc.org
+ *      http://kodi.tv
  *
  *  This Program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -73,7 +73,7 @@ public:
   std::string Origin() const override { return m_addonInfo.Origin(); }
   uint64_t PackageSize() const override { return m_addonInfo.PackageSize(); }
   const InfoMap& ExtraInfo() const override { return m_addonInfo.ExtraInfo(); }
-  const ADDONDEPS& GetDeps() const override { return m_addonInfo.GetDeps(); }
+  const std::vector<DependencyInfo>& GetDependencies() const override { return m_addonInfo.GetDependencies(); }
 
   std::string FanArt() const override
   {

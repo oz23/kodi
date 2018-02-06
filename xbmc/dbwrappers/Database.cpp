@@ -1,6 +1,6 @@
 /*
  *      Copyright (C) 2005-2013 Team XBMC
- *      http://xbmc.org
+ *      http://kodi.tv
  *
  *  This Program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -29,8 +29,9 @@
 #include "sqlitedataset.h"
 #include "DatabaseManager.h"
 #include "DbUrl.h"
+#include "ServiceBroker.h"
 
-#ifdef HAS_MYSQL
+#if defined(HAS_MYSQL) || defined(HAS_MARIADB) 
 #include "mysqldataset.h"
 #endif
 
@@ -149,7 +150,8 @@ bool CDatabase::ExistsSubQuery::BuildSQL(std::string & strSQL)
   return true;
 }
 
-CDatabase::CDatabase(void)
+CDatabase::CDatabase() :
+  m_profileManager(CServiceBroker::GetProfileManager())
 {
   m_openCount = 0;
   m_sqlite = true;
@@ -363,7 +365,7 @@ bool CDatabase::Open(const DatabaseSettings &settings)
   }
 
   // check our database manager to see if this database can be opened
-  if (!CDatabaseManager::GetInstance().CanOpen(GetBaseDBName()))
+  if (!CServiceBroker::GetDatabaseManager().CanOpen(GetBaseDBName()))
     return false;
 
   DatabaseSettings dbSettings = settings;
@@ -378,7 +380,7 @@ void CDatabase::InitSettings(DatabaseSettings &dbSettings)
 {
   m_sqlite = true;
 
-#ifdef HAS_MYSQL
+#if defined(HAS_MYSQL) || defined(HAS_MARIADB)
   if (dbSettings.type == "mysql")
   {
     // check we have all information before we cancel the fallback
@@ -396,7 +398,7 @@ void CDatabase::InitSettings(DatabaseSettings &dbSettings)
   {
     dbSettings.type = "sqlite3";
     if (dbSettings.host.empty())
-      dbSettings.host = CSpecialProtocol::TranslatePath(CProfilesManager::GetInstance().GetDatabaseFolder());
+      dbSettings.host = CSpecialProtocol::TranslatePath(m_profileManager.GetDatabaseFolder());
   }
 
   // use separate, versioned database
@@ -421,7 +423,7 @@ bool CDatabase::Connect(const std::string &dbName, const DatabaseSettings &dbSet
   {
     m_pDB.reset( new SqliteDatabase() ) ;
   }
-#ifdef HAS_MYSQL
+#if defined(HAS_MYSQL) || defined(HAS_MARIADB)
   else if (dbSettings.type == "mysql")
   {
     m_pDB.reset( new MysqlDatabase() ) ;

@@ -1,6 +1,6 @@
 /*
  *      Copyright (C) 2012-2013 Team XBMC
- *      http://xbmc.org
+ *      http://kodi.tv
  *
  *  This Program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -215,7 +215,7 @@ bool CGUIWindowPVRBase::OnBack(int actionID)
   if (actionID == ACTION_NAV_BACK)
   {
     // don't call CGUIMediaWindow as it will attempt to go to the parent folder which we don't want.
-    if (GetPreviousWindow() != WINDOW_FULLSCREEN_LIVETV)
+    if (GetPreviousWindow() != WINDOW_FULLSCREEN_VIDEO)
     {
       g_windowManager.ActivateWindow(WINDOW_HOME);
       return true;

@@ -2,7 +2,7 @@
 
 /*
  *      Copyright (C) 2005-2013 Team XBMC
- *      http://xbmc.org
+ *      http://kodi.tv
  *
  *  This Program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -82,7 +82,7 @@ private:
    *  \param reactivate If true, reactivate info dialog when done
    *  \return True if okay was selected, false otherwise
    */
-  bool ShowDependencyList(const ADDON::ADDONDEPS& deps, bool reactivate);
+  bool ShowDependencyList(const std::vector<ADDON::DependencyInfo>& deps, bool reactivate);
 
   CFileItemPtr m_item;
   ADDON::AddonPtr m_localAddon;

@@ -1,7 +1,7 @@
 /*
  *      Copyright (c) 2007 d4rk
  *      Copyright (C) 2007-2013 Team XBMC
- *      http://xbmc.org
+ *      http://kodi.tv
  *
  *  This Program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -23,9 +23,9 @@
 #include "../RenderFlags.h"
 #include "YUV2RGBShaderGL.h"
 #include "YUVMatrix.h"
+#include "ConversionMatrix.h"
 #include "ConvolutionKernels.h"
 #include "settings/AdvancedSettings.h"
-#include "guilib/TransformMatrix.h"
 #include "utils/log.h"
 #include "utils/GLUtils.h"
 
@@ -34,37 +34,17 @@
 
 using namespace Shaders;
 
-static void CalculateYUVMatrixGL(GLfloat      res[4][4]
-                               , unsigned int flags
-                               , EShaderFormat format
-                               , float        black
-                               , float        contrast
-                               , bool         limited)
-{
-  TransformMatrix matrix;
-  CalculateYUVMatrix(matrix, flags, format, black, contrast, limited);
-
-  for(int row = 0; row < 3; row++)
-    for(int col = 0; col < 4; col++)
-      res[col][row] = matrix.m[row][col];
-
-  res[0][3] = 0.0f;
-  res[1][3] = 0.0f;
-  res[2][3] = 0.0f;
-  res[3][3] = 1.0f;
-}
-
 //////////////////////////////////////////////////////////////////////
 // BaseYUV2RGBGLSLShader - base class for GLSL YUV2RGB shaders
 //////////////////////////////////////////////////////////////////////
 
-BaseYUV2RGBGLSLShader::BaseYUV2RGBGLSLShader(bool rect, unsigned flags, EShaderFormat format, bool stretch,
+BaseYUV2RGBGLSLShader::BaseYUV2RGBGLSLShader(bool rect, EShaderFormat format, bool stretch,
+                                             AVColorPrimaries dstPrimaries, AVColorPrimaries srcPrimaries,
                                              std::shared_ptr<GLSLOutput> output)
 {
   m_width = 1;
   m_height = 1;
   m_field = 0;
-  m_flags = flags;
   m_format = format;
   m_black = 0.0f;
   m_contrast = 1.0f;
@@ -72,16 +52,17 @@ BaseYUV2RGBGLSLShader::BaseYUV2RGBGLSLShader(bool rect, unsigned flags, EShaderF
 
   // get defines from the output stage if used
   m_glslOutput = output;
-  if (m_glslOutput) {
+  if (m_glslOutput)
+  {
     m_defines += m_glslOutput->GetDefines();
   }
 
-  if(rect)
+  if (rect)
     m_defines += "#define XBMC_texture_rectangle 1\n";
   else
     m_defines += "#define XBMC_texture_rectangle 0\n";
 
-  if(g_advancedSettings.m_GLRectangleHack)
+  if (g_advancedSettings.m_GLRectangleHack)
     m_defines += "#define XBMC_texture_rectangle_hack 1\n";
   else
     m_defines += "#define XBMC_texture_rectangle_hack 0\n";
@@ -110,9 +91,17 @@ BaseYUV2RGBGLSLShader::BaseYUV2RGBGLSLShader(bool rect, unsigned flags, EShaderF
   else
     CLog::Log(LOGERROR, "GL: BaseYUV2RGBGLSLShader - unsupported format %d", m_format);
 
+  if (dstPrimaries != srcPrimaries)
+  {
+    m_defines += "#define XBMC_COL_CONVERSION\n";
+  }
+
   VertexShader()->LoadSource("gl_yuv2rgb_vertex.glsl", m_defines);
 
   CLog::Log(LOGDEBUG, "GL: BaseYUV2RGBGLSLShader: defines:\n%s", m_defines.c_str());
+
+  m_pConvMatrix.reset(new CConvertMatrix());
+  m_pConvMatrix->SetColPrimaries(dstPrimaries, srcPrimaries);
 }
 
 BaseYUV2RGBGLSLShader::~BaseYUV2RGBGLSLShader()
@@ -126,7 +115,7 @@ void BaseYUV2RGBGLSLShader::OnCompiledAndLinked()
   m_hYTex = glGetUniformLocation(ProgramHandle(), "m_sampY");
   m_hUTex = glGetUniformLocation(ProgramHandle(), "m_sampU");
   m_hVTex = glGetUniformLocation(ProgramHandle(), "m_sampV");
-  m_hMatrix = glGetUniformLocation(ProgramHandle(), "m_yuvmat");
+  m_hYuvMat = glGetUniformLocation(ProgramHandle(), "m_yuvmat");
   m_hStretch = glGetUniformLocation(ProgramHandle(), "m_stretch");
   m_hStep = glGetUniformLocation(ProgramHandle(), "m_step");
   m_hVertex = glGetAttribLocation(ProgramHandle(), "m_attrpos");
@@ -136,6 +125,9 @@ void BaseYUV2RGBGLSLShader::OnCompiledAndLinked()
   m_hProj = glGetUniformLocation(ProgramHandle(), "m_proj");
   m_hModel = glGetUniformLocation(ProgramHandle(), "m_model");
   m_hAlpha = glGetUniformLocation(ProgramHandle(), "m_alpha");
+  m_hPrimMat = glGetUniformLocation(ProgramHandle(), "m_primMat");
+  m_hGammaSrc = glGetUniformLocation(ProgramHandle(), "m_gammaSrc");
+  m_hGammaDstInv = glGetUniformLocation(ProgramHandle(), "m_gammaDstInv");
   VerifyGLState();
 
   if (m_glslOutput)
@@ -151,14 +143,22 @@ bool BaseYUV2RGBGLSLShader::OnEnabled()
   glUniform1f(m_hStretch, m_stretch);
   glUniform2f(m_hStep, 1.0 / m_width, 1.0 / m_height);
 
-  GLfloat matrix[4][4];
-  // keep video levels
-  CalculateYUVMatrixGL(matrix, m_flags, m_format, m_black, m_contrast, !m_convertFullRange);
+  GLfloat yuvMat[4][4];
+  m_pConvMatrix->SetParams(m_contrast, m_black, !m_convertFullRange);
+  m_pConvMatrix->GetYuvMat(yuvMat);
 
-  glUniformMatrix4fv(m_hMatrix, 1, GL_FALSE, (GLfloat*)matrix);
+  glUniformMatrix4fv(m_hYuvMat, 1, GL_FALSE, (GLfloat*)yuvMat);
   glUniformMatrix4fv(m_hProj, 1, GL_FALSE, m_proj);
   glUniformMatrix4fv(m_hModel, 1, GL_FALSE, m_model);
   glUniform1f(m_hAlpha, m_alpha);
+
+  GLfloat primMat[3][3];
+  if (m_pConvMatrix->GetPrimMat(primMat))
+  {
+    glUniformMatrix3fv(m_hPrimMat, 1, GL_FALSE, (GLfloat*)primMat);
+    glUniform1f(m_hGammaSrc, m_pConvMatrix->GetGammaSrc());
+    glUniform1f(m_hGammaDstInv, 1/m_pConvMatrix->GetGammaDst());
+  }
 
   VerifyGLState();
   if (m_glslOutput)
@@ -178,14 +178,28 @@ void BaseYUV2RGBGLSLShader::Free()
     m_glslOutput->Free();
 }
 
+void BaseYUV2RGBGLSLShader::SetColParams(AVColorSpace colSpace, int bits, bool limited,
+                                        int textureBits)
+{
+  if (colSpace == AVCOL_SPC_UNSPECIFIED)
+  {
+    if (m_width > 1024 || m_height >= 600)
+      colSpace = AVCOL_SPC_BT709;
+    else
+      colSpace = AVCOL_SPC_BT470BG;
+  }
+  m_pConvMatrix->SetColParams(colSpace, bits, limited, textureBits);
+}
+
 //////////////////////////////////////////////////////////////////////
 // YUV2RGBProgressiveShader - YUV2RGB with no deinterlacing
 // Use for weave deinterlacing / progressive
 //////////////////////////////////////////////////////////////////////
 
-YUV2RGBProgressiveShader::YUV2RGBProgressiveShader(bool rect, unsigned flags, EShaderFormat format, bool stretch,
+YUV2RGBProgressiveShader::YUV2RGBProgressiveShader(bool rect, EShaderFormat format, bool stretch,
+                                                   AVColorPrimaries dstPrimaries, AVColorPrimaries srcPrimaries,
                                                    std::shared_ptr<GLSLOutput> output)
-  : BaseYUV2RGBGLSLShader(rect, flags, format, stretch, output)
+  : BaseYUV2RGBGLSLShader(rect, format, stretch, dstPrimaries, srcPrimaries, output)
 {
   PixelShader()->LoadSource("gl_yuv2rgb_basic.glsl", m_defines);
   PixelShader()->AppendSource("gl_output.glsl");
@@ -195,12 +209,13 @@ YUV2RGBProgressiveShader::YUV2RGBProgressiveShader(bool rect, unsigned flags, ES
 // YUV2RGBFilterShader4
 //------------------------------------------------------------------------------
 
-YUV2RGBFilterShader4::YUV2RGBFilterShader4(bool rect, unsigned flags,
+YUV2RGBFilterShader4::YUV2RGBFilterShader4(bool rect,
                                            EShaderFormat format,
                                            bool stretch,
+                                           AVColorPrimaries dstPrimaries, AVColorPrimaries srcPrimaries,
                                            ESCALINGMETHOD method,
                                            std::shared_ptr<GLSLOutput> output)
-: BaseYUV2RGBGLSLShader(rect, flags, format, stretch, output)
+: BaseYUV2RGBGLSLShader(rect, format, stretch, dstPrimaries, srcPrimaries, output)
 {
   m_scaling = method;
   PixelShader()->LoadSource("gl_yuv2rgb_filter4.glsl", m_defines);
