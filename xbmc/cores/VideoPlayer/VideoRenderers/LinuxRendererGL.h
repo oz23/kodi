@@ -37,6 +37,10 @@
 #include "threads/Event.h"
 #include "VideoShaders/ShaderFormats.h"
 
+extern "C" {
+#include "libavutil/mastering_display_metadata.h"
+}
+
 class CRenderCapture;
 class CRenderSystemGL;
 
@@ -50,20 +54,6 @@ struct DRAWRECT
   float top;
   float right;
   float bottom;
-};
-
-struct YUVRANGE
-{
-  int y_min, y_max;
-  int u_min, u_max;
-  int v_min, v_max;
-};
-
-struct YUVCOEF
-{
-  float r_up, r_vp;
-  float g_up, g_vp;
-  float b_up, b_vp;
 };
 
 enum RenderMethod
@@ -196,10 +186,10 @@ protected:
     unsigned pixpertex_y;
   };
 
-  struct YUVBUFFER
+  struct CPictureBuffer
   {
-    YUVBUFFER();
-   ~YUVBUFFER();
+    CPictureBuffer();
+   ~CPictureBuffer();
 
     YUVPLANE fields[MAX_FIELDS][YuvImage::MAX_PLANES];
     YuvImage image;
@@ -213,11 +203,16 @@ protected:
     int m_srcBits = 8;
     int m_srcTextureBits = 8;
     bool m_srcFullRange;
+
+    bool hasDisplayMetadata = false;
+    AVMasteringDisplayMetadata displayMetadata;
+    bool hasLightMetadata = false;
+    AVContentLightMetadata lightMetadata;
   };
 
   // YV12 decoder textures
   // field index 0 is full image, 1 is odd scanlines, 2 is even scanlines
-  YUVBUFFER m_buffers[NUM_BUFFERS];
+  CPictureBuffer m_buffers[NUM_BUFFERS];
 
   void LoadPlane(YUVPLANE& plane, int type,
                  unsigned width,  unsigned height,
@@ -233,12 +228,13 @@ protected:
   unsigned int m_ditherDepth;
   bool m_fullRange;
   AVColorPrimaries m_srcPrimaries;
+  bool m_toneMap = false;
 
   // clear colour for "black" bars
   float m_clearColour;
 
-  void BindPbo(YUVBUFFER& buff);
-  void UnBindPbo(YUVBUFFER& buff);
+  void BindPbo(CPictureBuffer& buff);
+  void UnBindPbo(CPictureBuffer& buff);
   bool m_pboSupported;
   bool m_pboUsed;
 
