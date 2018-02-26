@@ -17,7 +17,6 @@
  *  <http://www.gnu.org/licenses/>.
  *
  */
-#include "system.h"
 
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
@@ -34,7 +33,7 @@
 #include "VideoSyncDRM.h"
 
 #include "cores/RetroPlayer/process/X11/RPProcessInfoX11.h"
-#include "cores/RetroPlayer/rendering/VideoRenderers/RPRendererGuiTexture.h"
+#include "cores/RetroPlayer/rendering/VideoRenderers/RPRendererOpenGL.h"
 #include "cores/VideoPlayer/DVDCodecs/DVDFactoryCodec.h"
 #include "cores/VideoPlayer/Process/X11/ProcessInfoX11.h"
 #include "cores/VideoPlayer/VideoRenderers/LinuxRendererGL.h"
@@ -104,7 +103,7 @@ void CWinSystemX11GLContext::SetVSyncImpl(bool enable)
   m_pGLContext->SetVSync(enable);
 }
 
-bool CWinSystemX11GLContext::IsExtSupported(const char* extension)
+bool CWinSystemX11GLContext::IsExtSupported(const char* extension) const
 {
   if(strncmp(extension, m_pGLContext->ExtPrefix().c_str(), 4) != 0)
     return CRenderSystemGL::IsExtSupported(extension);
@@ -257,7 +256,7 @@ bool CWinSystemX11GLContext::RefreshGLContext(bool force)
 
   VIDEOPLAYER::CProcessInfoX11::Register();
   RETRO::CRPProcessInfoX11::Register();
-  RETRO::CRPProcessInfoX11::RegisterRendererFactory(new RETRO::CRendererFactoryGuiTexture);
+  RETRO::CRPProcessInfoX11::RegisterRendererFactory(new RETRO::CRendererFactoryOpenGL);
   CDVDFactoryCodec::ClearHWAccels();
   VIDEOPLAYER::CRendererFactory::ClearRenderer();
   CLinuxRendererGL::Register();

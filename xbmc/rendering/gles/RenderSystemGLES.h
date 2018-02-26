@@ -20,7 +20,6 @@
 
 #pragma once
 
-#include "system.h"
 #include "system_gl.h"
 #include "rendering/RenderSystem.h"
 #include "GLESShader.h"
@@ -55,7 +54,7 @@ public:
   bool EndRender() override;
   void PresentRender(bool rendered, bool videoLayer) override;
   bool ClearBuffers(color_t color) override;
-  bool IsExtSupported(const char* extension) override;
+  bool IsExtSupported(const char* extension) const override;
 
   void SetVSync(bool vsync);
   void ResetVSync() { m_bVsyncInit = false; }

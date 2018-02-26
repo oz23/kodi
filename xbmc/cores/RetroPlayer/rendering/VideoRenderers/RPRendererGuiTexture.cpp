@@ -34,14 +34,19 @@ using namespace RETRO;
 
 #define BUFFER_OFFSET(i) (static_cast<char*>(NULL) + (i))
 
-// --- CRendererFactoryGuiTexture ------------------------------------------------
+// --- CRendererFactoryGuiTexture ----------------------------------------------
+
+std::string CRendererFactoryGuiTexture::RenderSystemName() const
+{
+  return "GUITexture";
+}
 
 CRPBaseRenderer *CRendererFactoryGuiTexture::CreateRenderer(const CRenderSettings &settings, CRenderContext &context, std::shared_ptr<IRenderBufferPool> bufferPool)
 {
   return new CRPRendererGuiTexture(settings, context, std::move(bufferPool));
 }
 
-RenderBufferPoolVector CRendererFactoryGuiTexture::CreateBufferPools()
+RenderBufferPoolVector CRendererFactoryGuiTexture::CreateBufferPools(CRenderContext &context)
 {
   return {
 #if !defined(HAS_DX)

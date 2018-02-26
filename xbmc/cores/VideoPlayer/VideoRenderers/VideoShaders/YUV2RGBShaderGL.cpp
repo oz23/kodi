@@ -19,7 +19,6 @@
  *
  */
 
-#include "system.h"
 #include "../RenderFlags.h"
 #include "YUV2RGBShaderGL.h"
 #include "YUVMatrix.h"
@@ -178,7 +177,7 @@ bool BaseYUV2RGBGLSLShader::OnEnabled()
       param = log10(100) / log10(m_displayMetadata.max_luminance.num/m_displayMetadata.max_luminance.den);
 
     float coefs[3];
-    m_pConvMatrix->GetRGBYuvCoefs(AVColorSpace::AVCOL_SPC_BT709, coefs);
+    CConvertMatrix::GetRGBYuvCoefs(AVColorSpace::AVCOL_SPC_BT709, coefs);
     glUniform3f(m_hCoefsDst, coefs[0], coefs[1], coefs[2]);
     glUniform1f(m_hToneP1, param);
   }

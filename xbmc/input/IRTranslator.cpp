@@ -26,7 +26,6 @@
 #include "utils/StringUtils.h"
 #include "utils/URIUtils.h"
 #include "utils/XBMCTinyXML.h"
-#include "system.h"
 
 #include <stdlib.h>
 #include <vector>
@@ -38,6 +37,9 @@ CIRTranslator::CIRTranslator(const CProfilesManager &profileManager) :
 
 void CIRTranslator::Load(const std::string &irMapName)
 {
+  if (irMapName.empty())
+    return;
+
   Clear();
 
   bool success = false;

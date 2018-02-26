@@ -21,7 +21,6 @@
 #include <limits.h>
 
 #include "threads/SystemClock.h"
-#include "system.h"
 #include "SystemInfo.h"
 #ifndef TARGET_POSIX
 #include <conio.h>
@@ -52,10 +51,7 @@ using namespace Windows::Security::ExchangeActiveSyncProvisioning;
 using namespace Windows::System;
 using namespace Windows::System::Profile;
 #endif
-#ifndef WIN32_LEAN_AND_MEAN
-#define WIN32_LEAN_AND_MEAN 1
-#endif // WIN32_LEAN_AND_MEAN
-#include <Windows.h>
+#include <wincrypt.h>
 #include "platform/win32/CharsetConverter.h"
 #endif
 #if defined(TARGET_DARWIN)
@@ -828,17 +824,6 @@ bool CSysInfo::IsAeroDisabled()
   HRESULT res = DwmIsCompositionEnabled(&aeroEnabled);
   if (SUCCEEDED(res))
     return !aeroEnabled;
-#endif
-  return false;
-}
-
-bool CSysInfo::HasHW3DInterlaced()
-{
-#if defined(TARGET_ANDROID)
-#if defined(HAS_LIBAMCODEC)
-  if (aml_hw3d_present())
-    return true;
-#endif
 #endif
   return false;
 }

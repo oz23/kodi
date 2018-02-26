@@ -25,17 +25,19 @@
 #include "input/touch/generic/GenericTouchInputHandler.h"
 #include "input/Action.h"
 #include "input/ActionIDs.h"
+#include "interfaces/AnnouncementManager.h"
 #include "messaging/ApplicationMessenger.h"
+#include "platform/win10/input/RemoteControlXbox.h"
 #include "rendering/dx/DeviceResources.h"
+#include "platform/win10/AsyncHelpers.h"
 #include "rendering/dx/RenderContext.h"
 #include "utils/log.h"
 #include "utils/SystemInfo.h"
+#include "utils/Variant.h"
 #include "windowing/windows/WinKeyMap.h"
 #include "xbmc/GUIUserMessages.h"
 #include "WinEventsWin10.h"
 
-using namespace PERIPHERALS;
-using namespace KODI::MESSAGING;
 using namespace Windows::Devices::Input;
 using namespace Windows::Foundation;
 using namespace Windows::Graphics::Display;
@@ -43,6 +45,10 @@ using namespace Windows::Media;
 using namespace Windows::System;
 using namespace Windows::UI::Core;
 using namespace Windows::UI::Input;
+
+using namespace ANNOUNCEMENT;
+using namespace PERIPHERALS;
+using namespace KODI::MESSAGING;
 
 static Point GetScreenPoint(Point point)
 {
@@ -103,6 +109,21 @@ void CWinEventsWin10::InitEventHandlers(CoreWindow^ window)
   window->SizeChanged += ref new TypedEventHandler<CoreWindow^, WindowSizeChangedEventArgs^>([&](CoreWindow^ wnd, WindowSizeChangedEventArgs^ args) {
     OnWindowSizeChanged(wnd, args);
   });
+#if defined(NTDDI_WIN10_RS2) && (NTDDI_VERSION >= NTDDI_WIN10_RS2)
+  try
+  {
+    window->ResizeStarted += ref new TypedEventHandler<CoreWindow^, Platform::Object^>([&](CoreWindow^ wnd, Platform::Object^ args) {
+      OnWindowResizeStarted(wnd, args);
+    });
+    window->ResizeCompleted += ref new TypedEventHandler<CoreWindow^, Platform::Object^>([&](CoreWindow^ wnd, Platform::Object^ args) {
+      OnWindowResizeCompleted(wnd, args);
+    });
+  } 
+  catch (Platform::Exception^ ex)
+  {
+    // Win10 Creators Update is required
+  }
+#endif
   window->Closed += ref new TypedEventHandler<CoreWindow^, CoreWindowEventArgs^>([&](CoreWindow^ wnd, CoreWindowEventArgs^ args) {
     OnWindowClosed(wnd, args);
   });
@@ -136,6 +157,7 @@ void CWinEventsWin10::InitEventHandlers(CoreWindow^ window)
   // system
   SystemNavigationManager^ sysNavManager = SystemNavigationManager::GetForCurrentView();
   sysNavManager->BackRequested += ref new EventHandler<BackRequestedEventArgs^>(CWinEventsWin10::OnBackRequested);
+
   // requirement for backgroup playback
   m_smtc = SystemMediaTransportControls::GetForCurrentView();
   if (m_smtc)
@@ -143,9 +165,20 @@ void CWinEventsWin10::InitEventHandlers(CoreWindow^ window)
     m_smtc->IsPlayEnabled = true;
     m_smtc->IsPauseEnabled = true;
     m_smtc->IsStopEnabled = true;
-    m_smtc->ButtonPressed += ref new TypedEventHandler<SystemMediaTransportControls^, SystemMediaTransportControlsButtonPressedEventArgs^>
-      (CWinEventsWin10::OnSystemMediaButtonPressed);
+    m_smtc->IsRecordEnabled = true;
+    m_smtc->IsNextEnabled = true;
+    m_smtc->IsPreviousEnabled = true;
+    m_smtc->IsFastForwardEnabled = true;
+    m_smtc->IsRewindEnabled = true;
+    m_smtc->IsChannelUpEnabled = true;
+    m_smtc->IsChannelDownEnabled = true;
+    if (CSysInfo::GetWindowsDeviceFamily() != CSysInfo::WindowsDeviceFamily::Xbox)
+    {
+      m_smtc->ButtonPressed += ref new TypedEventHandler<SystemMediaTransportControls^, SystemMediaTransportControlsButtonPressedEventArgs^>
+                               (CWinEventsWin10::OnSystemMediaButtonPressed);
+    }
     m_smtc->IsEnabled = true;
+    CAnnouncementManager::GetInstance().AddAnnouncer(this);
   }
 }
 
@@ -174,8 +207,51 @@ void CWinEventsWin10::UpdateWindowSize()
 // Window event handlers.
 void CWinEventsWin10::OnWindowSizeChanged(CoreWindow^ sender, WindowSizeChangedEventArgs^ args)
 {
-  DX::Windowing().OnResize(args->Size.Width, args->Size.Height);
-  UpdateWindowSize();
+  CLog::Log(LOGDEBUG, __FUNCTION__": window size changed.");
+  m_logicalWidth = args->Size.Width;
+  m_logicalHeight = args->Size.Height;
+  m_bResized = true;
+
+  if (m_sizeChanging)
+    return;
+
+  HandleWindowSizeChanged();
+}
+
+void CWinEventsWin10::OnWindowResizeStarted(Windows::UI::Core::CoreWindow^ sender, Platform::Object ^ args)
+{
+  CLog::Log(LOGDEBUG, __FUNCTION__": window resize started.");
+  m_logicalPosX = sender->Bounds.X;
+  m_logicalPosY = sender->Bounds.Y;
+  m_sizeChanging = true;
+}
+
+void CWinEventsWin10::OnWindowResizeCompleted(Windows::UI::Core::CoreWindow^ sender, Platform::Object ^ args)
+{
+  CLog::Log(LOGDEBUG, __FUNCTION__": window resize completed.");
+  m_sizeChanging = false;
+
+  if (m_logicalPosX != sender->Bounds.X || m_logicalPosY != sender->Bounds.Y)
+    m_bMoved = true;
+
+  HandleWindowSizeChanged();
+}
+
+void CWinEventsWin10::HandleWindowSizeChanged()
+{
+  CLog::Log(LOGDEBUG, __FUNCTION__": window size/move handled.");
+  if (m_bMoved)
+  {
+    // it will get position from CoreWindow
+    DX::Windowing().OnMove(0, 0);
+  }
+  if (m_bResized)
+  {
+    DX::Windowing().OnResize(m_logicalWidth, m_logicalHeight);
+    UpdateWindowSize();
+  }
+  m_bResized = false;
+  m_bMoved = false;
 }
 
 void CWinEventsWin10::OnVisibilityChanged(CoreWindow^ sender, VisibilityChangedEventArgs^ args)
@@ -383,6 +459,10 @@ void CWinEventsWin10::OnAcceleratorKeyActivated(CoreDispatcher^ sender, Accelera
   static auto lockedState = CoreVirtualKeyStates::Locked;
   static VirtualKey keyStore = VirtualKey::None;
 
+  if ( CSysInfo::GetWindowsDeviceFamily() == CSysInfo::WindowsDeviceFamily::Xbox 
+    && CRemoteControlXbox::IsRemoteControlId(args->DeviceId->Data()))
+    return;
+
   bool isDown = false;
   unsigned keyCode = 0;
   unsigned vk = static_cast<unsigned>(args->VirtualKey);
@@ -466,14 +546,14 @@ void CWinEventsWin10::OnOrientationChanged(DisplayInformation^ sender, Platform:
 
 void CWinEventsWin10::OnDisplayContentsInvalidated(DisplayInformation^ sender, Platform::Object^ args)
 {
-  //critical_section::scoped_lock lock(m_deviceResources->GetCriticalSection());
+  CLog::Log(LOGDEBUG, __FUNCTION__": onevent.");
   DX::DeviceResources::Get()->ValidateDevice();
 }
 
 void CWinEventsWin10::OnBackRequested(Platform::Object^ sender, Windows::UI::Core::BackRequestedEventArgs^ args)
 {
   // handle this only on windows mobile
-  if (CSysInfo::GetWindowsDeviceFamily() == CSysInfo::Mobile)
+  if (CSysInfo::GetWindowsDeviceFamily() == CSysInfo::WindowsDeviceFamily::Mobile)
   {
     CApplicationMessenger::GetInstance().PostMsg(TMSG_GUI_ACTION, WINDOW_INVALID, -1, static_cast<void*>(new CAction(ACTION_NAV_BACK)));
   }
@@ -519,5 +599,53 @@ void CWinEventsWin10::OnSystemMediaButtonPressed(SystemMediaTransportControls^ s
   if (action != ACTION_NONE)
   {
     CApplicationMessenger::GetInstance().PostMsg(TMSG_GUI_ACTION, WINDOW_INVALID, -1, static_cast<void*>(new CAction(action)));
+  }
+}
+
+void CWinEventsWin10::Announce(AnnouncementFlag flag, const char * sender, const char * message, const CVariant & data)
+{
+  if (flag & AnnouncementFlag::Player)
+  {
+    double speed = 1.0;
+    if (data.isMember("player") && data["player"].isMember("speed"))
+      speed = data["player"]["speed"].asDouble(1.0);
+
+    bool changed = false;
+    MediaPlaybackStatus status = MediaPlaybackStatus::Changing;
+
+    if (strcmp(message, "OnPlay") == 0)
+    {
+      changed = true;
+      status = MediaPlaybackStatus::Playing;
+    }
+    else if (strcmp(message, "OnStop") == 0)
+    {
+      changed = true;
+      status = MediaPlaybackStatus::Stopped;
+    }
+    else if (strcmp(message, "OnPause") == 0)
+    {
+      changed = true;
+      status = MediaPlaybackStatus::Paused;
+    }
+    else if (strcmp(message, "OnSpeedChanged") == 0)
+    {
+      changed = true;
+      status = speed != 0.0 ? MediaPlaybackStatus::Playing : MediaPlaybackStatus::Paused;
+    }
+
+    if (changed)
+    {
+      auto dispatcher = Windows::ApplicationModel::Core::CoreApplication::MainView->Dispatcher;
+      dispatcher->RunAsync(CoreDispatcherPriority::Normal, ref new DispatchedHandler([status, speed]
+      {
+        auto smtc = SystemMediaTransportControls::GetForCurrentView();
+        if (!smtc)
+          return;
+
+        smtc->PlaybackStatus = status;
+        smtc->PlaybackRate = speed;
+      }));
+    }
   }
 }

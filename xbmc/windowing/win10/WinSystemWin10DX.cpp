@@ -32,11 +32,7 @@
 
 std::unique_ptr<CWinSystemBase> CWinSystemBase::CreateWinSystem()
 {
-  auto winSysDX = new CWinSystemWin10DX();
-  winSysDX->SetCoreWindow(DX::CoreWindowHolder::Get()->GetWindow());
-
-  std::unique_ptr<CWinSystemBase> winSystem(winSysDX);
-  return winSystem;
+  return std::make_unique<CWinSystemWin10DX>();
 }
 
 CWinSystemWin10DX::CWinSystemWin10DX() : CRenderSystemDX()
@@ -78,6 +74,7 @@ bool CWinSystemWin10DX::CreateNewWindow(const std::string& name, bool fullScreen
   {
     CGenericTouchInputHandler::GetInstance().RegisterHandler(&CGenericTouchActionHandler::GetInstance());
     CGenericTouchInputHandler::GetInstance().SetScreenDPI(DX::DisplayMetrics::Dpi100);
+    ChangeResolution(res, true);
   }
   return created;
 }
@@ -126,6 +123,7 @@ bool CWinSystemWin10DX::ResizeWindow(int newWidth, int newHeight, int newLeft, i
 
 void CWinSystemWin10DX::OnMove(int x, int y)
 {
+  m_deviceResources->SetWindowPos(m_coreWindow->Bounds);
 }
 
 bool CWinSystemWin10DX::DPIChanged(WORD dpi, RECT windowRect) const
@@ -159,6 +157,9 @@ bool CWinSystemWin10DX::IsStereoEnabled()
 
 void CWinSystemWin10DX::OnResize(int width, int height)
 {
+  if (!m_deviceResources)
+    return;
+
   if (!m_IsAlteringWindow)
     ReleaseBackBuffer();
 

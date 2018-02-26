@@ -1,3 +1,12 @@
+# Minimum SDK version we support
+set(VS_MINIMUM_SDK_VERSION 10.0.14393.0)
+
+if(CMAKE_VS_WINDOWS_TARGET_PLATFORM_VERSION VERSION_LESS VS_MINIMUM_SDK_VERSION)
+  message(FATAL_ERROR "Detected Windows SDK version is ${CMAKE_VS_WINDOWS_TARGET_PLATFORM_VERSION}.\n"
+    "Windows SDK ${VS_MINIMUM_SDK_VERSION} or higher is required.\n"
+    "INFO: Windows SDKs can be installed from the Visual Studio installer.")
+endif()
+
 # -------- Architecture settings ---------
 
 check_symbol_exists(_X86_ "Windows.h" _X86_)
@@ -58,7 +67,7 @@ set(ARCH_DEFINES -D_WINDOWS -DTARGET_WINDOWS -DTARGET_WINDOWS_STORE -DXBMC_EXPOR
 if(NOT SDK_TARGET_ARCH STREQUAL arm)
   list(APPEND ARCH_DEFINES -D__SSE__ -D__SSE2__)
 endif()
-set(SYSTEM_DEFINES -DNOMINMAX -DHAS_DX -D__STDC_CONSTANT_MACROS
+set(SYSTEM_DEFINES -DWIN32_LEAN_AND_MEAN -DNOMINMAX -DHAS_DX -D__STDC_CONSTANT_MACROS
                    -DFMT_HEADER_ONLY -DTAGLIB_STATIC -DNPT_CONFIG_ENABLE_LOGGING
                    -DPLT_HTTP_DEFAULT_USER_AGENT="UPnP/1.0 DLNADOC/1.50 Kodi"
                    -DPLT_HTTP_DEFAULT_SERVER="UPnP/1.0 DLNADOC/1.50 Kodi"
@@ -102,9 +111,6 @@ set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /Zi")
 set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} /DEBUG /OPT:REF")
 # remove warning
 set(CMAKE_STATIC_LINKER_FLAGS "${CMAKE_STATIC_LINKER_FLAGS} /ignore:4264")
-
-# Minimum SDK version we support
-set(VS_MINIMUM_SDK_VERSION 10.0.14393.0)
 
 
 # -------- Visual Studio options ---------
