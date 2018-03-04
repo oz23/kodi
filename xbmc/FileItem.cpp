@@ -1506,6 +1506,12 @@ bool CFileItem::IsSamePath(const CFileItem *item) const
       return (item->GetProperty("item_start") == GetProperty("item_start"));
     return true;
   }
+  if (HasMusicInfoTag() && item->HasMusicInfoTag())
+  {
+    if (GetMusicInfoTag()->GetDatabaseId() != -1 && item->GetMusicInfoTag()->GetDatabaseId() != -1)
+      return ((GetMusicInfoTag()->GetDatabaseId() == item->GetMusicInfoTag()->GetDatabaseId()) &&
+        (GetMusicInfoTag()->GetType() == item->GetMusicInfoTag()->GetType()));
+  }
   if (HasVideoInfoTag() && item->HasVideoInfoTag())
   {
     if (GetVideoInfoTag()->m_iDbId != -1 && item->GetVideoInfoTag()->m_iDbId != -1)
@@ -1600,8 +1606,8 @@ void CFileItem::UpdateInfo(const CFileItem &item, bool replaceLabels /*=true*/)
     SetLabel(item.GetLabel());
   if (replaceLabels && !item.GetLabel2().empty())
     SetLabel2(item.GetLabel2());
-  if (!item.GetArt("thumb").empty())
-    SetArt("thumb", item.GetArt("thumb"));
+  if (!item.GetArt().empty())
+    SetArt(item.GetArt());
   if (!item.GetIconImage().empty())
     SetIconImage(item.GetIconImage());
   AppendProperties(item);

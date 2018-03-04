@@ -179,6 +179,7 @@ void CAdvancedSettings::Initialize()
   m_songInfoDuration = 10;
 
   m_cddbAddress = "freedb.freedb.org";
+  m_addSourceOnTop = false;
 
   m_handleMounting = g_application.IsStandAlone();
 
@@ -837,6 +838,7 @@ void CAdvancedSettings::ParseSettingsFile(const std::string &file)
   }
 
   XMLUtils::GetString(pRootElement, "cddbaddress", m_cddbAddress);
+  XMLUtils::GetBoolean(pRootElement, "addsourceontop", m_addSourceOnTop);
 
   //airtunes + airplay
   XMLUtils::GetInt(pRootElement,     "airtunesport", m_airTunesPort);
@@ -1005,8 +1007,8 @@ void CAdvancedSettings::ParseSettingsFile(const std::string &file)
 
   XMLUtils::GetInt(pRootElement, "remotedelay", m_remoteDelay, 0, 20);
   XMLUtils::GetFloat(pRootElement, "controllerdeadzone", m_controllerDeadzone, 0.0f, 1.0f);
-  XMLUtils::GetUInt(pRootElement, "fanartres", m_fanartRes, 0, 1080);
-  XMLUtils::GetUInt(pRootElement, "imageres", m_imageRes, 0, 1080);
+  XMLUtils::GetUInt(pRootElement, "fanartres", m_fanartRes, 0, 9999);
+  XMLUtils::GetUInt(pRootElement, "imageres", m_imageRes, 0, 9999);
   if (XMLUtils::GetString(pRootElement, "imagescalingalgorithm", tmp))
     m_imageScalingAlgorithm = CPictureScalingAlgorithm::FromString(tmp);
   XMLUtils::GetBoolean(pRootElement, "playlistasfolders", m_playlistAsFolders);
