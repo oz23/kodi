@@ -3352,7 +3352,7 @@ void CApplication::OnPlayBackStopped()
   data["end"] = false;
   CAnnouncementManager::GetInstance().Announce(Player, "xbmc", "OnStop", m_itemCurrentFile, data);
 
-  CGUIMessage msg( GUI_MSG_PLAYBACK_STOPPED, 0, 0 );
+  CGUIMessage msg(GUI_MSG_PLAYBACK_STOPPED, 0, 0);
   g_windowManager.SendThreadMessage(msg);
 }
 
@@ -3360,7 +3360,8 @@ void CApplication::OnPlayBackError()
 {
   //@todo Playlists can be continued by calling OnPlaybackEnded instead
   // open error dialog
-  HELPERS::ShowOKDialogText(CVariant{16026}, CVariant{16027});
+  CGUIMessage msg(GUI_MSG_PLAYBACK_ERROR, 0, 0);
+  g_windowManager.SendThreadMessage(msg);
   OnPlayBackStopped();
 }
 
@@ -3875,7 +3876,7 @@ bool CApplication::OnMessage(CGUIMessage& message)
         if (m_itemCurrentFile->IsSamePath(item.get()))
         {
           m_itemCurrentFile->UpdateInfo(*item);
-          g_infoManager.SetCurrentItem(*m_itemCurrentFile);
+          g_infoManager.UpdateInfo(*item);
         }
       }
     }
@@ -4043,6 +4044,10 @@ bool CApplication::OnMessage(CGUIMessage& message)
       return true;
     }
     break;
+
+  case GUI_MSG_PLAYBACK_ERROR:
+    HELPERS::ShowOKDialogText(CVariant{16026}, CVariant{16027});
+    return true;
 
   case GUI_MSG_PLAYLISTPLAYER_STARTED:
   case GUI_MSG_PLAYLISTPLAYER_CHANGED:

@@ -31,6 +31,8 @@
 #include "pvr/PVRTypes.h"
 #include "pvr/addons/PVRClients.h"
 
+class GUIInfo;
+
 namespace PVR
 {
   class CPVRGUIInfo : private CThread,
@@ -46,8 +48,8 @@ namespace PVR
     void Notify(const Observable &obs, const ObservableMessage msg) override;
 
     bool TranslateBoolInfo(DWORD dwInfo) const;
-    bool TranslateCharInfo(DWORD dwInfo, std::string &strValue) const;
-    int TranslateIntInfo(const CFileItem &item, DWORD dwInfo) const;
+    bool TranslateCharInfo(const CFileItem *item, DWORD dwInfo, std::string &strValue) const;
+    int TranslateIntInfo(const CFileItem *item, DWORD dwInfo) const;
 
     /*!
      * @brief Get a GUIInfoManager video label.
@@ -56,19 +58,39 @@ namespace PVR
      * @param strValue Will be filled with the requested label value.
      * @return True if the requested label value was set, false otherwise.
      */
-    bool GetVideoLabel(const CFileItem &item, int iLabel, std::string &strValue) const;
+    bool GetVideoLabel(const CFileItem *item, int iLabel, std::string &strValue) const;
 
     /*!
-     * @brief Get the total duration of the currently playing LiveTV item.
-     * @return The total duration in milliseconds or NULL if no channel is playing.
+     * @brief Get a GUIInfoManager multi info label.
+     * @param item The item to get the label for.
+     * @param info The GUI info (label id + additional data).
+     * @param strValue Will be filled with the requested label value.
+     * @return True if the requested label value was set, false otherwise.
+     */
+    bool GetMultiInfoLabel(const CFileItem *item, const GUIInfo &info, std::string &strValue) const;
+
+    /*!
+     * @brief Get a GUIInfoManager seek time label for the currently playing epg tag.
+     * @param iSeekSize The seconds to be seeked from the current playback position.
+     * @param format The time format for the label.
+     * @param strValue Will be filled with the requested label value.
+     * @return True if the label value was set, false otherwise.
+     */
+    bool GetSeekTimeLabel(int iSeekSize, TIME_FORMAT format, std::string &strValue) const;
+
+    /*!
+     * @brief Get the total duration of the currently playing epg event or if no epg is
+     *        available the current lenght in seconds of the playing Live TV stream.
+     * @return The total duration in seconds or 0 if no channel is playing.
      */
     int GetDuration(void) const;
 
     /*!
-     * @brief Get the current position in milliseconds since the start of a LiveTV item.
-     * @return The position in milliseconds or NULL if no channel is playing.
+     * @brief Get the elapsed time since the start of the currently playing epg event or if
+     *        no epg is available since the start of the playback of the current Live TV stream.
+     * @return The time in seconds or 0 if no channel is playing.
      */
-    int GetPlayingTime(void) const;
+    int GetElapsedTime(void) const;
 
     /*!
      * @brief Clear the playing EPG tag.
@@ -80,12 +102,6 @@ namespace PVR
      * @return The currently playing EPG tag or NULL if no EPG tag is playing.
      */
     CPVREpgInfoTagPtr GetPlayingTag() const;
-
-    /*!
-     * @brief Get playing TV group.
-     * @return The currently playing TV group or NULL if no TV group is playing.
-     */
-    std::string GetPlayingTVGroup();
 
   private:
     class TimerInfo
@@ -194,10 +210,10 @@ namespace PVR
 
     void UpdateTimersToggle(void);
 
-    void CharInfoEpgEventDuration(std::string &strValue) const;
-    void CharInfoEpgEventElapsedTime(std::string &strValue) const;
-    void CharInfoEpgEventRemainingTime(std::string &strValue) const;
-    void CharInfoEpgEventFinishTime(std::string &strValue) const;
+    void CharInfoEpgEventDuration(const CFileItem *item, TIME_FORMAT format, std::string &strValue) const;
+    void CharInfoEpgEventElapsedTime(const CFileItem *item, TIME_FORMAT format, std::string &strValue) const;
+    void CharInfoEpgEventRemainingTime(const CFileItem *item, TIME_FORMAT format, std::string &strValue) const;
+    void CharInfoEpgEventFinishTime(const CFileItem *item, TIME_FORMAT format, std::string &strValue) const;
     void CharInfoBackendNumber(std::string &strValue) const;
     void CharInfoTotalDiskSpace(std::string &strValue) const;
     void CharInfoSignal(std::string &strValue) const;
@@ -219,9 +235,12 @@ namespace PVR
     void CharInfoService(std::string &strValue) const;
     void CharInfoMux(std::string &strValue) const;
     void CharInfoProvider(std::string &strValue) const;
-    void CharInfoTimeshiftStartTime(std::string &strValue) const;
-    void CharInfoTimeshiftEndTime(std::string &strValue) const;
-    void CharInfoTimeshiftPlayTime(std::string &strValue) const;
+    void CharInfoTimeshiftStartTime(TIME_FORMAT format, std::string &strValue) const;
+    void CharInfoTimeshiftEndTime(TIME_FORMAT format, std::string &strValue) const;
+    void CharInfoTimeshiftPlayTime(TIME_FORMAT format, std::string &strValue) const;
+    void CharInfoTimeshiftOffset(TIME_FORMAT format, std::string &strValue) const;
+
+    int GetRemainingTime(const CFileItem *item) const;
 
     /** @name GUIInfoManager data */
     //@{
@@ -253,6 +272,7 @@ namespace PVR
     bool                            m_bCanRecordPlayingChannel;
     bool                            m_bIsRecordingPlayingChannel;
     std::string                     m_strPlayingTVGroup;
+    std::string                     m_strPlayingRadioGroup;
 
     //@}
 
@@ -263,13 +283,12 @@ namespace PVR
 
     bool                            m_bHasTimeshiftData;
     bool                            m_bIsTimeshifting;
+    time_t                          m_iLastTimeshiftUpdate;
     time_t                          m_iStartTime;
     time_t                          m_iTimeshiftStartTime;
     time_t                          m_iTimeshiftEndTime;
     time_t                          m_iTimeshiftPlayTime;
-    std::string                     m_strTimeshiftStartTime;
-    std::string                     m_strTimeshiftEndTime;
-    std::string                     m_strTimeshiftPlayTime;
+    unsigned int                    m_iTimeshiftOffset;
 
     CCriticalSection                m_critSection;
 

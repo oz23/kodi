@@ -42,6 +42,7 @@
 
 class CStopWatch;
 class CVariant;
+class GUIInfo;
 
 namespace PVR
 {
@@ -163,10 +164,11 @@ namespace PVR
 
     /*!
      * @brief Get a GUIInfoManager character string.
+     * @param item The item to get the value for.
      * @param dwInfo The string to get.
      * @return The requested string or an empty one if it wasn't found.
      */
-    bool TranslateCharInfo(DWORD dwInfo, std::string &strValue) const;
+    bool TranslateCharInfo(const CFileItem *item, DWORD dwInfo, std::string &strValue) const;
 
     /*!
      * @brief Get a GUIInfoManager integer.
@@ -174,7 +176,7 @@ namespace PVR
      * @param dwInfo The integer to get.
      * @return The requested integer or 0 if it wasn't found.
      */
-    int TranslateIntInfo(const CFileItem &item, DWORD dwInfo) const;
+    int TranslateIntInfo(const CFileItem *item, DWORD dwInfo) const;
 
     /*!
      * @brief Get a GUIInfoManager boolean.
@@ -190,7 +192,25 @@ namespace PVR
      * @param strValue Will be filled with the requested label value.
      * @return True if the requested label value was set, false otherwise.
      */
-    bool GetVideoLabel(const CFileItem &item, int iLabel, std::string &strValue) const;
+    bool GetVideoLabel(const CFileItem *item, int iLabel, std::string &strValue) const;
+
+    /*!
+     * @brief Get a GUIInfoManager multi info label.
+     * @param item The item to get the label for.
+     * @param info The GUI info (label id + additional data).
+     * @param strValue Will be filled with the requested label value.
+     * @return True if the requested label value was set, false otherwise.
+     */
+    bool GetMultiInfoLabel(const CFileItem *item, const GUIInfo &info, std::string &strValue) const;
+
+    /*!
+     * @brief Get a GUIInfoManager seek time label for the currently playing epg tag.
+     * @param iSeekSize The seconds to be seeked from the current playback position.
+     * @param format The time format for the label.
+     * @param strValue Will be filled with the requested label value.
+     * @return True if the label value was set, false otherwise.
+     */
+    bool GetSeekTimeLabel(int iSeekSize, TIME_FORMAT format, std::string &strValue) const;
 
     /*!
      * @brief Check if a TV channel, radio channel or recording is playing.
@@ -389,16 +409,18 @@ namespace PVR
     void TriggerSearchMissingChannelIcons(void);
 
     /*!
-     * @brief Get the total duration of the currently playing LiveTV item.
-     * @return The total duration in milliseconds or NULL if no channel is playing.
+     * @brief Get the total duration of the currently playing epg event or if no epg is
+     *        available the current lenght in seconds of the playing Live TV stream.
+     * @return The total duration in seconds or 0 if no channel is playing.
      */
     int GetTotalTime(void) const;
 
     /*!
-     * @brief Get the current position in milliseconds since the start of a LiveTV item.
-     * @return The position in milliseconds or NULL if no channel is playing.
+     * @brief Get the elapsed time since the start of the currently playing epg event or if
+     *        no epg is available since the start of the playback of the current Live TV stream.
+     * @return The time in seconds or 0 if no channel is playing.
      */
-    int GetStartTime(void) const;
+    int GetElapsedTime(void) const;
 
     /*!
      * @brief Check whether names are still correct after the language settings changed.
@@ -457,12 +479,6 @@ namespace PVR
      * @return True if EPG tags where created successfully, false otherwise
      */
     bool CreateChannelEpgs(void);
-
-    /*!
-    * @brief get the name of the channel group of the current playing channel
-    * @return name of channel if tv channel is playing
-    */
-    std::string GetPlayingTVGroupName();
 
     /*!
      * @brief Signal a connection change of a client

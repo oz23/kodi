@@ -1,6 +1,5 @@
-#pragma once
 /*
- *      Copyright (C) 2016 Team Kodi
+ *      Copyright (C) 2005-2013 Team XBMC
  *      http://kodi.tv
  *
  *  This Program is free software; you can redistribute it and/or modify
@@ -18,32 +17,31 @@
  *  <http://www.gnu.org/licenses/>.
  *
  */
+#pragma once
 
-#include <memory>
-
-#include "pvr/PVRTypes.h"
-
-class CFileItem;
-typedef std::shared_ptr<CFileItem> CFileItemPtr;
-
-namespace PVR
+// structure to hold multiple integer data
+// for storage referenced from a single integer
+class GUIInfo
 {
-  class CPVRItem
+public:
+  GUIInfo(int info, uint32_t data1 = 0, int data2 = 0, uint32_t flag = 0)
   {
-  public:
-    explicit CPVRItem(const CFileItemPtr &item) : m_item(item.get()) {}
-    explicit CPVRItem(const CFileItem *item) : m_item(item) {}
-
-    CPVREpgInfoTagPtr GetEpgInfoTag() const;
-    CPVREpgInfoTagPtr GetNextEpgInfoTag() const;
-    CPVRChannelPtr GetChannel() const;
-    CPVRTimerInfoTagPtr GetTimerInfoTag() const;
-    CPVRRecordingPtr GetRecording() const;
-
-    bool IsRadio() const;
-
-  private:
-    const CFileItem* m_item;
+    m_info = info;
+    m_data1 = data1;
+    m_data2 = data2;
+    if (flag)
+      SetInfoFlag(flag);
+  }
+  bool operator ==(const GUIInfo &right) const
+  {
+    return (m_info == right.m_info && m_data1 == right.m_data1 && m_data2 == right.m_data2);
   };
-
-} // namespace PVR
+  uint32_t GetInfoFlag() const;
+  uint32_t GetData1() const;
+  int GetData2() const;
+  int m_info;
+private:
+  void SetInfoFlag(uint32_t flag);
+  uint32_t m_data1;
+  int m_data2;
+};
