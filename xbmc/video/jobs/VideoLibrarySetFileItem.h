@@ -1,8 +1,5 @@
-#ifndef DLL_PATHS_WIN32_H__
-#define DLL_PATHS_WIN32_H_
-
 /*
- *      Copyright (C) 2005-2013 Team XBMC
+ *      Copyright (C) 2018 Team XBMC
  *      http://kodi.tv
  *
  *  This Program is free software; you can redistribute it and/or modify
@@ -21,19 +18,21 @@
  *
  */
 
-/* libraries */
-#define DLL_PATH_LIBCURL       "special://xbmcbin/libcurl.dll"
-#define DLL_PATH_LIBNFS        "special://xbmcbin/libnfs.dll"
-#define DLL_PATH_LIBPLIST      "special://xbmcbin/libplist.dll"
-#define DLL_PATH_LIBSHAIRPLAY  "special://xbmcbin/shairplay.dll"
-#define DLL_PATH_LIBCEC        "special://xbmcbin/cec.dll"
+#pragma once
 
-/* VideoPlayer */
-#define DLL_PATH_LIBASS        "special://xbmcbin/libass.dll"
-#define DLL_PATH_LIBDVDNAV     "special://xbmcbin/libdvdnav.dll"
+#include "FileItem.h"
+#include "VideoLibraryJob.h"
 
-/* libbluray */
-#define DLL_PATH_LIBBLURAY     "special://xbmcbin/libbluray.dll"
+class CVideoLibrarySetFileItemJob : public CVideoLibraryJob
+{
+public:
+  CVideoLibrarySetFileItemJob(CFileItem item);
+  ~CVideoLibrarySetFileItemJob() override = default;
 
-#endif
+  const char *GetType() const override { return "CVideoLibrarySetFileItemJob"; }
+  bool operator==(const CJob* job) const override;
 
+protected:
+  bool Work(CVideoDatabase &db) override;
+  CFileItem m_item;
+};

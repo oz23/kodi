@@ -42,6 +42,7 @@
 #include "Autorun.h"
 #include "video/Bookmark.h"
 #include "video/VideoLibraryQueue.h"
+#include "video/jobs/VideoLibrarySetFileItem.h"
 #include "music/MusicLibraryQueue.h"
 #include "guilib/GUIControlProfiler.h"
 #include "utils/LangCodeExpander.h"
@@ -296,7 +297,7 @@ void CApplication::HandleWinEvents()
     switch(newEvent.type)
     {
       case XBMC_QUIT:
-        if (!g_application.m_bStop)
+        if (!m_bStop)
           CApplicationMessenger::GetInstance().PostMsg(TMSG_QUIT);
         break;
       case XBMC_VIDEORESIZE:
@@ -324,10 +325,10 @@ void CApplication::HandleWinEvents()
         break;
       case XBMC_SETFOCUS:
         // Reset the screensaver
-        g_application.ResetScreenSaver();
-        g_application.WakeUpScreenSaverAndDPMS();
+        ResetScreenSaver();
+        WakeUpScreenSaverAndDPMS();
         // Send a mouse motion event with no dx,dy for getting the current guiitem selected
-        g_application.OnAction(CAction(ACTION_MOUSE_MOVE, 0, static_cast<float>(newEvent.focus.x), static_cast<float>(newEvent.focus.y), 0, 0));
+        OnAction(CAction(ACTION_MOUSE_MOVE, 0, static_cast<float>(newEvent.focus.x), static_cast<float>(newEvent.focus.y), 0, 0));
         break;
       default:
         CServiceBroker::GetInputManager().OnEvent(newEvent);
@@ -2072,7 +2073,9 @@ bool CApplication::OnAction(const CAction &action)
   }
 
   // Now check with the player if action can be handled.
-  bool bIsPlayingPVRChannel = (CServiceBroker::GetPVRManager().IsStarted() && g_application.CurrentFileItem().IsPVRChannel());
+  bool bIsPlayingPVRChannel = (CServiceBroker::GetPVRManager().IsStarted() &&
+                               CurrentFileItem().IsPVRChannel());
+
   if (g_windowManager.GetActiveWindow() == WINDOW_FULLSCREEN_VIDEO ||
       g_windowManager.GetActiveWindow() == WINDOW_FULLSCREEN_GAME ||
       (g_windowManager.GetActiveWindow() == WINDOW_VISUALISATION && bIsPlayingPVRChannel) ||
@@ -2470,13 +2473,13 @@ void CApplication::OnApplicationMessage(ThreadMessage* pMsg)
     if (!pSlideShow) return;
 
     // stop playing file
-    if (m_appPlayer.IsPlayingVideo()) g_application.StopPlaying();
+    if (m_appPlayer.IsPlayingVideo()) StopPlaying();
 
     if (g_windowManager.GetActiveWindow() == WINDOW_FULLSCREEN_VIDEO)
       g_windowManager.PreviousWindow();
 
-    g_application.ResetScreenSaver();
-    g_application.WakeUpScreenSaverAndDPMS();
+    ResetScreenSaver();
+    WakeUpScreenSaverAndDPMS();
 
     if (g_windowManager.GetActiveWindow() != WINDOW_SLIDESHOW)
       g_windowManager.ActivateWindow(WINDOW_SLIDESHOW);
@@ -2516,7 +2519,7 @@ void CApplication::OnApplicationMessage(ThreadMessage* pMsg)
     if (!pSlideShow) return;
 
     if (m_appPlayer.IsPlayingVideo())
-      g_application.StopPlaying();
+      StopPlaying();
 
     pSlideShow->Reset();
 
@@ -2539,7 +2542,7 @@ void CApplication::OnApplicationMessage(ThreadMessage* pMsg)
       if (items.Size() == 0)
       {
         m_ServiceManager->GetSettings().SetString(CSettings::SETTING_SCREENSAVER_MODE, "screensaver.xbmc.builtin.dim");
-        g_application.ActivateScreenSaver();
+        ActivateScreenSaver();
       }
       else
         g_windowManager.ActivateWindow(WINDOW_SLIDESHOW);
@@ -2550,6 +2553,21 @@ void CApplication::OnApplicationMessage(ThreadMessage* pMsg)
 
   case TMSG_LOADPROFILE:
     CGUIWindowLoginScreen::LoadProfile(pMsg->param1);
+    break;
+
+  case TMSG_UPDATE_PLAYING_ITEM:
+    {
+      auto item = static_cast<CFileItem*>(pMsg->lpVoid);
+      if (item)
+      {
+        if (m_itemCurrentFile && m_itemCurrentFile->IsSamePath(item))
+        {
+          m_itemCurrentFile->UpdateInfo(*item);
+          g_infoManager.UpdateInfo(*item);
+        }
+        delete item;
+      }
+    }
     break;
 
   default:
@@ -3910,6 +3928,11 @@ bool CApplication::OnMessage(CGUIMessage& message)
       g_infoManager.SetCurrentItem(*m_itemCurrentFile);
       g_partyModeManager.OnSongChange(true);
 
+      if (m_itemCurrentFile->IsVideo())
+      {
+        CJobManager::GetInstance().AddJob(new CVideoLibrarySetFileItemJob(*m_itemCurrentFile), nullptr);
+      }
+
       CVariant param;
       param["player"]["speed"] = 1;
       param["player"]["playerid"] = CServiceBroker::GetPlaylistPlayer().GetCurrentPlaylist();
@@ -4174,7 +4197,7 @@ void CApplication::Process()
 
   // process messages, even if a movie is playing
   CApplicationMessenger::GetInstance().ProcessMessages();
-  if (g_application.m_bStop) return; //we're done, everything has been unloaded
+  if (m_bStop) return; //we're done, everything has been unloaded
 
   // update sound
   m_appPlayer.DoAudioWork();
@@ -4839,7 +4862,7 @@ bool CApplication::ProcessAndStartPlaylist(const std::string& strPlayList, CPlay
 
   // if the playlist contains an internet stream, this file will be used
   // to generate a thumbnail for musicplayer.cover
-  g_application.m_strPlayListFile = strPlayList;
+  m_strPlayListFile = strPlayList;
 
   // add the items to the playlist player
   CServiceBroker::GetPlaylistPlayer().Add(iPlaylist, playlist);
