@@ -192,117 +192,6 @@
           </updates>
           <control type="toggle" />
         </setting>
-        <setting id="videoplayer.usevdpau" type="boolean" label="13425" help="36155">
-          <requirement>HAVE_LIBVDPAU</requirement>
-          <level>2</level>
-          <default>true</default>
-          <dependencies>
-            <dependency type="visible" on="property" name="codecoptionvisible" setting="videoplayer.usevdpau" operator="is">false</dependency>
-          </dependencies>
-          <control type="toggle" />
-        </setting>
-        <setting id="videoplayer.usevdpaumixer" type="boolean" parent="videoplayer.usevdpau" label="13437" help="36421">
-          <requirement>HAVE_LIBVDPAU</requirement>
-          <level>2</level>
-          <default>true</default>
-          <dependencies>
-            <dependency type="enable">
-              <condition setting="videoplayer.usevdpau" operator="is">true</condition> <!-- USE VDPAU -->
-            </dependency>
-            <dependency type="visible" on="property" name="codecoptionvisible" setting="videoplayer.usevdpau" operator="is">false</dependency>
-          </dependencies>
-          <control type="toggle" />
-        </setting>
-        <setting id="videoplayer.usevdpaumpeg2" type="boolean" parent="videoplayer.usevdpau" label="13441" help="13442">
-          <requirement>HAVE_LIBVDPAU</requirement>
-          <level>3</level>
-          <default>true</default>
-          <dependencies>
-            <dependency type="enable">
-              <condition setting="videoplayer.usevdpau" operator="is">true</condition> <!-- USE VDPAU -->
-            </dependency>
-            <dependency type="visible" on="property" name="codecoptionvisible" setting="videoplayer.usevdpaumpeg2" operator="is">true</dependency>
-          </dependencies>
-          <control type="toggle" />
-        </setting>
-        <setting id="videoplayer.usevdpaumpeg4" type="boolean" parent="videoplayer.usevdpau" label="13443" help="13444">
-          <requirement>HAVE_LIBVDPAU</requirement>
-          <level>3</level>
-          <default>false</default>
-          <dependencies>
-            <dependency type="enable">
-              <condition setting="videoplayer.usevdpau" operator="is">true</condition> <!-- USE VDPAU -->
-            </dependency>
-            <dependency type="visible" on="property" name="codecoptionvisible" setting="videoplayer.usevdpaumpeg4" operator="is">true</dependency>
-          </dependencies>
-          <control type="toggle" />
-        </setting>
-        <setting id="videoplayer.usevdpauvc1" type="boolean" parent="videoplayer.usevdpau" label="13445" help="13446">
-          <requirement>HAVE_LIBVDPAU</requirement>
-          <level>3</level>
-          <default>true</default>
-          <dependencies>
-            <dependency type="enable">
-              <condition setting="videoplayer.usevdpau" operator="is">true</condition> <!-- USE VDPAU -->
-            </dependency>
-            <dependency type="visible" on="property" name="codecoptionvisible" setting="videoplayer.usevdpauvc1" operator="is">true</dependency>
-          </dependencies>
-          <control type="toggle" />
-        </setting>
-        <setting id="videoplayer.usevaapi" type="boolean" label="13426" help="36156">
-          <requirement>HAVE_LIBVA</requirement>
-          <level>2</level>
-          <default>true</default>
-          <control type="toggle" />
-        </setting>
-        <setting id="videoplayer.usevaapimpeg2" type="boolean" parent="videoplayer.usevaapi" label="13447" help="13448">
-          <requirement>HAVE_LIBVA</requirement>
-          <dependencies>
-            <dependency type="enable">
-              <condition setting="videoplayer.usevaapi" operator="is">true</condition>
-            </dependency>
-            <dependency type="visible" on="property" name="codecoptionvisible" setting="videoplayer.usevaapimpeg2" operator="is">true</dependency>
-          </dependencies>
-          <level>3</level>
-          <default>true</default>
-          <control type="toggle" />
-        </setting>
-        <setting id="videoplayer.usevaapimpeg4" type="boolean" parent="videoplayer.usevaapi" label="13449" help="13450">
-          <requirement>HAVE_LIBVA</requirement>
-          <dependencies>
-            <dependency type="enable">
-              <condition setting="videoplayer.usevaapi" operator="is">true</condition>
-            </dependency>
-            <dependency type="visible" on="property" name="codecoptionvisible" setting="videoplayer.usevaapimpeg4" operator="is">true</dependency>
-          </dependencies>
-          <level>3</level>
-          <default>true</default>
-          <control type="toggle" />
-        </setting>
-        <setting id="videoplayer.usevaapivc1" type="boolean" parent="videoplayer.usevaapi" label="13451" help="13452">
-          <requirement>HAVE_LIBVA</requirement>
-          <dependencies>
-            <dependency type="enable">
-              <condition setting="videoplayer.usevaapi" operator="is">true</condition>
-            </dependency>
-            <dependency type="visible" on="property" name="codecoptionvisible" setting="videoplayer.usevaapivc1" operator="is">true</dependency>
-          </dependencies>
-          <level>3</level>
-          <default>true</default>
-          <control type="toggle" />
-        </setting>
-        <setting id="videoplayer.prefervaapirender" type="boolean" parent="videoplayer.usevaapi" label="13457" help="36433">
-          <requirement>HAVE_LIBVA</requirement>
-          <dependencies>
-            <dependency type="enable">
-              <condition setting="videoplayer.usevaapi" operator="is">true</condition>
-            </dependency>
-            <dependency type="visible" on="property" name="codecoptionvisible" setting="videoplayer.usevaapivc1" operator="is">true</dependency>
-          </dependencies>
-          <level>3</level>
-          <default>true</default>
-          <control type="toggle" />
-        </setting>
         <setting id="videoplayer.usedxva2" type="boolean" label="13427" help="36158">
           <requirement>HasDXVA2</requirement>
           <level>2</level>
@@ -900,33 +789,33 @@
         <!-- Hidden settings edited using CGUIDialogMusicExportSettings -->
         <setting id="musiclibrary.exportfiletype" type="integer" label="38304" help="">
           <level>4</level>
-          <default>0</default>		  
+          <default>0</default>
         </setting>
         <setting id="musiclibrary.exportfolder" type="string" label="38305" help="">
-          <level>4</level>		
+          <level>4</level>
           <default></default>
 		  <constraints>
             <allowempty>true</allowempty>
           </constraints>
         </setting>
         <setting id="musiclibrary.exportitems" type="integer" label="" help="">
-          <level>4</level>		
+          <level>4</level>
           <default>48</default> <!-- Albums + Album Artists -->
         </setting>
         <setting id="musiclibrary.exportunscraped" type="boolean" label="" help="">
-          <level>4</level>		
+          <level>4</level>
           <default>false</default>
         </setting>
         <setting id="musiclibrary.exportoverwrite" type="boolean" label="" help="">
-          <level>4</level>		
+          <level>4</level>
           <default>false</default>
         </setting>
         <setting id="musiclibrary.exportartwork" type="boolean" label="" help="">
-          <level>4</level>          
+          <level>4</level>
 		  <default>false</default>
-        </setting>		
+        </setting>
         <setting id="musiclibrary.exportskipnfo" type="boolean" label="" help="">
-          <level>4</level>          
+          <level>4</level>
 		  <default>false</default>
         </setting>
         <setting id="musiclibrary.import" type="action" label="14249" help="36263">
@@ -1185,7 +1074,7 @@
           <control type="button" format="path">
             <heading>657</heading>
           </control>
-        </setting>			
+        </setting>
         <setting id="musiclibrary.albumsscraper" type="addon" label="20193" help="36257">
           <level>1</level>
           <default>metadata.album.universal</default>

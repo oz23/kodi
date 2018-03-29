@@ -28,6 +28,7 @@
 #include "utils/StringUtils.h"
 #include "threads/SingleLock.h"
 #include "settings/Settings.h"
+#include "settings/lib/Setting.h"
 #include "guilib/GraphicContext.h"
 #include "settings/AdvancedSettings.h"
 #include <va/va_drm.h>
@@ -505,8 +506,15 @@ bool CDecoder::Open(AVCodecContext* avctx, AVCodecContext* mainctx, const enum A
     { AV_CODEC_ID_VC1, CSettings::SETTING_VIDEOPLAYER_USEVAAPIVC1 },
     { AV_CODEC_ID_MPEG2VIDEO, CSettings::SETTING_VIDEOPLAYER_USEVAAPIMPEG2 },
   };
-  if (CDVDVideoCodec::IsCodecDisabled(settings_map, avctx->codec_id))
-    return false;
+
+  auto entry = settings_map.find(avctx->codec_id);
+  if (entry != settings_map.end())
+  {
+    bool enabled = CServiceBroker::GetSettings().GetBool(entry->second) &&
+                   CServiceBroker::GetSettings().GetSetting(entry->second)->IsVisible();
+    if (!enabled)
+      return false;
+  }
 
   CLog::Log(LOGDEBUG, LOGVIDEO, "VAAPI - open decoder");
 
@@ -589,9 +597,10 @@ bool CDecoder::Open(AVCodecContext* avctx, AVCodecContext* mainctx, const enum A
     }
     case AV_CODEC_ID_VP9:
     {
-      // VAAPI currently only supports Profile 0
       if (avctx->profile == FF_PROFILE_VP9_0)
         profile = VAProfileVP9Profile0;
+      else if (avctx->profile == FF_PROFILE_VP9_2)
+        profile = VAProfileVP9Profile2;
       else
         profile = VAProfileNone;
       if (!m_vaapiConfig.context->SupportsProfile(profile))
@@ -828,13 +837,13 @@ CDVDVideoCodec::VCReturn CDecoder::Decode(AVCodecContext* avctx, AVFrame* pFrame
     m_videoSurfaces.MarkRender(surf);
 
     // send frame to output for processing
-    CVaapiDecodedPicture pic;
-    static_cast<ICallbackHWAccel*>(avctx->opaque)->GetPictureCommon(&pic.DVDPic);
-    pic.videoSurface = surf;
+    CVaapiDecodedPicture *pic = new CVaapiDecodedPicture();
+    static_cast<ICallbackHWAccel*>(avctx->opaque)->GetPictureCommon(&(pic->DVDPic));
+    m_codecControl = pic->DVDPic.iFlags & (DVD_CODEC_CTRL_HURRY | DVD_CODEC_CTRL_NO_POSTPROC);
+    pic->videoSurface = surf;
     m_bufferStats.IncDecoded();
-    m_vaapiOutput.m_dataPort.SendOutMessage(COutputDataProtocol::NEWFRAME, &pic, sizeof(pic));
-
-    m_codecControl = pic.DVDPic.iFlags & (DVD_CODEC_CTRL_HURRY | DVD_CODEC_CTRL_NO_POSTPROC);
+    CPayloadWrap<CVaapiDecodedPicture> *payload = new CPayloadWrap<CVaapiDecodedPicture>(pic);
+    m_vaapiOutput.m_dataPort.SendOutMessage(COutputDataProtocol::NEWFRAME, payload);
   }
 
   uint16_t decoded, processed, render;
@@ -1183,6 +1192,11 @@ void CDecoder::Register(IVaapiWinSystem *winSystem, bool deepColor)
   m_capDeepColor = deepColor;
   CDVDFactoryCodec::RegisterHWAccel("vaapi", CDecoder::Create);
   config.context->Release(nullptr);
+
+  CServiceBroker::GetSettings().GetSetting(CSettings::SETTING_VIDEOPLAYER_USEVAAPI)->SetVisible(true);
+  CServiceBroker::GetSettings().GetSetting(CSettings::SETTING_VIDEOPLAYER_USEVAAPIMPEG4)->SetVisible(true);
+  CServiceBroker::GetSettings().GetSetting(CSettings::SETTING_VIDEOPLAYER_USEVAAPIVC1)->SetVisible(true);
+  CServiceBroker::GetSettings().GetSetting(CSettings::SETTING_VIDEOPLAYER_USEVAAPIMPEG2)->SetVisible(true);
 }
 
 //-----------------------------------------------------------------------------
@@ -1545,11 +1559,11 @@ void COutput::StateMachine(int signal, Protocol *port, Message *msg)
         switch (signal)
         {
         case COutputDataProtocol::NEWFRAME:
-          CVaapiDecodedPicture *frame;
-          frame = reinterpret_cast<CVaapiDecodedPicture*>(msg->data);
-          if (frame)
+          CPayloadWrap<CVaapiDecodedPicture> *payload;
+          payload = dynamic_cast<CPayloadWrap<CVaapiDecodedPicture>*>(msg->payloadObj.get());
+          if (payload)
           {
-            m_bufferPool->decodedPics.push_back(*frame);
+            m_bufferPool->decodedPics.push_back(*(payload->GetPlayload()));
             m_extTimeout = 0;
           }
           return;

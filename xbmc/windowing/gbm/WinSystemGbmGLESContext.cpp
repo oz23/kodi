@@ -50,7 +50,7 @@ bool CWinSystemGbmGLESContext::InitWindowSystem()
     return false;
   }
 
-  if (!m_pGLContext.CreateDisplay(m_nativeDisplay,
+  if (!m_pGLContext.CreateDisplay(m_GBM->m_device,
                                   EGL_OPENGL_ES2_BIT,
                                   EGL_OPENGL_ES_API))
   {
@@ -99,12 +99,17 @@ bool CWinSystemGbmGLESContext::CreateNewWindow(const std::string& name,
     return false;
   }
 
-  if (!m_pGLContext.CreateSurface(m_nativeWindow))
+  if (!m_pGLContext.CreateSurface(reinterpret_cast<EGLNativeWindowType>(m_GBM->m_surface)))
   {
     return false;
   }
 
-  if (!m_pGLContext.CreateContext())
+  const EGLint contextAttribs[] =
+  {
+    EGL_CONTEXT_CLIENT_VERSION, 2, EGL_NONE
+  };
+
+  if (!m_pGLContext.CreateContext(contextAttribs))
   {
     return false;
   }
