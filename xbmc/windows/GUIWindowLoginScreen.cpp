@@ -27,7 +27,6 @@
 #include "ServiceBroker.h"
 #include "addons/AddonManager.h"
 #include "addons/Skin.h"
-#include "cores/AudioEngine/Engines/ActiveAE/AudioDSPAddons/ActiveAEDSP.h"
 #include "dialogs/GUIDialogContextMenu.h"
 #include "favourites/FavouritesService.h"
 #include "guilib/GUIMessage.h"
@@ -164,7 +163,7 @@ bool CGUIWindowLoginScreen::OnBack(int actionID)
 
 void CGUIWindowLoginScreen::FrameMove()
 {
-  if (GetFocusedControlID() == CONTROL_BIG_LIST && !g_windowManager.HasModalDialog())
+  if (GetFocusedControlID() == CONTROL_BIG_LIST && !CServiceBroker::GetGUI()->GetWindowManager().HasModalDialog())
   {
     if (m_viewControl.HasControl(CONTROL_BIG_LIST))
       m_iSelectedItem = m_viewControl.GetSelectedItem();
@@ -306,7 +305,7 @@ void CGUIWindowLoginScreen::LoadProfile(unsigned int profile)
   }
   else
   {
-    CGUIWindow* pWindow = g_windowManager.GetWindow(WINDOW_HOME);
+    CGUIWindow* pWindow = CServiceBroker::GetGUI()->GetWindowManager().GetWindow(WINDOW_HOME);
     if (pWindow)
       pWindow->ResetControlStates();
   }
@@ -351,7 +350,7 @@ void CGUIWindowLoginScreen::LoadProfile(unsigned int profile)
   // the startup window is considered part of the initialization as it most likely switches to the final window
   bool uiInitializationFinished = firstWindow != WINDOW_STARTUP_ANIM;
 
-  g_windowManager.ChangeActiveWindow(firstWindow);
+  CServiceBroker::GetGUI()->GetWindowManager().ChangeActiveWindow(firstWindow);
 
   g_application.UpdateLibraries();
   CStereoscopicsManager::GetInstance().Initialize();
@@ -360,6 +359,6 @@ void CGUIWindowLoginScreen::LoadProfile(unsigned int profile)
   if (uiInitializationFinished)
   {
     CGUIMessage msg(GUI_MSG_NOTIFY_ALL, 0, 0, GUI_MSG_UI_READY);
-    g_windowManager.SendThreadMessage(msg);
+    CServiceBroker::GetGUI()->GetWindowManager().SendThreadMessage(msg);
   }
 }

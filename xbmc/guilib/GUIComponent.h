@@ -1,5 +1,5 @@
 /*
- *      Copyright (C) 2005-2015 Team KODI
+ *      Copyright (C) 2005-2013 Team XBMC
  *      http://kodi.tv
  *
  *  This Program is free software; you can redistribute it and/or modify
@@ -13,31 +13,28 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with KODI; see the file COPYING.  If not, see
+ *  along with XBMC; see the file COPYING.  If not, see
  *  <http://www.gnu.org/licenses/>.
  *
  */
-// AudioDSPSettings.h: interface for the CAudioSettings class.
-//
-//////////////////////////////////////////////////////////////////////
 
 #pragma once
 
-#include "addons/kodi-addon-dev-kit/include/kodi/addon-instance/AudioDSP.h"
-#include "cores/AudioEngine/Utils/AEAudioFormat.h"
+#include <memory>
+#include <string>
 
-class CAudioSettings
+class CGUIWindowManager;
+
+class CGUIComponent
 {
 public:
-  CAudioSettings();
-  ~CAudioSettings() = default;
+  CGUIComponent();
+  virtual ~CGUIComponent();
 
-  bool operator!=(const CAudioSettings &right) const;
+  CGUIWindowManager& GetWindowManager();
 
-  int m_MasterStreamTypeSel;
-  int m_MasterStreamType;
-  int m_MasterStreamBase;
-  int m_MasterModes[AE_DSP_ASTREAM_MAX][AE_DSP_ABASE_MAX];
+  bool ConfirmDelete(std::string path);
 
-private:
+protected:
+  std::unique_ptr<CGUIWindowManager> m_pWindowManager;
 };

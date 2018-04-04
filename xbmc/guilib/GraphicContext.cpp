@@ -32,6 +32,7 @@
 #include "windowing/WinSystem.h"
 #include "TextureManager.h"
 #include "input/InputManager.h"
+#include "GUIComponent.h"
 #include "GUIWindowManager.h"
 #include "ServiceBroker.h"
 
@@ -359,8 +360,20 @@ void CGraphicContext::SetFullScreenVideo(bool bOnOff)
 
   if (m_bFullScreenRoot)
   {
-    bool allowDesktopRes = CServiceBroker::GetSettings().GetInt(CSettings::SETTING_VIDEOPLAYER_ADJUSTREFRESHRATE) == ADJUST_REFRESHRATE_ALWAYS;
-    if (m_bFullScreenVideo || (!allowDesktopRes && g_application.GetAppPlayer().IsPlayingVideo()))
+    bool bTriggerUpdateRes = false;
+    if (m_bFullScreenVideo)
+      bTriggerUpdateRes = true;
+    else
+    {
+      bool allowDesktopRes = CServiceBroker::GetSettings().GetInt(CSettings::SETTING_VIDEOPLAYER_ADJUSTREFRESHRATE) == ADJUST_REFRESHRATE_ALWAYS;
+      if (!allowDesktopRes)
+      {
+        if (g_application.GetAppPlayer().IsPlayingVideo())
+          bTriggerUpdateRes = true;
+      }
+    }
+
+    if (bTriggerUpdateRes)
       g_application.GetAppPlayer().TriggerUpdateResolution();
     else if (CDisplaySettings::GetInstance().GetCurrentResolution() > RES_DESKTOP)
       SetVideoResolution(CDisplaySettings::GetInstance().GetCurrentResolution(), false);
@@ -476,7 +489,10 @@ void CGraphicContext::SetVideoResolutionInternal(RESOLUTION res, bool forceUpdat
 
     // update anyone that relies on sizing information
     CServiceBroker::GetInputManager().SetMouseResolution(info_org.iWidth, info_org.iHeight, 1, 1);
-    g_windowManager.SendMessage(GUI_MSG_NOTIFY_ALL, 0, 0, GUI_MSG_WINDOW_RESIZE);
+
+    CGUIComponent *gui = CServiceBroker::GetGUI();
+    if (gui)
+      gui->GetWindowManager().SendMessage(GUI_MSG_NOTIFY_ALL, 0, 0, GUI_MSG_WINDOW_RESIZE);
   }
   else
   {
@@ -532,7 +548,7 @@ void CGraphicContext::ApplyVideoResolution(RESOLUTION res)
   // update anyone that relies on sizing information
   RESOLUTION_INFO info_org  = CDisplaySettings::GetInstance().GetResolutionInfo(res);
   CServiceBroker::GetInputManager().SetMouseResolution(info_org.iWidth, info_org.iHeight, 1, 1);
-  g_windowManager.SendMessage(GUI_MSG_NOTIFY_ALL, 0, 0, GUI_MSG_WINDOW_RESIZE);
+  CServiceBroker::GetGUI()->GetWindowManager().SendMessage(GUI_MSG_NOTIFY_ALL, 0, 0, GUI_MSG_WINDOW_RESIZE);
 }
 
 void CGraphicContext::UpdateInternalStateWithResolution(RESOLUTION res)
@@ -1173,7 +1189,7 @@ void CGraphicContext::Flip(bool rendered, bool videoLayer)
   {
     m_stereoMode = m_nextStereoMode;
     SetVideoResolution(GetVideoResolution(), true);
-    g_windowManager.SendMessage(GUI_MSG_NOTIFY_ALL, 0, 0, GUI_MSG_RENDERER_RESET);
+    CServiceBroker::GetGUI()->GetWindowManager().SendMessage(GUI_MSG_NOTIFY_ALL, 0, 0, GUI_MSG_RENDERER_RESET);
   }
 }
 

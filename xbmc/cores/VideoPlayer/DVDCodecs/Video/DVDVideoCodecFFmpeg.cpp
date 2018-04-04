@@ -477,8 +477,8 @@ void CDVDVideoCodecFFmpeg::Dispose()
   av_frame_free(&m_pFrame);
   av_frame_free(&m_pDecodedFrame);
   av_frame_free(&m_pFilterFrame);
-  avcodec_free_context(&m_pCodecContext);
   SAFE_RELEASE(m_pHardware);
+  avcodec_free_context(&m_pCodecContext);
 
   FilterClose();
 }
@@ -795,6 +795,11 @@ CDVDVideoCodec::VCReturn CDVDVideoCodecFFmpeg::GetPicture(VideoPicture* pVideoPi
     {
       Reset();
       return ret;
+    }
+    else if (ret == VC_FATAL)
+    {
+      m_decoderState = STATE_HW_FAILED;
+      return VC_REOPEN;
     }
     else if (ret == VC_PICTURE)
     {

@@ -24,9 +24,11 @@
 #include "PlayListPlayer.h"
 #include "settings/MediaSettings.h"
 #include "Application.h"
+#include "ServiceBroker.h"
 #include "messaging/ApplicationMessenger.h"
 #include "GUIInfoManager.h"
 #include "GUIUserMessages.h"
+#include "guilib/GUIComponent.h"
 #include "guilib/GUIWindowManager.h"
 #include "AddonUtils.h"
 #include "utils/log.h"
@@ -188,8 +190,26 @@ namespace XBMCAddon
 
     void Player::OnPlayBackStarted(const CFileItem &file)
     { 
+      // We only have fileItem due to us having to 
+      // implement the interface, we can't send it to python
+      // as we're not able to serialize it.
       XBMC_TRACE;
-      invokeCallback(new CallbackFunction<Player>(this,&Player::onPlayBackStarted));
+      invokeCallback(new CallbackFunction<Player>(this, &Player::onPlayBackStarted));
+    }
+
+    void Player::OnAVStarted(const CFileItem &file)
+    {
+      // We only have fileItem due to us having to 
+      // implement the interface, we can't send it to python
+      // as we're not able to serialize it.
+      XBMC_TRACE;
+      invokeCallback(new CallbackFunction<Player>(this, &Player::onAVStarted));
+    }
+
+    void Player::OnAVChange()
+    {
+      XBMC_TRACE;
+      invokeCallback(new CallbackFunction<Player>(this, &Player::onAVChange));
     }
 
     void Player::OnPlayBackEnded()
@@ -247,6 +267,16 @@ namespace XBMCAddon
     }
 
     void Player::onPlayBackStarted()
+    {
+      XBMC_TRACE;
+    }
+
+    void Player::onAVStarted()
+    {
+      XBMC_TRACE;
+    }
+
+    void Player::onAVChange()
     {
       XBMC_TRACE;
     }
@@ -362,7 +392,7 @@ namespace XBMCAddon
         throw PlayerException("Kodi is not playing any file");
 
       CGUIMessage msg(GUI_MSG_NOTIFY_ALL, 0, 0, GUI_MSG_UPDATE_ITEM, 0, item->item);
-      g_windowManager.SendMessage(msg);
+      CServiceBroker::GetGUI()->GetWindowManager().SendMessage(msg);
     }
 
     InfoTagRadioRDS* Player::getRadioRDSInfoTag()

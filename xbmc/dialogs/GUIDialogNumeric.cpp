@@ -22,10 +22,12 @@
 
 #include <cassert>
 
+#include "ServiceBroker.h"
+#include "guilib/GUIComponent.h"
 #include "guilib/GUILabelControl.h"
-#include "utils/md5.h"
 #include "guilib/GUIWindowManager.h"
 #include "input/XBMC_vkeys.h"
+#include "utils/Digest.h"
 #include "utils/StringUtils.h"
 #include "utils/Variant.h"
 #include "input/Key.h"
@@ -43,6 +45,7 @@
 #define CONTROL_BACKSPACE     23
 
 using namespace KODI::MESSAGING;
+using KODI::UTILITY::CDigest;
 
 CGUIDialogNumeric::CGUIDialogNumeric(void)
   : CGUIDialog(WINDOW_DIALOG_NUMERIC, "DialogNumeric.xml")
@@ -481,7 +484,7 @@ std::string CGUIDialogNumeric::GetOutputString() const
 
 bool CGUIDialogNumeric::ShowAndGetSeconds(std::string &timeString, const std::string &heading)
 {
-  CGUIDialogNumeric *pDialog = g_windowManager.GetWindow<CGUIDialogNumeric>(WINDOW_DIALOG_NUMERIC);
+  CGUIDialogNumeric *pDialog = CServiceBroker::GetGUI()->GetWindowManager().GetWindow<CGUIDialogNumeric>(WINDOW_DIALOG_NUMERIC);
   if (!pDialog) return false;
   int seconds = StringUtils::TimeStringToSeconds(timeString);
   SYSTEMTIME time = {0};
@@ -501,7 +504,7 @@ bool CGUIDialogNumeric::ShowAndGetSeconds(std::string &timeString, const std::st
 
 bool CGUIDialogNumeric::ShowAndGetTime(SYSTEMTIME &time, const std::string &heading)
 {
-  CGUIDialogNumeric *pDialog = g_windowManager.GetWindow<CGUIDialogNumeric>(WINDOW_DIALOG_NUMERIC);
+  CGUIDialogNumeric *pDialog = CServiceBroker::GetGUI()->GetWindowManager().GetWindow<CGUIDialogNumeric>(WINDOW_DIALOG_NUMERIC);
   if (!pDialog) return false;
   pDialog->SetMode(INPUT_TIME, time);
   pDialog->SetHeading(heading);
@@ -514,7 +517,7 @@ bool CGUIDialogNumeric::ShowAndGetTime(SYSTEMTIME &time, const std::string &head
 
 bool CGUIDialogNumeric::ShowAndGetDate(SYSTEMTIME &date, const std::string &heading)
 {
-  CGUIDialogNumeric *pDialog = g_windowManager.GetWindow<CGUIDialogNumeric>(WINDOW_DIALOG_NUMERIC);
+  CGUIDialogNumeric *pDialog = CServiceBroker::GetGUI()->GetWindowManager().GetWindow<CGUIDialogNumeric>(WINDOW_DIALOG_NUMERIC);
   if (!pDialog) return false;
   pDialog->SetMode(INPUT_DATE, date);
   pDialog->SetHeading(heading);
@@ -527,7 +530,7 @@ bool CGUIDialogNumeric::ShowAndGetDate(SYSTEMTIME &date, const std::string &head
 
 bool CGUIDialogNumeric::ShowAndGetIPAddress(std::string &IPAddress, const std::string &heading)
 {
-  CGUIDialogNumeric *pDialog = g_windowManager.GetWindow<CGUIDialogNumeric>(WINDOW_DIALOG_NUMERIC);
+  CGUIDialogNumeric *pDialog = CServiceBroker::GetGUI()->GetWindowManager().GetWindow<CGUIDialogNumeric>(WINDOW_DIALOG_NUMERIC);
   if (!pDialog) return false;
   pDialog->SetMode(INPUT_IP_ADDRESS, IPAddress);
   pDialog->SetHeading(heading);
@@ -541,7 +544,7 @@ bool CGUIDialogNumeric::ShowAndGetIPAddress(std::string &IPAddress, const std::s
 bool CGUIDialogNumeric::ShowAndGetNumber(std::string& strInput, const std::string &strHeading, unsigned int iAutoCloseTimeoutMs /* = 0 */)
 {
   // Prompt user for password input
-  CGUIDialogNumeric *pDialog = g_windowManager.GetWindow<CGUIDialogNumeric>(WINDOW_DIALOG_NUMERIC);
+  CGUIDialogNumeric *pDialog = CServiceBroker::GetGUI()->GetWindowManager().GetWindow<CGUIDialogNumeric>(WINDOW_DIALOG_NUMERIC);
   pDialog->SetHeading( strHeading );
 
   pDialog->SetMode(INPUT_NUMBER, strInput);
@@ -616,7 +619,7 @@ int CGUIDialogNumeric::ShowAndVerifyPassword(std::string& strPassword, const std
 bool CGUIDialogNumeric::ShowAndVerifyInput(std::string& strToVerify, const std::string& dlgHeading, bool bVerifyInput)
 {
   // Prompt user for password input
-  CGUIDialogNumeric *pDialog = g_windowManager.GetWindow<CGUIDialogNumeric>(WINDOW_DIALOG_NUMERIC);
+  CGUIDialogNumeric *pDialog = CServiceBroker::GetGUI()->GetWindowManager().GetWindow<CGUIDialogNumeric>(WINDOW_DIALOG_NUMERIC);
   pDialog->SetHeading( dlgHeading );
 
   std::string strInput;
@@ -634,12 +637,11 @@ bool CGUIDialogNumeric::ShowAndVerifyInput(std::string& strToVerify, const std::
     return false;
   }
 
-  std::string md5pword2 = XBMC::XBMC_MD5::GetMD5(strInput);
+  std::string md5pword2 = CDigest::Calculate(CDigest::Type::MD5, strInput);
 
   if (!bVerifyInput)
   {
     strToVerify = md5pword2;
-    StringUtils::ToLower(strToVerify);
     return true;
   }
 

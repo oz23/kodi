@@ -1,7 +1,6 @@
 #pragma once
-
 /*
- *      Copyright (C) 2009-2015 Team Kodi
+ *      Copyright (C) 2005-2018 Team Kodi
  *      http://kodi.tv
  *
  *  This Program is free software; you can redistribute it and/or modify
@@ -15,39 +14,23 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with Kodi; see the file COPYING.  If not, see
+ *  along with KODI; see the file COPYING.  If not, see
  *  <http://www.gnu.org/licenses/>.
  *
  */
 
 #include <string>
-#include <stdint.h>
 
-struct MD5Context {
-	uint32_t buf[4];
-	uint32_t bytes[2];
-	uint32_t in[16];
+namespace ADDON
+{
+
+struct Interface_Android
+{
+  static void Register();
+  static void* Get(const std::string &name, const std::string &version);
+
+  static void* get_jni_env();
+  static int get_sdk_version();
 };
 
-namespace XBMC
-{
-  class XBMC_MD5
-  {
-  public:
-    XBMC_MD5(void);
-    ~XBMC_MD5(void);
-    void append(const void *inBuf, size_t inLen);
-    void append(const std::string& str);
-    void getDigest(unsigned char digest[16]);
-    std::string getDigest();
-
-    /*! \brief Get the MD5 digest of the given text
-     \param text text to compute the MD5 for
-     \return MD5 digest
-     */
-    static std::string GetMD5(const std::string &text);
-private:
-    MD5Context m_ctx;
-  };
-}
-
+} //namespace ADDON

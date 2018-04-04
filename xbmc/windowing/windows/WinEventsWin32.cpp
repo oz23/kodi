@@ -27,6 +27,7 @@
 #include <Windowsx.h>
 
 #include "Application.h"
+#include "guilib/GUIComponent.h"
 #include "guilib/GUIControl.h"       // for EVENT_RESULT
 #include "guilib/GUIWindowManager.h"
 #include "input/mouse/MouseStat.h"
@@ -130,7 +131,7 @@ static int XBMC_MapVirtualKey(int scancode, WPARAM vkey)
     case VK_LAUNCH_MEDIA_SELECT:
     case VK_LAUNCH_APP1:
     case VK_LAUNCH_APP2:
-      return vkey;
+      return static_cast<int>(vkey);
     default:;
   }
   switch (mvke)
@@ -148,7 +149,7 @@ static int XBMC_MapVirtualKey(int scancode, WPARAM vkey)
     case VK_PRIOR:  return EXTKEYPAD(VK_NUMPAD9);
     default:;
   }
-  return mvke ? mvke : vkey;
+  return mvke ? mvke : static_cast<int>(vkey);
 }
 
 
@@ -183,7 +184,7 @@ static XBMC_keysym *TranslateKey(WPARAM vkey, UINT scancode, XBMC_keysym *keysym
     * so we handle it as a special case here */
     if ((keystate[VK_NUMLOCK] & 1) && vkey >= VK_NUMPAD0 && vkey <= VK_NUMPAD9)
     {
-      keysym->unicode = vkey - VK_NUMPAD0 + '0';
+      keysym->unicode = static_cast<uint16_t>(vkey - VK_NUMPAD0 + '0');
     }
     else if (ToUnicode(static_cast<UINT>(vkey), scancode, keystate, reinterpret_cast<LPWSTR>(wchars), ARRAY_SIZE(wchars), 0) > 0)
     {
@@ -457,7 +458,7 @@ LRESULT CALLBACK CWinEventsWin32::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, L
 
       // Retrieve the action associated with this appcommand from the mapping table
       CKey key(appcmd | KEY_APPCOMMAND, 0U);
-      int iWin = g_windowManager.GetActiveWindowOrDialog();
+      int iWin = CServiceBroker::GetGUI()->GetWindowManager().GetActiveWindowOrDialog();
 
       CAction appcmdaction = CServiceBroker::GetInputManager().GetAction(iWin, key);
       if (appcmdaction.GetID())
@@ -761,9 +762,13 @@ LRESULT CALLBACK CWinEventsWin32::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, L
         break;
       }
     case WM_PAINT:
+    {
       //some other app has painted over our window, mark everything as dirty
-      g_windowManager.MarkDirty();
+      CGUIComponent* component = CServiceBroker::GetGUI();
+      if (component)
+        component->GetWindowManager().MarkDirty();
       break;
+    }
     case BONJOUR_EVENT:
       CZeroconf::GetInstance()->ProcessResults();
       break;

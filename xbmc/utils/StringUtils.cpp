@@ -40,6 +40,7 @@
 #include "Util.h"
 #include <functional>
 #include <array>
+#include <iomanip>
 #include <assert.h>
 #include <math.h>
 #include <time.h>
@@ -1006,6 +1007,16 @@ std::string StringUtils::BinaryStringToString(const std::string& in)
     out.push_back(*cur);
   }
   return out;
+}
+
+std::string StringUtils::ToHexadecimal(const std::string& in)
+{
+  std::ostringstream ss;
+  ss << std::hex;
+  for (unsigned char ch : in) {
+    ss << std::setw(2) << std::setfill('0') << static_cast<unsigned long> (ch);
+  }
+  return ss.str();
 }
 
 // return -1 if not, else return the utf8 char length.
