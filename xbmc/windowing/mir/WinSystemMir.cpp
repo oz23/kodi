@@ -23,8 +23,8 @@
 
 #include <string.h>
 
-#include "guilib/GraphicContext.h"
-#include "powermanagement/linux/LinuxPowerSyscall.h"
+#include "windowing/GraphicContext.h"
+#include "platform/linux/powermanagement/LinuxPowerSyscall.h"
 #include "settings/DisplaySettings.h"
 #include "utils/log.h"
 #include "WinEventsMir.h"

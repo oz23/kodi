@@ -44,7 +44,7 @@
 #include "XBDateTime.h"
 #include "windowing/WinSystem.h"
 #include "cores/IPlayer.h"
-#include "guiinfo/GUIInfoLabels.h"
+#include "guilib/guiinfo/GUIInfoLabels.h"
 #include "video/ViewModeSettings.h"
 
 #include <stdio.h>
@@ -53,6 +53,7 @@
 #include "platform/linux/LinuxResourceCounter.h"
 #endif
 
+using namespace KODI::GUILIB;
 using namespace KODI::MESSAGING;
 
 #if defined(TARGET_DARWIN)
@@ -113,7 +114,7 @@ bool CGUIWindowFullScreen::OnAction(const CAction &action)
 
   case ACTION_SHOW_OSD_TIME:
     m_bShowCurrentTime = !m_bShowCurrentTime;
-    g_infoManager.SetShowTime(m_bShowCurrentTime);
+    CServiceBroker::GetGUI()->GetInfoManager().GetInfoProviders().GetPlayerInfoProvider().SetShowTime(m_bShowCurrentTime);
     return true;
     break;
 
@@ -174,7 +175,7 @@ bool CGUIWindowFullScreen::OnAction(const CAction &action)
 void CGUIWindowFullScreen::ClearBackground()
 {
   if (g_application.GetAppPlayer().IsRenderingVideoLayer())
-    g_graphicsContext.Clear(0);
+    CServiceBroker::GetWinSystem()->GetGfxContext().Clear(0);
 }
 
 void CGUIWindowFullScreen::OnWindowLoaded()
@@ -223,12 +224,14 @@ bool CGUIWindowFullScreen::OnMessage(CGUIMessage& message)
         CServiceBroker::GetGUI()->GetWindowManager().PreviousWindow();
         return true;
       }
-      g_infoManager.SetShowInfo(false);
+
+      GUIINFO::CPlayerGUIInfo& guiInfo = CServiceBroker::GetGUI()->GetInfoManager().GetInfoProviders().GetPlayerInfoProvider();
+      guiInfo.SetShowInfo(false);
       m_bShowCurrentTime = false;
-      g_infoManager.SetDisplayAfterSeek(0); // Make sure display after seek is off.
+      guiInfo.SetDisplayAfterSeek(0); // Make sure display after seek is off.
 
       // switch resolution
-      g_graphicsContext.SetFullScreenVideo(true);
+      CServiceBroker::GetWinSystem()->GetGfxContext().SetFullScreenVideo(true);
 
       // now call the base class to load our windows
       CGUIWindow::OnMessage(message);
@@ -248,7 +251,7 @@ bool CGUIWindowFullScreen::OnMessage(CGUIMessage& message)
 
       CServiceBroker::GetSettings().Save();
 
-      g_graphicsContext.SetFullScreenVideo(false);
+      CServiceBroker::GetWinSystem()->GetGfxContext().SetFullScreenVideo(false);
 
       return true;
     }
@@ -285,7 +288,7 @@ void CGUIWindowFullScreen::FrameMove()
 {
   float playspeed = g_application.GetAppPlayer().GetPlaySpeed();
   if (playspeed != 1.0 && !g_application.GetAppPlayer().HasGame())
-    g_infoManager.SetDisplayAfterSeek();
+    CServiceBroker::GetGUI()->GetInfoManager().GetInfoProviders().GetPlayerInfoProvider().SetDisplayAfterSeek();
 
   if (!g_application.GetAppPlayer().HasPlayer())
     return;
@@ -301,7 +304,7 @@ void CGUIWindowFullScreen::FrameMove()
 
   if (m_dwShowViewModeTimeout)
   {
-    RESOLUTION_INFO res = g_graphicsContext.GetResInfo();
+    RESOLUTION_INFO res = CServiceBroker::GetWinSystem()->GetGfxContext().GetResInfo();
 
     {
       // get the "View Mode" string
@@ -338,7 +341,7 @@ void CGUIWindowFullScreen::FrameMove()
     // show resolution information
     {
       std::string strStatus;
-      if (CServiceBroker::GetWinSystem().IsFullScreen())
+      if (CServiceBroker::GetWinSystem()->IsFullScreen())
         strStatus = StringUtils::Format("%s %ix%i@%.2fHz - %s",
                                         g_localizeStrings.Get(13287).c_str(),
                                         res.iScreenWidth,
@@ -389,23 +392,23 @@ void CGUIWindowFullScreen::Process(unsigned int currentTime, CDirtyRegionList &d
 
   //! @todo This isn't quite optimal - ideally we'd only be dirtying up the actual video render rect
   //!       which is probably the job of the renderer as it can more easily track resizing etc.
-  m_renderRegion.SetRect(0, 0, (float)g_graphicsContext.GetWidth(), (float)g_graphicsContext.GetHeight());
+  m_renderRegion.SetRect(0, 0, (float)CServiceBroker::GetWinSystem()->GetGfxContext().GetWidth(), (float)CServiceBroker::GetWinSystem()->GetGfxContext().GetHeight());
 }
 
 void CGUIWindowFullScreen::Render()
 {
-  g_graphicsContext.SetRenderingResolution(g_graphicsContext.GetVideoResolution(), false);
+  CServiceBroker::GetWinSystem()->GetGfxContext().SetRenderingResolution(CServiceBroker::GetWinSystem()->GetGfxContext().GetVideoResolution(), false);
   g_application.GetAppPlayer().Render(true, 255);
-  g_graphicsContext.SetRenderingResolution(m_coordsRes, m_needsScaling);
+  CServiceBroker::GetWinSystem()->GetGfxContext().SetRenderingResolution(m_coordsRes, m_needsScaling);
   CGUIWindow::Render();
 }
 
 void CGUIWindowFullScreen::RenderEx()
 {
   CGUIWindow::RenderEx();
-  g_graphicsContext.SetRenderingResolution(g_graphicsContext.GetVideoResolution(), false);
+  CServiceBroker::GetWinSystem()->GetGfxContext().SetRenderingResolution(CServiceBroker::GetWinSystem()->GetGfxContext().GetVideoResolution(), false);
   g_application.GetAppPlayer().Render(false, 255, false);
-  g_graphicsContext.SetRenderingResolution(m_coordsRes, m_needsScaling);
+  CServiceBroker::GetWinSystem()->GetGfxContext().SetRenderingResolution(m_coordsRes, m_needsScaling);
 }
 
 void CGUIWindowFullScreen::SeekChapter(int iChapter)
@@ -413,7 +416,7 @@ void CGUIWindowFullScreen::SeekChapter(int iChapter)
   g_application.GetAppPlayer().SeekChapter(iChapter);
 
   // Make sure gui items are visible.
-  g_infoManager.SetDisplayAfterSeek();
+  CServiceBroker::GetGUI()->GetInfoManager().GetInfoProviders().GetPlayerInfoProvider().SetDisplayAfterSeek();
 }
 
 void CGUIWindowFullScreen::ToggleOSD()

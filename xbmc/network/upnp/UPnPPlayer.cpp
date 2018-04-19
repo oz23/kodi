@@ -32,6 +32,7 @@
 #include "utils/TimeUtils.h"
 #include "utils/Variant.h"
 #include "GUIInfoManager.h"
+#include "guilib/GUIComponent.h"
 #include "ThumbLoader.h"
 #include "video/VideoThumbLoader.h"
 #include "music/MusicThumbLoader.h"
@@ -181,12 +182,12 @@ CUPnPPlayer::CUPnPPlayer(IPlayerCallback& callback, const char* uuid)
   else
     CLog::Log(LOGERROR, "UPNP: CUPnPPlayer couldn't find device as %s", uuid);
 
-  CServiceBroker::GetWinSystem().RegisterRenderLoop(this);
+  CServiceBroker::GetWinSystem()->RegisterRenderLoop(this);
 }
 
 CUPnPPlayer::~CUPnPPlayer()
 {
-  CServiceBroker::GetWinSystem().UnregisterRenderLoop(this);
+  CServiceBroker::GetWinSystem()->UnregisterRenderLoop(this);
   CloseFile();
   CUPnP::UnregisterUserdata(m_delegate);
   delete m_delegate;
@@ -486,7 +487,7 @@ void CUPnPPlayer::SeekTime(int64_t ms)
                                 , "REL_TIME", PLT_Didl::FormatTimeStamp((NPT_UInt32)(ms / 1000))
                                 , m_delegate), failed);
 
-  g_infoManager.SetDisplayAfterSeek();
+  CServiceBroker::GetGUI()->GetInfoManager().GetInfoProviders().GetPlayerInfoProvider().SetDisplayAfterSeek();
   return;
 failed:
   CLog::Log(LOGERROR, "UPNP: CUPnPPlayer::SeekTime - unable to seek playback");

@@ -19,7 +19,7 @@
  */
 
 #include "RenderContext.h"
-#include "guilib/GraphicContext.h"
+#include "windowing/GraphicContext.h"
 #include "rendering/RenderSystem.h"
 #include "settings/DisplaySettings.h"
 #include "settings/MediaSettings.h"
@@ -225,7 +225,7 @@ RESOLUTION CRenderContext::GetVideoResolution()
   return m_graphicsContext.GetVideoResolution();
 }
 
-void CRenderContext::Clear(color_t color /* = 0 */)
+void CRenderContext::Clear(UTILS::Color color /* = 0 */)
 {
   m_graphicsContext.Clear(color);
 }
@@ -240,7 +240,7 @@ void CRenderContext::SetRenderingResolution(const RESOLUTION_INFO &res, bool nee
   m_graphicsContext.SetRenderingResolution(res, needsScaling);
 }
 
-color_t CRenderContext::MergeAlpha(color_t color)
+UTILS::Color CRenderContext::MergeAlpha(UTILS::Color color)
 {
   return m_graphicsContext.MergeAlpha(color);
 }

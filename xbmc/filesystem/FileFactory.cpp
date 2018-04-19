@@ -21,24 +21,27 @@
 #include "network/Network.h"
 #include "FileFactory.h"
 #ifdef TARGET_POSIX
-#include "posix/PosixFile.h"
+#include "platform/posix/filesystem/PosixFile.h"
 #elif defined(TARGET_WINDOWS)
-#include "win32/Win32File.h"
+#include "platform/win32/filesystem/Win32File.h"
+#ifdef TARGET_WINDOWS_STORE
+#include "platform/win10/filesystem/WinLibraryFile.h"
+#endif
 #endif // TARGET_WINDOWS
 #include "CurlFile.h"
 #include "DAVFile.h"
 #include "ShoutcastFile.h"
 #ifdef HAS_FILESYSTEM_SMB
 #ifdef TARGET_WINDOWS
-#include "win32/Win32SMBFile.h"
+#include "platform/win32/filesystem/Win32SMBFile.h"
 #else
-#include "SMBFile.h"
+#include "platform/posix/filesystem/SMBFile.h"
 #endif
 #endif
 #include "CDDAFile.h"
 #include "ISOFile.h"
 #if defined(TARGET_ANDROID)
-#include "APKFile.h"
+#include "platform/android/filesystem/APKFile.h"
 #endif
 #include "XbtFile.h"
 #include "ZipFile.h"
@@ -49,7 +52,7 @@
 #include "NFSFile.h"
 #endif
 #if defined(TARGET_ANDROID)
-#include "AndroidAppFile.h"
+#include "platform/android/filesystem/AndroidAppFile.h"
 #endif
 #ifdef HAS_UPNP
 #include "UPnPFile.h"
@@ -71,9 +74,6 @@
 #include "utils/StringUtils.h"
 #include "ServiceBroker.h"
 #include "addons/VFSEntry.h"
-#ifdef TARGET_WINDOWS_STORE
-#include "win10/WinLibraryFile.h"
-#endif
 
 using namespace ADDON;
 using namespace XFILE;
@@ -140,6 +140,9 @@ IFile* CFileFactory::CreateLoader(const CURL& url)
   else if (url.IsProtocol("bluray")) return new CBlurayFile();
 #endif
   else if (url.IsProtocol("resource")) return new CResourceFile();
+#ifdef TARGET_WINDOWS_STORE
+  else if (CWinLibraryFile::IsValid(url)) return new CWinLibraryFile();
+#endif
 
   bool networkAvailable = CServiceBroker::GetNetwork().IsAvailable();
   if (networkAvailable)
@@ -167,9 +170,6 @@ IFile* CFileFactory::CreateLoader(const CURL& url)
 #endif
 #ifdef HAS_UPNP
     else if (url.IsProtocol("upnp")) return new CUPnPFile();
-#endif
-#ifdef TARGET_WINDOWS_STORE
-    else if (CWinLibraryFile::IsValid(url)) return new CWinLibraryFile();
 #endif
   }
 

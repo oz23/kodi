@@ -45,7 +45,8 @@ enum TIME_FORMAT { TIME_FORMAT_GUESS       =  0,
                    TIME_FORMAT_H_MM_SS_XX  = 27,
                    TIME_FORMAT_SECS        = 32,
                    TIME_FORMAT_MINS        = 64,
-                   TIME_FORMAT_HOURS       = 128 };
+                   TIME_FORMAT_HOURS       = 128,
+                   TIME_FORMAT_M           = 256 };
 
 class CDateTime;
 
@@ -211,6 +212,7 @@ public:
   std::string GetAsLocalizedDate(const std::string &strFormat) const;
   std::string GetAsLocalizedTime(const std::string &format, bool withSeconds=true) const;
   std::string GetAsLocalizedDateTime(bool longDate=false, bool withSeconds=true) const;
+  std::string GetAsLocalizedTime(TIME_FORMAT format) const;
   std::string GetAsRFC1123DateTime() const;
   std::string GetAsW3CDate() const;
   std::string GetAsW3CDateTime(bool asUtc = false) const;

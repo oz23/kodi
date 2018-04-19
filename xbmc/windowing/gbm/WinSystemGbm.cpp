@@ -26,8 +26,9 @@
 #include <string.h>
 
 #include "OptionalsReg.h"
-#include "guilib/GraphicContext.h"
-#include "powermanagement/linux/LinuxPowerSyscall.h"
+#include "platform/linux/OptionalsReg.h"
+#include "windowing/GraphicContext.h"
+#include "platform/linux/powermanagement/LinuxPowerSyscall.h"
 #include "settings/DisplaySettings.h"
 #include "utils/log.h"
 #include "utils/StringUtils.h"
@@ -47,29 +48,30 @@ CWinSystemGbm::CWinSystemGbm() :
     envSink = getenv("AE_SINK");
   if (StringUtils::EqualsNoCase(envSink, "ALSA"))
   {
-    GBM::ALSARegister();
+    OPTIONALS::ALSARegister();
   }
   else if (StringUtils::EqualsNoCase(envSink, "PULSE"))
   {
-    GBM::PulseAudioRegister();
+    OPTIONALS::PulseAudioRegister();
   }
   else if (StringUtils::EqualsNoCase(envSink, "SNDIO"))
   {
-    GBM::SndioRegister();
+    OPTIONALS::SndioRegister();
   }
   else
   {
-    if (!GBM::PulseAudioRegister())
+    if (!OPTIONALS::PulseAudioRegister())
     {
-      if (!GBM::ALSARegister())
+      if (!OPTIONALS::ALSARegister())
       {
-        GBM::SndioRegister();
+        OPTIONALS::SndioRegister();
       }
     }
   }
 
   m_winEvents.reset(new CWinEventsLinux());
   CLinuxPowerSyscall::Register();
+  m_lirc.reset(OPTIONALS::LircRegister());
 }
 
 bool CWinSystemGbm::InitWindowSystem()
@@ -163,7 +165,7 @@ void CWinSystemGbm::UpdateResolutions()
 
     for (unsigned int i = 0; i < resolutions.size(); i++)
     {
-      g_graphicsContext.ResetOverscan(resolutions[i]);
+      CServiceBroker::GetWinSystem()->GetGfxContext().ResetOverscan(resolutions[i]);
       CDisplaySettings::GetInstance().AddResolutionInfo(resolutions[i]);
 
       CLog::Log(LOGNOTICE, "Found resolution %dx%d for display %d with %dx%d%s @ %f Hz",
@@ -265,4 +267,3 @@ void CWinSystemGbm::OnLostDevice()
       (*i)->OnLostDisplay();
   }
 }
-

@@ -70,7 +70,7 @@
 #include "messaging/ApplicationMessenger.h"
 #include "CompileInfo.h"
 #include "settings/DisplaySettings.h"
-#include "guilib/GraphicContext.h"
+#include "windowing/GraphicContext.h"
 #include "guilib/GUIWindowManager.h"
 // Audio Engine includes for Factory and interfaces
 #include "cores/AudioEngine/Interfaces/AE.h"
@@ -79,13 +79,14 @@
 
 #include "ServiceBroker.h"
 #include "GUIInfoManager.h"
-#include "guiinfo/GUIInfoLabels.h"
+#include "guilib/guiinfo/GUIInfoLabels.h"
+#include "guilib/GUIComponent.h"
 #include "platform/android/activity/IInputDeviceCallbacks.h"
 #include "platform/android/activity/IInputDeviceEventHandler.h"
 #include "input/mouse/MouseStat.h"
 #include "input/Key.h"
 #include "utils/log.h"
-#include "network/android/NetworkAndroid.h"
+#include "platform/android/network/NetworkAndroid.h"
 #include "cores/VideoPlayer/VideoRenderers/RenderManager.h"
 #include "filesystem/SpecialProtocol.h"
 #include "TextureCache.h"
@@ -177,16 +178,16 @@ void CXBMCApp::Announce(ANNOUNCEMENT::AnnouncementFlag flag, const char *sender,
   }
   else if (flag & Player)
   {
-     if (strcmp(message, "OnPlay") == 0)
+    if (strcmp(message, "OnPlay") == 0 || strcmp(message, "OnResume") == 0)
       OnPlayBackStarted();
     else if (strcmp(message, "OnPause") == 0)
       OnPlayBackPaused();
     else if (strcmp(message, "OnStop") == 0)
       OnPlayBackStopped();
-     else if (strcmp(message, "OnSeek") == 0)
-       UpdateSessionState();
-     else if (strcmp(message, "OnSpeedChanged") == 0)
-       UpdateSessionState();
+    else if (strcmp(message, "OnSeek") == 0)
+      UpdateSessionState();
+    else if (strcmp(message, "OnSpeedChanged") == 0)
+      UpdateSessionState();
   }
   else if (flag & Info)
   {
@@ -593,7 +594,7 @@ CRect CXBMCApp::MapRenderToDroid(const CRect& srcRect)
   CJNIRect r = m_xbmcappinstance->getDisplayRect();
   if (r.width() && r.height())
   {
-    RESOLUTION_INFO renderRes = CDisplaySettings::GetInstance().GetResolutionInfo(g_graphicsContext.GetVideoResolution());
+    RESOLUTION_INFO renderRes = CDisplaySettings::GetInstance().GetResolutionInfo(CServiceBroker::GetWinSystem()->GetGfxContext().GetVideoResolution());
     scaleX = (double)r.width() / renderRes.iWidth;
     scaleY = (double)r.height() / renderRes.iHeight;
   }
@@ -603,10 +604,11 @@ CRect CXBMCApp::MapRenderToDroid(const CRect& srcRect)
 
 void CXBMCApp::UpdateSessionMetadata()
 {
+  CGUIInfoManager& infoMgr = CServiceBroker::GetGUI()->GetInfoManager();
   CJNIMediaMetadataBuilder builder;
   builder
-      .putString(CJNIMediaMetadata::METADATA_KEY_DISPLAY_TITLE, g_infoManager.GetLabel(PLAYER_TITLE))
-      .putString(CJNIMediaMetadata::METADATA_KEY_TITLE, g_infoManager.GetLabel(PLAYER_TITLE))
+      .putString(CJNIMediaMetadata::METADATA_KEY_DISPLAY_TITLE, infoMgr.GetLabel(PLAYER_TITLE))
+      .putString(CJNIMediaMetadata::METADATA_KEY_TITLE, infoMgr.GetLabel(PLAYER_TITLE))
       .putLong(CJNIMediaMetadata::METADATA_KEY_DURATION, g_application.GetAppPlayer().GetTotalTime())
 //      .putString(CJNIMediaMetadata::METADATA_KEY_ART_URI, thumb)
 //      .putString(CJNIMediaMetadata::METADATA_KEY_DISPLAY_ICON_URI, thumb)
@@ -617,18 +619,18 @@ void CXBMCApp::UpdateSessionMetadata()
   if (m_playback_state & PLAYBACK_STATE_VIDEO)
   {
     builder
-        .putString(CJNIMediaMetadata::METADATA_KEY_DISPLAY_SUBTITLE, g_infoManager.GetLabel(VIDEOPLAYER_TAGLINE))
-        .putString(CJNIMediaMetadata::METADATA_KEY_ARTIST, g_infoManager.GetLabel(VIDEOPLAYER_DIRECTOR))
+        .putString(CJNIMediaMetadata::METADATA_KEY_DISPLAY_SUBTITLE, infoMgr.GetLabel(VIDEOPLAYER_TAGLINE))
+        .putString(CJNIMediaMetadata::METADATA_KEY_ARTIST, infoMgr.GetLabel(VIDEOPLAYER_DIRECTOR))
         ;
-    thumb = g_infoManager.GetImage(VIDEOPLAYER_COVER, -1);
+    thumb = infoMgr.GetImage(VIDEOPLAYER_COVER, -1);
   }
   else if (m_playback_state & PLAYBACK_STATE_AUDIO)
   {
     builder
-        .putString(CJNIMediaMetadata::METADATA_KEY_DISPLAY_SUBTITLE, g_infoManager.GetLabel(MUSICPLAYER_ARTIST))
-        .putString(CJNIMediaMetadata::METADATA_KEY_ARTIST, g_infoManager.GetLabel(MUSICPLAYER_ARTIST))
+        .putString(CJNIMediaMetadata::METADATA_KEY_DISPLAY_SUBTITLE, infoMgr.GetLabel(MUSICPLAYER_ARTIST))
+        .putString(CJNIMediaMetadata::METADATA_KEY_ARTIST, infoMgr.GetLabel(MUSICPLAYER_ARTIST))
         ;
-    thumb = g_infoManager.GetImage(MUSICPLAYER_COVER, -1);
+    thumb = infoMgr.GetImage(MUSICPLAYER_COVER, -1);
   }
   bool needrecaching = false;
   std::string cachefile = CTextureCache::GetInstance().CheckCachedImage(thumb, needrecaching);
@@ -962,7 +964,7 @@ void CXBMCApp::onReceive(CJNIIntent intent)
     if (newstate != m_headsetPlugged)
     {
       m_headsetPlugged = newstate;
-      CServiceBroker::GetActiveAE().DeviceChange();
+      CServiceBroker::GetActiveAE()->DeviceChange();
     }
   }
   else if (action == "android.media.action.HDMI_AUDIO_PLUG")
@@ -974,7 +976,7 @@ void CXBMCApp::onReceive(CJNIIntent intent)
     {
       CLog::Log(LOGDEBUG, "-- HDMI state: %s",  newstate ? "on" : "off");
       m_hdmiPlugged = newstate;
-      CServiceBroker::GetActiveAE().DeviceChange();
+      CServiceBroker::GetActiveAE()->DeviceChange();
     }
   }
   else if (action == "android.intent.action.SCREEN_OFF")

@@ -61,11 +61,6 @@ PVR::CPVRManager &CServiceBroker::GetPVRManager()
   return g_application.m_ServiceManager->GetPVRManager();
 }
 
-IAE& CServiceBroker::GetActiveAE()
-{
-  return g_application.m_ServiceManager->GetActiveAE();
-}
-
 CContextMenuManager& CServiceBroker::GetContextMenuManager()
 {
   return g_application.m_ServiceManager->GetContextMenuManager();
@@ -146,14 +141,29 @@ bool CServiceBroker::IsServiceManagerUp()
   return g_application.m_ServiceManager->init_level == 3;
 }
 
-CWinSystemBase& CServiceBroker::GetWinSystem()
+CWinSystemBase* CServiceBroker::m_pWinSystem = nullptr;
+
+CWinSystemBase* CServiceBroker::GetWinSystem()
 {
-  return g_application.m_ServiceManager->GetWinSystem();
+  return m_pWinSystem;
 }
 
-CRenderSystemBase& CServiceBroker::GetRenderSystem()
+void CServiceBroker::RegisterWinSystem(CWinSystemBase *winsystem)
 {
-  return *g_application.m_ServiceManager->GetWinSystem().GetRenderSystem();
+  m_pWinSystem = winsystem;
+}
+
+void CServiceBroker::UnregisterWinSystem()
+{
+  m_pWinSystem = nullptr;
+}
+
+CRenderSystemBase* CServiceBroker::GetRenderSystem()
+{
+  if (m_pWinSystem)
+    return m_pWinSystem->GetRenderSystem();
+
+  return nullptr;
 }
 
 CPowerManager& CServiceBroker::GetPowerManager()
@@ -201,4 +211,19 @@ void CServiceBroker::RegisterGUI(CGUIComponent *gui)
 void CServiceBroker::UnregisterGUI()
 {
   m_pGUI = nullptr;
+}
+
+// audio
+IAE* CServiceBroker::m_pActiveAE = nullptr;
+IAE* CServiceBroker::GetActiveAE()
+{
+  return m_pActiveAE;
+}
+void CServiceBroker::RegisterAE(IAE *ae)
+{
+  m_pActiveAE = ae;
+}
+void CServiceBroker::UnregisterAE()
+{
+  m_pActiveAE = nullptr;
 }

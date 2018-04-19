@@ -28,9 +28,9 @@
 #include "rendering/dx/RenderContext.h"
 #include "utils/log.h"
 #if defined(HAVE_SSE2)
-#include "utils/win32/gpu_memcpy_sse4.h"
+#include "platform/win32/utils/gpu_memcpy_sse4.h"
 #endif
-#include "utils/win32/memcpy_sse2.h"
+#include "platform/win32/utils/memcpy_sse2.h"
 #include "utils/CPUInfo.h"
 
 #define PLANE_Y 0
@@ -235,7 +235,7 @@ bool CRenderBuffer::CreateBuffer(EBufferFormat fmt, unsigned width, unsigned hei
   {
     DXGI_FORMAT uvFormat = DXGI_FORMAT_R8G8_UNORM;
     // FL 9.x doesn't support DXGI_FORMAT_R8G8_UNORM, so we have to use SNORM and correct values in shader
-    if (!DX::Windowing().IsFormatSupport(uvFormat, D3D11_FORMAT_SUPPORT_TEXTURE2D))
+    if (!DX::Windowing()->IsFormatSupport(uvFormat, D3D11_FORMAT_SUPPORT_TEXTURE2D))
       uvFormat = DXGI_FORMAT_R8G8_SNORM;
     if ( !m_textures[PLANE_Y].Create(m_widthTex,       m_heightTex,      1, usage, DXGI_FORMAT_R8_UNORM)
       || !m_textures[PLANE_UV].Create(m_widthTex >> 1, m_heightTex >> 1, 1, usage, uvFormat))

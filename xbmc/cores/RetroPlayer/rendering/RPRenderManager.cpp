@@ -30,9 +30,10 @@
 #include "cores/RetroPlayer/process/RenderBufferManager.h"
 #include "cores/RetroPlayer/process/RPProcessInfo.h"
 #include "cores/RetroPlayer/rendering/VideoRenderers/RPBaseRenderer.h"
-#include "guilib/TransformMatrix.h"
+#include "utils/TransformMatrix.h"
 #include "messaging/ApplicationMessenger.h"
 #include "threads/SingleLock.h"
+#include "utils/Color.h"
 #include "utils/log.h"
 
 extern "C" {
@@ -238,7 +239,7 @@ void CRPRenderManager::RenderControl(bool bClear, bool bUseAlpha, const CRect &r
   }
 
   // Calculate alpha
-  color_t alpha = 255;
+  UTILS::Color alpha = 255;
   if (bUseAlpha)
     alpha = m_renderContext.MergeAlpha(0xFF000000) >> 24;
 

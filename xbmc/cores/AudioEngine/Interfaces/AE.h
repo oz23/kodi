@@ -74,16 +74,10 @@ protected:
   virtual ~IAE() = default;
 
   /**
-   * Returns true when it should be possible to initialize this engine, if it returns false
-   * CAEFactory can possibly fall back to a different one
-   */
-  virtual bool CanInit() { return true; }
-
-  /**
    * Initializes the AudioEngine, called by CFactory when it is time to initialize the audio engine.
    * Do not call this directly, CApplication will call this when it is ready
    */
-  virtual bool Initialize() = 0;
+  virtual void Start() = 0;
 public:
   /**
    * Called when the application needs to terminate the engine
@@ -164,11 +158,6 @@ public:
    * @param sound The IAESound object to free
    */
   virtual void FreeSound(IAESound *sound) = 0;
-
-  /**
-   * Callback by CApplication for Garbage Collection. This method is called by CApplication every 500ms and can be used to clean up and free no-longer used resources.
-   */
-  virtual void GarbageCollect() = 0;
 
   /**
    * Enumerate the supported audio output devices

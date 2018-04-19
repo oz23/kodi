@@ -26,8 +26,8 @@
 #include "cores/RetroPlayer/rendering/RenderSettings.h"
 #include "cores/RetroPlayer/rendering/RenderVideoSettings.h"
 #include "games/GameServices.h"
-#include "guilib/GraphicContext.h"
-#include "guilib/TransformMatrix.h"
+#include "windowing/GraphicContext.h"
+#include "utils/TransformMatrix.h"
 #include "settings/GameSettings.h"
 #include "settings/MediaSettings.h"
 #include "utils/Geometry.h"
@@ -71,12 +71,12 @@ CGUIGameControl::~CGUIGameControl()
   UnregisterControl();
 }
 
-void CGUIGameControl::SetScalingMethod(const CGUIInfoLabel &scalingMethod)
+void CGUIGameControl::SetScalingMethod(const GUILIB::GUIINFO::CGUIInfoLabel &scalingMethod)
 {
   m_scalingMethodInfo = scalingMethod;
 }
 
-void CGUIGameControl::SetViewMode(const CGUIInfoLabel &viewMode)
+void CGUIGameControl::SetViewMode(const GUILIB::GUIINFO::CGUIInfoLabel &viewMode)
 {
   m_viewModeInfo = viewMode;
 }

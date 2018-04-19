@@ -23,7 +23,7 @@
 #include "cores/RetroPlayer/process/RenderBufferManager.h"
 #include "cores/RetroPlayer/rendering/RenderContext.h"
 #include "cores/DataCacheCore.h"
-#include "guilib/GraphicContext.h"
+#include "windowing/GraphicContext.h"
 #include "rendering/RenderSystem.h"
 #include "settings/DisplaySettings.h"
 #include "settings/MediaSettings.h"
@@ -47,9 +47,9 @@ CCriticalSection CRPProcessInfo::m_createSection;
 CRPProcessInfo::CRPProcessInfo(std::string platformName) :
   m_platformName(std::move(platformName)),
   m_renderBufferManager(new CRenderBufferManager),
-  m_renderContext(new CRenderContext(&CServiceBroker::GetRenderSystem(),
-                                     &CServiceBroker::GetWinSystem(),
-                                     g_graphicsContext,
+  m_renderContext(new CRenderContext(CServiceBroker::GetRenderSystem(),
+                                     CServiceBroker::GetWinSystem(),
+                                     CServiceBroker::GetWinSystem()->GetGfxContext(),
                                      CDisplaySettings::GetInstance(),
                                      CMediaSettings::GetInstance()))
 {

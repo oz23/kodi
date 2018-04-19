@@ -30,7 +30,7 @@
 #include "DVDDemuxers/DVDDemux.h"
 #include "cores/VideoPlayer/Interface/Addon/DemuxPacket.h"
 #include "cores/VideoPlayer/Interface/Addon/TimingConstants.h"
-#include "guilib/GraphicContext.h"
+#include "windowing/GraphicContext.h"
 #include <sstream>
 #include <iomanip>
 #include <numeric>
@@ -89,7 +89,6 @@ CVideoPlayerVideo::CVideoPlayerVideo(CDVDClock* pClock
   m_iFrameRateErr = 0;
   m_iFrameRateLength = 0;
   m_bFpsInvalid = false;
-  m_bAllowFullscreen = false;
 }
 
 CVideoPlayerVideo::~CVideoPlayerVideo()
@@ -230,6 +229,7 @@ void CVideoPlayerVideo::OpenStream(CDVDStreamInfo &hint, CDVDVideoCodec* codec)
   m_rewindStalled = false;
   m_packets.clear();
   m_syncState = IDVDStreamPlayer::SYNC_STARTING;
+  m_renderManager.ShowVideo(false);
 }
 
 void CVideoPlayerVideo::CloseStream(bool bWaitForBuffers)
@@ -422,6 +422,7 @@ void CVideoPlayerVideo::Process()
       m_syncState = IDVDStreamPlayer::SYNC_INSYNC;
       m_droppingStats.Reset();
       m_rewindStalled = false;
+      m_renderManager.ShowVideo(true);
 
       CLog::Log(LOGDEBUG, "CVideoPlayerVideo - CDVDMsg::GENERAL_RESYNC(%f)", pts);
     }
@@ -442,6 +443,7 @@ void CVideoPlayerVideo::Process()
       m_packets.clear();
       m_droppingStats.Reset();
       m_syncState = IDVDStreamPlayer::SYNC_STARTING;
+      m_renderManager.ShowVideo(false);
       m_rewindStalled = false;
     }
     else if (pMsg->IsType(CDVDMsg::GENERAL_FLUSH)) // private message sent by (CVideoPlayerVideo::Flush())
@@ -466,7 +468,10 @@ void CVideoPlayerVideo::Process()
 
       m_stalled = true;
       if (sync)
+      {
         m_syncState = IDVDStreamPlayer::SYNC_STARTING;
+        m_renderManager.ShowVideo(false);
+      }
 
       m_renderManager.DiscardBuffer();
     }
@@ -839,15 +844,12 @@ CVideoPlayerVideo::EOutputState CVideoPlayerVideo::OutputPicture(const VideoPict
 
   if (!m_renderManager.Configure(*pPicture,
                                 static_cast<float>(config_framerate),
-                                m_bAllowFullscreen,
                                 m_hints.orientation,
                                 m_pVideoCodec->GetAllowedReferences()))
   {
     CLog::Log(LOGERROR, "%s - failed to configure renderer", __FUNCTION__);
     return OUTPUT_ABORT;
   }
-
-  m_bAllowFullscreen = false;
 
   //try to calculate the framerate
   m_ptsTracker.Add(pPicture->pts);

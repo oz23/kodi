@@ -18,6 +18,7 @@
  *
  */
 
+#include "WinEventsWin10.h"
 #include "Application.h"
 #include "guilib/GUIComponent.h"
 #include "guilib/GUIWindowManager.h"
@@ -28,9 +29,9 @@
 #include "input/ActionIDs.h"
 #include "interfaces/AnnouncementManager.h"
 #include "messaging/ApplicationMessenger.h"
+#include "platform/win10/AsyncHelpers.h"
 #include "platform/win10/input/RemoteControlXbox.h"
 #include "rendering/dx/DeviceResources.h"
-#include "platform/win10/AsyncHelpers.h"
 #include "rendering/dx/RenderContext.h"
 #include "ServiceBroker.h"
 #include "utils/log.h"
@@ -38,7 +39,6 @@
 #include "utils/Variant.h"
 #include "windowing/windows/WinKeyMap.h"
 #include "xbmc/GUIUserMessages.h"
-#include "WinEventsWin10.h"
 
 using namespace Windows::Devices::Input;
 using namespace Windows::Foundation;
@@ -57,6 +57,9 @@ static Point GetScreenPoint(Point point)
   auto dpi = DX::DeviceResources::Get()->GetDpi();
   return Point(DX::ConvertDipsToPixels(point.X, dpi), DX::ConvertDipsToPixels(point.Y, dpi));
 }
+
+CWinEventsWin10::CWinEventsWin10() = default;
+CWinEventsWin10::~CWinEventsWin10() = default;
 
 void CWinEventsWin10::InitOSKeymap(void)
 {
@@ -182,6 +185,11 @@ void CWinEventsWin10::InitEventHandlers(CoreWindow^ window)
     m_smtc->IsEnabled = true;
     CAnnouncementManager::GetInstance().AddAnnouncer(this);
   }
+  if (CSysInfo::GetWindowsDeviceFamily() == CSysInfo::WindowsDeviceFamily::Xbox)
+  {
+    m_remote = std::make_unique<CRemoteControlXbox>();
+    m_remote->Initialize();
+  }
 }
 
 void CWinEventsWin10::UpdateWindowSize()
@@ -202,7 +210,7 @@ void CWinEventsWin10::UpdateWindowSize()
   newEvent.type = XBMC_VIDEORESIZE;
   newEvent.resize.w = size.Width;
   newEvent.resize.h = size.Height;
-  if (g_application.GetRenderGUI() && !DX::Windowing().IsAlteringWindow() && newEvent.resize.w > 0 && newEvent.resize.h > 0)
+  if (g_application.GetRenderGUI() && !DX::Windowing()->IsAlteringWindow() && newEvent.resize.w > 0 && newEvent.resize.h > 0)
     MessagePush(&newEvent);
 }
 
@@ -245,11 +253,11 @@ void CWinEventsWin10::HandleWindowSizeChanged()
   if (m_bMoved)
   {
     // it will get position from CoreWindow
-    DX::Windowing().OnMove(0, 0);
+    DX::Windowing()->OnMove(0, 0);
   }
   if (m_bResized)
   {
-    DX::Windowing().OnResize(m_logicalWidth, m_logicalHeight);
+    DX::Windowing()->OnResize(m_logicalWidth, m_logicalHeight);
     UpdateWindowSize();
   }
   m_bResized = false;
@@ -261,7 +269,7 @@ void CWinEventsWin10::OnVisibilityChanged(CoreWindow^ sender, VisibilityChangedE
   bool active = g_application.GetRenderGUI();
   g_application.SetRenderGUI(args->Visible);
   if (g_application.GetRenderGUI() != active)
-    DX::Windowing().NotifyAppActiveChange(g_application.GetRenderGUI());
+    DX::Windowing()->NotifyAppActiveChange(g_application.GetRenderGUI());
   CLog::Log(LOGDEBUG, __FUNCTION__": window is %s", g_application.GetRenderGUI() ? "shown" : "hidden");
 }
 
@@ -270,7 +278,7 @@ void CWinEventsWin10::OnWindowActivationChanged(CoreWindow ^ sender, WindowActiv
   bool active = g_application.GetRenderGUI();
   if (args->WindowActivationState == CoreWindowActivationState::Deactivated)
   {
-    g_application.SetRenderGUI(DX::Windowing().WindowedMode());
+    g_application.SetRenderGUI(DX::Windowing()->WindowedMode());
   }
   else if (args->WindowActivationState == CoreWindowActivationState::PointerActivated
     || args->WindowActivationState == CoreWindowActivationState::CodeActivated)
@@ -278,7 +286,7 @@ void CWinEventsWin10::OnWindowActivationChanged(CoreWindow ^ sender, WindowActiv
     g_application.SetRenderGUI(true);
   }
   if (g_application.GetRenderGUI() != active)
-    DX::Windowing().NotifyAppActiveChange(g_application.GetRenderGUI());
+    DX::Windowing()->NotifyAppActiveChange(g_application.GetRenderGUI());
   CLog::Log(LOGDEBUG, __FUNCTION__": window is %s", g_application.GetRenderGUI() ? "active" : "inactive");
 }
 
@@ -461,8 +469,8 @@ void CWinEventsWin10::OnAcceleratorKeyActivated(CoreDispatcher^ sender, Accelera
   static auto lockedState = CoreVirtualKeyStates::Locked;
   static VirtualKey keyStore = VirtualKey::None;
 
-  if ( CSysInfo::GetWindowsDeviceFamily() == CSysInfo::WindowsDeviceFamily::Xbox 
-    && CRemoteControlXbox::IsRemoteControlId(args->DeviceId->Data()))
+  // skip if device is remote control
+  if (m_remote && m_remote->IsRemoteDevice(args->DeviceId->Data()))
     return;
 
   bool isDown = false;
@@ -533,7 +541,7 @@ void CWinEventsWin10::OnDpiChanged(DisplayInformation^ sender, Platform::Object^
   // See DeviceResources.cpp for more details.
   //critical_section::scoped_lock lock(m_deviceResources->GetCriticalSection());
   RECT resizeRect = { 0,0,0,0 };
-  DX::Windowing().DPIChanged(sender->LogicalDpi, resizeRect);
+  DX::Windowing()->DPIChanged(sender->LogicalDpi, resizeRect);
   CGenericTouchInputHandler::GetInstance().SetScreenDPI(DX::DisplayMetrics::Dpi100);
 }
 
@@ -615,7 +623,7 @@ void CWinEventsWin10::Announce(AnnouncementFlag flag, const char * sender, const
     bool changed = false;
     MediaPlaybackStatus status = MediaPlaybackStatus::Changing;
 
-    if (strcmp(message, "OnPlay") == 0)
+    if (strcmp(message, "OnPlay") == 0 || strcmp(message, "OnResume") == 0)
     {
       changed = true;
       status = MediaPlaybackStatus::Playing;

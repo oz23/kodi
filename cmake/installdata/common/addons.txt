@@ -1,6 +1,11 @@
 addons/audioencoder.kodi.builtin.aac/*
 addons/audioencoder.kodi.builtin.wma/*
 addons/game.controller.default/*
+addons/kodi.audiodecoder/*
+addons/kodi.game/*
+addons/kodi.imagedecoder/*
+addons/kodi.inputstream/*
+addons/kodi.peripheral/*
 addons/kodi.resource/*
 addons/xbmc.addon/metadata.xsd
 addons/xbmc.addon/repository.xsd

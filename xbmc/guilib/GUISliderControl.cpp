@@ -25,7 +25,7 @@
 #include "input/Key.h"
 #include "utils/MathUtils.h"
 #include "utils/StringUtils.h"
-#include "guiinfo/GUIInfoLabels.h"
+#include "guilib/guiinfo/GUIInfoLabels.h"
 #include "GUIWindowManager.h"
 
 static const SliderAction actions[] = {
@@ -76,7 +76,7 @@ void CGUISliderControl::Process(unsigned int currentTime, CDirtyRegionList &dirt
   if (infoCode)
   {
     int val;
-    if (g_infoManager.GetInt(val, infoCode))
+    if (CServiceBroker::GetGUI()->GetInfoManager().GetInt(val, infoCode))
       SetIntValue(val);
   }
 

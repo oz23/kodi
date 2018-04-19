@@ -184,20 +184,13 @@ void CPowerManager::OnSleep()
 
   CLog::Log(LOGNOTICE, "%s: Running sleep jobs", __FUNCTION__);
 
-  // stop lirc
-  if (CBuiltins::GetInstance().HasCommand("LIRC.Stop"))
-  {
-    CLog::Log(LOGNOTICE, "%s: Stopping lirc", __FUNCTION__);
-    CBuiltins::GetInstance().Execute("LIRC.Stop");
-  }
-
   CServiceBroker::GetPVRManager().OnSleep();
   StorePlayerState();
   g_application.StopPlaying();
   g_application.StopShutdownTimer();
   g_application.StopScreenSaverTimer();
   g_application.CloseNetworkShares();
-  CServiceBroker::GetActiveAE().Suspend();
+  CServiceBroker::GetActiveAE()->Suspend();
 }
 
 void CPowerManager::OnWake()
@@ -214,7 +207,7 @@ void CPowerManager::OnWake()
     dialog->Close(true); // force close. no closing animation, sound etc at this early stage
 
 #if defined(HAS_SDL) || defined(TARGET_WINDOWS)
-  if (CServiceBroker::GetWinSystem().IsFullScreen())
+  if (CServiceBroker::GetWinSystem()->IsFullScreen())
   {
 #if defined(TARGET_WINDOWS_DESKTOP)
     ShowWindow(g_hWnd, SW_RESTORE);
@@ -224,14 +217,7 @@ void CPowerManager::OnWake()
   g_application.ResetScreenSaver();
 #endif
 
-  // restart lirc
-  if (CBuiltins::GetInstance().HasCommand("LIRC.Start"))
-  {
-    CLog::Log(LOGNOTICE, "%s: Restarting lirc", __FUNCTION__);
-    CBuiltins::GetInstance().Execute("LIRC.Start");
-  }
-
-  CServiceBroker::GetActiveAE().Resume();
+  CServiceBroker::GetActiveAE()->Resume();
   g_application.UpdateLibraries();
   CServiceBroker::GetWeatherManager().Refresh();
   CServiceBroker::GetPVRManager().OnWake();

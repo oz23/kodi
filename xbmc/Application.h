@@ -24,7 +24,7 @@
 
 #include "addons/AddonSystemSettings.h"
 #include "guilib/IMsgTargetCallback.h"
-#include "guilib/Resolution.h"
+#include "windowing/Resolution.h"
 #include "utils/GlobalsHandling.h"
 #include "messaging/IMessageTarget.h"
 #include "ServiceManager.h"
@@ -86,6 +86,11 @@ class CSplash;
 class CBookmark;
 class IActionListener;
 class CGUIComponent;
+
+namespace ActiveAE
+{
+  class CActiveAE;
+}
 
 namespace VIDEO
 {
@@ -186,7 +191,7 @@ public:
   int  GetMessageMask() override;
   void OnApplicationMessage(KODI::MESSAGING::ThreadMessage* pMsg) override;
 
-  bool PlayMedia(const CFileItem& item, const std::string &player, int iPlaylist);
+  bool PlayMedia(CFileItem& item, const std::string &player, int iPlaylist);
   bool ProcessAndStartPlaylist(const std::string& strPlayList, PLAYLIST::CPlayList& playlist, int iPlaylist, int track=0);
   bool PlayFile(CFileItem item, const std::string& player, bool bRestart = false);
   void StopPlaying();
@@ -283,6 +288,8 @@ public:
   void StartMusicArtistScan(const std::string& strDirectory, bool refresh = false);
 
   void UpdateLibraries();
+
+  void UpdateCurrentPlayArt();
 
   bool ExecuteXBMCAction(std::string action, const CGUIListItemPtr &item = NULL);
 
@@ -404,6 +411,8 @@ protected:
   bool NotifyActionListeners(const CAction &action) const;
 
   std::unique_ptr<CGUIComponent> m_pGUI;
+  std::unique_ptr<CWinSystemBase> m_pWinSystem;
+  std::unique_ptr<ActiveAE::CActiveAE> m_pActiveAE;
 
   bool m_confirmSkinChange;
   bool m_ignoreSkinSettingChanges;

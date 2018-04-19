@@ -34,10 +34,6 @@ class CServiceAddonManager;
 class CRepositoryUpdater;
 }
 
-namespace ActiveAE {
-class CActiveAE;
-}
-
 namespace ANNOUNCEMENT
 {
 class CAnnouncementManager;
@@ -59,7 +55,6 @@ class XBPython;
 #endif
 class CDataCacheCore;
 class CSettings;
-class IAE;
 class CFavouritesService;
 class CNetwork;
 class CWinSystemBase;
@@ -102,9 +97,6 @@ public:
   bool InitStageOne();
   bool InitStageOnePointFive(); // Services that need our DllLoaders emu env
   bool InitStageTwo(const CAppParamParser &params);
-  bool CreateAudioEngine();
-  bool DestroyAudioEngine();
-  bool StartAudioEngine();
   bool InitStageThree();
   void DeinitTesting();
   void DeinitStageThree();
@@ -123,7 +115,6 @@ public:
   XBPython& GetXBPython();
 #endif
   PVR::CPVRManager& GetPVRManager();
-  IAE& GetActiveAE();
   CContextMenuManager& GetContextMenuManager();
   CDataCacheCore& GetDataCacheCore();
   /**\brief Get the platform object. This is save to be called after Init1() was called
@@ -141,9 +132,6 @@ public:
   CFavouritesService& GetFavouritesService();
   CInputManager &GetInputManager();
   CFileExtensionProvider &GetFileExtensionProvider();
-
-  CWinSystemBase &GetWinSystem();
-  void SetWinSystem(std::unique_ptr<CWinSystemBase> winSystem);
 
   CPowerManager &GetPowerManager();
 
@@ -168,11 +156,6 @@ protected:
     void operator()(CContextMenuManager *p) const;
   };
 
-  struct delete_activeAE
-  {
-    void operator()(ActiveAE::CActiveAE *p) const;
-  };
-
   struct delete_favouritesService
   {
     void operator()(CFavouritesService *p) const;
@@ -192,7 +175,6 @@ protected:
   std::unique_ptr<XBPython> m_XBPython;
 #endif
   std::unique_ptr<PVR::CPVRManager> m_PVRManager;
-  std::unique_ptr<ActiveAE::CActiveAE, delete_activeAE> m_ActiveAE;
   std::unique_ptr<CContextMenuManager, delete_contextMenuManager> m_contextMenuManager;
   std::unique_ptr<CDataCacheCore, delete_dataCacheCore> m_dataCacheCore;
   std::unique_ptr<CPlatform> m_Platform;
@@ -206,7 +188,6 @@ protected:
   std::unique_ptr<CInputManager> m_inputManager;
   std::unique_ptr<CFileExtensionProvider> m_fileExtensionProvider;
   std::unique_ptr<CNetwork> m_network;
-  std::unique_ptr<CWinSystemBase> m_winSystem;
   std::unique_ptr<CPowerManager> m_powerManager;
   std::unique_ptr<CWeatherManager> m_weatherManager;
   std::unique_ptr<CPlayerCoreFactory> m_playerCoreFactory;

@@ -20,10 +20,10 @@
  */
 
 #include "cores/AudioEngine/Engines/ActiveAE/ActiveAE.h"
-#include "powermanagement/windows/Win32PowerSyscall.h"
+#include "platform/win32/CharsetConverter.h"
+#include "platform/win32/powermanagement/Win32PowerSyscall.h"
 #include "ServiceBroker.h"
 #include "utils/log.h"
-#include "platform/win32/CharsetConverter.h"
 
 #include <mmdeviceapi.h>
 #include <wrl/client.h>
@@ -85,7 +85,7 @@ public:
   HRESULT STDMETHODCALLTYPE OnDefaultDeviceChanged(EDataFlow flow, ERole role, LPCWSTR pwstrDeviceId)
   {
     // if the default device changes this function is called four times.
-    // therefore we call CServiceBroker::GetActiveAE().DeviceChange() only for one role.
+    // therefore we call CServiceBroker::GetActiveAE()->DeviceChange() only for one role.
     char  *pszFlow = "?????";
     char  *pszRole = "?????";
 
@@ -170,6 +170,6 @@ public:
   void STDMETHODCALLTYPE NotifyAE()
   {
     if(!CWin32PowerSyscall::IsSuspending())
-      CServiceBroker::GetActiveAE().DeviceChange();
+      CServiceBroker::GetActiveAE()->DeviceChange();
   }
 };

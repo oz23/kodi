@@ -227,7 +227,7 @@ static CEvent screenChangeEvent;
 
   // re-enumerate audio devices in that case too
   // as we might gain passthrough capabilities via HDMI
-  CServiceBroker::GetActiveAE().DeviceChange();
+  CServiceBroker::GetActiveAE()->DeviceChange();
   return true;
 }
 //--------------------------------------------------------------
@@ -274,13 +274,13 @@ static CEvent screenChangeEvent;
   if([[UIScreen screens] count] == 1 && _screenIdx != 0)
   {
     RESOLUTION_INFO res = CDisplaySettings::GetInstance().GetResolutionInfo(RES_DESKTOP);//internal screen default res
-    CServiceBroker::GetWinSystem().SetFullScreen(true, res, false);
+    CServiceBroker::GetWinSystem()->SetFullScreen(true, res, false);
   }
 }
 //--------------------------------------------------------------
 + (void) updateResolutions
 {
-  CServiceBroker::GetWinSystem().UpdateResolutions();
+  CServiceBroker::GetWinSystem()->UpdateResolutions();
 }
 //--------------------------------------------------------------
 - (void) dealloc

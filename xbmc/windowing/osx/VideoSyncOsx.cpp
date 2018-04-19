@@ -22,7 +22,7 @@
 #include "VideoSyncOsx.h"
 #include "ServiceBroker.h"
 #include "utils/MathUtils.h"
-#include "guilib/GraphicContext.h"
+#include "windowing/GraphicContext.h"
 #include "utils/TimeUtils.h"
 #include "windowing/WinSystem.h"
 #include <QuartzCore/CVDisplayLink.h>
@@ -41,7 +41,7 @@ bool CVideoSyncOsx::Setup(PUPDATECLOCK func)
   m_displayReset = false;
   m_lostEvent.Reset();
 
-  CServiceBroker::GetWinSystem().Register(this);
+  CServiceBroker::GetWinSystem()->Register(this);
   
   return true;
 }
@@ -71,12 +71,12 @@ void CVideoSyncOsx::Cleanup()
   CLog::Log(LOGDEBUG, "CVideoSyncOsx::%s cleaning up OSX", __FUNCTION__);
   m_lostEvent.Set();
   m_LastVBlankTime = 0;
-  CServiceBroker::GetWinSystem().Unregister(this);
+  CServiceBroker::GetWinSystem()->Unregister(this);
 }
 
 float CVideoSyncOsx::GetFps()
 {
-  m_fps = g_graphicsContext.GetFPS();
+  m_fps = CServiceBroker::GetWinSystem()->GetGfxContext().GetFPS();
   CLog::Log(LOGDEBUG, "CVideoSyncOsx::%s Detected refreshrate: %f hertz", __FUNCTION__, m_fps);
   return m_fps;
 }

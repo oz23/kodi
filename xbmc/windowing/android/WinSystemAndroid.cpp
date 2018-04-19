@@ -25,8 +25,8 @@
 
 #include "WinEventsAndroid.h"
 #include "ServiceBroker.h"
-#include "guilib/GraphicContext.h"
-#include "guilib/Resolution.h"
+#include "windowing/GraphicContext.h"
+#include "windowing/Resolution.h"
 #include "settings/Settings.h"
 #include "settings/DisplaySettings.h"
 #include "guilib/DispResource.h"
@@ -40,8 +40,9 @@
 #include "cores/VideoPlayer/DVDCodecs/Audio/DVDAudioCodecAndroidMediaCodec.h"
 #include "cores/VideoPlayer/VideoRenderers/HwDecRender/RendererMediaCodec.h"
 #include "cores/VideoPlayer/VideoRenderers/HwDecRender/RendererMediaCodecSurface.h"
-#include "powermanagement/android/AndroidPowerSyscall.h"
+#include "platform/android/powermanagement/AndroidPowerSyscall.h"
 #include "addons/interfaces/platform/android/System.h"
+#include "platform/android/drm/MediaDrmCryptoSession.h"
 
 #include <EGL/egl.h>
 #include <EGL/eglplatform.h>
@@ -88,6 +89,7 @@ bool CWinSystemAndroid::InitWindowSystem()
   CRendererMediaCodec::Register();
   CRendererMediaCodecSurface::Register();
   ADDON::Interface_Android::Register();
+  DRM::CMediaDrmCryptoSession::Register();
   return CWinSystemBase::InitWindowSystem();
 }
 
@@ -105,7 +107,7 @@ bool CWinSystemAndroid::CreateNewWindow(const std::string& name,
 {
   RESOLUTION_INFO current_resolution;
   current_resolution.iWidth = current_resolution.iHeight = 0;
-  RENDER_STEREO_MODE stereo_mode = g_graphicsContext.GetStereoMode();
+  RENDER_STEREO_MODE stereo_mode = CServiceBroker::GetWinSystem()->GetGfxContext().GetStereoMode();
 
   m_nWidth        = res.iWidth;
   m_nHeight       = res.iHeight;
@@ -197,7 +199,7 @@ void CWinSystemAndroid::UpdateResolutions()
       CDisplaySettings::GetInstance().AddResolutionInfo(res);
     }
 
-    g_graphicsContext.ResetOverscan(resolutions[i]);
+    CServiceBroker::GetWinSystem()->GetGfxContext().ResetOverscan(resolutions[i]);
     CDisplaySettings::GetInstance().GetResolutionInfo(res_index) = resolutions[i];
 
     CLog::Log(LOGNOTICE, "Found resolution %d x %d for display %d with %d x %d%s @ %f Hz\n",

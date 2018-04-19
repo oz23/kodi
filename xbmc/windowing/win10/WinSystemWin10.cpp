@@ -23,12 +23,11 @@
 #include "cores/AudioEngine/Sinks/AESinkXAudio.h"
 #include "cores/AudioEngine/Sinks/AESinkWASAPI.h"
 #include "guilib/gui3d.h"
-#include "guilib/GraphicContext.h"
+#include "windowing/GraphicContext.h"
 #include "messaging/ApplicationMessenger.h"
 #include "platform/win10/AsyncHelpers.h"
-#include "platform/win10/input/RemoteControlXbox.h"
+#include "platform/win10/powermanagement/Win10PowerSyscall.h"
 #include "platform/win32/CharsetConverter.h"
-#include "powermanagement/win10/Win10PowerSyscall.h"
 #include "rendering/dx/DirectXHelper.h"
 #include "rendering/dx/RenderContext.h"
 #include "ServiceBroker.h"
@@ -73,10 +72,6 @@ CWinSystemWin10::CWinSystemWin10()
   if (CSysInfo::GetWindowsDeviceFamily() == CSysInfo::WindowsDeviceFamily::Desktop)
   {
     CAESinkWASAPI::Register();
-  }
-  else if (CSysInfo::GetWindowsDeviceFamily() == CSysInfo::WindowsDeviceFamily::Xbox)
-  {
-    CRemoteControlXbox::Register();
   }
   CPowerSyscall::Register();
 }
@@ -247,7 +242,7 @@ bool CWinSystemWin10::SetFullScreen(bool fullScreen, RESOLUTION_INFO& res, bool 
 
   bool forceChange = false;    // resolution/display is changed but window state isn't changed
   bool changeScreen = false;   // display is changed
-  bool stereoChange = IsStereoEnabled() != (g_graphicsContext.GetStereoMode() == RENDER_STEREO_MODE_HARDWAREBASED);
+  bool stereoChange = IsStereoEnabled() != (CServiceBroker::GetWinSystem()->GetGfxContext().GetStereoMode() == RENDER_STEREO_MODE_HARDWAREBASED);
 
   if ( m_nWidth != res.iWidth
     || m_nHeight != res.iHeight
@@ -428,7 +423,7 @@ bool CWinSystemWin10::ChangeResolution(const RESOLUTION_INFO& res, bool forceCha
       }
       else
       {
-        bool needStereo = g_graphicsContext.GetStereoMode() == RENDER_STEREO_MODE_HARDWAREBASED;
+        bool needStereo = CServiceBroker::GetWinSystem()->GetGfxContext().GetStereoMode() == RENDER_STEREO_MODE_HARDWAREBASED;
         auto hdmiModes = hdmiInfo->GetSupportedDisplayModes();
 
         HdmiDisplayMode^ selected = nullptr;
@@ -458,7 +453,7 @@ bool CWinSystemWin10::ChangeResolution(const RESOLUTION_INFO& res, bool forceCha
       float dipsW = DX::ConvertPixelsToDips(m_nWidth, dpi);
       float dipsH = DX::ConvertPixelsToDips(m_nHeight, dpi);
 
-      DX::Windowing().OnResize(dipsW, dipsH);
+      DX::Windowing()->OnResize(dipsW, dipsH);
       dynamic_cast<CWinEventsWin10*>(m_winEvents.get())->UpdateWindowSize();
     }
     return changed;

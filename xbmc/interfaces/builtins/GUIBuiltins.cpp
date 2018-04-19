@@ -364,7 +364,7 @@ static int SetResolution(const std::vector<std::string>& params)
   else if (paramlow == "1080psbs") res = RES_HDTV_1080pSBS;
   else if (paramlow == "1080ptb") res = RES_HDTV_1080pTB;
   else if (paramlow == "1080i") res = RES_HDTV_1080i;
-  if (g_graphicsContext.IsValidResolution(res))
+  if (CServiceBroker::GetWinSystem()->GetGfxContext().IsValidResolution(res))
   {
     CDisplaySettings::GetInstance().SetCurrentResolution(res, true);
     g_application.ReloadSkin();
@@ -394,7 +394,7 @@ static int SetProperty(const std::vector<std::string>& params)
  */
 static int SetStereoMode(const std::vector<std::string>& params)
 {
-  CAction action = CStereoscopicsManager::GetInstance().ConvertActionCommandToAction("SetStereoMode", params[0]);
+  CAction action = CStereoscopicsManager::ConvertActionCommandToAction("SetStereoMode", params[0]);
   if (action.GetID() != ACTION_NONE)
     CApplicationMessenger::GetInstance().SendMsg(TMSG_GUI_ACTION, WINDOW_INVALID, -1, static_cast<void*>(new CAction(action)));
   else

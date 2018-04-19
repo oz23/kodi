@@ -84,6 +84,11 @@ public:
     m_id = CJobManager::GetInstance().AddJob(new CGetJob(imp, m_result)
                                            , NULL
                                            , CJob::PRIORITY_HIGH);
+    if (m_id == 0)
+    {
+      CGetJob job(imp, m_result);
+      job.DoWork();
+    }
   }
  ~CGetDirectory()
   {
@@ -177,7 +182,7 @@ bool CDirectory::GetDirectory(const CURL& url, CFileItemList &items, const CHint
 
         if (g_application.IsCurrentThread() && allowThreads && !URIUtils::IsSpecial(pathToUrl))
         {
-          CSingleExit ex(g_graphicsContext);
+          CSingleExit ex(CServiceBroker::GetWinSystem()->GetGfxContext());
 
           CGetDirectory get(pDirectory, authUrl, url);
 

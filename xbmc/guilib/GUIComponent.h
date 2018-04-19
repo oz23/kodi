@@ -24,17 +24,32 @@
 #include <string>
 
 class CGUIWindowManager;
+class CGUITextureManager;
+class CGUILargeTextureManager;
+class CStereoscopicsManager;
+class CGUIInfoManager;
 
 class CGUIComponent
 {
 public:
   CGUIComponent();
   virtual ~CGUIComponent();
+  void Init();
+  void Deinit();
 
   CGUIWindowManager& GetWindowManager();
+  CGUITextureManager& GetTextureManager();
+  CGUILargeTextureManager& GetLargeTextureManager();
+  CStereoscopicsManager &GetStereoscopicsManager();
+  CGUIInfoManager &GetInfoManager();
 
   bool ConfirmDelete(std::string path);
 
 protected:
+  // members are pointers in order to avoid includes
   std::unique_ptr<CGUIWindowManager> m_pWindowManager;
+  std::unique_ptr<CGUITextureManager> m_pTextureManager;
+  std::unique_ptr<CGUILargeTextureManager> m_pLargeTextureManager;
+  std::unique_ptr<CStereoscopicsManager> m_stereoscopicsManager;
+  std::unique_ptr<CGUIInfoManager> m_guiInfoManager;
 };

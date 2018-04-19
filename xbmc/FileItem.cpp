@@ -206,7 +206,7 @@ CFileItem::CFileItem(const CPVRRecordingPtr& record)
   m_pvrRecordingInfoTag = record;
   m_strPath = record->m_strFileNameAndPath;
   SetLabel(record->m_strTitle);
-  m_strLabel2 = record->m_strPlot;
+  m_strLabel2 = record->RecordingTimeAsLocalTime().GetAsLocalizedDateTime(true, false);
   FillInMimeType(false);
 }
 
@@ -1503,7 +1503,7 @@ bool CFileItem::IsSamePath(const CFileItem *item) const
   if (!item)
     return false;
 
-  if (item->GetPath() == m_strPath)
+  if (!m_strPath.empty() && item->GetPath() == m_strPath)
   {
     if (item->HasProperty("item_start") || HasProperty("item_start"))
       return (item->GetProperty("item_start") == GetProperty("item_start"));

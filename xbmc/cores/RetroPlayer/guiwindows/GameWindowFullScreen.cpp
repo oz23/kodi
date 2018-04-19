@@ -22,7 +22,7 @@
 #include "GameWindowFullScreenText.h"
 #include "cores/RetroPlayer/guibridge/GUIGameRenderManager.h"
 #include "cores/RetroPlayer/guibridge/GUIRenderHandle.h"
-#include "guilib/GraphicContext.h" //! @todo Remove me
+#include "windowing/GraphicContext.h" //! @todo Remove me
 #include "guilib/GUIDialog.h"
 #include "guilib/GUIControl.h"
 #include "guilib/GUIComponent.h"
@@ -34,6 +34,7 @@
 #include "ServiceBroker.h"
 
 using namespace KODI;
+using namespace KODI::GUILIB;
 using namespace RETRO;
 
 CGameWindowFullScreen::CGameWindowFullScreen(void) :
@@ -67,7 +68,7 @@ void CGameWindowFullScreen::Process(unsigned int currentTime, CDirtyRegionList &
 
   //! @todo This isn't quite optimal - ideally we'd only be dirtying up the actual video render rect
   //!       which is probably the job of the renderer as it can more easily track resizing etc.
-  m_renderRegion.SetRect(0, 0, static_cast<float>(g_graphicsContext.GetWidth()), static_cast<float>(g_graphicsContext.GetHeight()));
+  m_renderRegion.SetRect(0, 0, static_cast<float>(CServiceBroker::GetWinSystem()->GetGfxContext().GetWidth()), static_cast<float>(CServiceBroker::GetWinSystem()->GetGfxContext().GetHeight()));
 }
 
 void CGameWindowFullScreen::Render()
@@ -166,11 +167,12 @@ void CGameWindowFullScreen::OnWindowLoaded()
 
 void CGameWindowFullScreen::OnInitWindow()
 {
-  g_infoManager.SetShowInfo(false);
-  g_infoManager.SetDisplayAfterSeek(0); // Make sure display after seek is off
+  GUIINFO::CPlayerGUIInfo& guiInfo = CServiceBroker::GetGUI()->GetInfoManager().GetInfoProviders().GetPlayerInfoProvider();
+  guiInfo.SetShowInfo(false);
+  guiInfo.SetDisplayAfterSeek(0); // Make sure display after seek is off
 
   // Switch resolution
-  g_graphicsContext.SetFullScreenVideo(true); //! @todo
+  CServiceBroker::GetWinSystem()->GetGfxContext().SetFullScreenVideo(true); //! @todo
 
   CGUIWindow::OnInitWindow();
 }
@@ -182,7 +184,7 @@ void CGameWindowFullScreen::OnDeinitWindow(int nextWindowID)
 
   CGUIWindow::OnDeinitWindow(nextWindowID);
 
-  g_graphicsContext.SetFullScreenVideo(false); //! @todo
+  CServiceBroker::GetWinSystem()->GetGfxContext().SetFullScreenVideo(false); //! @todo
 }
 
 void CGameWindowFullScreen::ToggleOSD()

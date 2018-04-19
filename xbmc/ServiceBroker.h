@@ -29,10 +29,6 @@ class CServiceAddonManager;
 class CRepositoryUpdater;
 }
 
-namespace ActiveAE {
-class CActiveAEDSP;
-}
-
 namespace ANNOUNCEMENT
 {
   class CAnnouncementManager;
@@ -96,7 +92,6 @@ public:
   static ANNOUNCEMENT::CAnnouncementManager &GetAnnouncementManager();
   static XBPython &GetXBPython();
   static PVR::CPVRManager &GetPVRManager();
-  static IAE& GetActiveAE();
   static CContextMenuManager& GetContextMenuManager();
   static CDataCacheCore& GetDataCacheCore();
   static PLAYLIST::CPlayListPlayer& GetPlaylistPlayer();
@@ -113,8 +108,6 @@ public:
   static bool IsBinaryAddonCacheUp();
   static bool IsServiceManagerUp();
   static CNetwork& GetNetwork();
-  static CWinSystemBase& GetWinSystem();
-  static CRenderSystemBase& GetRenderSystem();
   static CPowerManager& GetPowerManager();
   static CWeatherManager& GetWeatherManager();
   static CPlayerCoreFactory &GetPlayerCoreFactory();
@@ -126,6 +119,17 @@ public:
   static void RegisterGUI(CGUIComponent *gui);
   static void UnregisterGUI();
 
+  static void RegisterWinSystem(CWinSystemBase *winsystem);
+  static void UnregisterWinSystem();
+  static CWinSystemBase* GetWinSystem();
+  static CRenderSystemBase* GetRenderSystem();
+
+  static IAE* GetActiveAE();
+  static void RegisterAE(IAE *ae);
+  static void UnregisterAE();
+
 private:
   static CGUIComponent* m_pGUI;
+  static CWinSystemBase* m_pWinSystem;
+  static IAE* m_pActiveAE;
 };

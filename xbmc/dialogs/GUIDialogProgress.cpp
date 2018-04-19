@@ -21,7 +21,7 @@
 #include "GUIDialogProgress.h"
 #include "guilib/GUIProgressControl.h"
 #include "Application.h"
-#include "guiinfo/GUIInfoLabels.h"
+#include "guilib/guiinfo/GUIInfoLabels.h"
 #include "guilib/GUIWindowManager.h"
 #include "guilib/LocalizeStrings.h"
 #include "threads/SingleLock.h"
@@ -60,7 +60,7 @@ void CGUIDialogProgress::Open(const std::string &param /* = "" */)
   CLog::Log(LOGDEBUG, "DialogProgress::Open called %s", m_active ? "(already running)!" : "");
 
   {
-    CSingleLock lock(g_graphicsContext);
+    CSingleLock lock(CServiceBroker::GetWinSystem()->GetGfxContext());
     ShowProgressBar(true);
   }
   

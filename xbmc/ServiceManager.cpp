@@ -23,7 +23,6 @@
 #include "addons/VFSEntry.h"
 #include "addons/binary-addons/BinaryAddonManager.h"
 #include "ContextMenuManager.h"
-#include "cores/AudioEngine/Engines/ActiveAE/ActiveAE.h"
 #include "cores/DataCacheCore.h"
 #include "cores/playercorefactory/PlayerCoreFactory.h"
 #include "cores/RetroPlayer/guibridge/GUIGameRenderManager.h"
@@ -174,8 +173,7 @@ bool CServiceManager::InitStageTwo(const CAppParamParser &params)
   m_contextMenuManager.reset(new CContextMenuManager(*m_addonMgr.get()));
 
   m_gameControllerManager.reset(new GAME::CControllerManager);
-  m_inputManager.reset(new CInputManager(params,
-                                         *m_profileManager));
+  m_inputManager.reset(new CInputManager(params));
   m_inputManager->InitializeInputs();
 
   m_peripherals.reset(new PERIPHERALS::CPeripherals(*m_announcementManager,
@@ -195,35 +193,6 @@ bool CServiceManager::InitStageTwo(const CAppParamParser &params)
 
   init_level = 2;
   return true;
-}
-
-bool CServiceManager::CreateAudioEngine()
-{
-  m_ActiveAE.reset(new ActiveAE::CActiveAE());
-
-  return true;
-}
-
-bool CServiceManager::DestroyAudioEngine()
-{
-  if (m_ActiveAE)
-  {
-    m_ActiveAE->Shutdown();
-    m_ActiveAE.reset();
-  }
-
-  return true;
-}
-
-bool CServiceManager::StartAudioEngine()
-{
-  if (!m_ActiveAE)
-  {
-    CLog::Log(LOGFATAL, "CServiceManager::%s: Unable to start ActiveAE", __FUNCTION__);
-    return false;
-  }
-
-  return m_ActiveAE->Initialize();
 }
 
 // stage 3 is called after successful initialization of WindowManager
@@ -350,12 +319,6 @@ PVR::CPVRManager& CServiceManager::GetPVRManager()
   return *m_PVRManager;
 }
 
-IAE& CServiceManager::GetActiveAE()
-{
-  ActiveAE::CActiveAE& ae = *m_ActiveAE;
-  return ae;
-}
-
 CContextMenuManager& CServiceManager::GetContextMenuManager()
 {
   return *m_contextMenuManager;
@@ -416,16 +379,6 @@ CFileExtensionProvider& CServiceManager::GetFileExtensionProvider()
   return *m_fileExtensionProvider;
 }
 
-CWinSystemBase &CServiceManager::GetWinSystem()
-{
-  return *m_winSystem.get();
-}
-
-void CServiceManager::SetWinSystem(std::unique_ptr<CWinSystemBase> winSystem)
-{
-  m_winSystem = std::move(winSystem);
-}
-
 CPowerManager &CServiceManager::GetPowerManager()
 {
   return *m_powerManager;
@@ -438,11 +391,6 @@ void CServiceManager::delete_dataCacheCore::operator()(CDataCacheCore *p) const
 }
 
 void CServiceManager::delete_contextMenuManager::operator()(CContextMenuManager *p) const
-{
-  delete p;
-}
-
-void CServiceManager::delete_activeAE::operator()(ActiveAE::CActiveAE *p) const
 {
   delete p;
 }

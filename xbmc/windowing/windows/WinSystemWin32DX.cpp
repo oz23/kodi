@@ -19,7 +19,7 @@
  */
 
 #include "commons/ilog.h"
-#include "guilib/GraphicContext.h"
+#include "windowing/GraphicContext.h"
 #include "rendering/dx/RenderContext.h"
 #include "utils/SystemInfo.h"
 #include "utils/log.h"
@@ -350,7 +350,7 @@ void APIENTRY HookCreateResource(D3D10DDI_HDEVICE hDevice, const D3D10DDIARG_CRE
 {
   if (pResource && pResource->pPrimaryDesc)
   {
-    DX::Windowing().FixRefreshRateIfNecessary(pResource);
+    DX::Windowing()->FixRefreshRateIfNecessary(pResource);
   }
   s_fnCreateResourceOrig(hDevice, pResource, hResource, hRtResource);
 }

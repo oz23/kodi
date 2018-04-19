@@ -22,6 +22,7 @@
 #include "GUIWindowManager.h"
 #include "ServiceBroker.h"
 #include "utils/CharsetConverter.h"
+#include "utils/Color.h"
 #include "utils/Digest.h"
 #include "utils/Variant.h"
 #include "GUIKeyboardFactory.h"
@@ -36,6 +37,8 @@
 #if defined(TARGET_DARWIN)
 #include "platform/darwin/osx/CocoaInterface.h"
 #endif
+
+using namespace KODI::GUILIB;
 
 using KODI::UTILITY::CDigest;
 
@@ -459,7 +462,7 @@ void CGUIEditControl::ProcessText(unsigned int currentTime)
     m_clipRect.x1 += leftTextWidth + spaceWidth;
   }
 
-  if (g_graphicsContext.SetClipRegion(m_clipRect.x1, m_clipRect.y1, m_clipRect.Width(), m_clipRect.Height()))
+  if (CServiceBroker::GetWinSystem()->GetGfxContext().SetClipRegion(m_clipRect.x1, m_clipRect.y1, m_clipRect.Width(), m_clipRect.Height()))
   {
     uint32_t align = m_label.GetLabelInfo().align & XBFONT_CENTER_Y; // start aligned left
     if (m_label2.GetTextWidth() < m_clipRect.Width())
@@ -494,7 +497,7 @@ void CGUIEditControl::ProcessText(unsigned int currentTime)
     changed |= m_label2.SetColor(GetTextColor());
     changed |= m_label2.SetOverflow(CGUILabel::OVER_FLOW_CLIP);
     changed |= m_label2.Process(currentTime);
-    g_graphicsContext.RestoreClipRegion();
+    CServiceBroker::GetWinSystem()->GetGfxContext().RestoreClipRegion();
   }
   if (changed)
     MarkDirtyRegion();
@@ -504,10 +507,10 @@ void CGUIEditControl::RenderText()
 {
   m_label.Render();
 
-  if (g_graphicsContext.SetClipRegion(m_clipRect.x1, m_clipRect.y1, m_clipRect.Width(), m_clipRect.Height()))
+  if (CServiceBroker::GetWinSystem()->GetGfxContext().SetClipRegion(m_clipRect.x1, m_clipRect.y1, m_clipRect.Width(), m_clipRect.Height()))
   {
     m_label2.Render();
-    g_graphicsContext.RestoreClipRegion();
+    CServiceBroker::GetWinSystem()->GetGfxContext().RestoreClipRegion();
   }
 }
 
@@ -520,7 +523,7 @@ CGUILabel::COLOR CGUIEditControl::GetTextColor() const
   return color;
 }
 
-void CGUIEditControl::SetHint(const CGUIInfoLabel& hint)
+void CGUIEditControl::SetHint(const GUIINFO::CGUIInfoLabel& hint)
 {
   m_hintInfo = hint;
 }
@@ -550,10 +553,10 @@ bool CGUIEditControl::SetStyledText(const std::wstring &text)
   vecText styled;
   styled.reserve(text.size() + 1);
 
-  vecColors colors;
+  std::vector<UTILS::Color> colors;
   colors.push_back(m_label.GetLabelInfo().textColor);
   colors.push_back(m_label.GetLabelInfo().disabledColor);
-  color_t select = m_label.GetLabelInfo().selectedColor;
+  UTILS::Color select = m_label.GetLabelInfo().selectedColor;
   if (!select)
     select = 0xFFFF0000;
   colors.push_back(select);
@@ -678,7 +681,7 @@ void CGUIEditControl::OnPasteClipboard()
   std::string utf8_text;
 
   // Get text from the clipboard
-  utf8_text = CServiceBroker::GetWinSystem().GetClipboardText();
+  utf8_text = CServiceBroker::GetWinSystem()->GetClipboardText();
   g_charsetConverter.utf8ToW(utf8_text, unicode_text);
 
   // Insert the pasted text at the current cursor position.

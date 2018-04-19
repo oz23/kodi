@@ -45,7 +45,7 @@
 #include "utils/StringUtils.h"
 #include "playlists/PlayList.h"
 #include "GUIUserMessages.h"
-#include "guiinfo/GUIInfoLabels.h"
+#include "guilib/guiinfo/GUIInfoLabels.h"
 
 NPT_SET_LOCAL_LOGGER("xbmc.upnp.renderer")
 
@@ -253,7 +253,7 @@ CUPnPRenderer::Announce(AnnouncementFlag flag, const char *sender, const char *m
     if (flag == Player) {
         if (NPT_FAILED(FindServiceByType("urn:schemas-upnp-org:service:AVTransport:1", avt)))
             return;
-        if (strcmp(message, "OnPlay") == 0) {
+        if (strcmp(message, "OnPlay") == 0 || strcmp(message, "OnResume") == 0 ) {
             avt->SetStateVariable("AVTransportURI", g_application.CurrentFile().c_str());
             avt->SetStateVariable("CurrentTrackURI", g_application.CurrentFile().c_str());
 
@@ -320,11 +320,13 @@ CUPnPRenderer::UpdateState()
         avt->SetStateVariable("NumberOfTracks", "1");
         avt->SetStateVariable("CurrentTrack", "1");
 
-        std::string buffer = g_infoManager.GetCurrentPlayTime(TIME_FORMAT_HH_MM_SS);
+        // get elapsed time
+        std::string buffer = StringUtils::SecondsToTimeString(std::lrint(g_application.GetTime()), TIME_FORMAT_HH_MM_SS);
         avt->SetStateVariable("RelativeTimePosition", buffer.c_str());
         avt->SetStateVariable("AbsoluteTimePosition", buffer.c_str());
 
-        buffer = g_infoManager.GetDuration(TIME_FORMAT_HH_MM_SS);
+        // get duration
+        buffer = StringUtils::SecondsToTimeString(std::lrint(g_application.GetTotalTime()), TIME_FORMAT_HH_MM_SS);
         if (buffer.length() > 0) {
           avt->SetStateVariable("CurrentTrackDuration", buffer.c_str());
           avt->SetStateVariable("CurrentMediaDuration", buffer.c_str());
@@ -336,8 +338,9 @@ CUPnPRenderer::UpdateState()
     } else if (CServiceBroker::GetGUI()->GetWindowManager().GetActiveWindow() == WINDOW_SLIDESHOW) {
         avt->SetStateVariable("TransportState", "PLAYING");
 
-        avt->SetStateVariable("AVTransportURI" , g_infoManager.GetPictureLabel(SLIDE_FILE_PATH).c_str());
-        avt->SetStateVariable("CurrentTrackURI", g_infoManager.GetPictureLabel(SLIDE_FILE_PATH).c_str());
+        const std::string filePath = CServiceBroker::GetGUI()->GetInfoManager().GetLabel(SLIDESHOW_FILE_PATH);
+        avt->SetStateVariable("AVTransportURI" , filePath.c_str());
+        avt->SetStateVariable("CurrentTrackURI", filePath.c_str());
         avt->SetStateVariable("TransportPlaySpeed", "1");
 
         CGUIWindowSlideShow *slideshow = CServiceBroker::GetGUI()->GetWindowManager().GetWindow<CGUIWindowSlideShow>(WINDOW_SLIDESHOW);
@@ -411,9 +414,9 @@ CUPnPRenderer::GetMetadata(NPT_String& meta)
         // fetch the item's artwork
         std::string thumb;
         if (object->m_ObjectClass.type == "object.item.audioItem.musicTrack")
-            thumb = g_infoManager.GetImage(MUSICPLAYER_COVER, -1);
+            thumb = CServiceBroker::GetGUI()->GetInfoManager().GetImage(MUSICPLAYER_COVER, -1);
         else
-            thumb = g_infoManager.GetImage(VIDEOPLAYER_COVER, -1);
+            thumb = CServiceBroker::GetGUI()->GetInfoManager().GetImage(VIDEOPLAYER_COVER, -1);
 
         thumb = CTextureUtils::GetWrappedImageURL(thumb);
 
@@ -579,7 +582,7 @@ CUPnPRenderer::OnSetNextAVTransportURI(PLT_ActionReference& action)
         if(item->IsVideo())
           playlist = PLAYLIST_VIDEO;
 
-        {   CSingleLock lock(g_graphicsContext);
+        {   CSingleLock lock(CServiceBroker::GetWinSystem()->GetGfxContext());
             CServiceBroker::GetPlaylistPlayer().ClearPlaylist(playlist);
             CServiceBroker::GetPlaylistPlayer().Add(playlist, item);
 
