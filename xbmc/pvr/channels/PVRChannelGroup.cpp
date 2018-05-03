@@ -240,7 +240,7 @@ void CPVRChannelGroup::SearchAndSetChannelIcons(bool bUpdateDb /* = false */)
 
   /* fetch files in icon path for fast lookup */
   CFileItemList fileItemList;
-  XFILE::CDirectory::GetDirectory(iconPath, fileItemList, ".jpg|.png|.tbn");
+  XFILE::CDirectory::GetDirectory(iconPath, fileItemList, ".jpg|.png|.tbn", XFILE::DIR_FLAG_DEFAULTS);
 
   if (fileItemList.IsEmpty())
     return;
@@ -552,6 +552,13 @@ int CPVRChannelGroup::GetMembers(CFileItemList &results, bool bGroupMembers /* =
   }
 
   return results.Size() - iOrigSize;
+}
+
+void CPVRChannelGroup::GetChannelNumbers(std::vector<std::string>& channelNumbers) const
+{
+  CSingleLock lock(m_critSection);
+  for (const auto& member : m_sortedMembers)
+    channelNumbers.emplace_back(member.channelNumber.FormattedChannelNumber());
 }
 
 CPVRChannelGroupPtr CPVRChannelGroup::GetNextGroup(void) const

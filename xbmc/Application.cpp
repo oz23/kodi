@@ -22,6 +22,7 @@
 #include "network/Network.h"
 #include "threads/SystemClock.h"
 #include "Application.h"
+#include "AppInboundProtocol.h"
 #include "dialogs/GUIDialogBusy.h"
 #include "events/EventLog.h"
 #include "events/NotificationEvent.h"
@@ -287,16 +288,19 @@ CApplication::~CApplication(void)
 
 bool CApplication::OnEvent(XBMC_Event& newEvent)
 {
-  m_winEvents.push_back(newEvent);
+  CSingleLock lock(m_portSection);
+  m_portEvents.push_back(newEvent);
   return true;
 }
 
-void CApplication::HandleWinEvents()
+void CApplication::HandlePortEvents()
 {
-  while (!m_winEvents.empty())
+  CSingleLock lock(m_portSection);
+  while (!m_portEvents.empty())
   {
-    auto newEvent = m_winEvents.front();
-    m_winEvents.pop_front();
+    auto newEvent = m_portEvents.front();
+    m_portEvents.pop_front();
+    CSingleExit lock(m_portSection);
     switch(newEvent.type)
     {
       case XBMC_QUIT:
@@ -545,12 +549,6 @@ bool CApplication::Create(const CAppParamParser &params)
   CEnvironment::setenv("OS", "win32");
 #endif
 
-  // register avcodec
-  avcodec_register_all();
-  // register avformat
-  av_register_all();
-  // register avfilter
-  avfilter_register_all();
   // initialize network protocols
   avformat_network_init();
   // set avutil callback
@@ -584,6 +582,10 @@ bool CApplication::Create(const CAppParamParser &params)
   CWIN32Util::SetThreadLocalLocale(true); // enable independent locale for each thread, see https://connect.microsoft.com/VisualStudio/feedback/details/794122
 #endif // TARGET_WINDOWS
 
+  // application inbound service
+  m_pAppPort = std::make_shared<CAppInboundProtocol>(*this);
+  CServiceBroker::RegisterAppPort(m_pAppPort);
+  
   m_pWinSystem = CWinSystemBase::CreateWinSystem();
   CServiceBroker::RegisterWinSystem(m_pWinSystem.get());
 
@@ -2645,7 +2647,7 @@ void CApplication::FrameMove(bool processEvents, bool processGUI)
       }
     }
 
-    HandleWinEvents();
+    HandlePortEvents();
     CServiceBroker::GetInputManager().Process(CServiceBroker::GetGUI()->GetWindowManager().GetActiveWindowOrDialog(), frameTime);
 
     if (processGUI && m_renderGUI)
@@ -2799,6 +2801,25 @@ bool CApplication::Cleanup()
 
 void CApplication::Stop(int exitCode)
 {
+  CLog::Log(LOGNOTICE, "stop player");
+  m_appPlayer.ClosePlayer();
+
+  {
+    // close inbound port
+    CServiceBroker::UnregisterAppPort();
+    XbmcThreads::EndTime timer(1000);
+    while (m_pAppPort.use_count() > 1)
+    {
+      Sleep(100);
+      if (timer.IsTimePast())
+      {
+        CLog::Log(LOGERROR, "CApplication::Stop - CAppPort still in use, app may crash");
+        break;
+      }
+    }
+    m_pAppPort.reset();
+  }
+
   try
   {
     m_frameMoveGuard.unlock();
@@ -2850,9 +2871,6 @@ void CApplication::Stop(int exitCode)
       CVideoLibraryQueue::GetInstance().CancelAllJobs();
 
     CApplicationMessenger::GetInstance().Cleanup();
-
-    CLog::Log(LOGNOTICE, "stop player");
-    m_appPlayer.ClosePlayer();
 
     StopServices();
 
@@ -2911,7 +2929,7 @@ void CApplication::Stop(int exitCode)
 bool CApplication::PlayMedia(CFileItem& item, const std::string &player, int iPlaylist)
 {
   //If item is a plugin, expand out
-  if (URIUtils::IsPlugin(item.GetDynPath()))
+  for (int i=0; URIUtils::IsPlugin(item.GetDynPath()) && i<5; ++i)
   {
     bool resume = item.m_lStartOffset == STARTOFFSET_RESUME;
 
@@ -3051,7 +3069,7 @@ bool CApplication::PlayFile(CFileItem item, const std::string& player, bool bRes
   if (item.IsPlayList())
     return false;
 
-  if (URIUtils::IsPlugin(item.GetDynPath()))
+  for (int i=0; URIUtils::IsPlugin(item.GetDynPath()) && i<5; ++i)
   { // we modify the item so that it becomes a real URL
     bool resume = item.m_lStartOffset == STARTOFFSET_RESUME;
 
@@ -4992,7 +5010,11 @@ bool CApplication::IsCurrentThread() const
 void CApplication::SetRenderGUI(bool renderGUI)
 {
   if (renderGUI && ! m_renderGUI)
-    CServiceBroker::GetGUI()->GetWindowManager().MarkDirty();
+  {
+    CGUIComponent *gui = CServiceBroker::GetGUI();
+    if (gui)
+      CServiceBroker::GetGUI()->GetWindowManager().MarkDirty();
+  }
   m_renderGUI = renderGUI;
 }
 

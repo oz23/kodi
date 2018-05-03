@@ -44,10 +44,18 @@ namespace PVR
     PlaybackTypeRadio
   };
 
+  enum class ParentalCheckResult
+  {
+    CANCELED,
+    FAILED,
+    SUCCESS
+  };
+
   class CPVRChannelSwitchingInputHandler : public CPVRChannelNumberInputHandler
   {
   public:
     // CPVRChannelNumberInputHandler implementation
+    void GetChannelNumbers(std::vector<std::string>& channelNumbers) override;
     void AppendChannelNumberCharacter(char cCharacter) override;
     void OnInputDone() override;
 
@@ -325,15 +333,15 @@ namespace PVR
     /*!
      * @brief Check if channel is parental locked. Ask for PIN if necessary.
      * @param channel The channel to do the check for.
-     * @return True if channel is unlocked (by default or PIN unlocked), false otherwise.
+     * @return the result of the check (success, failed, or canceled by user).
      */
-    bool CheckParentalLock(const CPVRChannelPtr &channel) const;
+    ParentalCheckResult CheckParentalLock(const CPVRChannelPtr &channel) const;
 
     /*!
      * @brief Open Numeric dialog to check for parental PIN.
-     * @return True if entered PIN was correct, false otherwise.
+     * @return the result of the check (success, failed, or canceled by user).
      */
-    bool CheckParentalPIN() const;
+    ParentalCheckResult CheckParentalPIN() const;
 
     /*!
      * @brief Check whether the system Kodi is running on can be powered down

@@ -101,6 +101,14 @@ bool CRenderSystemDX::InitRenderSystem()
   CPoint camPoint = { outputSize.Width * 0.5f, outputSize.Height * 0.5f };
   SetCameraPosition(camPoint, outputSize.Width, outputSize.Height);
 
+  DXGI_ADAPTER_DESC AIdentifier = { 0 };
+  m_deviceResources->GetAdapterDesc(&AIdentifier);
+  m_RenderRenderer = KODI::PLATFORM::WINDOWS::FromW(AIdentifier.Description);
+  uint32_t version = 0;
+  for (uint32_t decimal = m_deviceResources->GetDeviceFeatureLevel() >> 8, round = 0; decimal > 0; decimal >>= 4, ++round)
+    version += (decimal % 16) * std::pow(10, round);
+  m_RenderVersion = StringUtils::Format("%.1f", static_cast<float>(version) / 10.0f);
+
   return true;
 }
 
@@ -264,7 +272,7 @@ void CRenderSystemDX::PresentRender(bool rendered, bool videoLayer)
   if (!m_bRenderCreated)
     return;
 
-  if ( rendered 
+  if ( rendered
     && ( m_stereoMode == RENDER_STEREO_MODE_INTERLACED
       || m_stereoMode == RENDER_STEREO_MODE_CHECKERBOARD))
   {
@@ -273,7 +281,7 @@ void CRenderSystemDX::PresentRender(bool rendered, bool videoLayer)
     // all views prepared, let's merge them before present
     ID3D11RenderTargetView *const views[1] = { m_deviceResources->GetBackBufferRTV() };
     m_pContext->OMSetRenderTargets(1, views, m_deviceResources->GetDSV());
-    
+
     auto outputSize = m_deviceResources->GetOutputSize();
     CRect destRect = { 0.0f, 0.0f, float(outputSize.Width), float(outputSize.Height) };
 
@@ -293,6 +301,7 @@ bool CRenderSystemDX::BeginRender()
   if (!m_bRenderCreated)
     return false;
 
+  m_limitedColorRange = CServiceBroker::GetWinSystem()->UseLimitedColor();
   m_inScene = m_deviceResources->Begin();
   return m_inScene;
 }
@@ -404,7 +413,7 @@ void CRenderSystemDX::SetCameraPosition(const CPoint &camera, int screenWidth, i
   // world view.  Until this is moved onto the GPU (via a vertex shader for instance), we set it to the identity here.
   m_pGUIShader->SetWorld(XMMatrixIdentity());
 
-  // Initialize the view matrix camera view.  
+  // Initialize the view matrix camera view.
   // Multiply the Y coord by -1 then translate so that everything is relative to the camera position.
   XMMATRIX flipY = XMMatrixScaling(1.0, -1.0f, 1.0f);
   XMMATRIX translate = XMMatrixTranslation(-(w + offset.x - stereoFactor), -(h + offset.y), 2 * h);
@@ -780,7 +789,7 @@ void CRenderSystemDX::CheckDeviceCaps()
 
 bool CRenderSystemDX::SupportsNPOT(bool dxt) const
 {
-  // MSDN says: 
+  // MSDN says:
   // At feature levels 9_1, 9_2 and 9_3, the display device supports the use
   // of 2D textures with dimensions that are not powers of two under two conditions:
   // 1) only one MIP-map level for each texture can be created - we are using both 1 and 0 mipmap levels

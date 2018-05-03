@@ -239,12 +239,7 @@ REFRESHRATE CWinSystemBase::DefaultRefreshRate(int screen, std::vector<REFRESHRA
 
 bool CWinSystemBase::UseLimitedColor()
 {
-#if defined(HAS_GL) || defined(HAS_DX)
-  static std::shared_ptr<CSettingBool> setting = std::static_pointer_cast<CSettingBool>(CServiceBroker::GetSettings().GetSetting(CSettings::SETTING_VIDEOSCREEN_LIMITEDRANGE));
-  return setting->GetValue();
-#else
-  return false;
-#endif
+  return CServiceBroker::GetSettings().GetBool(CSettings::SETTING_VIDEOSCREEN_LIMITEDRANGE);
 }
 
 std::string CWinSystemBase::GetClipboardText(void)
@@ -288,7 +283,7 @@ void CWinSystemBase::UnregisterRenderLoop(IRenderLoop *client)
 
 void CWinSystemBase::DriveRenderLoop()
 {
-  m_winEvents->MessagePump();
+  MessagePump();
 
   { CSingleLock lock(m_renderLoopSection);
     for (auto i = m_renderLoopClients.begin(); i != m_renderLoopClients.end(); ++i)

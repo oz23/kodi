@@ -1,5 +1,5 @@
 /*
- *      Copyright (C) 2005-2013 Team XBMC
+ *      Copyright (C) 2005-2017 Team XBMC
  *      http://kodi.tv
  *
  *  This Program is free software; you can redistribute it and/or modify
@@ -18,28 +18,24 @@
  *
  */
 
-#pragma once
-#include <memory>
-#include "utils/Observer.h"
-#include "windowing/WinEvents.h"
-#include "platform/linux/input/LinuxInputDevices.h"
+#include <libinput.h>
 
-class CWinEventsLinux : public IWinEvents, public Observer
+struct pos
+{
+  int X;
+  int Y;
+};
+
+class CLibInputPointer
 {
 public:
-  CWinEventsLinux();
-  bool MessagePump();
-  void MessagePush(XBMC_Event *ev);
-  void RefreshDevices();
-  void Notify(const Observable &obs, const ObservableMessage msg)
-  {
-    if (msg == ObservableMessagePeripheralsChanged)
-      RefreshDevices();
-  }
-  static bool IsRemoteLowBattery();
+  CLibInputPointer() = default;
+  ~CLibInputPointer() = default;
+
+  void ProcessButton(libinput_event_pointer *e);
+  void ProcessMotion(libinput_event_pointer *e);
+  void ProcessAxis(libinput_event_pointer *e);
 
 private:
-  static bool m_initialized;
-  static CLinuxInputDevices m_devices;
-  std::unique_ptr<CLinuxInputDevicesCheckHotplugged> m_checkHotplug;
+  struct pos m_pos = { 0, 0 };
 };
