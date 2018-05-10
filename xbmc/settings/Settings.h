@@ -121,6 +121,8 @@ public:
   static const std::string SETTING_VIDEOPLAYER_USEVAAPIMPEG2;
   static const std::string SETTING_VIDEOPLAYER_USEVAAPIMPEG4;
   static const std::string SETTING_VIDEOPLAYER_USEVAAPIVC1;
+  static const std::string SETTING_VIDEOPLAYER_USEVAAPIVP8;
+  static const std::string SETTING_VIDEOPLAYER_USEVAAPIVP9;
   static const std::string SETTING_VIDEOPLAYER_PREFERVAAPIRENDER;
   static const std::string SETTING_VIDEOPLAYER_USEDXVA2;
   static const std::string SETTING_VIDEOPLAYER_USEOMXPLAYER;
@@ -296,6 +298,7 @@ public:
   static const std::string SETTING_SMB_LEGACYSECURITY;
   static const std::string SETTING_VIDEOSCREEN_MONITOR;
   static const std::string SETTING_VIDEOSCREEN_SCREEN;
+  static const std::string SETTING_VIDEOSCREEN_WHITELIST;
   static const std::string SETTING_VIDEOSCREEN_RESOLUTION;
   static const std::string SETTING_VIDEOSCREEN_SCREENMODE;
   static const std::string SETTING_VIDEOSCREEN_FAKEFULLSCREEN;

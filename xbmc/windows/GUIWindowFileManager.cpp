@@ -94,6 +94,8 @@ using namespace KODI::MESSAGING;
 #define CONTROL_CURRENTDIRLABEL_LEFT    101
 #define CONTROL_CURRENTDIRLABEL_RIGHT   102
 
+namespace
+{
 class CGetDirectoryItems : public IRunnable
 {
 public:
@@ -105,12 +107,17 @@ public:
   {
     m_result = m_dir.GetDirectory(m_url, m_items, false);
   }
+  void Cancel() override
+  {
+    m_dir.CancelDirectory();
+  }
   bool m_result;
 protected:
   XFILE::CVirtualDirectory &m_dir;
   CURL m_url;
   CFileItemList &m_items;
 };
+}
 
 CGUIWindowFileManager::CGUIWindowFileManager(void)
     : CGUIWindow(WINDOW_FILES, "FileManager.xml"),
@@ -921,9 +928,8 @@ bool CGUIWindowFileManager::GetDirectory(int iList, const std::string &strDirect
   CURL pathToUrl(strDirectory);
 
   CGetDirectoryItems getItems(m_rootDir, pathToUrl, items);
-  if (!CGUIDialogBusy::Wait(&getItems))
+  if (!CGUIDialogBusy::Wait(&getItems, 100, true))
   {
-    m_rootDir.CancelDirectory();
     return false;
   }
   return getItems.m_result;
