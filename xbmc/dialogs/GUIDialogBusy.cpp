@@ -35,6 +35,11 @@ public:
   explicit CBusyWaiter(IRunnable *runnable) :
   CThread(runnable, "waiting"), m_done(new CEvent()),  m_runnable(runnable) { }
   
+  ~CBusyWaiter()
+  {
+    StopThread();
+  }
+
   bool Wait(unsigned int displaytime, bool allowCancel)
   {
     std::shared_ptr<CEvent> e_done(m_done);
@@ -93,7 +98,7 @@ bool CGUIDialogBusy::WaitOnEvent(CEvent &event, unsigned int displaytime /* = 10
 
       while(!event.WaitMSec(1))
       {
-        dialog->ProcessRenderLoop(false);
+        dialog->ProcessRenderLoop(false, false);
         if (allowCancel && dialog->IsCanceled())
         {
           cancelled = true;
@@ -127,7 +132,6 @@ void CGUIDialogBusy::Open_Internal(const std::string &param /* = "" */)
   CGUIDialog::Open_Internal(false, param);
 }
 
-
 void CGUIDialogBusy::DoProcess(unsigned int currentTime, CDirtyRegionList &dirtyregions)
 {
   bool visible = CServiceBroker::GetGUI()->GetWindowManager().IsModalDialogTopmost(WINDOW_DIALOG_BUSY);
@@ -149,7 +153,7 @@ void CGUIDialogBusy::DoProcess(unsigned int currentTime, CDirtyRegionList &dirty
 
 void CGUIDialogBusy::Render()
 {
-  if(!m_bLastVisible)
+  if (!m_bLastVisible)
     return;
   CGUIDialog::Render();
 }
