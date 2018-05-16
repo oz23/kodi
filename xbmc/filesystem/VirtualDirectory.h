@@ -36,7 +36,7 @@ namespace XFILE
     ~CVirtualDirectory(void) override;
     bool GetDirectory(const CURL& url, CFileItemList &items) override;
     void CancelDirectory() override;
-    bool GetDirectory(const CURL& url, CFileItemList &items, bool bUseFileDirectories);
+    bool GetDirectory(const CURL& url, CFileItemList &items, bool bUseFileDirectories, bool keepImpl);
     void SetSources(const VECSOURCES& vecSources);
     inline unsigned int GetNumberOfSources() 
     {
@@ -59,6 +59,9 @@ namespace XFILE
     void GetSources(VECSOURCES &sources) const;
 
     void AllowNonLocalSources(bool allow) { m_allowNonLocalSources = allow; };
+
+    std::shared_ptr<IDirectory> GetDirImpl() { return m_pDir; }
+    void ReleaseDirImpl() { m_pDir.reset(); }
 
   protected:
     void CacheThumbs(CFileItemList &items);

@@ -99,7 +99,7 @@ public:
   }
   void Run() override
   {
-    m_result = m_dir.GetDirectory(m_url, m_items, m_useDir);
+    m_result = m_dir.GetDirectory(m_url, m_items, m_useDir, true);
   }
   void Cancel() override
   {
@@ -916,18 +916,31 @@ bool CGUIMediaWindow::Update(const std::string &strDirectory, bool updateFilterP
 
 bool CGUIMediaWindow::Refresh(bool clearCache /* = false */)
 {
+  if (m_vecItemsUpdating)
+  {
+    CLog::Log(LOGWARNING, "CGUIMediaWindow::Update - updating in progress");
+    return false;
+  }
+
   std::string strCurrentDirectory = m_vecItems->GetPath();
   if (strCurrentDirectory == "?")
     return false;
 
+  m_vecItemsUpdating = true;
+
   if (clearCache)
     m_vecItems->RemoveDiscCache(GetID());
 
+  bool ret = true;
+
   // get the original number of items
   if (!Update(strCurrentDirectory, false))
-    return false;
+  {
+    ret = false;
+  }
 
-  return true;
+  m_vecItemsUpdating = false;
+  return ret;
 }
 
 /*!
@@ -2159,22 +2172,37 @@ std::string CGUIMediaWindow::RemoveParameterFromPath(const std::string &strDirec
 
 void CGUIMediaWindow::ProcessRenderLoop(bool renderOnly)
 {
-  CServiceBroker::GetGUI()->GetWindowManager().ProcessRenderLoop(renderOnly, true);
+  CServiceBroker::GetGUI()->GetWindowManager().ProcessRenderLoop(renderOnly);
 }
 
 bool CGUIMediaWindow::GetDirectoryItems(CURL &url, CFileItemList &items, bool useDir)
 {
   if (m_useBusyDialog)
   {
+    bool ret = true;
     CGetDirectoryItems getItems(m_rootDir, url, items, useDir);
     if (!CGUIDialogBusy::Wait(&getItems, 100, true))
     {
-      return false;
+      // cancelled
+      ret = false;
     }
-    return getItems.m_result;
+    else if (!getItems.m_result)
+    {
+      if (g_application.IsCurrentThread() && !m_rootDir.GetDirImpl()->ProcessRequirements())
+      {
+        ret = false;
+      }
+      else if (!CGUIDialogBusy::Wait(&getItems, 100, true) || !getItems.m_result)
+      {
+        ret = false;
+      }
+    }
+
+    m_rootDir.ReleaseDirImpl();
+    return ret;
   }
   else
   {
-    return m_rootDir.GetDirectory(url, items, useDir);
+    return m_rootDir.GetDirectory(url, items, useDir, false);
   }
 }
