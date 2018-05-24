@@ -254,6 +254,7 @@ void CAdvancedSettings::Initialize()
 
   m_remoteDelay = 3;
   m_controllerDeadzone = 0.2f;
+  m_bScanIRServer = true;
 
   m_playlistAsFolders = true;
   m_detectAsUdf = false;
@@ -272,6 +273,8 @@ void CAdvancedSettings::Initialize()
 
   m_musicThumbs = "folder.jpg|Folder.jpg|folder.JPG|Folder.JPG|cover.jpg|Cover.jpg|cover.jpeg|thumb.jpg|Thumb.jpg|thumb.JPG|Thumb.JPG";
   m_fanartImages = "fanart.jpg|fanart.png";
+  m_musicArtistExtraArt = { };
+  m_musicAlbumExtraArt = {};
 
   m_bMusicLibraryAllItemsOnBottom = false;
   m_bMusicLibraryCleanOnUpdate = false;
@@ -743,6 +746,32 @@ void CAdvancedSettings::ParseSettingsFile(const std::string &file)
         separator = separator->NextSibling("separator");
       }
     }
+    // Music extra artist art
+    TiXmlElement* arttypes = pElement->FirstChildElement("artistextraart");
+    if (arttypes)
+    {
+      m_musicArtistExtraArt.clear();
+      TiXmlNode* arttype = arttypes->FirstChild("arttype");
+      while (arttype)
+      {
+        if (arttype->FirstChild())
+          m_musicArtistExtraArt.push_back(arttype->FirstChild()->ValueStr());
+        arttype = arttype->NextSibling("arttype");
+      }
+    }
+    // Music extra album art
+    arttypes = pElement->FirstChildElement("albumextraart");
+    if (arttypes)
+    {
+      m_musicAlbumExtraArt.clear();
+      TiXmlNode* arttype = arttypes->FirstChild("arttype");
+      while (arttype)
+      {
+        if (arttype->FirstChild())
+          m_musicAlbumExtraArt.push_back(arttype->FirstChild()->ValueStr());
+        arttype = arttype->NextSibling("arttype");
+      }
+    }
   }
 
   pElement = pRootElement->FirstChildElement("videolibrary");
@@ -1007,6 +1036,8 @@ void CAdvancedSettings::ParseSettingsFile(const std::string &file)
 
   XMLUtils::GetInt(pRootElement, "remotedelay", m_remoteDelay, 0, 20);
   XMLUtils::GetFloat(pRootElement, "controllerdeadzone", m_controllerDeadzone, 0.0f, 1.0f);
+  XMLUtils::GetBoolean(pRootElement, "scanirserver", m_bScanIRServer);
+
   XMLUtils::GetUInt(pRootElement, "fanartres", m_fanartRes, 0, 9999);
   XMLUtils::GetUInt(pRootElement, "imageres", m_imageRes, 0, 9999);
   if (XMLUtils::GetString(pRootElement, "imagescalingalgorithm", tmp))
@@ -1371,6 +1402,7 @@ void CAdvancedSettings::SettingOptionsLoggingComponentsFiller(SettingConstPtr se
   list.push_back(std::make_pair(g_localizeStrings.Get(676), LOGAUDIO));
   list.push_back(std::make_pair(g_localizeStrings.Get(680), LOGVIDEO));
   list.push_back(std::make_pair(g_localizeStrings.Get(683), LOGAVTIMING));
+  list.push_back(std::make_pair(g_localizeStrings.Get(684), LOGWINDOWING));
 #ifdef HAS_DBUS
   list.push_back(std::make_pair(g_localizeStrings.Get(674), LOGDBUS));
 #endif

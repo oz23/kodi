@@ -28,19 +28,23 @@
 #include "windowing/Resolution.h"
 #include "GBMUtils.h"
 
-struct plane
+struct drm_object
 {
-  drmModePlane *plane = nullptr;
-  drmModeObjectProperties *props = nullptr;
+  uint32_t id = 0;
+  uint32_t type = 0;
+  drmModeObjectPropertiesPtr props = nullptr;
   drmModePropertyRes **props_info = nullptr;
+};
+
+struct plane : drm_object
+{
+  drmModePlanePtr plane = nullptr;
   uint32_t format;
 };
 
-struct connector
+struct connector : drm_object
 {
-  drmModeConnector *connector = nullptr;
-  drmModeObjectProperties *props = nullptr;
-  drmModePropertyRes **props_info = nullptr;
+  drmModeConnectorPtr connector = nullptr;
 };
 
 struct encoder
@@ -48,11 +52,9 @@ struct encoder
   drmModeEncoder *encoder = nullptr;
 };
 
-struct crtc
+struct crtc : drm_object
 {
-  drmModeCrtc *crtc = nullptr;
-  drmModeObjectProperties *props = nullptr;
-  drmModePropertyRes **props_info = nullptr;
+  drmModeCrtcPtr crtc = nullptr;
 };
 
 struct drm_fb
@@ -72,9 +74,15 @@ public:
   virtual bool InitDrm();
   virtual void DestroyDrm();
 
+  std::string GetModule() const { return m_module; }
+  std::string GetDevicePath() const { return m_device_path; }
+
   bool GetModes(std::vector<RESOLUTION_INFO> &resolutions);
   bool SetMode(RESOLUTION_INFO res);
   void WaitVBlank();
+
+  bool AddProperty(drmModeAtomicReqPtr req, struct drm_object *object, const char *name, uint64_t value);
+  bool SetProperty(struct drm_object *object, const char *name, uint64_t value);
 
   int m_fd;
 
@@ -101,6 +109,8 @@ private:
   static void DrmFbDestroyCallback(struct gbm_bo *bo, void *data);
 
   int m_crtc_index;
+  std::string m_module;
+  std::string m_device_path;
 
   drmModeResPtr m_drm_resources = nullptr;
   drmModeCrtcPtr m_orig_crtc = nullptr;

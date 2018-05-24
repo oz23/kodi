@@ -24,7 +24,6 @@
 #include "cores/VideoPlayer/VideoRenderers/RenderFactory.h"
 #include "cores/VideoPlayer/VideoRenderers/RenderFlags.h"
 #include "utils/log.h"
-#include "windowing/gbm/DRMAtomic.h"
 
 static CWinSystemGbmGLESContext *m_pWinSystem;
 
@@ -209,10 +208,10 @@ void CRendererDRMPRIME::SetVideoPlane(CVideoBufferDRMPRIME* buffer)
       return;
     }
 
-    int32_t crtc_x = (int32_t)m_destRect.x1;
-    int32_t crtc_y = (int32_t)m_destRect.y1;
-    uint32_t crtc_w = (uint32_t)m_destRect.Width();
-    uint32_t crtc_h = (uint32_t)m_destRect.Height();
+    int32_t crtc_x = static_cast<int32_t>(m_destRect.x1) & ~1;
+    int32_t crtc_y = static_cast<int32_t>(m_destRect.y1) & ~1;
+    uint32_t crtc_w = (static_cast<uint32_t>(m_destRect.Width()) + 1) & ~1;
+    uint32_t crtc_h = (static_cast<uint32_t>(m_destRect.Height()) + 1) & ~1;
     uint32_t src_x = 0;
     uint32_t src_y = 0;
     uint32_t src_w = buffer->GetWidth() << 16;
@@ -220,17 +219,16 @@ void CRendererDRMPRIME::SetVideoPlane(CVideoBufferDRMPRIME* buffer)
 
     if(m_DRM->m_req)
     {
-      std::shared_ptr<CDRMAtomic> atomic = std::dynamic_pointer_cast<CDRMAtomic>(m_DRM);
-      atomic->AddPlaneProperty(atomic->m_req, atomic->m_primary_plane, "FB_ID",   buffer->m_fb_id);
-      atomic->AddPlaneProperty(atomic->m_req, atomic->m_primary_plane, "CRTC_ID", atomic->m_crtc->crtc->crtc_id);
-      atomic->AddPlaneProperty(atomic->m_req, atomic->m_primary_plane, "SRC_X",   src_x);
-      atomic->AddPlaneProperty(atomic->m_req, atomic->m_primary_plane, "SRC_Y",   src_y);
-      atomic->AddPlaneProperty(atomic->m_req, atomic->m_primary_plane, "SRC_W",   src_w);
-      atomic->AddPlaneProperty(atomic->m_req, atomic->m_primary_plane, "SRC_H",   src_h);
-      atomic->AddPlaneProperty(atomic->m_req, atomic->m_primary_plane, "CRTC_X",  crtc_x);
-      atomic->AddPlaneProperty(atomic->m_req, atomic->m_primary_plane, "CRTC_Y",  crtc_y);
-      atomic->AddPlaneProperty(atomic->m_req, atomic->m_primary_plane, "CRTC_W",  crtc_w);
-      atomic->AddPlaneProperty(atomic->m_req, atomic->m_primary_plane, "CRTC_H",  crtc_h);
+      m_DRM->AddProperty(m_DRM->m_req, m_DRM->m_primary_plane, "FB_ID",   buffer->m_fb_id);
+      m_DRM->AddProperty(m_DRM->m_req, m_DRM->m_primary_plane, "CRTC_ID", m_DRM->m_crtc->crtc->crtc_id);
+      m_DRM->AddProperty(m_DRM->m_req, m_DRM->m_primary_plane, "SRC_X",   src_x);
+      m_DRM->AddProperty(m_DRM->m_req, m_DRM->m_primary_plane, "SRC_Y",   src_y);
+      m_DRM->AddProperty(m_DRM->m_req, m_DRM->m_primary_plane, "SRC_W",   src_w);
+      m_DRM->AddProperty(m_DRM->m_req, m_DRM->m_primary_plane, "SRC_H",   src_h);
+      m_DRM->AddProperty(m_DRM->m_req, m_DRM->m_primary_plane, "CRTC_X",  crtc_x);
+      m_DRM->AddProperty(m_DRM->m_req, m_DRM->m_primary_plane, "CRTC_Y",  crtc_y);
+      m_DRM->AddProperty(m_DRM->m_req, m_DRM->m_primary_plane, "CRTC_W",  crtc_w);
+      m_DRM->AddProperty(m_DRM->m_req, m_DRM->m_primary_plane, "CRTC_H",  crtc_h);
     }
     else
     {

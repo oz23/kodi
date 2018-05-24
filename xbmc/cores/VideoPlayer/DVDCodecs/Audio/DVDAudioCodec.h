@@ -82,12 +82,6 @@ public:
   virtual bool AddData(const DemuxPacket &packet) = 0;
 
   /*
-   * returns nr of bytes in decode buffer
-   * the data is valid until the next call
-   */
-  virtual int GetData(uint8_t** dst) = 0;
-
-  /*
    * the data is valid until the next call
    */
   virtual void GetData(DVDAudioFrame &frame) = 0;
@@ -115,7 +109,7 @@ public:
   /*
    * should return codecs name
    */
-  virtual const char* GetName() = 0;
+  virtual std::string GetName() = 0;
 
   /*
    * should return amount of data decoded has buffered in preparation for next audio frame

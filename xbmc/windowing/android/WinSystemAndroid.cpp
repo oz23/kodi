@@ -24,6 +24,7 @@
 #include <float.h>
 
 #include "WinEventsAndroid.h"
+#include "OSScreenSaverAndroid.h"
 #include "ServiceBroker.h"
 #include "windowing/GraphicContext.h"
 #include "windowing/Resolution.h"
@@ -43,6 +44,7 @@
 #include "platform/android/powermanagement/AndroidPowerSyscall.h"
 #include "addons/interfaces/platform/android/System.h"
 #include "platform/android/drm/MediaDrmCryptoSession.h"
+#include <androidjni/MediaCodecList.h>
 
 #include <EGL/egl.h>
 #include <EGL/eglplatform.h>
@@ -237,6 +239,17 @@ void CWinSystemAndroid::UpdateResolutions()
     CDisplaySettings::GetInstance().GetResolutionInfo(RES_DESKTOP) = CDisplaySettings::GetInstance().GetResolutionInfo(ResDesktop);
     CDisplaySettings::GetInstance().GetResolutionInfo(ResDesktop) = desktop;
   }
+
+  unsigned int num_codecs = CJNIMediaCodecList::getCodecCount();
+  for (int i = 0; i < num_codecs; i++)
+  {
+    CJNIMediaCodecInfo codec_info = CJNIMediaCodecList::getCodecInfoAt(i);
+    if (codec_info.isEncoder())
+      continue;
+
+    std::string codecname = codec_info.getName();
+    CLog::Log(LOGNOTICE, "Mediacodec: %s", codecname.c_str());
+  }
 }
 
 bool CWinSystemAndroid::Hide()
@@ -271,4 +284,10 @@ void CWinSystemAndroid::MessagePush(XBMC_Event *newEvent)
 bool CWinSystemAndroid::MessagePump()
 {
   return m_winEvents->MessagePump();
+}
+
+std::unique_ptr<WINDOWING::IOSScreenSaver> CWinSystemAndroid::GetOSScreenSaverImpl()
+{
+  std::unique_ptr<KODI::WINDOWING::IOSScreenSaver> ret(new COSScreenSaverAndroid());
+  return ret;
 }
