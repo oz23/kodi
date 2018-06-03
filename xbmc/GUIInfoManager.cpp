@@ -6056,9 +6056,9 @@ int CGUIInfoManager::TranslateSingleString(const std::string &strCondition, bool
         if (prop.name == "string")
         {
           if (prop.num_params() == 2)
-            return AddMultiInfo(CGUIInfo(SKIN_STRING, CSkinSettings::GetInstance().TranslateString(prop.param(0)), prop.param(1)));
+            return AddMultiInfo(CGUIInfo(SKIN_STRING_IS_EQUAL, CSkinSettings::GetInstance().TranslateString(prop.param(0)), prop.param(1)));
           else
-            return AddMultiInfo(CGUIInfo(SKIN_STRING, CSkinSettings::GetInstance().TranslateString(prop.param(0))));
+            return AddMultiInfo(CGUIInfo(SKIN_STRING_NOT_EMPTY, CSkinSettings::GetInstance().TranslateString(prop.param(0))));
         }
         if (prop.name == "hassetting")
           return AddMultiInfo(CGUIInfo(SKIN_BOOL, CSkinSettings::GetInstance().TranslateBool(prop.param(0))));
@@ -6174,6 +6174,8 @@ int CGUIInfoManager::TranslateSingleString(const std::string &strCondition, bool
       }
       else if (platform == "windows")
         return SYSTEM_PLATFORM_WINDOWS;
+      else if (platform == "uwp")
+        return SYSTEM_PLATFORM_UWP;
       else if (platform == "darwin")
         return SYSTEM_PLATFORM_DARWIN;
       else if (platform == "osx")
@@ -6246,6 +6248,7 @@ int CGUIInfoManager::TranslateListItem(const Property& cat, const Property& prop
     }
     else if (prop.name == "property" ||
              prop.name == "art" ||
+             prop.name == "rating" ||
              prop.name == "votes" ||
              prop.name == "ratingandvotes")
     {

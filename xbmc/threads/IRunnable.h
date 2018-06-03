@@ -1,6 +1,6 @@
 /*
- *      Copyright (C) 2010-2013 Team XBMC
- *      http://xbmc.org
+ *      Copyright (C) 2005-2013 Team XBMC
+ *      http://kodi.tv
  *
  *  This Program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -18,21 +18,12 @@
  *
  */
 
-#version 100
+#pragma once
 
-precision mediump   float;
-uniform   sampler2D m_samp0;
-uniform   sampler2D m_samp1;
-varying   vec4      m_cord0;
-varying   vec4      m_cord1;
-uniform   lowp vec4 m_unicol;
-
-// SM_MULTI shader
-void main ()
+class IRunnable
 {
-  gl_FragColor.rgba = m_unicol * texture2D(m_samp0, m_cord0.xy) * texture2D(m_samp1, m_cord1.xy);
-#if defined(KODI_LIMITED_RANGE)
-  gl_FragColor.rgb *= (235.0-16.0) / 255.0;
-  gl_FragColor.rgb += 16.0 / 255.0;
-#endif
-}
+public:
+  virtual void Run()=0;
+  virtual void Cancel() {};
+  virtual ~IRunnable() = default;
+};

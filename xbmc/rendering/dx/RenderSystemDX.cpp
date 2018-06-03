@@ -170,7 +170,8 @@ void CRenderSystemDX::CheckInterlacedStereoView()
       || RENDER_STEREO_MODE_CHECKERBOARD == stereoMode))
   {
     const auto outputSize = m_deviceResources->GetOutputSize();
-    if (!m_rightEyeTex.Create(outputSize.Width, outputSize.Height, 1, D3D11_USAGE_DEFAULT, DXGI_FORMAT_B8G8R8A8_UNORM))
+    DXGI_FORMAT texFormat = m_deviceResources->GetBackBuffer()->GetFormat();
+    if (!m_rightEyeTex.Create(outputSize.Width, outputSize.Height, 1, D3D11_USAGE_DEFAULT, texFormat))
     {
       CLog::Log(LOGERROR, "%s - Failed to create right eye buffer.", __FUNCTION__);
       CServiceBroker::GetWinSystem()->GetGfxContext().SetStereoMode(RENDER_STEREO_MODE_SPLIT_HORIZONTAL); // try fallback to split horizontal
@@ -293,7 +294,31 @@ void CRenderSystemDX::PresentRender(bool rendered, bool videoLayer)
     CD3DHelper::PSClearShaderResources(m_pContext);
   }
 
+  // time for decoder that may require the context
+  {
+    CSingleLock lock(m_decoderSection);
+    XbmcThreads::EndTime timer;
+    timer.Set(5);
+    while (!m_decodingTimer.IsTimePast() && !timer.IsTimePast())
+    {
+      m_decodingEvent.wait(lock, 1);
+    }
+  }
+
   PresentRenderImpl(rendered);
+}
+
+void CRenderSystemDX::RequestDecodingTime()
+{
+  CSingleLock lock(m_decoderSection);
+  m_decodingTimer.Set(3);
+}
+
+void CRenderSystemDX::ReleaseDecodingTime()
+{
+  CSingleLock lock(m_decoderSection);
+  m_decodingTimer.SetExpired();
+  m_decodingEvent.notify();
 }
 
 bool CRenderSystemDX::BeginRender()
@@ -663,14 +688,6 @@ void CRenderSystemDX::SetAlphaBlendEnable(bool enable)
 
   m_deviceResources->GetD3DContext()->OMSetBlendState(enable ? m_BlendEnableState.Get() : m_BlendDisableState.Get(), nullptr, 0xFFFFFFFF);
   m_BlendEnabled = enable;
-}
-
-HANDLE CRenderSystemDX::GetContexMutex() const
-{
-  if (m_deviceResources)
-    return m_deviceResources->GetContexMutex();
-
-  return INVALID_HANDLE_VALUE;
 }
 
 CD3DTexture* CRenderSystemDX::GetBackBuffer()

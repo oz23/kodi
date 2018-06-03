@@ -509,7 +509,7 @@
       <group id="1" label="14221">
         <setting id="locale.audiolanguage" type="string" label="285" help="36119">
           <level>0</level>
-          <default>original</default>
+          <default>mediadefault</default>
           <constraints>
             <options>audiostreamlanguages</options>
           </constraints>
@@ -1994,6 +1994,7 @@
               <condition>HAVE_X11</condition>
               <condition>HAVE_WAYLAND</condition>
               <condition>HAVE_OSX</condition>
+              <condition>HAS_DX</condition>
             </or>
           </requirement>
           <level>0</level>

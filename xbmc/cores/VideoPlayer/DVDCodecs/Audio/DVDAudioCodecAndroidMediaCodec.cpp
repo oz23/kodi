@@ -60,10 +60,26 @@ static bool IsDownmixDecoder(const std::string &name)
 {
   static const char *downmixDecoders[] = {
     "OMX.dolby",
-    // End of Rockchip
+    // End of list
     NULL
   };
   for (const char **ptr = downmixDecoders; *ptr; ptr++)
+  {
+    if (!strnicmp(*ptr, name.c_str(), strlen(*ptr)))
+      return true;
+  }
+  return false;
+}
+
+static bool IsDecoderBlacklisted(const std::string &name)
+{
+  static const char *blacklistDecoders[] = {
+    "OMX.google",
+    "OMX.MTK",
+    // End of list
+    NULL
+  };
+  for (const char **ptr = blacklistDecoders; *ptr; ptr++)
   {
     if (!strnicmp(*ptr, name.c_str(), strlen(*ptr)))
       return true;
@@ -208,6 +224,9 @@ bool CDVDAudioCodecAndroidMediaCodec::Open(CDVDStreamInfo &hints, CDVDCodecOptio
 
       std::string codecName = codec_info.getName();
 
+      if (IsDecoderBlacklisted(codecName))
+        continue;
+
       if (m_hints.channels > 2 && !stereoDownmixAllowed && IsDownmixDecoder(codecName))
         continue;
 
@@ -222,6 +241,7 @@ bool CDVDAudioCodecAndroidMediaCodec::Open(CDVDStreamInfo &hints, CDVDCodecOptio
           continue;
         }
         CLog::Log(LOGINFO, "CDVDAudioCodecAndroidMediaCodec: Selected audio decoder: %s", codecName.c_str());
+        break;
       }
     }
   }

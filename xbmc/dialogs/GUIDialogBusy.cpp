@@ -24,6 +24,7 @@
 #include "guilib/GUIProgressControl.h"
 #include "guilib/GUIWindowManager.h"
 #include "threads/Thread.h"
+#include "threads/IRunnable.h"
 
 #define PROGRESS_CONTROL 10
 
@@ -113,7 +114,7 @@ bool CGUIDialogBusy::WaitOnEvent(CEvent &event, unsigned int displaytime /* = 10
 }
 
 CGUIDialogBusy::CGUIDialogBusy(void)
-  : CGUIDialog(WINDOW_DIALOG_BUSY, "DialogBusy.xml", DialogModalityType::PARENTLESS_MODAL),
+  : CGUIDialog(WINDOW_DIALOG_BUSY, "DialogBusy.xml", DialogModalityType::MODAL),
     m_bLastVisible(false)
 {
   m_loadType = LOAD_ON_GUI_INIT;

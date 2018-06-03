@@ -94,6 +94,7 @@
 #include "settings/dialogs/GUIDialogContentSettings.h"
 #include "settings/dialogs/GUIDialogLibExportSettings.h"
 #include "dialogs/GUIDialogBusy.h"
+#include "dialogs/GUIDialogBusyNoCancel.h"
 #include "dialogs/GUIDialogKeyboardGeneric.h"
 #include "dialogs/GUIDialogKeyboardTouch.h"
 #include "dialogs/GUIDialogYesNo.h"
@@ -244,6 +245,7 @@ void CGUIWindowManager::CreateWindows()
   Add(new CGUIDialogSmartPlaylistEditor);
   Add(new CGUIDialogSmartPlaylistRule);
   Add(new CGUIDialogBusy);
+  Add(new CGUIDialogBusyNoCancel);
   Add(new CGUIDialogPictureInfo);
   Add(new CGUIDialogAddonInfo);
   Add(new CGUIDialogAddonSettings);
@@ -369,6 +371,7 @@ bool CGUIWindowManager::DestroyWindows()
     DestroyWindow(WINDOW_DIALOG_SMART_PLAYLIST_EDITOR);
     DestroyWindow(WINDOW_DIALOG_SMART_PLAYLIST_RULE);
     DestroyWindow(WINDOW_DIALOG_BUSY);
+    DestroyWindow(WINDOW_DIALOG_BUSY_NOCANCEL);
     DestroyWindow(WINDOW_DIALOG_PICTURE_INFO);
     DestroyWindow(WINDOW_DIALOG_ADDON_INFO);
     DestroyWindow(WINDOW_DIALOG_ADDON_SETTINGS);
@@ -828,7 +831,7 @@ void CGUIWindowManager::ActivateWindow_Internal(int iWindowID, const std::vector
   }
 
   // don't activate a window if there are active modal dialogs of type MODAL
-  if (!force && HasModalDialog({ DialogModalityType::MODAL }))
+  if (!force && HasModalDialog(true))
   {
     CLog::Log(LOGINFO, "Activate of window '%i' refused because there are active modal dialogs", iWindowID);
     g_audioManager.PlayActionSound(CAction(ACTION_ERROR));
@@ -1312,7 +1315,7 @@ CGUIWindow* CGUIWindowManager::GetWindow(int id) const
   return nullptr;
 }
 
-void CGUIWindowManager::ProcessRenderLoop(bool renderOnly /*= false*/)
+bool CGUIWindowManager::ProcessRenderLoop(bool renderOnly)
 {
   if (g_application.IsCurrentThread() && m_pCallback)
   {
@@ -1323,6 +1326,10 @@ void CGUIWindowManager::ProcessRenderLoop(bool renderOnly /*= false*/)
     m_pCallback->Render();
     m_iNested--;
   }
+  if (g_application.m_bStop)
+    return false;
+  else
+    return true;
 }
 
 void CGUIWindowManager::SetCallback(IWindowManagerCallback& callback)
@@ -1378,7 +1385,7 @@ void CGUIWindowManager::RemoveDialog(int id)
                          m_activeDialogs.end());
 }
 
-bool CGUIWindowManager::HasModalDialog(const std::vector<DialogModalityType>& types, bool ignoreClosing /* = true */) const
+bool CGUIWindowManager::HasModalDialog(bool ignoreClosing) const
 {
   CSingleLock lock(CServiceBroker::GetWinSystem()->GetGfxContext());
   for (const auto& window : m_activeDialogs)
@@ -1387,25 +1394,15 @@ bool CGUIWindowManager::HasModalDialog(const std::vector<DialogModalityType>& ty
         window->IsModalDialog() &&
         (!ignoreClosing || !window->IsAnimating(ANIM_TYPE_WINDOW_CLOSE)))
     {
-      if (!types.empty())
-      {
-        CGUIDialog *dialog = static_cast<CGUIDialog*>(window);
-        for (const auto &type : types)
-        {
-          if (dialog->GetModalityType() == type)
-            return true;
-        }
-      }
-      else
-        return true;
+      return true;
     }
   }
   return false;
 }
 
-bool CGUIWindowManager::HasVisibleModalDialog(const std::vector<DialogModalityType>& types) const
+bool CGUIWindowManager::HasVisibleModalDialog() const
 {
-  return HasModalDialog(types, false);
+  return HasModalDialog(false);
 }
 
 int CGUIWindowManager::GetTopmostDialog(bool modal, bool ignoreClosing) const

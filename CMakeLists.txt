@@ -109,7 +109,8 @@ foreach(depspec ${PLATFORM_REQUIRED_DEPS})
 endforeach()
 
 # Required dependencies. Keep in alphabetical order please
-set(required_deps Cdio
+set(required_deps ASS
+                  Cdio
                   Cpluff
                   CrossGUID
                   Curl
@@ -146,6 +147,7 @@ set(optional_deps Alsa
                   Bluetooth
                   CAP
                   CCache
+                  CEC
                   DBus
                   LCMS2
                   LircClient
@@ -160,12 +162,8 @@ set(optional_deps Alsa
                   XSLT
                   ${PLATFORM_OPTIONAL_DEPS})
 
-# Required, dyloaded deps. Keep in alphabetical order please
-set(required_dyload ASS)
-
 # Optional, dyloaded deps. Keep in alphabetical order please
 set(dyload_optional Bluray
-                    CEC
                     NFS
                     Plist)
 
@@ -175,7 +173,6 @@ find_package(JsonSchemaBuilder REQUIRED)
 
 core_require_dep(${required_deps})
 core_optional_dep(${optional_deps})
-core_require_dyload_dep(${required_dyload})
 core_optional_dyload_dep(${dyload_optional})
 
 if(ENABLE_MARIADBCLIENT AND NOT ENABLE_MARIADBCLIENT STREQUAL AUTO AND ENABLE_MYSQLCLIENT AND NOT ENABLE_MYSQLCLIENT STREQUAL AUTO)

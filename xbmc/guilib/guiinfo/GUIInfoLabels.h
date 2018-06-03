@@ -360,6 +360,8 @@
 
 #define SKIN_BOOL                   600
 #define SKIN_STRING                 601
+#define SKIN_STRING_IS_EQUAL        602
+#define SKIN_STRING_NOT_EMPTY       603
 #define SKIN_THEME                  604
 #define SKIN_COLOUR_THEME           605
 #define SKIN_HAS_THEME              606
@@ -419,7 +421,7 @@
 #define SYSTEM_PLATFORM_DARWIN      743
 #define SYSTEM_PLATFORM_DARWIN_OSX  744
 #define SYSTEM_PLATFORM_DARWIN_IOS  745
-//#define SYSTEM_PLATFORM_DARWIN_ATV2 746
+#define SYSTEM_PLATFORM_UWP         746
 #define SYSTEM_PLATFORM_ANDROID     747
 #define SYSTEM_PLATFORM_LINUX_RASPBERRY_PI 748
 #define SYSTEM_PLATFORM_WIN10       749

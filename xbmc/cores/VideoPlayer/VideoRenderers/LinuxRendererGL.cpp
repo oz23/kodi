@@ -51,7 +51,6 @@
 #include "platform/darwin/osx/CocoaInterface.h"
 #include <CoreVideo/CoreVideo.h>
 #include <OpenGL/CGLIOSurface.h>
-#include "platform/darwin/DarwinUtils.h"
 #endif
 
 //! @bug
@@ -273,19 +272,6 @@ bool CLinuxRendererGL::Configure(const VideoPicture &picture, float fps, unsigne
 
   // setup the background colour
   m_clearColour = CServiceBroker::GetWinSystem()->UseLimitedColor() ? (16.0f / 0xff) : 0.0f;
-
-#ifdef TARGET_DARWIN_OSX
-  // on osx 10.9 mavericks we get a strange ripple
-  // effect when rendering with pbo
-  // when used on intel gpu - we have to quirk it here
-  if (CDarwinUtils::IsMavericksOrHigher())
-  {
-    std::string rendervendor = CServiceBroker::GetRenderSystem()->GetRenderVendor();
-    StringUtils::ToLower(rendervendor);
-    if (rendervendor.find("intel") != std::string::npos)
-      m_pboSupported = false;
-  }
-#endif
 
   // load 3DLUT
   if (m_ColorManager->IsEnabled())
@@ -870,7 +856,6 @@ void CLinuxRendererGL::UpdateVideoFilter()
   case VS_SCALINGMETHOD_LANCZOS_SOFTWARE:
   case VS_SCALINGMETHOD_SINC_SOFTWARE:
   case VS_SCALINGMETHOD_SINC8:
-  case VS_SCALINGMETHOD_NEDI:
     CLog::Log(LOGERROR, "GL: TODO: This scaler has not yet been implemented");
     break;
 
@@ -1075,8 +1060,12 @@ void CLinuxRendererGL::RenderSinglePass(int index, int field)
   }
 
   bool toneMap = false;
-  if (buf.hasLightMetadata || (buf.hasDisplayMetadata && buf.displayMetadata.has_luminance))
-    toneMap = true;
+  if (m_videoSettings.m_ToneMapMethod != VS_TONEMAPMETHOD_OFF)
+  {
+    if (buf.hasLightMetadata || (buf.hasDisplayMetadata && buf.displayMetadata.has_luminance))
+      toneMap = true;
+  }
+
   if (toneMap != m_toneMap)
     m_reloadShaders = true;
   m_toneMap = toneMap;
@@ -1110,6 +1099,7 @@ void CLinuxRendererGL::RenderSinglePass(int index, int field)
   m_pYUVShader->SetColParams(buf.m_srcColSpace, buf.m_srcBits, !buf.m_srcFullRange, buf.m_srcTextureBits);
   m_pYUVShader->SetDisplayMetadata(buf.hasDisplayMetadata, buf.displayMetadata,
                                    buf.hasLightMetadata, buf.lightMetadata);
+  m_pYUVShader->SetToneMapParam(m_videoSettings.m_ToneMapParam);
 
   //disable non-linear stretch when a dvd menu is shown, parts of the menu are rendered through the overlay renderer
   //having non-linear stretch on breaks the alignment
@@ -1236,8 +1226,12 @@ void CLinuxRendererGL::RenderToFBO(int index, int field, bool weave /*= false*/)
   }
 
   bool toneMap = false;
-  if (buf.hasLightMetadata || (buf.hasDisplayMetadata && buf.displayMetadata.has_luminance))
-    toneMap = true;
+  if (m_videoSettings.m_ToneMapMethod != VS_TONEMAPMETHOD_OFF)
+  {
+    if (buf.hasLightMetadata || (buf.hasDisplayMetadata && buf.displayMetadata.has_luminance))
+      toneMap = true;
+  }
+
   if (toneMap != m_toneMap)
     m_reloadShaders = true;
   m_toneMap = toneMap;
@@ -1299,6 +1293,9 @@ void CLinuxRendererGL::RenderToFBO(int index, int field, bool weave /*= false*/)
   m_pYUVShader->SetHeight(planes[0].texheight);
   m_pYUVShader->SetNonLinStretch(1.0);
   m_pYUVShader->SetColParams(buf.m_srcColSpace, buf.m_srcBits, !buf.m_srcFullRange, buf.m_srcTextureBits);
+  m_pYUVShader->SetDisplayMetadata(buf.hasDisplayMetadata, buf.displayMetadata,
+                                   buf.hasLightMetadata, buf.lightMetadata);
+  m_pYUVShader->SetToneMapParam(m_videoSettings.m_ToneMapParam);
 
   if (field == FIELD_TOP)
     m_pYUVShader->SetField(1);
@@ -2570,7 +2567,8 @@ bool CLinuxRendererGL::Supports(ERENDERFEATURE feature)
       feature == RENDERFEATURE_POSTPROCESS ||
       feature == RENDERFEATURE_ROTATION ||
       feature == RENDERFEATURE_BRIGHTNESS ||
-      feature == RENDERFEATURE_CONTRAST)
+      feature == RENDERFEATURE_CONTRAST ||
+      feature == RENDERFEATURE_TONEMAP)
     return true;
 
   return false;

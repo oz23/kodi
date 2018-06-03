@@ -20,7 +20,7 @@
  */
 
 #include "AE.h"
-#include "threads/Thread.h"
+#include "threads/IRunnable.h"
 
 class IThreadedAE : public IAE, public IRunnable
 {

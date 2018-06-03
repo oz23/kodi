@@ -36,6 +36,7 @@
 #include "settings/AdvancedSettings.h"
 #include "settings/Settings.h"
 #include "threads/SystemClock.h"
+#include "threads/SingleLock.h"
 #include "URL.h"
 #include "utils/log.h"
 #include "utils/StringUtils.h"
@@ -1656,7 +1657,7 @@ CDemuxStream* CDVDDemuxFFmpeg::AddStream(int streamIdx)
       }
     }
     if (langTag)
-      strncpy(stream->language, langTag->value, 3);
+      stream->language = std::string(langTag->value, 3);
 
     if( stream->type != STREAM_NONE && pStream->codecpar->extradata && pStream->codecpar->extradata_size > 0 )
     {

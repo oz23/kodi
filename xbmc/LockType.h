@@ -1,6 +1,8 @@
+#pragma once
+
 /*
- *      Copyright (C) 2010-2013 Team XBMC
- *      http://xbmc.org
+ *      Copyright (C) 2005-2013 Team XBMC
+ *      http://kodi.tv
  *
  *  This Program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -18,21 +20,13 @@
  *
  */
 
-#version 100
-
-precision mediump   float;
-uniform   sampler2D m_samp0;
-uniform   sampler2D m_samp1;
-varying   vec4      m_cord0;
-varying   vec4      m_cord1;
-uniform   lowp vec4 m_unicol;
-
-// SM_MULTI shader
-void main ()
+typedef enum
 {
-  gl_FragColor.rgba = m_unicol * texture2D(m_samp0, m_cord0.xy) * texture2D(m_samp1, m_cord1.xy);
-#if defined(KODI_LIMITED_RANGE)
-  gl_FragColor.rgb *= (235.0-16.0) / 255.0;
-  gl_FragColor.rgb += 16.0 / 255.0;
-#endif
-}
+  LOCK_MODE_UNKNOWN            = -1,
+  LOCK_MODE_EVERYONE           =  0,
+  LOCK_MODE_NUMERIC            =  1,
+  LOCK_MODE_GAMEPAD            =  2,
+  LOCK_MODE_QWERTY             =  3,
+  LOCK_MODE_SAMBA              =  4,
+  LOCK_MODE_EEPROM_PARENTAL    =  5
+} LockType;
