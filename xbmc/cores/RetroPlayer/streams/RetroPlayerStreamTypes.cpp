@@ -1,5 +1,5 @@
 /*
- *      Copyright (C) 2017 Team Kodi
+ *      Copyright (C) 2018 Team Kodi
  *      http://kodi.tv
  *
  *  This Program is free software; you can redistribute it and/or modify
@@ -17,31 +17,14 @@
  *  <http://www.gnu.org/licenses/>.
  *
  */
-#pragma once
 
-#include "BaseRenderBuffer.h"
+#include "RetroPlayerStreamTypes.h"
+#include "IRetroPlayerStream.h"
 
-#include <stdint.h>
-#include <vector>
+using namespace KODI;
+using namespace RETRO;
 
-namespace KODI
+void DeleteStream::operator()(IRetroPlayerStream* stream)
 {
-namespace RETRO
-{
-  class CRenderBufferSysMem : public CBaseRenderBuffer
-  {
-  public:
-    CRenderBufferSysMem() = default;
-    virtual ~CRenderBufferSysMem() = default;
-
-    // implementation of IRenderBuffer
-    bool Allocate(AVPixelFormat format, unsigned int width, unsigned int height, size_t size) override;
-    size_t GetFrameSize() const override;
-    uint8_t *GetMemory() override;
-
-  protected:
-    std::vector<uint8_t> m_data;
-  };
-
-}
+  delete stream;
 }

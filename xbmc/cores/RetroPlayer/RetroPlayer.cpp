@@ -19,15 +19,14 @@
  */
 
 #include "RetroPlayer.h"
-#include "RetroPlayerAudio.h"
 #include "RetroPlayerAutoSave.h"
 #include "RetroPlayerInput.h"
-#include "RetroPlayerVideo.h"
 #include "addons/AddonManager.h"
 #include "cores/DataCacheCore.h"
 #include "cores/RetroPlayer/guibridge/GUIGameRenderManager.h"
 #include "cores/RetroPlayer/process/RPProcessInfo.h"
 #include "cores/RetroPlayer/rendering/RPRenderManager.h"
+#include "cores/RetroPlayer/streams/RPStreamManager.h"
 #include "dialogs/GUIDialogYesNo.h"
 #include "filesystem/File.h"
 #include "games/addons/input/GameClientInput.h"
@@ -35,7 +34,6 @@
 #include "games/addons/savestates/Savestate.h"
 #include "games/addons/savestates/SavestateUtils.h"
 #include "games/addons/GameClient.h"
-#include "games/addons/GameClientTiming.h" //! @todo
 #include "games/dialogs/osd/DialogGameVideoSelect.h"
 #include "games/tags/GameInfoTag.h"
 #include "games/GameServices.h"
@@ -126,20 +124,20 @@ bool CRetroPlayer::OpenFile(const CFileItem& file, const CPlayerOptions& options
     m_gameClient = std::static_pointer_cast<CGameClient>(addon);
     if (m_gameClient->Initialize())
     {
-      m_audio.reset(new CRetroPlayerAudio(*m_processInfo));
-      m_video.reset(new CRetroPlayerVideo(*m_renderManager, *m_processInfo));
+      m_streamManager.reset(new CRPStreamManager(*m_renderManager, *m_processInfo));
+
       m_input.reset(new CRetroPlayerInput(CServiceBroker::GetPeripherals()));
 
       if (!bStandalone)
       {
         std::string redactedPath = CURL::GetRedacted(fileCopy.GetPath());
         CLog::Log(LOGINFO, "RetroPlayer[PLAYER]: Opening: %s", redactedPath.c_str());
-        bSuccess = m_gameClient->OpenFile(fileCopy, m_audio.get(), m_video.get(), m_input.get());
+        bSuccess = m_gameClient->OpenFile(fileCopy, *m_streamManager, m_input.get());
       }
       else
       {
         CLog::Log(LOGINFO, "RetroPlayer[PLAYER]: Opening standalone");
-        bSuccess = m_gameClient->OpenStandalone(m_audio.get(), m_video.get(), m_input.get());
+        bSuccess = m_gameClient->OpenStandalone(*m_streamManager, m_input.get());
       }
 
       if (bSuccess)
@@ -191,14 +189,13 @@ bool CRetroPlayer::OpenFile(const CFileItem& file, const CPlayerOptions& options
     m_callback.OnAVStarted(fileCopy);
     if (!bStandalone)
       m_autoSave.reset(new CRetroPlayerAutoSave(*m_gameClient));
-    m_processInfo->SetVideoFps(static_cast<float>(m_gameClient->Timing().GetFrameRate()));
+    m_processInfo->SetVideoFps(static_cast<float>(m_gameClient->GetFrameRate()));
   }
   else
   {
     m_gameClient.reset();
     m_input.reset();
-    m_audio.reset();
-    m_video.reset();
+    m_streamManager.reset();
   }
 
   return bSuccess;
@@ -228,8 +225,7 @@ bool CRetroPlayer::CloseFile(bool reopen /* = false */)
   }
 
   m_input.reset();
-  m_audio.reset();
-  m_video.reset();
+  m_streamManager.reset();
 
   m_renderManager.reset();
   m_processInfo.reset();
@@ -337,8 +333,8 @@ float CRetroPlayer::GetCachePercentage()
 
 void CRetroPlayer::SetMute(bool bOnOff)
 {
-  if (m_audio)
-    m_audio->Enable(!bOnOff);
+  if (m_streamManager)
+    m_streamManager->EnableAudio(!bOnOff);
 }
 
 void CRetroPlayer::SeekTime(int64_t iTime /* = 0 */)
@@ -553,7 +549,7 @@ void CRetroPlayer::SetSpeedInternal(double speed)
 
 void CRetroPlayer::OnSpeedChange(double newSpeed)
 {
-  m_audio->Enable(newSpeed == 1.0);
+  m_streamManager->EnableAudio(newSpeed == 1.0);
   m_input->SetSpeed(newSpeed);
   m_renderManager->SetSpeed(newSpeed);
   m_processInfo->SetSpeed(static_cast<float>(newSpeed));

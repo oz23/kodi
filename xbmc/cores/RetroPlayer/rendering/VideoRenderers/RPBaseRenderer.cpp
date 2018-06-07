@@ -19,8 +19,8 @@
  */
 
 #include "RPBaseRenderer.h"
-#include "cores/RetroPlayer/process/IRenderBuffer.h"
-#include "cores/RetroPlayer/process/IRenderBufferPool.h"
+#include "cores/RetroPlayer/buffers/IRenderBuffer.h"
+#include "cores/RetroPlayer/buffers/IRenderBufferPool.h"
 #include "cores/RetroPlayer/rendering/RenderContext.h"
 #include "settings/Settings.h"
 #include "utils/log.h"
@@ -68,13 +68,13 @@ bool CRPBaseRenderer::IsCompatible(const CRenderVideoSettings &settings) const
   return true;
 }
 
-bool CRPBaseRenderer::Configure(AVPixelFormat format, unsigned int width, unsigned int height, unsigned int orientation)
+bool CRPBaseRenderer::Configure(AVPixelFormat format, unsigned int width, unsigned int height)
 {
   m_format = format;
   m_sourceWidth = width;
   m_sourceHeight = height;
   m_sourceFrameRatio = static_cast<float>(width) / static_cast<float>(height);
-  m_renderOrientation = orientation;
+  m_renderOrientation = 0; //! @todo
 
   if (!m_bufferPool->IsConfigured())
   {
