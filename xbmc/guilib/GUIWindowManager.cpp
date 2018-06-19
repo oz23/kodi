@@ -156,8 +156,10 @@
 #include "cores/RetroPlayer/guiwindows/GameWindowFullScreen.h"
 #include "games/controllers/windows/GUIControllerWindow.h"
 #include "games/windows/GUIWindowGames.h"
+#include "games/dialogs/osd/DialogGameAdvancedSettings.h"
 #include "games/dialogs/osd/DialogGameOSD.h"
 #include "games/dialogs/osd/DialogGameVideoFilter.h"
+#include "games/dialogs/osd/DialogGameVideoRotation.h"
 #include "games/dialogs/osd/DialogGameViewMode.h"
 #include "games/dialogs/osd/DialogGameVolume.h"
 
@@ -256,7 +258,7 @@ void CGUIWindowManager::CreateWindows()
   Add(new CGUIDialogLockSettings);
 
   Add(new CGUIDialogContentSettings);
-  
+
   Add(new CGUIDialogLibExportSettings);
 
   Add(new CGUIDialogInfoProviderSettings);
@@ -322,6 +324,8 @@ void CGUIWindowManager::CreateWindows()
   Add(new GAME::CDialogGameVideoFilter);
   Add(new GAME::CDialogGameViewMode);
   Add(new GAME::CDialogGameVolume);
+  Add(new GAME::CDialogGameAdvancedSettings);
+  Add(new GAME::CDialogGameVideoRotation);
   Add(new RETRO::CGameWindowFullScreen);
 }
 
@@ -434,6 +438,8 @@ bool CGUIWindowManager::DestroyWindows()
     DestroyWindow(WINDOW_DIALOG_GAME_VIDEO_FILTER);
     DestroyWindow(WINDOW_DIALOG_GAME_VIEW_MODE);
     DestroyWindow(WINDOW_DIALOG_GAME_VOLUME);
+    DestroyWindow(WINDOW_DIALOG_GAME_ADVANCED_SETTINGS);
+    DestroyWindow(WINDOW_DIALOG_GAME_VIDEO_ROTATION);
     DestroyWindow(WINDOW_FULLSCREEN_GAME);
 
     Remove(WINDOW_SETTINGS_SERVICE);

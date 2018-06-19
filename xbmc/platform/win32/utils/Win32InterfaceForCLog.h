@@ -1,4 +1,3 @@
-#pragma once
 /*
 *      Copyright (C) 2014 Team XBMC
 *      http://kodi.tv
@@ -19,11 +18,13 @@
 *
 */
 
+#pragma once
+
 #include <string>
 
 typedef void* HANDLE; // forward declaration, to avoid inclusion of whole Windows.h
 
-class CWin32InterfaceForCLog 
+class CWin32InterfaceForCLog
 {
 public:
   CWin32InterfaceForCLog();

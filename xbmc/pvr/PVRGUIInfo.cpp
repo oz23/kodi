@@ -216,11 +216,19 @@ void CPVRGUIInfo::UpdateQualityData(void)
   PVR_SIGNAL_STATUS qualityInfo;
   ClearQualityInfo(qualityInfo);
 
-  CPVRClientPtr client;
-  if (CServiceBroker::GetSettings().GetBool(CSettings::SETTING_PVRPLAYBACK_SIGNALQUALITY) &&
-      CServiceBroker::GetPVRManager().Clients()->GetPlayingClient(client) &&
-      client->SignalQuality(qualityInfo) == PVR_ERROR_NO_ERROR)
-    memcpy(&m_qualityInfo, &qualityInfo, sizeof(m_qualityInfo));
+  if (CServiceBroker::GetSettings().GetBool(CSettings::SETTING_PVRPLAYBACK_SIGNALQUALITY))
+  {
+    bool bIsPlayingRecording = CServiceBroker::GetPVRManager().IsPlayingRecording();
+    if (!bIsPlayingRecording)
+    {
+      CPVRClientPtr client;
+      CServiceBroker::GetPVRManager().Clients()->GetCreatedClient(CServiceBroker::GetPVRManager().GetPlayingClientID(), client);
+      if (client && client->SignalQuality(qualityInfo) == PVR_ERROR_NO_ERROR)
+      {
+        m_qualityInfo = qualityInfo;
+      }
+    }
+  }
 }
 
 void CPVRGUIInfo::UpdateDescrambleData(void)
@@ -228,17 +236,23 @@ void CPVRGUIInfo::UpdateDescrambleData(void)
   PVR_DESCRAMBLE_INFO descrambleInfo;
   ClearDescrambleInfo(descrambleInfo);
 
-  CPVRClientPtr client;
-  if (CServiceBroker::GetPVRManager().Clients()->GetPlayingClient(client) &&
-      client->GetDescrambleInfo(descrambleInfo) == PVR_ERROR_NO_ERROR)
-    memcpy(&m_descrambleInfo, &descrambleInfo, sizeof(m_descrambleInfo));
+  bool bIsPlayingRecording = CServiceBroker::GetPVRManager().IsPlayingRecording();
+  if (!bIsPlayingRecording)
+  {
+    CPVRClientPtr client;
+    CServiceBroker::GetPVRManager().Clients()->GetCreatedClient(CServiceBroker::GetPVRManager().GetPlayingClientID(), client);
+    if (client && client->GetDescrambleInfo(descrambleInfo) == PVR_ERROR_NO_ERROR)
+    {
+      m_descrambleInfo = descrambleInfo;
+    }
+  }
 }
 
 void CPVRGUIInfo::UpdateMisc(void)
 {
   bool bStarted = CServiceBroker::GetPVRManager().IsStarted();
   /* safe to fetch these unlocked, since they're updated from the same thread as this one */
-  std::string strPlayingClientName     = bStarted ? CServiceBroker::GetPVRManager().Clients()->GetPlayingClientName() : "";
+  std::string strPlayingClientName     = bStarted ? CServiceBroker::GetPVRManager().GetPlayingClientName() : "";
   bool       bHasTVRecordings          = bStarted && CServiceBroker::GetPVRManager().Recordings()->GetNumTVRecordings() > 0;
   bool       bHasRadioRecordings       = bStarted && CServiceBroker::GetPVRManager().Recordings()->GetNumRadioRecordings() > 0;
   bool       bIsPlayingTV              = bStarted && CServiceBroker::GetPVRManager().IsPlayingTV();
@@ -290,7 +304,7 @@ void CPVRGUIInfo::UpdateTimeshift(void)
     return;
   }
 
-  bool bIsTimeshifting = CServiceBroker::GetPVRManager().Clients()->IsTimeshifting();
+  bool bIsTimeshifting = CServiceBroker::GetPVRManager().IsTimeshifting();
   time_t now = std::time(nullptr);
   time_t iStartTime = CServiceBroker::GetDataCacheCore().GetStartTime();
   time_t iPlayTime = CServiceBroker::GetDataCacheCore().GetPlayTime() / 1000;

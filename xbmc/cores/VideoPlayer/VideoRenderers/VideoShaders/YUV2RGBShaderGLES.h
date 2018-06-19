@@ -17,6 +17,7 @@
  *  <http://www.gnu.org/licenses/>.
  *
  */
+
 #pragma once
 
 #include "utils/TransformMatrix.h"
@@ -50,7 +51,7 @@ namespace Shaders {
     virtual GLint GetUcoordLoc() { return 0; };
     virtual GLint GetVcoordLoc() { return 0; };
 
-    virtual void SetMatrices(GLfloat *p, GLfloat *m) {};
+    virtual void SetMatrices(const GLfloat *p, const GLfloat *m) {};
     virtual void SetAlpha(GLfloat alpha) {};
 
     virtual void SetConvertFullColorRange(bool convertFullRange) {}
@@ -77,7 +78,7 @@ namespace Shaders {
     GLint GetUcoordLoc() override { return m_hUcoord; }
     GLint GetVcoordLoc() override { return m_hVcoord; }
 
-    void SetMatrices(GLfloat *p, GLfloat *m) override { m_proj = p; m_model = m; }
+    void SetMatrices(const GLfloat *p, const GLfloat *m) override { m_proj = p; m_model = m; }
     void SetAlpha(GLfloat alpha) override { m_alpha = alpha; }
 
   protected:
@@ -112,8 +113,8 @@ namespace Shaders {
     GLint m_hModel;
     GLint m_hAlpha;
 
-    GLfloat *m_proj;
-    GLfloat *m_model;
+    const GLfloat *m_proj;
+    const GLfloat *m_model;
     GLfloat  m_alpha;
 
     bool m_convertFullRange;

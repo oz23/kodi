@@ -21,7 +21,7 @@
 #include "windowing/GraphicContext.h"
 #include "settings/AdvancedSettings.h"
 #include "RenderSystemGLES.h"
-#include "guilib/MatrixGLES.h"
+#include "rendering/MatrixGL.h"
 #include "utils/log.h"
 #include "utils/GLUtils.h"
 #include "utils/TimeUtils.h"
@@ -319,80 +319,6 @@ void CRenderSystemGLES::Project(float &x, float &y, float &z)
     y = (float)(m_viewPort[1] + m_viewPort[3] - coordY);
     z = 0;
   }
-}
-
-bool CRenderSystemGLES::TestRender()
-{
-  static float theta = 0.0;
-
-  //RESOLUTION_INFO resInfo = CDisplaySettings::GetInstance().GetCurrentResolutionInfo();
-  //glViewport(0, 0, resInfo.iWidth, resInfo.iHeight);
-
-  glMatrixModview.Push();
-  glMatrixModview->Rotatef( theta, 0.0f, 0.0f, 1.0f );
-
-  EnableGUIShader(SM_DEFAULT);
-
-  GLfloat col[4] = {1.0f, 0.0f, 0.0f, 1.0f};
-  GLfloat ver[3][2];
-  GLint   posLoc = GUIShaderGetPos();
-  GLint   colLoc = GUIShaderGetCol();
-
-  glVertexAttribPointer(posLoc,  2, GL_FLOAT, 0, 0, ver);
-  glVertexAttribPointer(colLoc,  4, GL_FLOAT, 0, 0, col);
-
-  glEnableVertexAttribArray(posLoc);
-  glEnableVertexAttribArray(colLoc);
-
-  // Setup vertex position values
-  ver[0][0] =  0.0f;
-  ver[0][1] =  1.0f;
-  ver[1][0] =  0.87f;
-  ver[1][1] = -0.5f;
-  ver[2][0] = -0.87f;
-  ver[2][1] = -0.5f;
-
-  glDrawArrays(GL_TRIANGLES, 0, 3);
-
-  glDisableVertexAttribArray(posLoc);
-  glDisableVertexAttribArray(colLoc);
-
-  DisableGUIShader();
-
-  glMatrixModview.Pop();
-
-  theta += 1.0f;
-
-  return true;
-}
-
-void CRenderSystemGLES::ApplyHardwareTransform(const TransformMatrix &finalMatrix)
-{
-  if (!m_bRenderCreated)
-    return;
-
-  glMatrixModview.Push();
-  GLfloat matrix[4][4];
-
-  for(int i = 0; i < 3; i++)
-    for(int j = 0; j < 4; j++)
-      matrix[j][i] = finalMatrix.m[i][j];
-
-  matrix[0][3] = 0.0f;
-  matrix[1][3] = 0.0f;
-  matrix[2][3] = 0.0f;
-  matrix[3][3] = 1.0f;
-
-  glMatrixModview->MultMatrixf(&matrix[0][0]);
-  glMatrixModview.Load();
-}
-
-void CRenderSystemGLES::RestoreHardwareTransform()
-{
-  if (!m_bRenderCreated)
-    return;
-
-  glMatrixModview.PopLoad();
 }
 
 void CRenderSystemGLES::CalculateMaxTexturesize()

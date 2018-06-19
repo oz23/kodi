@@ -21,7 +21,7 @@
 #include "GUIIncludes.h"
 #include "addons/Skin.h"
 #include "GUIInfoManager.h"
-#include "guiinfo/GUIInfoTypes.h"
+#include "guilib/guiinfo/GUIInfoLabel.h"
 #include "guilib/GUIComponent.h"
 #include "utils/log.h"
 #include "utils/XBMCTinyXML.h"
@@ -151,7 +151,7 @@ void CGUIIncludes::LoadDefaults(const TiXmlElement *node)
 {
   if (!node)
     return;
-  
+
   const TiXmlElement* child = node->FirstChildElement("default");
   while (child)
   {

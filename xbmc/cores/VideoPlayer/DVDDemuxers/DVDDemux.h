@@ -1,5 +1,3 @@
-#pragma once
-
 /*
  *      Copyright (C) 2005-2013 Team XBMC
  *      http://kodi.tv
@@ -19,6 +17,8 @@
  *  <http://www.gnu.org/licenses/>.
  *
  */
+
+#pragma once
 
 #include <string>
 #include <vector>
@@ -191,6 +191,7 @@ public:
   int iBitRate;
   int iBitsPerSample;
   uint64_t iChannelLayout;
+  std::string m_channelLayoutName;
 };
 
 class CDemuxStreamSubtitle : public CDemuxStream
@@ -347,7 +348,7 @@ public:
    * adaptive demuxers like DASH can use this to choose best fitting video stream
    */
   virtual void SetVideoResolution(int width, int height) {};
-  
+
   /*
   * return the id of the demuxer
   */

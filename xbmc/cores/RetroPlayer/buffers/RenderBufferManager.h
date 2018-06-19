@@ -17,10 +17,11 @@
  *  <http://www.gnu.org/licenses/>.
  *
  */
+
 #pragma once
 
 #include "cores/RetroPlayer/RetroPlayerTypes.h"
-#include "cores/IPlayer.h"
+#include "cores/GameSettings.h"
 #include "threads/CriticalSection.h"
 
 #include <memory>
@@ -46,11 +47,9 @@ namespace RETRO
 
     std::string GetRenderSystemName(IRenderBufferPool *renderBufferPool) const;
 
-    bool HasScalingMethod(ESCALINGMETHOD scalingMethod) const;
+    bool HasScalingMethod(SCALINGMETHOD scalingMethod) const;
 
   protected:
-    static std::vector<ESCALINGMETHOD> GetScalingMethods();
-
     struct RenderBufferPools
     {
       IRendererFactory* factory;

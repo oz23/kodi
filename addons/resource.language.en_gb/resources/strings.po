@@ -3345,6 +3345,7 @@ msgctxt "#743"
 msgid "Yellow"
 msgstr ""
 
+#: system/library/music/files.xml
 #: xbmc/dialogs/GUIDialogMediaSource.cpp
 msgctxt "#744"
 msgid "Files"
@@ -5082,7 +5083,11 @@ msgctxt "#10126"
 msgid "File browser"
 msgstr ""
 
-#empty string with id 10127
+#. Audio Channel count
+#: xbmc/video/dialogs/GUIDialogAudioSettings.cpp
+msgctxt "#10127"
+msgid "channels"
+msgstr ""
 
 #: xbmc/guilib/WindowIDs.h
 msgctxt "#10128"
@@ -6333,6 +6338,7 @@ msgstr ""
 #: xbmc/pvr/PVRGUIInfo.cpp
 #: xbmc/video/dialogs/GUIDialogAudioSubtitleSettings.cpp
 #: xbmc/video/PlayerController.cpp
+#: xbmc/video/dialogs/GUIDialogAudioSettings.cpp
 msgctxt "#13205"
 msgid "Unknown"
 msgstr ""
@@ -7185,7 +7191,31 @@ msgctxt "#13461"
 msgid "Enable this option to use hardware acceleration for the HEVC codec. If disabled the CPU will be used instead."
 msgstr ""
 
-#empty strings from id 13462 to 13504
+#. Option for setting the PRIME render method
+#: system/settings/settings.xml
+msgctxt "#13462"
+msgid "PRIME Render Method"
+msgstr ""
+
+#. Description of setting with label #13462 "PRIME Render Method"
+#: system/settings/settings.xml
+msgctxt "#13463"
+msgid "This option switches between direct-to-plane and EGL rendering methods."
+msgstr ""
+
+#. String for options 1 of setting with label #13462 "PRIME Render Method"
+#: system/settings/settings.xml
+msgctxt "#13464"
+msgid "Direct To Plane"
+msgstr ""
+
+#. String for options 2 of setting with label #13462 "PRIME Render Method"
+#: system/settings/settings.xml
+msgctxt "#13465"
+msgid "EGL"
+msgstr ""
+
+#empty strings from id 13466 to 13504
 
 #: system/settings/settings.xml
 msgctxt "#13505"
@@ -12636,6 +12666,7 @@ msgstr ""
 #: xbmc/dialogs/GUIDialogSmartPlaylistRule.cpp
 #: xbmc/media/MediaTypes.cpp
 #: addons/skin.estuary/xml/Variables.xml
+#: xbmc/view/GUIViewState.cpp
 msgctxt "#20342"
 msgid "Movies"
 msgstr ""
@@ -12646,6 +12677,7 @@ msgstr ""
 #: addons/skin.estuary/xml/Home.xml
 #: addons/skin.estuary/xml/SkinSettings.xml
 #: addons/skin.estuary/xml/Variables.xml
+#: xbmc/view/GUIViewState.cpp
 msgctxt "#20343"
 msgid "TV shows"
 msgstr ""
@@ -12738,6 +12770,7 @@ msgstr ""
 #: xbmc/playlists/SmartPlaylist.cpp
 #: addons/skin.estuary/xml/View_51_Poster.xml
 #: addons/skin.estuary/xml/Variables.xml
+#: xbmc/view/GUIViewState.cpp
 msgctxt "#20360"
 msgid "Episodes"
 msgstr ""
@@ -12880,6 +12913,7 @@ msgstr ""
 #: xbmc/filesystem/VideoDatabaseDirectory/DirectoryNodeOverview.cpp
 #: xbmc/media/MediaTypes.cpp
 #: addons/skin.estuary/xml/Variables.xml
+#: xbmc/view/GUIViewState.cpp
 msgctxt "#20389"
 msgid "Music videos"
 msgstr ""
@@ -13358,7 +13392,13 @@ msgctxt "#21344"
 msgid "If mp4 or mkv files have tags, use this for library metadata"
 msgstr ""
 
-#empty strings from id 21345 to 21357
+#. Used in AutoPlayNextItem dialogs for not categorized listItem directories
+#: xbmc/view/GUIViewState.cpp
+msgctxt "#21345"
+msgid "Uncategorized"
+msgstr ""
+
+#empty strings from id 21346 to 21357
 
 #: system/settings/settings.xml
 msgctxt "#21358"
@@ -17312,7 +17352,49 @@ msgctxt "#35225"
 msgid "Video filter"
 msgstr ""
 
-#empty strings from id 35226 to 35249
+#. Label of button in the in-game menu for advanced settings
+#: addons/skin.estuary/xml/Custom_1101_SettingsList.xml
+msgctxt "#35226"
+msgid "Advanced settings"
+msgstr ""
+
+#. Label of button in the in-game menu for changing the video rotation
+#: addons/skin.estuary/xml/Custom_1101_SettingsList.xml
+msgctxt "#35227"
+msgid "Rotation"
+msgstr ""
+
+#. Label of the thumbnail for when the video is not rotated and is displayed normally
+#: xbmc/games/dialogs/osd/DialogGameVideoRotation.cpp
+msgctxt "#35228"
+msgid "0°"
+msgstr ""
+
+#. Label of the thumbnail for when the video is rotated to the right
+#: xbmc/games/dialogs/osd/DialogGameVideoRotation.cpp
+msgctxt "#35229"
+msgid "90°"
+msgstr ""
+
+#. Label of the thumbnail for when the video is rotated upside down
+#: xbmc/games/dialogs/osd/DialogGameVideoRotation.cpp
+msgctxt "#35230"
+msgid "180°"
+msgstr ""
+
+#. Label of the thumbnail for when the video is rotated to the left
+#: xbmc/games/dialogs/osd/DialogGameVideoRotation.cpp
+msgctxt "#35231"
+msgid "270°"
+msgstr ""
+
+#. Label of thumbnail in the in-game menu for stretching the video to fullscreen
+#: xbmc/games/dialogs/osd/DialogGameViewMode.h
+msgctxt "#35232"
+msgid "Fullscreen"
+msgstr ""
+
+#empty strings from id 35233 to 35249
 
 #: xbmc/windows/GUIMediaWindow.cpp
 msgctxt "#35250"
@@ -17964,7 +18046,7 @@ msgstr ""
 #. Description of setting with label #13433 "Play next video automatically"
 #: system/settings/settings.xml
 msgctxt "#36152"
-msgid "Enable automatic playback of the next file in the list."
+msgid "Enable automatic playback of the next file in the list for selected playlist types."
 msgstr ""
 
 #. Description of setting with label #13415 "Render method"
@@ -20655,6 +20737,7 @@ msgstr ""
 
 #: xbmc/dialogs/GUIDialogSmartPlaylistRule.cpp
 #: xbmc/playlists/SmartPlaylist.cpp
+#: xbmc/filesystem/MusicDatabaseDirectory/DirectoryNodeOverview.cpp
 msgctxt "#38033"
 msgid "Role"
 msgstr ""
@@ -21245,7 +21328,24 @@ msgctxt "#39027"
 msgid "Sortname"
 msgstr ""
 
-#empty strings from id 39028 to 39099
+#empty strings from id 39028 to 39029
+
+#. Media source, a filter and smart playlist rule option 
+#: xbmc/dialogs/GUIDialogMediaFilter.cpp
+#: xbmc/dialogs/GUIDialogSmartPlaylistRule.cpp
+#: xbmc/playlists/SmartPlaylist.cpp
+msgctxt "#39030"
+msgid "Source"
+msgstr ""
+
+#. Node title, plural of #39030
+#: system/library/music/files.xml
+#: xbmc/filesystem/MusicDatabaseDirectory/DirectoryNodeOverview.cpp
+msgctxt "#39031"
+msgid "Sources"
+msgstr ""
+
+#empty strings from id 39032 to 39099
 
 #: system/settings/settings.xml
 msgctxt "#39100"

@@ -1,12 +1,3 @@
-/*!
-\file GUIControl.h
-\brief
-*/
-
-#ifndef GUILIB_GUICONTROL_H
-#define GUILIB_GUICONTROL_H
-#pragma once
-
 /*
  *      Copyright (C) 2005-2013 Team XBMC
  *      http://kodi.tv
@@ -27,12 +18,20 @@
  *
  */
 
+#pragma once
+
+/*!
+\file GUIControl.h
+\brief
+*/
+
 #include <vector>
 
 #include "utils/Color.h"
 #include "windowing/GraphicContext.h" // needed by any rendering operation (all controls)
 #include "VisibleEffect.h"  // needed for the CAnimation members
-#include "guiinfo/GUIInfoTypes.h" // needed for CGUIInfoColor to handle infolabel'ed colors
+#include "guiinfo/GUIInfoColor.h" // needed for CGUIInfoColor to handle infolabel'ed colors
+#include "guiinfo/GUIInfoBool.h"
 #include "DirtyRegion.h"
 
 class CGUIListItem; // forward
@@ -385,4 +384,3 @@ protected:
   CRect m_renderRegion;         // In screen coordinates
 };
 
-#endif

@@ -39,10 +39,11 @@
 
 using namespace XFILE;
 using namespace KODI::PLATFORM::WINDOWS;
-namespace winrt 
+namespace winrt
 {
   using namespace Windows::Foundation;
 }
+using namespace winrt::Windows::ApplicationModel;
 using namespace winrt::Windows::Foundation::Collections;
 using namespace winrt::Windows::Security::Cryptography;
 using namespace winrt::Windows::Storage;
@@ -98,7 +99,7 @@ void CWinLibraryFile::Close()
   if (m_fileStream != nullptr)
   {
     // see https://docs.microsoft.com/en-us/uwp/api/windows.storage.streams.irandomaccessstream
-    // m_fileStream->Close(); // where it is? 
+    // m_fileStream->Close(); // where it is?
     m_fileStream = nullptr;
   }
   if (m_sFile)
@@ -191,7 +192,7 @@ bool CWinLibraryFile::Delete(const CURL & url)
       Wait(file.DeleteAsync());
     }
     catch(const winrt::hresult_error&)
-    { 
+    {
       return false;
     }
     return true;
@@ -264,17 +265,19 @@ int CWinLibraryFile::Stat(struct __stat64* statData)
 
 bool CWinLibraryFile::IsInAccessList(const CURL& url)
 {
-  // skip local folder and installation folder
   using KODI::PLATFORM::WINDOWS::FromW;
+  static std::string localPath;
+  static std::string packagePath;
 
-  auto localFolder = winrt::Windows::Storage::ApplicationData::Current().LocalFolder();
-  std::string path = FromW(localFolder.Path().c_str());
-  if (StringUtils::StartsWithNoCase(url.Get(), path))
-    return false;
+  if (localPath.empty())
+    localPath = FromW(ApplicationData::Current().LocalFolder().Path().c_str());
 
-  auto appFolder = winrt::Windows::ApplicationModel::Package::Current().InstalledLocation();
-  path = FromW(appFolder.Path().c_str());
-  if (StringUtils::StartsWithNoCase(url.Get(), path))
+  if (packagePath.empty())
+    packagePath = FromW(Package::Current().InstalledLocation().Path().c_str());
+
+  // don't check files inside local folder and installation folder
+  if ( StringUtils::StartsWithNoCase(url.Get(), localPath)
+    || StringUtils::StartsWithNoCase(url.Get(), packagePath))
     return false;
 
   return IsInList(url, StorageApplicationPermissions::FutureAccessList())
@@ -290,7 +293,7 @@ bool CWinLibraryFile::OpenIntenal(const CURL &url, FileAccessMode mode)
       m_sFile = GetFile(url);
     }
     else if (mode == FileAccessMode::ReadWrite)
-    { 
+    {
       auto destFolder = CURL(URIUtils::GetParentPath(url.Get()));
       auto folder = CWinLibraryDirectory::GetFolder(destFolder);
       if (folder)
@@ -330,7 +333,7 @@ StorageFile CWinLibraryFile::GetFile(const CURL& url)
     std::string filePath = URIUtils::FixSlashesAndDups(url.GetFileName(), '\\');
     if (url.GetHostName() == "removable")
     {
-      // here filePath has the form e\path\file.ext where first segment is 
+      // here filePath has the form e\path\file.ext where first segment is
       // drive letter, we should make path form like regular e:\path\file.ext
       auto index = filePath.find('\\');
       if (index == std::string::npos)
@@ -359,7 +362,7 @@ StorageFile CWinLibraryFile::GetFile(const CURL& url)
                          , error.c_str());
     }
   }
-  else if (url.GetProtocol() == "file" || url.GetProtocol().empty())
+  else if (url.IsProtocol("file") || url.GetProtocol().empty())
   {
     // check that a file in feature access list or most rescently used list
     // search in FAL
@@ -368,10 +371,10 @@ StorageFile CWinLibraryFile::GetFile(const CURL& url)
     if (token.empty())
     {
       // serach in MRU list
-      IStorageItemAccessList list = StorageApplicationPermissions::MostRecentlyUsedList();
+      list = StorageApplicationPermissions::MostRecentlyUsedList();
       token = GetTokenFromList(url, list);
     }
-    if (token.empty())
+    if (!token.empty())
       return Wait(list.GetFileAsync(token));
   }
 
@@ -391,12 +394,10 @@ winrt::hstring CWinLibraryFile::GetTokenFromList(const CURL& url, const IStorage
     return nullptr;
 
   using KODI::PLATFORM::WINDOWS::ToW;
-  std::string filePath = url.Get();
-  std::wstring filePathW = ToW(filePath);
+  std::wstring filePathW = ToW(url.Get());
 
-  for (uint32_t i = 0; i < listview.Size(); i++)
+  for(auto&& listEntry : listview)
   {
-    auto listEntry = listview.GetAt(i);
     if (listEntry.Metadata == filePathW)
     {
       return listEntry.Token;

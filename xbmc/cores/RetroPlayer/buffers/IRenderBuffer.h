@@ -17,9 +17,8 @@
  *  <http://www.gnu.org/licenses/>.
  *
  */
-#pragma once
 
-#include "cores/IPlayer.h"
+#pragma once
 
 extern "C" {
 #include "libavutil/pixfmt.h"

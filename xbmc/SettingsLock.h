@@ -1,5 +1,3 @@
-#pragma once
-
 /*
  *      Copyright (C) 2005-2013 Team XBMC
  *      http://kodi.tv
@@ -20,6 +18,8 @@
  *
  */
 
+#pragma once
+
 namespace LOCK_LEVEL {
   /**
    Specifies, what Settings levels are locked for the user
@@ -29,7 +29,7 @@ namespace LOCK_LEVEL {
     NONE,     //settings are unlocked => user can access all settings levels
     ALL,      //all settings are locked => user always has to enter password, when entering the settings screen
     STANDARD, //settings level standard and up are locked => user can still access the beginner levels
-    ADVANCED, 
+    ADVANCED,
     EXPERT
   };
 }

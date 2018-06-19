@@ -347,7 +347,7 @@ void CXBMCApp::onLostFocus()
 
 void CXBMCApp::Initialize()
 {
-  g_application.m_ServiceManager->GetAnnouncementManager().AddAnnouncer(CXBMCApp::get());  
+  g_application.m_ServiceManager->GetAnnouncementManager().AddAnnouncer(CXBMCApp::get());
 }
 
 void CXBMCApp::Deinitialize()
@@ -363,7 +363,7 @@ bool CXBMCApp::EnableWakeLock(bool on)
     StringUtils::ToLower(appName);
     std::string className = CCompileInfo::GetPackage();
     // SCREEN_BRIGHT_WAKE_LOCK is marked as deprecated but there is no real alternatives for now
-    m_wakeLock = new CJNIWakeLock(CJNIPowerManager(getSystemService("power")).newWakeLock(CJNIPowerManager::SCREEN_BRIGHT_WAKE_LOCK, className.c_str()));
+    m_wakeLock = new CJNIWakeLock(CJNIPowerManager(getSystemService("power")).newWakeLock(CJNIPowerManager::SCREEN_BRIGHT_WAKE_LOCK | CJNIPowerManager::ON_AFTER_RELEASE, className.c_str()));
     if (m_wakeLock)
       m_wakeLock->setReferenceCounted(false);
     else
@@ -607,7 +607,7 @@ void CXBMCApp::UpdateSessionMetadata()
 //      .putString(CJNIMediaMetadata::METADATA_KEY_DISPLAY_ICON_URI, thumb)
 //      .putString(CJNIMediaMetadata::METADATA_KEY_ALBUM_ART_URI, thumb)
       ;
-  
+
   std::string thumb;
   if (m_playback_state & PLAYBACK_STATE_VIDEO)
   {
@@ -929,11 +929,6 @@ void CXBMCApp::SetSystemVolume(float percent)
     android_printf("CXBMCApp::SetSystemVolume: Could not get Audio Manager");
 }
 
-void CXBMCApp::InitDirectories()
-{
-  CSpecialProtocol::SetXBMCBinAddonPath(getApplicationInfo().nativeLibraryDir.c_str());
-}
-
 void CXBMCApp::onReceive(CJNIIntent intent)
 {
   std::string action = intent.getAction();
@@ -1170,18 +1165,18 @@ bool CXBMCApp::WaitVSync(unsigned int milliSeconds)
 
 void CXBMCApp::SetupEnv()
 {
-  setenv("XBMC_ANDROID_SYSTEM_LIBS", CJNISystem::getProperty("java.library.path").c_str(), 0);
-  setenv("XBMC_ANDROID_LIBS", getApplicationInfo().nativeLibraryDir.c_str(), 0);
-  setenv("XBMC_ANDROID_APK", getPackageResourcePath().c_str(), 0);
+  setenv("KODI_ANDROID_SYSTEM_LIBS", CJNISystem::getProperty("java.library.path").c_str(), 0);
+  setenv("KODI_ANDROID_LIBS", getApplicationInfo().nativeLibraryDir.c_str(), 0);
+  setenv("KODI_ANDROID_APK", getPackageResourcePath().c_str(), 0);
 
   std::string appName = CCompileInfo::GetAppName();
   StringUtils::ToLower(appName);
   std::string className = CCompileInfo::GetPackage();
 
+  std::string cacheDir = getCacheDir().getAbsolutePath();
   std::string xbmcHome = CJNISystem::getProperty("xbmc.home", "");
   if (xbmcHome.empty())
   {
-    std::string cacheDir = getCacheDir().getAbsolutePath();
     setenv("KODI_BIN_HOME", (cacheDir + "/apk/assets").c_str(), 0);
     setenv("KODI_HOME", (cacheDir + "/apk/assets").c_str(), 0);
   }
@@ -1190,6 +1185,7 @@ void CXBMCApp::SetupEnv()
     setenv("KODI_BIN_HOME", (xbmcHome + "/assets").c_str(), 0);
     setenv("KODI_HOME", (xbmcHome + "/assets").c_str(), 0);
   }
+  setenv("KODI_BINADDON_PATH", (cacheDir + "/lib").c_str(), 0);
 
   std::string externalDir = CJNISystem::getProperty("xbmc.data", "");
   if (externalDir.empty())
@@ -1207,7 +1203,7 @@ void CXBMCApp::SetupEnv()
   else
     setenv("HOME", getenv("KODI_TEMP"), 0);
 
-  std::string apkPath = getenv("XBMC_ANDROID_APK");
+  std::string apkPath = getenv("KODI_ANDROID_APK");
   apkPath += "/assets/python2.7";
   setenv("PYTHONHOME", apkPath.c_str(), 1);
   setenv("PYTHONPATH", "", 1);

@@ -1,5 +1,3 @@
-#pragma once
-
 /*
  *      Copyright (C) 2005-2013 Team XBMC
  *      http://kodi.tv
@@ -19,6 +17,8 @@
  *  <http://www.gnu.org/licenses/>.
  *
  */
+
+#pragma once
 
 #include "dialogs/GUIDialogContextMenu.h"
 #include "filesystem/DirectoryHistory.h"
@@ -173,6 +173,7 @@ protected:
   bool WaitForNetwork() const;
   bool GetDirectoryItems(CURL &url, CFileItemList &items, bool useDir);
   bool WaitGetDirectoryItems(CGetDirectoryItems &items);
+  void CancelUpdateItems();
 
   /*! \brief Translate the folder to start in from the given quick path
    \param url the folder the user wants
@@ -212,7 +213,7 @@ protected:
     std::atomic_bool &m_update;
   };
   CEvent m_updateEvent;
-  std::atomic_bool m_updateAborted;
+  std::atomic_bool m_updateAborted = {false};
   std::atomic_bool m_updateJobActive = {false};
 
   // save control state on window exit

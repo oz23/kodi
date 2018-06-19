@@ -1,4 +1,3 @@
-#pragma once
 /*
  *      Copyright (C) 2005-2013 Team XBMC
  *      http://kodi.tv
@@ -18,6 +17,8 @@
  *  <http://www.gnu.org/licenses/>.
  *
  */
+
+#pragma once
 
 #include "Addon.h"
 #include "AddonDatabase.h"
@@ -149,7 +150,7 @@ namespace ADDON
     bool FindInstallableById(const std::string& addonId, AddonPtr& addon);
 
     void AddToUpdateableAddons(AddonPtr &pAddon);
-    void RemoveFromUpdateableAddons(AddonPtr &pAddon);    
+    void RemoveFromUpdateableAddons(AddonPtr &pAddon);
     bool ReloadSettings(const std::string &id);
 
     /*! Get addons with available updates */
@@ -287,8 +288,8 @@ namespace ADDON
     std::vector<DependencyInfo> GetDepsRecursive(const std::string& id);
 
     static AddonPtr Factory(const cp_plugin_info_t* plugin, TYPE type);
-    static bool Factory(const cp_plugin_info_t* plugin, TYPE type, CAddonBuilder& builder, bool ignoreExtensions = false, std::string assetBasePath = "");
-    static void FillCpluffMetadata(const cp_plugin_info_t* plugin, CAddonBuilder& builder, std::string const& assetBasePath);
+    static bool Factory(const cp_plugin_info_t* plugin, TYPE type, CAddonBuilder& builder, bool ignoreExtensions = false, const CRepository::DirInfo& repo = {});
+    static void FillCpluffMetadata(const cp_plugin_info_t* plugin, CAddonBuilder& builder, const CRepository::DirInfo& repo);
 
   private:
     CAddonMgr& operator=(CAddonMgr const&) = delete;

@@ -1145,7 +1145,7 @@ void CGraphicContext::SetMediaDir(const std::string &strMediaDir)
 const std::string& CGraphicContext::GetMediaDir() const
 {
   return m_strMediaDir;
-  
+
 }
 
 void CGraphicContext::Flip(bool rendered, bool videoLayer)
@@ -1158,16 +1158,6 @@ void CGraphicContext::Flip(bool rendered, bool videoLayer)
     SetVideoResolution(GetVideoResolution(), true);
     CServiceBroker::GetGUI()->GetWindowManager().SendMessage(GUI_MSG_NOTIFY_ALL, 0, 0, GUI_MSG_RENDERER_RESET);
   }
-}
-
-void CGraphicContext::ApplyHardwareTransform()
-{
-  CServiceBroker::GetRenderSystem()->ApplyHardwareTransform(m_finalTransform.matrix);
-}
-
-void CGraphicContext::RestoreHardwareTransform()
-{
-  CServiceBroker::GetRenderSystem()->RestoreHardwareTransform();
 }
 
 void CGraphicContext::GetAllowedResolutions(std::vector<RESOLUTION> &res)

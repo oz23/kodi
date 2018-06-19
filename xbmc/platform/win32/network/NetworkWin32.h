@@ -17,9 +17,9 @@
  *  <http://www.gnu.org/licenses/>.
  *
  */
-#ifndef NETWORK_LINUX_H_
-#define NETWORK_LINUX_H_
- 
+
+#pragma once
+
 #include <string>
 #include <vector>
 #include "network/Network.h"
@@ -106,4 +106,3 @@ private:
 
 using CNetwork = CNetworkWin32;
 
-#endif

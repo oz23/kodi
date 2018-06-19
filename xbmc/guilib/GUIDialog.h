@@ -1,10 +1,3 @@
-/*!
-\file GUIDialog.h
-\brief
-*/
-
-#pragma once
-
 /*
  *      Copyright (C) 2005-2013 Team XBMC
  *      http://kodi.tv
@@ -24,6 +17,13 @@
  *  <http://www.gnu.org/licenses/>.
  *
  */
+
+#pragma once
+
+/*!
+\file GUIDialog.h
+\brief
+*/
 
 #include "GUIWindow.h"
 #include "WindowIDs.h"
@@ -57,7 +57,7 @@ public:
   void Render() override;
 
   void Open(const std::string &param = "");
-  
+
   bool OnBack(int actionID) override;
 
   bool IsDialogRunning() const override { return m_active; };

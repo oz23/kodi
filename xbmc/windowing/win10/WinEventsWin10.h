@@ -17,6 +17,7 @@
  *  <http://www.gnu.org/licenses/>.
  *
  */
+
 #pragma once
 
 #include "interfaces/IAnnouncer.h"
@@ -37,7 +38,7 @@ public:
   bool MessagePump() override;
   virtual size_t GetQueueSize();
 
-  // initialization 
+  // initialization
   void InitEventHandlers(const winrt::Windows::UI::Core::CoreWindow&);
   static void InitOSKeymap(void);
 

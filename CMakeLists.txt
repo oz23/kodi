@@ -171,9 +171,10 @@ set(dyload_optional Bluray
 find_package(TexturePacker REQUIRED)
 find_package(JsonSchemaBuilder REQUIRED)
 
-core_require_dep(${required_deps})
+# Check optional deps first, since their availability can influence required ones, e.g. ffmpeg
 core_optional_dep(${optional_deps})
 core_optional_dyload_dep(${dyload_optional})
+core_require_dep(${required_deps})
 
 if(ENABLE_MARIADBCLIENT AND NOT ENABLE_MARIADBCLIENT STREQUAL AUTO AND ENABLE_MYSQLCLIENT AND NOT ENABLE_MYSQLCLIENT STREQUAL AUTO)
   MESSAGE(FATAL_ERROR "You can not use MySql and MariaDB at the same time. Disable one by adding -DENABLE_MYSQLCLIENT=OFF or -DENABLE_MARIADBCLIENT=OFF.")
@@ -389,9 +390,9 @@ if(CORE_HOST_IS_TARGET)
   find_package(Doxygen)
   if(DOXYGEN_FOUND)
     add_custom_target(doc
-                      COMMAND ${DOXYGEN_EXECUTABLE} ${CMAKE_SOURCE_DIR}/doxygen_resources/Doxyfile.doxy
+                      COMMAND ${DOXYGEN_EXECUTABLE} ${CMAKE_SOURCE_DIR}/docs/doxygen/Doxyfile.doxy
                       COMMAND ${CMAKE_COMMAND} -E echo "Documentation built to: file://${CMAKE_SOURCE_DIR}/docs/html/index.html"
-                      WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/doxygen_resources
+                      WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/docs/doxygen
                       COMMENT "Generating Doxygen documentation" VERBATIM)
   endif()
 endif()

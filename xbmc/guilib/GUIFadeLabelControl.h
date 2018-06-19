@@ -1,13 +1,3 @@
-/*!
-\file GUIFadeLabelControl.h
-\brief
-*/
-
-#ifndef GUILIB_GUIFADELABELCONTROL_H
-#define GUILIB_GUIFADELABELCONTROL_H
-
-#pragma once
-
 /*
  *      Copyright (C) 2005-2013 Team XBMC
  *      http://kodi.tv
@@ -28,10 +18,18 @@
  *
  */
 
+#pragma once
+
+/*!
+\file GUIFadeLabelControl.h
+\brief
+*/
+
 #include <vector>
 
 #include "GUIControl.h"
 #include "GUILabel.h"
+#include "guilib/guiinfo/GUIInfoLabel.h"
 
 /*!
  \ingroup controls
@@ -86,4 +84,4 @@ protected:
   bool m_resetOnLabelChange;
   bool m_randomized;
 };
-#endif
+

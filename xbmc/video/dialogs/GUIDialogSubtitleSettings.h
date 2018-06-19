@@ -1,5 +1,3 @@
-#pragma once
-
 /*
  *      Copyright (C) 2005-2014 Team XBMC
  *      http://kodi.tv
@@ -20,6 +18,8 @@
  *
  */
 
+#pragma once
+
 #include <string>
 #include <utility>
 #include <vector>
@@ -34,6 +34,7 @@ class CGUIDialogSubtitleSettings : public CGUIDialogSettingsManualBase
 public:
   CGUIDialogSubtitleSettings();
   ~CGUIDialogSubtitleSettings() override;
+  bool OnMessage(CGUIMessage& message) override;
 
   // specialization of CGUIWindow
   void FrameMove() override;

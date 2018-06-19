@@ -1,4 +1,3 @@
-#pragma once
 /*
  *      Copyright (C) 2014 Team XBMC
  *      http://kodi.tv
@@ -19,21 +18,23 @@
  *
  */
 
+#pragma once
+
 #include "filesystem/IFile.h"
 
 namespace XFILE
 {
-  
+
   class CPosixFile : public IFile
   {
   public:
     CPosixFile();
     ~CPosixFile() override;
-    
+
     bool Open(const CURL& url) override;
     bool OpenForWrite(const CURL& url, bool bOverWrite = false) override;
     void Close() override;
-    
+
     ssize_t Read(void* lpBuf, size_t uiBufSize) override;
     ssize_t Write(const void* lpBuf, size_t uiBufSize) override;
     int64_t Seek(int64_t iFilePosition, int iWhence = SEEK_SET) override;
@@ -42,7 +43,7 @@ namespace XFILE
     int64_t GetLength() override;
     void Flush() override;
     int IoControl(EIoControl request, void* param) override;
-    
+
     bool Delete(const CURL& url) override;
     bool Rename(const CURL& url, const CURL& urlnew) override;
     bool Exists(const CURL& url) override;
@@ -55,5 +56,5 @@ namespace XFILE
     int64_t m_lastDropPos;
     bool    m_allowWrite;
   };
-  
+
 }

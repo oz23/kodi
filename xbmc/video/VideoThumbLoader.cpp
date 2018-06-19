@@ -116,7 +116,7 @@ bool CThumbExtractor::DoWork()
     // construct the thumb cache file
     CTextureDetails details;
     details.file = CTextureCache::GetCacheFile(m_target) + ".jpg";
-    result = CDVDFileInfo::ExtractThumb(m_item.GetPath(), details, m_fillStreamDetails ? &m_item.GetVideoInfoTag()->m_streamDetails : NULL, (int) m_pos);
+    result = CDVDFileInfo::ExtractThumb(m_item, details, m_fillStreamDetails ? &m_item.GetVideoInfoTag()->m_streamDetails : nullptr, m_pos);
     if(result)
     {
       CTextureCache::GetInstance().AddCachedTexture(m_target, details);
@@ -557,7 +557,7 @@ std::string CVideoThumbLoader::GetLocalArt(const CFileItem &item, const std::str
 
   /* Cache directory for (sub) folders on streamed filesystems. We need to do this
      else entering (new) directories from the app thread becomes much slower. This
-     is caused by the fact that Curl Stat/Exist() is really slow and that the 
+     is caused by the fact that Curl Stat/Exist() is really slow and that the
      thumbloader thread accesses the streamed filesystem at the same time as the
      App thread and the latter has to wait for it.
    */

@@ -1,4 +1,3 @@
-#pragma once
 /*
  *      Copyright (C) 2015 Team XBMC
  *      http://kodi.tv
@@ -18,6 +17,9 @@
  *  <http://www.gnu.org/licenses/>.
  *
  */
+
+#pragma once
+
 #include <vector>
 
 #include "interfaces/legacy/AddonClass.h"
@@ -91,7 +93,7 @@ namespace XBMCAddon
       bool operator!=(const WsgiInputStreamIterator& rhs);
       String& operator*();
       inline bool end() const { return m_remaining <= 0; }
-      
+
     protected:
       String m_data;
       mutable unsigned long m_offset;

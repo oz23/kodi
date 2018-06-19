@@ -17,10 +17,12 @@
  *  <http://www.gnu.org/licenses/>.
  *
  */
+
 #pragma once
 
 #include "RPBaseRenderer.h"
 #include "cores/RetroPlayer/process/RPProcessInfo.h"
+#include "cores/GameSettings.h"
 #include "threads/CriticalSection.h"
 
 #include <memory>
@@ -53,11 +55,11 @@ namespace RETRO
     ~CRPRendererMMAL() override;
 
     // public implementation of CRPBaseRenderer
-    bool Supports(ERENDERFEATURE feature) const override;
-    ESCALINGMETHOD GetDefaultScalingMethod() const override;
+    bool Supports(RENDERFEATURE feature) const override;
+    SCALINGMETHOD GetDefaultScalingMethod() const override;
     void Deinitialize() override;
 
-    static bool SupportsScalingMethod(ESCALINGMETHOD method);
+    static bool SupportsScalingMethod(SCALINGMETHOD method);
 
   protected:
     // protected implementation of CRPBaseRenderer

@@ -1,6 +1,3 @@
-#ifndef NETWORK_LINUX_H_
-#define NETWORK_LINUX_H_
-
 /*
  *      Copyright (C) 2005-2013 Team XBMC
  *      http://kodi.tv
@@ -20,6 +17,8 @@
  *  <http://www.gnu.org/licenses/>.
  *
  */
+
+#pragma once
 
 #include <string>
 #include <vector>
@@ -55,7 +54,7 @@ public:
 
    // Returns the list of access points in the area
    std::vector<NetworkAccessPoint> GetAccessPoints(void) override;
-    
+
 private:
    void WriteSettings(FILE* fw, NetworkAssignment assignment, std::string& ipAddress, std::string& networkMask, std::string& defaultGateway, std::string& essId, std::string& key, EncMode& encryptionMode);
    std::string     m_interfaceName;
@@ -72,8 +71,8 @@ public:
 
    // Return the list of interfaces
    std::vector<CNetworkInterface*>& GetInterfaceList(void) override;
-   CNetworkInterface* GetFirstConnectedInterface(void) override;        
-    
+   CNetworkInterface* GetFirstConnectedInterface(void) override;
+
    // Ping remote host
    bool PingHost(unsigned long host, unsigned int timeout_ms = 2000) override;
 
@@ -92,6 +91,4 @@ private:
 };
 
 using CNetwork = CNetworkLinux;
-
-#endif
 

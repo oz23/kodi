@@ -1,8 +1,3 @@
-/*!
-\file GUIWindowMusicBase.h
-\brief
-*/
-#pragma once
 /*
  *      Copyright (C) 2005-2018 Team Kodi
  *      http://kodi.tv
@@ -22,6 +17,13 @@
  *  <http://www.gnu.org/licenses/>.
  *
  */
+
+#pragma once
+
+/*!
+\file GUIWindowMusicBase.h
+\brief
+*/
 
 #include <vector>
 
@@ -51,10 +53,13 @@ public:
   void DoScan(const std::string &strPath, bool bRescan = false);
   void RefreshContent(const std::string& strContent);
 
-  /*! \brief Prompt the user if he wants to start a scan for this folder
-  \param path the path to assign content for
+  /*! \brief Once a music source is added, store source in library, and prompt
+  the user to scan this folder into the library
+  \param strPath the music source path
+  \param strName the name of the music source
   */
-  static void OnAssignContent(const std::string &path);
+  static void OnAssignContent(const std::string& oldName, const CMediaSource& source);
+
 protected:
   void OnInitWindow() override;
   /*!
@@ -92,7 +97,7 @@ protected:
   void OnItemInfoAll(const std::string strPath, bool refresh = false);
   virtual void OnQueueItem(int iItem);
   enum ALLOW_SELECTION { SELECTION_ALLOWED = 0, SELECTION_AUTO, SELECTION_FORCED };
-  
+
   void OnRipTrack(int iItem);
   void LoadPlayList(const std::string& strPlayList) override;
   virtual void OnRemoveSource(int iItem);

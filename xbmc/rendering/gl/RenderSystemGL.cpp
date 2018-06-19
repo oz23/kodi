@@ -20,9 +20,9 @@
 
 #include "RenderSystemGL.h"
 #include "filesystem/File.h"
+#include "rendering/MatrixGL.h"
 #include "windowing/GraphicContext.h"
 #include "settings/AdvancedSettings.h"
-#include "guilib/MatrixGLES.h"
 #include "settings/DisplaySettings.h"
 #include "utils/log.h"
 #include "utils/GLUtils.h"
@@ -376,53 +376,6 @@ void CRenderSystemGL::Project(float &x, float &y, float &z)
     y = (float)(m_viewPort[1] + m_viewPort[3] - coordY);
     z = 0;
   }
-}
-
-bool CRenderSystemGL::TestRender()
-{
-  static float theta = 0.0;
-
-  glPushMatrix();
-  glRotatef( theta, 0.0f, 0.0f, 1.0f );
-  glBegin( GL_TRIANGLES );
-  glColor3f( 1.0f, 0.0f, 0.0f ); glVertex2f( 0.0f, 1.0f );
-  glColor3f( 0.0f, 1.0f, 0.0f ); glVertex2f( 0.87f, -0.5f );
-  glColor3f( 0.0f, 0.0f, 1.0f ); glVertex2f( -0.87f, -0.5f );
-  glEnd();
-  glPopMatrix();
-
-  theta += 1.0f;
-
-  return true;
-}
-
-void CRenderSystemGL::ApplyHardwareTransform(const TransformMatrix &finalMatrix)
-{
-  if (!m_bRenderCreated)
-    return;
-
-  glMatrixModview.Push();
-  GLfloat matrix[4][4];
-
-  for(int i = 0; i < 3; i++)
-    for(int j = 0; j < 4; j++)
-      matrix[j][i] = finalMatrix.m[i][j];
-
-  matrix[0][3] = 0.0f;
-  matrix[1][3] = 0.0f;
-  matrix[2][3] = 0.0f;
-  matrix[3][3] = 1.0f;
-
-  glMatrixModview->MultMatrixf(&matrix[0][0]);
-  glMatrixModview.Load();
-}
-
-void CRenderSystemGL::RestoreHardwareTransform()
-{
-  if (!m_bRenderCreated)
-    return;
-
-  glMatrixModview.PopLoad();
 }
 
 void CRenderSystemGL::CalculateMaxTexturesize()

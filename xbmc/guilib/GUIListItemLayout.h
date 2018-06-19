@@ -1,5 +1,3 @@
-#pragma once
-
 /*
  *      Copyright (C) 2005-2013 Team XBMC
  *      http://kodi.tv
@@ -20,9 +18,11 @@
  *
  */
 
+#pragma once
+
 #include "GUIListGroup.h"
 #include "GUITexture.h"
-#include "guiinfo/GUIInfoTypes.h"
+#include "guilib/guiinfo/GUIInfoLabel.h"
 
 class CGUIListItem;
 class CFileItem;

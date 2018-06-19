@@ -1,4 +1,3 @@
-#pragma once
 /*
  *      Copyright (C) 2005-2013 Team XBMC
  *      http://kodi.tv
@@ -18,6 +17,8 @@
  *  <http://www.gnu.org/licenses/>.
  *
  */
+
+#pragma once
 
 #include "IFile.h"
 #include "utils/RingBuffer.h"
@@ -45,7 +46,7 @@ namespace XFILE
         PROXY_SOCKS5,
         PROXY_SOCKS5_REMOTE,
       } ProxyType;
-    
+
     public:
       CCurlFile();
       ~CCurlFile() override;
@@ -125,6 +126,7 @@ namespace XFILE
           bool m_sendRange;
           bool m_bLastError;
           bool m_bRetry;
+          bool m_failOnError = true;
 
           char* m_readBuffer;
 

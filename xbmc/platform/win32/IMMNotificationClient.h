@@ -1,4 +1,3 @@
-//#pragma once
 /*
  *      Copyright (C) 2014 Team XBMC
  *      http://kodi.tv
@@ -18,6 +17,8 @@
  *  <http://www.gnu.org/licenses/>.
  *
  */
+
+#pragma once
 
 #include "cores/AudioEngine/Engines/ActiveAE/ActiveAE.h"
 #include "platform/win32/CharsetConverter.h"
@@ -157,7 +158,7 @@ public:
 
   HRESULT STDMETHODCALLTYPE OnPropertyValueChanged(LPCWSTR pwstrDeviceId, const PROPERTYKEY key)
   {
-    CLog::Log(LOGDEBUG, "%s: Changed device property of %s is {{%8.8x-%4.4x-%4.4x-%2.2x%2.2x-%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x}}#%d", 
+    CLog::Log(LOGDEBUG, "%s: Changed device property of %s is {{%8.8x-%4.4x-%4.4x-%2.2x%2.2x-%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x}}#%d",
               __FUNCTION__, FromW(pwstrDeviceId), key.fmtid.Data1, key.fmtid.Data2, key.fmtid.Data3,
                                            key.fmtid.Data4[0], key.fmtid.Data4[1],
                                            key.fmtid.Data4[2], key.fmtid.Data4[3],

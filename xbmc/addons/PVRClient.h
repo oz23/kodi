@@ -1,4 +1,3 @@
-#pragma once
 /*
  *      Copyright (C) 2012-2013 Team XBMC
  *      http://kodi.tv
@@ -18,6 +17,8 @@
  *  <http://www.gnu.org/licenses/>.
  *
  */
+
+#pragma once
 
 #include <atomic>
 #include <functional>
@@ -571,7 +572,7 @@ namespace PVR
     * @return PVR_ERROR_NO_ERROR on success, respective error code otherwise.
     */
     PVR_ERROR GetRecordingEdl(const CPVRRecording &recording, std::vector<PVR_EDL_ENTRY> &edls);
-    
+
     /*!
     * @brief Retrieve the edit decision list (EDL) from the backend.
     * @param epgTag The EPG tag.
@@ -856,6 +857,13 @@ namespace PVR
      * @param iPriority The new priority.
      */
     void SetPriority(int iPriority);
+
+    /*!
+     * @brief Obtain the chunk size to use when reading streams.
+     * @param iChunkSize the chunk size in bytes.
+     * @return PVR_ERROR_NO_ERROR on success, respective error code otherwise.
+     */
+    PVR_ERROR GetStreamReadChunkSize(int &iChunkSize);
 
     /*!
      * @brief Get the interface table used between addon and Kodi.

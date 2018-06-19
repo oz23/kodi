@@ -17,10 +17,11 @@
  *  <http://www.gnu.org/licenses/>.
  *
  */
+
 #pragma once
 
-#include "cores/IPlayer.h"
 #include "cores/RetroPlayer/RetroPlayerTypes.h"
+#include "cores/GameSettings.h"
 #include "threads/CriticalSection.h"
 
 #include "libavutil/pixfmt.h"
@@ -143,12 +144,21 @@ namespace RETRO
     /*!
      * \brief Check if a buffer pool supports the given scaling method
      */
-    bool HasScalingMethod(ESCALINGMETHOD scalingMethod) const;
+    bool HasScalingMethod(SCALINGMETHOD scalingMethod) const;
 
     /*!
      * \brief Get the default scaling method for this rendering system
      */
-    ESCALINGMETHOD GetDefaultScalingMethod() const { return m_defaultScalingMethod; }
+    SCALINGMETHOD GetDefaultScalingMethod() const { return m_defaultScalingMethod; }
+
+    /*!
+     * \brief Configure the render system
+     *
+     * \param format The pixel format of the video stream, or AV_PIX_FMT_NONE
+     *        if the stream has ended
+     */
+    virtual void ConfigureRenderSystem(AVPixelFormat format) { }
+
     ///}
 
     /// @name Player video info
@@ -182,7 +192,7 @@ namespace RETRO
     /*!
      * \brief Get all scaling methods available to the rendering system
      */
-    static std::vector<ESCALINGMETHOD> GetScalingMethods();
+    static std::vector<SCALINGMETHOD> GetScalingMethods();
 
     // Static factories
     static CreateRPProcessControl m_processControl;
@@ -201,7 +211,7 @@ namespace RETRO
   private:
     // Rendering parameters
     std::unique_ptr<CRenderContext> m_renderContext;
-    ESCALINGMETHOD m_defaultScalingMethod = VS_SCALINGMETHOD_AUTO;
+    SCALINGMETHOD m_defaultScalingMethod = SCALINGMETHOD::AUTO;
   };
 
 }

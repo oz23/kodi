@@ -1,4 +1,3 @@
-
 /*
  *      Copyright (C) 2005-2013 Team XBMC
  *      http://kodi.tv
@@ -145,14 +144,14 @@ bool CGUIDialogMediaSource::ShowAndAddMediaSource(const std::string &type)
   dialog->Open();
   bool confirmed(dialog->IsConfirmed());
   if (confirmed)
-  { 
+  {
     // Add this media source
     // Get unique source name
     std::string strName = dialog->GetUniqueMediaSourceName();
 
-    CMediaSource share;      
+    CMediaSource share;
     share.FromNameAndPaths(type, strName, dialog->GetPaths());
-    if (dialog->m_paths->Size() > 0) 
+    if (dialog->m_paths->Size() > 0)
       share.m_strThumbnailImage = dialog->m_paths->Get(0)->GetArt("thumb");
     CMediaSourceSettings::GetInstance().AddShare(type, share);
     OnMediaSourceChanged(type, "", share);
@@ -186,7 +185,7 @@ bool CGUIDialogMediaSource::ShowAndEditMediaSource(const std::string &type, cons
   dialog->Open();
   bool confirmed(dialog->IsConfirmed());
   if (confirmed)
-  { 
+  {
     // Update media source
     // Get unique new source name when changed
     std::string strName(dialog->m_name);
@@ -217,7 +216,7 @@ std::string CGUIDialogMediaSource::GetUniqueMediaSourceName()
       if (StringUtils::EqualsNoCase((*pShares)[i].strName, strName))
         break;
     }
-    if (i < pShares->size())      
+    if (i < pShares->size())
       // found a match -  try next
       strName = StringUtils::Format("%s (%i)", m_name.c_str(), j++);
     else
@@ -228,7 +227,7 @@ std::string CGUIDialogMediaSource::GetUniqueMediaSourceName()
 
 void CGUIDialogMediaSource::OnMediaSourceChanged(const std::string& type, const std::string& oldName, const CMediaSource& share)
 {
-  // Processing once media source added/edited - library scraping and scanning 
+  // Processing once media source added/edited - library scraping and scanning
   if (!StringUtils::StartsWithNoCase(share.strPath, "rss://") &&
     !StringUtils::StartsWithNoCase(share.strPath, "rsss://") &&
     !StringUtils::StartsWithNoCase(share.strPath, "upnp://"))
@@ -237,7 +236,7 @@ void CGUIDialogMediaSource::OnMediaSourceChanged(const std::string& type, const 
       // Assign content to a path, refresh scraper information optionally start a scan
       CGUIWindowVideoBase::OnAssignContent(share.strPath);
     else if (type == "music")
-      CGUIWindowMusicBase::OnAssignContent(share.strPath);
+      CGUIWindowMusicBase::OnAssignContent(oldName, share);
   }
 }
 
@@ -460,8 +459,8 @@ void CGUIDialogMediaSource::OnOK()
   CMediaSource share;
   share.FromNameAndPaths(m_type, m_name, GetPaths());
 
-  if (StringUtils::StartsWithNoCase(share.strPath, "plugin://") || 
-    CDirectory::GetDirectory(share.strPath, items, "", DIR_FLAG_NO_FILE_DIRS | DIR_FLAG_ALLOW_PROMPT) || 
+  if (StringUtils::StartsWithNoCase(share.strPath, "plugin://") ||
+    CDirectory::GetDirectory(share.strPath, items, "", DIR_FLAG_NO_FILE_DIRS | DIR_FLAG_ALLOW_PROMPT) ||
     CGUIDialogYesNo::ShowAndGetInput(CVariant{ 1001 }, CVariant{ 1025 }))
   {
     m_confirmed = true;

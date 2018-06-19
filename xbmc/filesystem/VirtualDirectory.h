@@ -1,4 +1,3 @@
-#pragma once
 /*
  *      Copyright (C) 2005-2013 Team XBMC
  *      http://kodi.tv
@@ -18,6 +17,8 @@
  *  <http://www.gnu.org/licenses/>.
  *
  */
+
+#pragma once
 
 #include "IDirectory.h"
 #include "MediaSource.h"
@@ -41,7 +42,7 @@ namespace XFILE
     void CancelDirectory() override;
     bool GetDirectory(const CURL& url, CFileItemList &items, bool bUseFileDirectories, bool keepImpl);
     void SetSources(const VECSOURCES& vecSources);
-    inline unsigned int GetNumberOfSources() 
+    inline unsigned int GetNumberOfSources()
     {
       return static_cast<uint32_t>(m_vecSources.size());
     }

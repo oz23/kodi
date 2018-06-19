@@ -17,9 +17,10 @@
  *  <http://www.gnu.org/licenses/>.
  *
  */
+
 #pragma once
 
-#include "cores/IPlayer.h"
+#include "cores/GameSettings.h"
 
 #include "libavutil/pixfmt.h"
 
@@ -38,7 +39,7 @@ namespace RETRO
     /*!
      * \brief Translate a scaling method to a string suitable for logging
      */
-    static const char *TranslateScalingMethod(ESCALINGMETHOD scalingMethod);
+    static const char *TranslateScalingMethod(SCALINGMETHOD scalingMethod);
 
     /*!
      * \brief Translate a width in pixels to a width in bytes

@@ -17,6 +17,7 @@
  *  <http://www.gnu.org/licenses/>.
  *
  */
+
 #pragma once
 
 #include <set>
@@ -120,11 +121,11 @@ private:
   int m_writePosition{};
 };
 
-class CEGLContextUtils
+class CEGLContextUtils final
 {
 public:
   CEGLContextUtils();
-  virtual ~CEGLContextUtils();
+  ~CEGLContextUtils();
 
   bool CreateDisplay(EGLDisplay display,
                      EGLint renderable_type,

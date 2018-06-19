@@ -1,5 +1,3 @@
-#pragma once
-
 /*
  *      Copyright (C) 2005-2013 Team XBMC
  *      http://kodi.tv
@@ -19,6 +17,8 @@
  *  <http://www.gnu.org/licenses/>.
  *
  */
+
+#pragma once
 
 #include "XBApplicationEx.h"
 
@@ -354,7 +354,7 @@ public:
   ReplayGainSettings& GetReplayGainSettings() { return m_replayGainSettings; }
 
   void SetLoggingIn(bool switchingProfiles);
-  
+
   /*!
    \brief Register an action listener.
    \param listener The listener to register

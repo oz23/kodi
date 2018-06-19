@@ -17,14 +17,16 @@
  *  <http://www.gnu.org/licenses/>.
  *
  */
+
 #pragma once
+
 #include "DVDCodecs/Video/DXVA.h"
 #include <wrl/client.h>
 
 class CVideoBuffer;
 struct VideoPicture;
 
-enum EBufferFormat 
+enum EBufferFormat
 {
   BUFFER_FMT_NONE = 0,
   BUFFER_FMT_YUV420P,

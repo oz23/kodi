@@ -1,5 +1,3 @@
-#pragma once
-
 /*
  *      Copyright (C) 2005-2015 Team Kodi
  *      http://kodi.tv
@@ -20,6 +18,8 @@
  *
  */
 
+#pragma once
+
 #include <string>
 #include "platform/darwin/AutoPool.h"
 
@@ -37,7 +37,7 @@ extern "C"
   //
   void Cocoa_DoAppleScript(const char* scriptSource);
   void Cocoa_DoAppleScriptFile(const char* filePath);
-  
+
   // Devices
   //
   char* Cocoa_MountPoint2DeviceName(char *path);

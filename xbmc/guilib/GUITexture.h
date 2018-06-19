@@ -1,13 +1,3 @@
-/*!
-\file GUITexture.h
-\brief
-*/
-
-#ifndef GUILIB_GUITEXTURE_H
-#define GUILIB_GUITEXTURE_H
-
-#pragma once
-
 /*
  *      Copyright (C) 2005-2013 Team XBMC
  *      http://kodi.tv
@@ -28,10 +18,17 @@
  *
  */
 
+#pragma once
+
+/*!
+\file GUITexture.h
+\brief
+*/
+
 #include "TextureManager.h"
 #include "utils/Color.h"
 #include "utils/Geometry.h"
-#include "guiinfo/GUIInfoTypes.h"
+#include "guiinfo/GUIInfoColor.h"
 
 // image alignment for <aspect>keep</aspect>, <aspect>scale</aspect> or <aspect>center</aspect>
 #define ASPECT_ALIGN_CENTER  0
@@ -184,4 +181,3 @@ protected:
 #define CGUITexture CGUITextureD3D
 #endif
 
-#endif

@@ -18,8 +18,7 @@
  *
  */
 
-#ifndef WINDOW_SYSTEM_WIN32_H
-#define WINDOW_SYSTEM_WIN32_H
+#pragma once
 
 #include "guilib/DispResource.h"
 #include "threads/CriticalSection.h"
@@ -33,7 +32,7 @@ static const DWORD FULLSCREEN_WINDOW_STYLE = WS_POPUP | WS_SYSMENU | WS_CLIPCHIL
 static const DWORD FULLSCREEN_WINDOW_EX_STYLE = WS_EX_APPWINDOW;
 
 /* Controls the way the window appears and behaves. */
-enum WINDOW_STATE 
+enum WINDOW_STATE
 {
   WINDOW_STATE_FULLSCREEN = 1,    // Exclusive fullscreen
   WINDOW_STATE_FULLSCREEN_WINDOW, // Non-exclusive fullscreen window
@@ -51,14 +50,14 @@ static const char* window_state_names[] =
 };
 
 /* WINDOW_STATE restricted to fullscreen modes. */
-enum WINDOW_FULLSCREEN_STATE 
+enum WINDOW_FULLSCREEN_STATE
 {
   WINDOW_FULLSCREEN_STATE_FULLSCREEN = WINDOW_STATE_FULLSCREEN,
   WINDOW_FULLSCREEN_STATE_FULLSCREEN_WINDOW = WINDOW_STATE_FULLSCREEN_WINDOW
 };
 
 /* WINDOW_STATE restricted to windowed modes. */
-enum WINDOW_WINDOW_STATE 
+enum WINDOW_WINDOW_STATE
 {
   WINDOW_WINDOW_STATE_WINDOWED = WINDOW_STATE_WINDOWED,
   WINDOW_WINDOW_STATE_BORDERLESS = WINDOW_STATE_BORDERLESS
@@ -122,7 +121,7 @@ public:
   bool IsMinimized() const { return m_bMinimized; }
   void SetMinimized(bool minimized) { m_bMinimized = minimized; }
   void GetConnectedOutputs(std::vector<std::string> *outputs);
-  
+
   // touchscreen support
   typedef BOOL(WINAPI *pGetGestureInfo)(HGESTUREINFO, PGESTUREINFO);
   typedef BOOL(WINAPI *pSetGestureConfig)(HWND, DWORD, UINT, PGESTURECONFIG, UINT);
@@ -204,6 +203,4 @@ protected:
 };
 
 extern HWND g_hWnd;
-
-#endif // WINDOW_SYSTEM_H
 

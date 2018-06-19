@@ -1,4 +1,3 @@
-#pragma once
 /*
  *      Copyright (C) 2010-2013 Team XBMC
  *      http://kodi.tv
@@ -18,6 +17,8 @@
  *  <http://www.gnu.org/licenses/>.
  *
  */
+
+#pragma once
 
 #include "cores/AudioEngine/Interfaces/AESink.h"
 #include "cores/AudioEngine/Utils/AEDeviceInfo.h"
@@ -59,14 +60,14 @@ protected:
   static bool HasAmlHD();
   static void UpdateAvailablePCMCapabilities();
   static void UpdateAvailablePassthroughCapabilities();
-  
+
   int AudioTrackWrite(char* audioData, int offsetInBytes, int sizeInBytes);
   int AudioTrackWrite(char* audioData, int sizeInBytes, int64_t timestamp);
 
 private:
   jni::CJNIAudioTrack  *m_at_jni;
   int     m_jniAudioFormat;
-  
+
   double                m_duration_written;
   unsigned int          m_min_buffer_size;
   int64_t               m_offset;

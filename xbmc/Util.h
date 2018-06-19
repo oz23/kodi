@@ -1,4 +1,3 @@
-#pragma once
 /*
  *      Copyright (C) 2005-2013 Team XBMC
  *      http://kodi.tv
@@ -18,6 +17,8 @@
  *  <http://www.gnu.org/licenses/>.
  *
  */
+
+#pragma once
 
 #include <climits>
 #include <cmath>
@@ -41,9 +42,7 @@ struct ExternalStreamInfo
 {
   std::string name;
   std::string language;
-  unsigned int flag;
-
-  ExternalStreamInfo() : flag(0){};
+  unsigned int flag = 0;
 };
 
 class CUtil
@@ -96,7 +95,7 @@ public:
   static bool IsVobSub(const std::vector<std::string>& vecSubtitles, const std::string& strSubPath);
   static std::string GetVobSubSubFromIdx(const std::string& vobSubIdx);
   static std::string GetVobSubIdxFromSub(const std::string& vobSub);
-  
+
   /** \brief Retrieves paths of external audio files for a given video.
   *   \param[in] videoPath The full path of the video file.
   *   \param[out] vecAudio A vector containing the full paths of all found external audio files.
@@ -124,7 +123,7 @@ public:
   static std::string MakeLegalPath(const std::string &strPath, int LegalType=LEGAL_NONE);
 #endif
   static std::string ValidatePath(const std::string &path, bool bFixDoubleSlashes = false); ///< return a validated path, with correct directory separators.
-  
+
   static bool IsUsingTTFSubtitles();
 
   /*! \brief Split a comma separated parameter list into separate parameters.

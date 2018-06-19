@@ -81,7 +81,6 @@ set(HEADERS DDSImage.h
             GUIBaseContainer.h
             GUIBorderedImage.h
             GUIButtonControl.h
-            GUICallback.h
             GUIColorManager.h
             GUIComponent.h
             GUIControl.h
@@ -157,12 +156,10 @@ set(HEADERS DDSImage.h
 if(OPENGL_FOUND)
   list(APPEND SOURCES GUIFontTTFGL.cpp
                       GUITextureGL.cpp
-                      MatrixGLES.cpp
                       Shader.cpp
                       TextureGL.cpp)
   list(APPEND HEADERS GUIFontTTFGL.h
                       GUITextureGL.h
-                      MatrixGLES.h
                       Shader.h
                       TextureGL.h)
 endif()
@@ -170,12 +167,10 @@ endif()
 if(OPENGLES_FOUND)
   list(APPEND SOURCES GUIFontTTFGL.cpp
                       GUITextureGLES.cpp
-                      MatrixGLES.cpp
                       Shader.cpp
                       TextureGL.cpp)
   list(APPEND HEADERS GUIFontTTFGL.h
                       GUITextureGLES.h
-                      MatrixGLES.h
                       Shader.h
                       TextureGL.h)
 endif()

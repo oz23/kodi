@@ -1,4 +1,3 @@
-#pragma once
 /*
  *      Copyright (C) 2005-2013 Team XBMC
  *      http://kodi.tv
@@ -18,6 +17,8 @@
  *  <http://www.gnu.org/licenses/>.
  *
  */
+
+#pragma once
 
 #include "SettingsLock.h"
 #include "LockType.h"
@@ -52,7 +53,7 @@ public:
 
   CProfile(const std::string &directory = "", const std::string &name = "", const int id = -1);
   ~CProfile(void);
-  
+
   void Load(const TiXmlNode *node, int nextIdProfile);
   void Save(TiXmlNode *root) const;
 

@@ -1,4 +1,3 @@
-#pragma once
 /*
  *      Copyright (C) 2005-2013 Team XBMC
  *      http://kodi.tv
@@ -19,11 +18,15 @@
  *
  */
 
+#pragma once
+
 #include "utils/ISerializable.h"
 #include "utils/ISortable.h"
 #include "utils/IArchivable.h"
 #include "XBDateTime.h"
 #include "libexif.h"
+
+#include <string>
 
 class CVariant;
 
@@ -31,11 +34,11 @@ class CPictureInfoTag : public IArchivable, public ISerializable, public ISortab
 {
 public:
   CPictureInfoTag() { Reset(); };
+  virtual ~CPictureInfoTag() = default;
   void Reset();
   void Archive(CArchive& ar) override;
   void Serialize(CVariant& value) const override;
   void ToSortable(SortItem& sortable, Field field) const override;
-  const CPictureInfoTag& operator=(const CPictureInfoTag& item);
   const std::string GetInfo(int info) const;
 
   bool Loaded() const { return m_isLoaded; };
@@ -45,7 +48,7 @@ public:
 
   /**
    * GetDateTimeTaken() -- Returns the EXIF DateTimeOriginal for current picture
-   * 
+   *
    * The exif library returns DateTimeOriginal if available else the other
    * DateTime tags. See libexif CExifParse::ProcessDir for details.
    */

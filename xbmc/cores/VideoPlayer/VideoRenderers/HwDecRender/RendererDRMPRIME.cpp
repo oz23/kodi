@@ -23,7 +23,11 @@
 #include "cores/VideoPlayer/VideoRenderers/RenderCapture.h"
 #include "cores/VideoPlayer/VideoRenderers/RenderFactory.h"
 #include "cores/VideoPlayer/VideoRenderers/RenderFlags.h"
+#include "ServiceBroker.h"
+#include "settings/Settings.h"
 #include "utils/log.h"
+
+const std::string SETTING_VIDEOPLAYER_USEPRIMERENDERER = "videoplayer.useprimerenderer";
 
 static CWinSystemGbmGLESContext *m_pWinSystem;
 
@@ -40,7 +44,10 @@ CRendererDRMPRIME::~CRendererDRMPRIME()
 CBaseRenderer* CRendererDRMPRIME::Create(CVideoBuffer* buffer)
 {
   if (buffer && dynamic_cast<CVideoBufferDRMPRIME*>(buffer))
-    return new CRendererDRMPRIME(m_pWinSystem->m_DRM);
+  {
+    if (CServiceBroker::GetSettings().GetInt(SETTING_VIDEOPLAYER_USEPRIMERENDERER) == 0)
+      return new CRendererDRMPRIME(m_pWinSystem->m_DRM);
+  }
 
   return nullptr;
 }
@@ -78,6 +85,12 @@ bool CRendererDRMPRIME::Configure(const VideoPicture& picture, float fps, unsign
 void CRendererDRMPRIME::AddVideoPicture(const VideoPicture& picture, int index, double currentClock)
 {
   BUFFER& buf = m_buffers[index];
+
+  // delay Release of videoBuffer after a Flush call to prevent drmModeRmFB of a videoBuffer tied to a drm plane
+  // TODO: move Release to Flush once current videoBuffer tied to a drm plane is reference counted
+  if (buf.videoBuffer)
+    buf.videoBuffer->Release();
+
   buf.videoBuffer = picture.videoBuffer;
   buf.videoBuffer->Acquire();
 }
@@ -90,14 +103,17 @@ void CRendererDRMPRIME::Reset()
   m_iLastRenderBuffer = -1;
 }
 
+void CRendererDRMPRIME::Flush()
+{
+  m_iLastRenderBuffer = -1;
+}
+
 void CRendererDRMPRIME::ReleaseBuffer(int index)
 {
   BUFFER& buf = m_buffers[index];
   if (buf.videoBuffer)
   {
-    CVideoBufferDRMPRIME* buffer = dynamic_cast<CVideoBufferDRMPRIME*>(buf.videoBuffer);
-    if (buffer)
-      buffer->Release();
+    buf.videoBuffer->Release();
     buf.videoBuffer = nullptr;
   }
 }

@@ -159,6 +159,17 @@ void CGUIDialogSmartPlaylistRule::OnBrowse()
     }
     iLabel = 515;
   }
+  else if (m_rule.m_field == FieldSource)
+  {
+    if (m_type == "songs" ||
+      m_type == "albums" ||
+      m_type == "artists" ||
+      m_type == "mixed")
+    {
+      database.GetSourcesNav("musicdb://sources/", items);
+      iLabel = 39030;
+    }
+  }
   else if (m_rule.m_field == FieldRole)
   {
     if (m_type == "artists" || m_type == "mixed")
@@ -311,7 +322,7 @@ void CGUIDialogSmartPlaylistRule::OnBrowse()
       sources.insert(sources.end(),sources2.begin(),sources2.end());
     }
     g_mediaManager.GetLocalDrives(sources);
-    
+
     std::string path = m_rule.GetParameter();
     CGUIDialogFileBrowser::ShowAndGetDirectory(sources, g_localizeStrings.Get(657), path, false);
     if (!m_rule.m_parameter.empty())
@@ -484,7 +495,7 @@ void CGUIDialogSmartPlaylistRule::OnOperator()
   // check if selection has changed
   if (!dialog->IsConfirmed() || newSelected < 0)
     return;
- 
+
   m_rule.m_operator = (CDatabaseQueryRule::SEARCH_OPERATOR)std::get<1>(labels[newSelected]);
   UpdateButtons();
 }

@@ -1,5 +1,3 @@
-#pragma once
-
 /*
  *      Copyright (C) 2005-2013 Team XBMC
  *      http://kodi.tv
@@ -19,6 +17,8 @@
  *  <http://www.gnu.org/licenses/>.
  *
  */
+
+#pragma once
 
 #include "DVDInputStream.h"
 #include <list>
@@ -43,7 +43,7 @@ class CDVDOverlayImage;
 class DllLibbluray;
 class IVideoPlayer;
 
-class CDVDInputStreamBluray 
+class CDVDInputStreamBluray
   : public CDVDInputStream
   , public CDVDInputStream::IDisplayTime
   , public CDVDInputStream::IChapter

@@ -1,13 +1,3 @@
-/*!
-\file GUITextBox.h
-\brief
-*/
-
-#ifndef GUILIB_GUITEXTBOX_H
-#define GUILIB_GUITEXTBOX_H
-
-#pragma once
-
 /*
  *      Copyright (C) 2005-2013 Team XBMC
  *      http://kodi.tv
@@ -28,9 +18,17 @@
  *
  */
 
+#pragma once
+
+/*!
+\file GUITextBox.h
+\brief
+*/
+
 #include "GUITextLayout.h"
 #include "GUIControl.h"
 #include "GUILabel.h"
+#include "guilib/guiinfo/GUIInfoLabel.h"
 
 /*!
  \ingroup controls
@@ -108,4 +106,4 @@ protected:
 
   KODI::GUILIB::GUIINFO::CGUIInfoLabel m_info;
 };
-#endif
+

@@ -1,4 +1,3 @@
-#pragma once
 /*
  *      Copyright (C) 2010-2013 Team XBMC
  *      http://kodi.tv
@@ -18,6 +17,8 @@
  *  <http://www.gnu.org/licenses/>.
  *
  */
+
+#pragma once
 
 #include "cores/AudioEngine/Interfaces/AEStream.h"
 #include "cores/AudioEngine/Utils/AEAudioFormat.h"
@@ -125,7 +126,7 @@ public:
   bool HasWork();
   CActiveAEBufferPool *GetResampleBuffers();
   CActiveAEBufferPool *GetAtempoBuffers();
-  
+
   AEAudioFormat m_inputFormat;
   std::deque<CSampleBuffer*> m_outputSamples;
   std::deque<CSampleBuffer*> m_inputSamples;
@@ -182,10 +183,10 @@ public:
 
   unsigned int GetFrameSize() const override;
   unsigned int GetChannelCount() const override;
-  
+
   unsigned int GetSampleRate() const override ;
   enum AEDataFormat GetDataFormat() const override;
-  
+
   double GetResampleRatio() override;
   void SetResampleRatio(double ratio) override;
   void SetResampleMode(int mode) override;

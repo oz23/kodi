@@ -1,4 +1,3 @@
-#pragma once
 /*
  *      Copyright (C) 2005-2013 Team XBMC
  *      http://kodi.tv
@@ -19,10 +18,13 @@
  *
  */
 
+#pragma once
+
 #include "utils/IArchivable.h"
 #include "ISerializable.h"
 #include <string>
 #include <vector>
+#include <memory>
 
 class CStreamDetails;
 class CVariant;
@@ -40,9 +42,8 @@ public:
   };
 
   explicit CStreamDetail(StreamType type) : m_eType(type), m_pParent(NULL) {};
-  void Archive(CArchive& ar) override;
-  void Serialize(CVariant& value) const override;
-  virtual bool IsWorseThan(CStreamDetail *that) { return true; };
+  virtual ~CStreamDetail() = default;
+  virtual bool IsWorseThan(const CStreamDetail &that) const = 0;
 
   const StreamType m_eType;
 
@@ -51,14 +52,14 @@ protected:
   friend class CStreamDetails;
 };
 
-class CStreamDetailVideo : public CStreamDetail
+class CStreamDetailVideo final : public CStreamDetail
 {
 public:
   CStreamDetailVideo();
   CStreamDetailVideo(const VideoStreamInfo &info, int duration = 0);
   void Archive(CArchive& ar) override;
   void Serialize(CVariant& value) const override;
-  bool IsWorseThan(CStreamDetail *that) override;
+  bool IsWorseThan(const CStreamDetail &that) const override;
 
   int m_iWidth;
   int m_iHeight;
@@ -69,21 +70,21 @@ public:
   std::string m_strLanguage;
 };
 
-class CStreamDetailAudio : public CStreamDetail
+class CStreamDetailAudio final : public CStreamDetail
 {
 public:
   CStreamDetailAudio();
   CStreamDetailAudio(const AudioStreamInfo &info);
   void Archive(CArchive& ar) override;
   void Serialize(CVariant& value) const override;
-  bool IsWorseThan(CStreamDetail *that) override;
+  bool IsWorseThan(const CStreamDetail &that) const override;
 
   int m_iChannels;
   std::string m_strCodec;
   std::string m_strLanguage;
 };
 
-class CStreamDetailSubtitle : public CStreamDetail
+class CStreamDetailSubtitle final : public CStreamDetail
 {
 public:
   CStreamDetailSubtitle();
@@ -91,17 +92,16 @@ public:
   CStreamDetailSubtitle& operator=(const CStreamDetailSubtitle &that);
   void Archive(CArchive& ar) override;
   void Serialize(CVariant& value) const override;
-  bool IsWorseThan(CStreamDetail *that) override;
+  bool IsWorseThan(const CStreamDetail &that) const override;
 
   std::string m_strLanguage;
 };
 
-class CStreamDetails : public IArchivable, public ISerializable
+class CStreamDetails final : public IArchivable, public ISerializable
 {
 public:
   CStreamDetails() { Reset(); };
   CStreamDetails(const CStreamDetails &that);
-  ~CStreamDetails() override { Reset(); };
   CStreamDetails& operator=(const CStreamDetails &that);
   bool operator ==(const CStreamDetails &that) const;
   bool operator !=(const CStreamDetails &that) const;
@@ -141,8 +141,8 @@ public:
   bool SetStreams(const VideoStreamInfo& videoInfo, int videoDuration, const AudioStreamInfo& audioInfo, const SubtitleStreamInfo& subtitleInfo);
 private:
   CStreamDetail *NewStream(CStreamDetail::StreamType type);
-  std::vector<CStreamDetail *> m_vecItems;
-  CStreamDetailVideo *m_pBestVideo;
-  CStreamDetailAudio *m_pBestAudio;
-  CStreamDetailSubtitle *m_pBestSubtitle;
+  std::vector<std::unique_ptr<CStreamDetail>> m_vecItems;
+  const CStreamDetailVideo *m_pBestVideo;
+  const CStreamDetailAudio *m_pBestAudio;
+  const CStreamDetailSubtitle *m_pBestSubtitle;
 };

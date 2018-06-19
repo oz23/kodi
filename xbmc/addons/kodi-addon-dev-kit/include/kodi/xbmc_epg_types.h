@@ -1,4 +1,3 @@
-#pragma once
 /*
  *      Copyright (C) 2005-2013 Team XBMC
  *      http://kodi.tv
@@ -18,6 +17,8 @@
  *  <http://www.gnu.org/licenses/>.
  *
  */
+
+#pragma once
 
 #include <string.h>
 #include <time.h>
@@ -56,7 +57,7 @@
 #define EPG_EVENT_CONTENTMASK_USERDEFINED              0xF0
 //@}
 
-/* Set EPGTAG.iGenreType to EPG_GENRE_USE_STRING to transfer genre strings to XBMC */
+/* Set EPGTAG.iGenreType to EPG_GENRE_USE_STRING to transfer genre strings to Kodi */
 #define EPG_GENRE_USE_STRING                           0x100
 
 /* Separator to use in strings containing different tokens, for example writers, directors, actors of an event. */

@@ -306,8 +306,8 @@ void CGUIWindowMusicBase::RefreshContent(const std::string& strContent)
   if ( CServiceBroker::GetGUI()->GetWindowManager().GetActiveWindow() == WINDOW_MUSIC_NAV &&
     m_vecItems->GetContent() == strContent &&
     m_vecItems->GetSortMethod() == SortByUserRating)
-    // When music library window is active and showing songs or albums sorted 
-    // by userrating refresh the list to resort items and show new userrating 
+    // When music library window is active and showing songs or albums sorted
+    // by userrating refresh the list to resort items and show new userrating
     Refresh(true);
 }
 
@@ -1098,17 +1098,22 @@ void CGUIWindowMusicBase::DoScan(const std::string &strPath, bool bRescan /*= fa
 
 void CGUIWindowMusicBase::OnRemoveSource(int iItem)
 {
+  
+  //Remove music source from library, even when leaving songs
+  CMusicDatabase database;
+  database.Open();
+  database.RemoveSource(m_vecItems->Get(iItem)->GetLabel());
+  
   bool bCanceled;
   if (CGUIDialogYesNo::ShowAndGetInput(CVariant{522}, CVariant{20340}, bCanceled, CVariant{""}, CVariant{""}, CGUIDialogYesNo::NO_TIMEOUT))
   {
-    MAPSONGS songs;
-    CMusicDatabase database;
-    database.Open();
+    MAPSONGS songs;    
     database.RemoveSongsFromPath(m_vecItems->Get(iItem)->GetPath(), songs, false);
     database.CleanupOrphanedItems();
     CServiceBroker::GetGUI()->GetInfoManager().GetInfoProviders().GetLibraryInfoProvider().ResetLibraryBools();
     m_vecItems->RemoveDiscCache(GetID());
   }
+  database.Close();
 }
 
 void CGUIWindowMusicBase::OnPrepareFileItems(CFileItemList &items)
@@ -1119,11 +1124,18 @@ void CGUIWindowMusicBase::OnPrepareFileItems(CFileItemList &items)
     RetrieveMusicInfo();
 }
 
-void CGUIWindowMusicBase::OnAssignContent(const std::string &path)
+void CGUIWindowMusicBase::OnAssignContent(const std::string& oldName, const CMediaSource& source)
 {
   // Music scrapers are not source specific, so unlike video there is no content selection logic here.
-  // Called on having added a music source, this starts scanning items into library when required
- 
+  // Called on having added or edited a music source, this starts scanning items into library when required
+
+  //! @todo: do async as updating sources for all albums could be slow??
+  //Store music source in the music library, even those not scanned
+  CMusicDatabase database;
+  database.Open();
+  database.UpdateSource(oldName, source.strName, source.strPath, source.vecPaths);
+  database.Close();
+
   // "Add to library" yes/no dialog with additional "settings" custom button
   // "Do you want to add the media from this source to your library?"
   DialogResponse rep = DialogResponse::CUSTOM;
@@ -1133,9 +1145,9 @@ void CGUIWindowMusicBase::OnAssignContent(const std::string &path)
     if (rep == DialogResponse::CUSTOM)
       // Edit default info provider settings so can be applied during scan
       CGUIDialogInfoProviderSettings::Show();
-  }  
-  if (rep == DialogResponse::YES)  
-    g_application.StartMusicScan(path, true);
-  
+  }
+  if (rep == DialogResponse::YES)
+    g_application.StartMusicScan(source.strPath, true);
+
 }
 

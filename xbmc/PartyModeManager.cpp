@@ -57,8 +57,6 @@ CPartyModeManager::CPartyModeManager(void)
   ClearState();
 }
 
-CPartyModeManager::~CPartyModeManager(void) = default;
-
 bool CPartyModeManager::Enable(PartyModeContext context /*= PARTYMODECONTEXT_MUSIC*/, const std::string& strXspPath /*= ""*/)
 {
   // Filter using our PartyMode xml file
@@ -719,7 +717,7 @@ void CPartyModeManager::Announce()
   if (g_application.GetAppPlayer().IsPlaying())
   {
     CVariant data;
-    
+
     data["player"]["playerid"] = CServiceBroker::GetPlaylistPlayer().GetCurrentPlaylist();
     data["property"]["partymode"] = m_bEnabled;
     ANNOUNCEMENT::CAnnouncementManager::GetInstance().Announce(ANNOUNCEMENT::Player, "xbmc", "OnPropertyChanged", data);

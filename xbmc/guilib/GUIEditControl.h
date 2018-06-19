@@ -1,10 +1,3 @@
-/*!
-\file GUIEditControl.h
-\brief
-*/
-
-#pragma once
-
 /*
  *      Copyright (C) 2005-2013 Team XBMC
  *      http://kodi.tv
@@ -24,6 +17,13 @@
  *  <http://www.gnu.org/licenses/>.
  *
  */
+
+#pragma once
+
+/*!
+\file GUIEditControl.h
+\brief
+*/
 
 #include "GUIButtonControl.h"
 #include "utils/Stopwatch.h"
@@ -95,7 +95,7 @@ protected:
   void UpdateText(bool sendUpdate = true);
   void OnPasteClipboard();
   void OnSMSCharacter(unsigned int key);
-  void DefaultConstructor();  
+  void DefaultConstructor();
 
   virtual bool ValidateInput(const std::wstring &data) const;
   void ValidateInput();
@@ -104,7 +104,7 @@ protected:
    \return true if the password is cleared, false otherwise.
    */
   bool ClearMD5();
-  
+
   std::wstring m_text2;
   std::string  m_text;
   KODI::GUILIB::GUIINFO::CGUIInfoLabel m_hintInfo;

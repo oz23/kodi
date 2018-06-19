@@ -1,5 +1,3 @@
-#pragma once
-
 /*
  *      Copyright (C) 2005-2013 Team XBMC
  *      http://kodi.tv
@@ -19,6 +17,8 @@
  *  <http://www.gnu.org/licenses/>.
  *
  */
+
+#pragma once
 
 #include <list>
 #include <utility>
@@ -247,7 +247,7 @@ private:
   int GetTopmostDialog(bool modal, bool ignoreClosing) const;
 
   friend class KODI::MESSAGING::CApplicationMessenger;
-  
+
   /*! \brief Activate the given window.
    *
    * \param windowID The window ID to activate.

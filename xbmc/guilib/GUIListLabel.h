@@ -1,10 +1,3 @@
-/*!
-\file GUIListLabel.h
-\brief
-*/
-
-#pragma once
-
 /*
  *      Copyright (C) 2005-2013 Team XBMC
  *      http://kodi.tv
@@ -25,8 +18,16 @@
  *
  */
 
+#pragma once
+
+/*!
+\file GUIListLabel.h
+\brief
+*/
+
 #include "GUIControl.h"
 #include "GUILabel.h"
+#include "guilib/guiinfo/GUIInfoLabel.h"
 
 /*!
  \ingroup controls

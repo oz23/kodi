@@ -1,10 +1,3 @@
-/*!
-\file GUIListContainer.h
-\brief
-*/
-
-#pragma once
-
 /*
  *      Copyright (C) 2005-2013 Team XBMC
  *      http://kodi.tv
@@ -24,6 +17,13 @@
  *  <http://www.gnu.org/licenses/>.
  *
  */
+
+#pragma once
+
+/*!
+\file GUIListContainer.h
+\brief
+*/
 
 #include <utility>
 #include <vector>
@@ -143,7 +143,7 @@ protected:
   CGUIListItemLayout *GetFocusedLayout() const;
 
   CPoint m_renderOffset; ///< \brief render offset of the first item in the list \sa SetRenderOffset
-    
+
   float m_analogScrollCount;
   unsigned int m_lastHoldTime;
 

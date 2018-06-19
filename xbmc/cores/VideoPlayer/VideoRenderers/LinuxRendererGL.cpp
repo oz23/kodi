@@ -36,7 +36,7 @@
 #include "windowing/WinSystem.h"
 #include "guilib/Texture.h"
 #include "guilib/LocalizeStrings.h"
-#include "guilib/MatrixGLES.h"
+#include "rendering/MatrixGL.h"
 #include "rendering/gl/RenderSystemGL.h"
 #include "threads/SingleLock.h"
 #include "utils/log.h"
@@ -303,6 +303,11 @@ bool CLinuxRendererGL::ConfigChanged(const VideoPicture &picture)
 void CLinuxRendererGL::AddVideoPicture(const VideoPicture &picture, int index, double currentClock)
 {
   CPictureBuffer &buf = m_buffers[index];
+  if (buf.videoBuffer)
+  {
+    CLog::LogF(LOGERROR, "unreleased video buffer");
+    buf.videoBuffer->Release();
+  }
   buf.videoBuffer = picture.videoBuffer;
   buf.videoBuffer->Acquire();
   buf.loaded = false;
@@ -461,9 +466,6 @@ void CLinuxRendererGL::LoadPlane(YUVPLANE& plane, int type,
 
 void CLinuxRendererGL::Flush()
 {
-  if (!m_bValidated)
-    return;
-
   glFinish();
 
   for (int i = 0 ; i < m_NumYV12Buffers ; i++)
@@ -969,7 +971,7 @@ void CLinuxRendererGL::LoadShaders(int field)
   else
     CLog::Log(LOGNOTICE, "GL: NPOT texture support detected");
 
-  
+
   if (m_pboSupported)
   {
     CLog::Log(LOGNOTICE, "GL: Using GL_ARB_pixel_buffer_object");
@@ -1526,7 +1528,7 @@ void CLinuxRendererGL::RenderFromFBO()
   glGenBuffers(1, &vertexVBO);
   glBindBuffer(GL_ARRAY_BUFFER, vertexVBO);
   glBufferData(GL_ARRAY_BUFFER, sizeof(PackedVertex)*4, &vertex[0], GL_STATIC_DRAW);
-  
+
   glVertexAttribPointer(vertLoc, 3, GL_FLOAT, 0, sizeof(PackedVertex), BUFFER_OFFSET(offsetof(PackedVertex, x)));
   glVertexAttribPointer(loc, 2, GL_FLOAT, 0, sizeof(PackedVertex), BUFFER_OFFSET(offsetof(PackedVertex, u1)));
 
@@ -1695,9 +1697,9 @@ bool CLinuxRendererGL::RenderCapture(CRenderCapture* capture)
 
   // save current video rect
   CRect saveSize = m_destRect;
-  
+
   saveRotatedCoords();//backup current m_rotatedDestCoords
-      
+
   // new video rect is capture size
   m_destRect.SetRect(0, 0, (float)capture->GetWidth(), (float)capture->GetHeight());
   MarkDirty();
@@ -2623,7 +2625,7 @@ bool CLinuxRendererGL::Supports(ESCALINGMETHOD method)
         return g_advancedSettings.m_videoEnableHighQualityHwScalers;
     }
   }
- 
+
   return false;
 }
 

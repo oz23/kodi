@@ -18,9 +18,6 @@
  *
  */
 
-#ifndef WIN_SYSTEM_WIN32_DX_H
-#define WIN_SYSTEM_WIN32_DX_H
-
 #pragma once
 
 #include "easyhook/easyhook.h"
@@ -61,7 +58,7 @@ public:
    \sa Unregister, ID3DResource
   */
   void Register(ID3DResource *resource) const
-  { 
+  {
     m_deviceResources->Register(resource);
   };
   /*!
@@ -70,7 +67,7 @@ public:
    \sa Register, ID3DResource
   */
   void Unregister(ID3DResource *resource) const
-  { 
+  {
     m_deviceResources->Unregister(resource);
   };
 
@@ -92,4 +89,3 @@ protected:
   TRACED_HOOK_HANDLE m_hHook;
 };
 
-#endif // WIN_SYSTEM_WIN32_DX_H

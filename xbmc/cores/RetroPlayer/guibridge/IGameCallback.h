@@ -1,5 +1,5 @@
 /*
- *      Copyright (C) 2017 Team Kodi
+ *      Copyright (C) 2018 Team Kodi
  *      http://kodi.tv
  *
  *  This Program is free software; you can redistribute it and/or modify
@@ -18,28 +18,25 @@
  *
  */
 
-#include "RenderGeometry.h"
-#include "settings/GameSettings.h"
-#include "settings/MediaSettings.h"
+#pragma once
 
-using namespace KODI;
-using namespace RETRO;
+#include <string>
 
-CRenderGeometry::CRenderGeometry(const CRect &dimensions) :
-  m_dimensions(dimensions)
+namespace KODI
 {
+namespace RETRO
+{
+  class IGameCallback
+  {
+  public:
+    virtual ~IGameCallback() = default;
+
+    /*!
+     * \brief Get the game client being used to play the game
+     *
+     * \return The game client's ID, or empty if no game is being played
+     */
+    virtual std::string GameClientID() const = 0;
+  };
 }
-
-void CRenderGeometry::Reset()
-{
-}
-
-bool CRenderGeometry::operator==(const CRenderGeometry &rhs) const
-{
-  return m_dimensions == rhs.m_dimensions;
-}
-
-bool CRenderGeometry::operator<(const CRenderGeometry &rhs) const
-{
-  return m_dimensions.Area() < rhs.m_dimensions.Area();
 }

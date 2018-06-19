@@ -1296,7 +1296,7 @@ int CDVDDemuxFFmpeg::GetPrograms(std::vector<ProgramInfo>& programs)
   programs.clear();
   if (!m_pFormatContext || m_pFormatContext->nb_programs <= 1)
     return 0;
-  
+
   for (unsigned int i = 0; i < m_pFormatContext->nb_programs; i++)
   {
     std::ostringstream os;
@@ -1460,6 +1460,9 @@ CDemuxStream* CDVDDemuxFFmpeg::AddStream(int streamIdx)
         st->iBitRate = static_cast<int>(pStream->codecpar->bit_rate);
         st->iBitsPerSample = pStream->codecpar->bits_per_raw_sample;
         st->iChannelLayout = pStream->codecpar->channel_layout;
+        char buf[32] = { 0 };
+        av_get_channel_layout_string(buf, 31, st->iChannels, st->iChannelLayout);
+        st->m_channelLayoutName = buf;
         if (st->iBitsPerSample == 0)
           st->iBitsPerSample = pStream->codecpar->bits_per_coded_sample;
 
@@ -1779,7 +1782,7 @@ void CDVDDemuxFFmpeg::GetChapterName(std::string& strChapterName, int chapterIdx
   if (chapterIdx <= 0 || chapterIdx > GetChapterCount())
     chapterIdx = GetChapter();
   std::shared_ptr<CDVDInputStream::IChapter> ich = std::dynamic_pointer_cast<CDVDInputStream::IChapter>(m_pInput);
-  if(ich)  
+  if(ich)
     ich->GetChapterName(strChapterName, chapterIdx);
   else
   {
@@ -1801,7 +1804,7 @@ int64_t CDVDDemuxFFmpeg::GetChapterPos(int chapterIdx)
     return 0;
 
   std::shared_ptr<CDVDInputStream::IChapter> ich = std::dynamic_pointer_cast<CDVDInputStream::IChapter>(m_pInput);
-  if(ich)  
+  if(ich)
     return ich->GetChapterPos(chapterIdx);
 
   return static_cast<int64_t>(m_pFormatContext->chapters[chapterIdx-1]->start*av_q2d(m_pFormatContext->chapters[chapterIdx-1]->time_base));
@@ -1845,7 +1848,6 @@ std::string CDVDDemuxFFmpeg::GetStreamCodecName(int iStreamId)
   std::string strName;
   if (stream)
   {
-#ifdef FF_PROFILE_DTS_HD_MA
     /* use profile to determine the DTS type */
     if (stream->codec == AV_CODEC_ID_DTS)
     {
@@ -1858,7 +1860,6 @@ std::string CDVDDemuxFFmpeg::GetStreamCodecName(int iStreamId)
 
       return strName;
     }
-#endif
 
     AVCodec *codec = avcodec_find_decoder(stream->codec);
     if (codec)

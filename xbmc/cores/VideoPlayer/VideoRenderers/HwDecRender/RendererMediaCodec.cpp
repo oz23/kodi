@@ -71,11 +71,11 @@ bool CRendererMediaCodec::Register()
 
 void CRendererMediaCodec::AddVideoPicture(const VideoPicture &picture, int index, double currentClock)
 {
-  YUVBUFFER &buf = m_buffers[index];
+  CPictureBuffer &buf = m_buffers[index];
   CMediaCodecVideoBuffer *videoBuffer;
   if (picture.videoBuffer && (videoBuffer = dynamic_cast<CMediaCodecVideoBuffer*>(picture.videoBuffer)))
   {
-    YUVBUFFER &buf = m_buffers[index];
+    CPictureBuffer &buf = m_buffers[index];
     buf.videoBuffer = picture.videoBuffer;
     buf.fields[0][0].id = videoBuffer->GetTextureId();
     videoBuffer->Acquire();
@@ -91,7 +91,7 @@ void CRendererMediaCodec::AddVideoPicture(const VideoPicture &picture, int index
 
 void CRendererMediaCodec::ReleaseBuffer(int idx)
 {
-  YUVBUFFER &buf = m_buffers[idx];
+  CPictureBuffer &buf = m_buffers[idx];
   CMediaCodecVideoBuffer* videoBuffer;
   if (buf.videoBuffer && (videoBuffer = dynamic_cast<CMediaCodecVideoBuffer*>(buf.videoBuffer)))
   {
@@ -116,7 +116,7 @@ bool CRendererMediaCodec::LoadShadersHook()
 {
   CLog::Log(LOGNOTICE, "GL: Using MediaCodec render method");
   m_textureTarget = GL_TEXTURE_2D;
-  m_renderMethod = RENDER_MEDIACODEC;
+  m_renderMethod = RENDER_CUSTOM;
   return true;
 }
 
@@ -224,7 +224,7 @@ bool CRendererMediaCodec::RenderHook(int index)
 
 bool CRendererMediaCodec::CreateTexture(int index)
 {
-  YUVBUFFER &buf(m_buffers[index]);
+  CPictureBuffer &buf(m_buffers[index]);
 
   buf.image.height = m_sourceHeight;
   buf.image.width  = m_sourceWidth;

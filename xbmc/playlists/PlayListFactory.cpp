@@ -73,8 +73,6 @@ CPlayList* CPlayListFactory::Create(const CFileItem& item)
   }
 
   std::string path = item.GetDynPath();
-  if (path.empty())
-    path = item.GetPath();
 
   std::string extension = URIUtils::GetExtension(path);
   StringUtils::ToLower(extension);
@@ -112,7 +110,7 @@ bool CPlayListFactory::IsPlaylist(const CFileItem& item)
   std::string strMimeType = item.GetMimeType();
   StringUtils::ToLower(strMimeType);
 
-/* These are a bit uncertain 
+/* These are a bit uncertain
   if(strMimeType == "video/x-ms-asf"
   || strMimeType == "video/x-ms-asx"
   || strMimeType == "video/x-ms-wmv"

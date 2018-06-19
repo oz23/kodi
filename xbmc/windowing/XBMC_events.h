@@ -1,11 +1,9 @@
-#pragma once
-
 /*
  *      SDL - Simple DirectMedia Layer
  *      Copyright (C) 1997-2009 Sam Lantinga
  *      Sam Lantinga
  *      slouken@libsdl.org
- *  
+ *
  *      Copyright (C) 2005-2015 Team Kodi
  *      http://kodi.tv
  *
@@ -24,6 +22,8 @@
  *  <http://www.gnu.org/licenses/>.
  *
  */
+
+#pragma once
 
 /* Include file for SDL event handling */
 
