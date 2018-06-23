@@ -20,19 +20,34 @@
 
 #pragma once
 
-#include "IDirectory.h"
+#include "utils/IBufferObject.h"
 
-class CURL;
-class TiXmlElement;
+#include <stdint.h>
 
-namespace XFILE
+struct gbm_bo;
+struct gbm_device;
+
+class CGBMBufferObject : public IBufferObject
 {
-  class CSFTPDirectory : public IDirectory
-  {
-  public:
-    CSFTPDirectory(void);
-    ~CSFTPDirectory(void) override;
-    bool GetDirectory(const CURL& url, CFileItemList &items) override;
-    bool Exists(const CURL& url) override;
-  };
-}
+public:
+  CGBMBufferObject(int format);
+  virtual ~CGBMBufferObject() override;
+
+  bool CreateBufferObject(int width, int height) override;
+  void DestroyBufferObject() override;
+  uint8_t* GetMemory() override;
+  void ReleaseMemory() override;
+  int GetFd() override;
+  int GetStride() override;
+  uint64_t GetModifier();
+
+private:
+  gbm_device *m_device = nullptr;
+
+  int m_format = 0;
+  int m_fd = -1;
+  uint32_t m_stride = 0;
+  uint8_t *m_map = nullptr;
+  void *m_map_data = nullptr;
+  gbm_bo *m_bo = nullptr;
+};

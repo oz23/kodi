@@ -64,12 +64,13 @@ public:
 
   std::string GetModule() const { return m_DRM->GetModule(); }
   std::string GetDevicePath() const { return m_DRM->GetDevicePath(); }
-
-  std::shared_ptr<CDRMUtils> m_DRM;
+  struct gbm_device *GetGBMDevice() const { return m_GBM->GetDevice(); }
+  std::shared_ptr<CDRMUtils> GetDrm() const { return m_DRM; }
 
 protected:
   void OnLostDevice();
 
+  std::shared_ptr<CDRMUtils> m_DRM;
   std::unique_ptr<CGBMUtils> m_GBM;
 
   CCriticalSection m_resourceSection;

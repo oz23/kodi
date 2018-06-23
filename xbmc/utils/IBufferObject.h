@@ -1,5 +1,5 @@
 /*
- *      Copyright (C) 2012-2013 Team XBMC
+ *      Copyright (C) 2017 Team Kodi
  *      http://kodi.tv
  *
  *  This Program is free software; you can redistribute it and/or modify
@@ -13,23 +13,28 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with XBMC; see the file COPYING.  If not, see
+ *  along with this Program; see the file COPYING.  If not, see
  *  <http://www.gnu.org/licenses/>.
  *
  */
 
-#import <UIKit/UIKit.h>
+#pragma once
 
+#include <stdint.h>
 
-@interface IOSExternalTouchController : UIViewController
+class IBufferObject
 {
-  UIWindow      *_internalWindow;
-  UIView        *_touchView;
-  NSTimer       *_sleepTimer;
-}
-- (id)init;
-- (void)createGestureRecognizers;
-- (void)fadeToBlack;
-- (void)fadeFromBlack;
-- (void)startSleepTimer;
-@end
+public:
+  virtual ~IBufferObject() = default;
+
+  virtual bool CreateBufferObject(int width, int height) = 0;
+  virtual void DestroyBufferObject() { }
+  virtual uint8_t *GetMemory() = 0;
+  virtual void ReleaseMemory() { }
+  virtual int GetFd() { return -1; }
+  virtual int GetStride() = 0;
+
+protected:
+  int m_width = 0;
+  int m_height = 0;
+};
