@@ -60,7 +60,7 @@ CPVRTimerTypePtr CPVRTimerType::CreateFromIds(unsigned int iTypeId, int iClientI
     }
   }
 
-  CLog::Log(LOGERROR, "CPVRTimerType::CreateFromIds unable to resolve numeric timer type (%d, %d)", iTypeId, iClientId);
+  CLog::LogF(LOGERROR, "Unable to resolve numeric timer type (%d, %d)", iTypeId, iClientId);
   return CPVRTimerTypePtr();
 }
 
@@ -82,19 +82,13 @@ CPVRTimerTypePtr CPVRTimerType::CreateFromAttributes(
     }
   }
 
-  CLog::Log(LOGERROR, "CPVRTimerType::CreateFromAttributes unable to resolve timer type (0x%x, 0x%x, %d)", iMustHaveAttr, iMustNotHaveAttr, iClientId);
+  CLog::LogF(LOGERROR, "Unable to resolve timer type (0x%x, 0x%x, %d)", iMustHaveAttr, iMustNotHaveAttr, iClientId);
   return CPVRTimerTypePtr();
 }
 
 CPVRTimerType::CPVRTimerType() :
-  m_iClientId(-1),
   m_iTypeId(PVR_TIMER_TYPE_NONE),
-  m_iAttributes(PVR_TIMER_TYPE_ATTRIBUTE_NONE),
-  m_iPriorityDefault(50),
-  m_iLifetimeDefault(365),
-  m_iMaxRecordingsDefault(0),
-  m_iPreventDupEpisodesDefault(0),
-  m_iRecordingGroupDefault(0)
+  m_iAttributes(PVR_TIMER_TYPE_ATTRIBUTE_NONE)
 {
 }
 

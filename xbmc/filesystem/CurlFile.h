@@ -126,7 +126,6 @@ namespace XFILE
           bool m_sendRange;
           bool m_bLastError;
           bool m_bRetry;
-          bool m_failOnError = true;
 
           char* m_readBuffer;
 
@@ -154,7 +153,7 @@ namespace XFILE
 
     protected:
       void ParseAndCorrectUrl(CURL &url);
-      void SetCommonOptions(CReadState* state);
+      void SetCommonOptions(CReadState* state, bool failOnError = true);
       void SetRequestHeaders(CReadState* state);
       void SetCorrectHeaders(CReadState* state);
       bool Service(const std::string& strURL, std::string& strHTML);
@@ -164,13 +163,13 @@ namespace XFILE
       CReadState* m_state;
       CReadState* m_oldState;
       unsigned int m_bufferSize;
-      int64_t m_writeOffset;
+      int64_t m_writeOffset = 0;
 
       std::string m_url;
       std::string m_userAgent;
-      ProxyType m_proxytype;
+      ProxyType m_proxytype = PROXY_HTTP;
       std::string m_proxyhost;
-      uint16_t m_proxyport;
+      uint16_t m_proxyport = 3128;
       std::string m_proxyuser;
       std::string m_proxypassword;
       std::string m_customrequest;
@@ -199,10 +198,11 @@ namespace XFILE
       bool m_postdataset;
       bool m_allowRetry;
       bool m_verifyPeer = true;
+      bool m_failOnError = true;
 
       CRingBuffer m_buffer; // our ringhold buffer
       char* m_overflowBuffer; // in the rare case we would overflow the above buffer
-      unsigned int m_overflowSize; // size of the overflow buffer
+      unsigned int m_overflowSize = 0; // size of the overflow buffer
 
       int  m_stillRunning; // Is background url fetch still in progress?
 

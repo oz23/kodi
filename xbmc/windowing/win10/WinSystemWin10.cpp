@@ -118,7 +118,6 @@ bool CWinSystemWin10::CreateNewWindow(const std::string& name, bool fullScreen, 
   m_nWidth = res.iWidth;
   m_nHeight = res.iHeight;
   m_bFullScreen = fullScreen;
-  m_nScreen = res.iScreen;
   m_fRefreshRate = res.fRefreshRate;
   m_inFocus = true;
   m_bWindowCreated = true;
@@ -235,7 +234,7 @@ bool CWinSystemWin10::SetFullScreen(bool fullScreen, RESOLUTION_INFO& res, bool 
   // entering to stereo mode, limit resolution to 1080p@23.976
   if (stereoChange && !IsStereoEnabled() && res.iWidth > 1280)
   {
-    res = CDisplaySettings::GetInstance().GetResolutionInfo(CResolutionUtils::ChooseBestResolution(24.f / 1.001f, 1920, true));
+    res = CDisplaySettings::GetInstance().GetResolutionInfo(CResolutionUtils::ChooseBestResolution(24.f / 1.001f, 1920, 1080, true));
   }
 
   if (m_state == WINDOW_STATE_WINDOWED)
@@ -311,13 +310,6 @@ const MONITOR_DETAILS* CWinSystemWin10::GetDefaultMonitor() const
     return nullptr;
 
   return &m_displays.front();
-}
-
-int CWinSystemWin10::GetCurrentScreen()
-{
-  CLog::Log(LOGDEBUG, "%s is not implemented", __FUNCTION__);
-  // fallback to default
-  return 0;
 }
 
 bool CWinSystemWin10::ChangeResolution(const RESOLUTION_INFO& res, bool forceChange /*= false*/)
@@ -402,7 +394,7 @@ void CWinSystemWin10::UpdateResolutions()
     refreshRate = static_cast<float>(details->RefreshRate);
 
   RESOLUTION_INFO& primary_info = CDisplaySettings::GetInstance().GetResolutionInfo(RES_DESKTOP);
-  UpdateDesktopResolution(primary_info, 0, w, h, refreshRate, dwFlags);
+  UpdateDesktopResolution(primary_info, w, h, refreshRate, dwFlags);
   CLog::Log(LOGNOTICE, "Primary mode: %s", primary_info.strMode.c_str());
 
   // erase previous stored modes
@@ -417,7 +409,7 @@ void CWinSystemWin10::UpdateResolutions()
       for (auto& mode : hdmiModes)
       {
         RESOLUTION_INFO res;
-        UpdateDesktopResolution(res, 0, mode.ResolutionWidthInRawPixels(), mode.ResolutionHeightInRawPixels(), mode.RefreshRate(), 0);
+        UpdateDesktopResolution(res, mode.ResolutionWidthInRawPixels(), mode.ResolutionHeightInRawPixels(), mode.RefreshRate(), 0);
         GetGfxContext().ResetOverscan(res);
 
         if (AddResolution(res))

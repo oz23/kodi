@@ -54,7 +54,6 @@ namespace PVR
 class CGUIPVRChannelGroupsSelector
 {
 public:
-  CGUIPVRChannelGroupsSelector() : m_control(nullptr) {};
   virtual ~CGUIPVRChannelGroupsSelector() = default;
 
   bool Initialize(CGUIWindow* parent, bool bRadio);
@@ -64,7 +63,7 @@ public:
   bool SelectChannelGroup(const CPVRChannelGroupPtr &newGroup);
 
 private:
-  CGUIControl *m_control;
+  CGUIControl *m_control = nullptr;
   std::vector<CPVRChannelGroupPtr> m_channelGroups;
 };
 
@@ -500,7 +499,7 @@ void CGUIWindowPVRBase::ShowProgressDialog(const std::string &strText, int iProg
     CGUIDialogExtendedProgressBar *loadingProgressDialog = CServiceBroker::GetGUI()->GetWindowManager().GetWindow<CGUIDialogExtendedProgressBar>(WINDOW_DIALOG_EXT_PROGRESS);
     if (!loadingProgressDialog)
     {
-      CLog::Log(LOGERROR, "CGUIWindowPVRBase - %s - unable to get WINDOW_DIALOG_EXT_PROGRESS!", __FUNCTION__);
+      CLog::LogF(LOGERROR, "Unable to get WINDOW_DIALOG_EXT_PROGRESS!");
       return;
     }
     m_progressHandle = loadingProgressDialog->GetHandle(g_localizeStrings.Get(19235)); // PVR manager is starting up

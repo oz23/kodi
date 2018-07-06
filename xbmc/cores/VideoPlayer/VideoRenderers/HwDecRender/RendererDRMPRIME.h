@@ -33,7 +33,7 @@ public:
 
   // Registration
   static CBaseRenderer* Create(CVideoBuffer* buffer);
-  static bool Register();
+  static void Register();
 
   // Player functions
   bool Configure(const VideoPicture& picture, float fps, unsigned int orientation) override;
@@ -54,6 +54,9 @@ public:
   bool SupportsMultiPassRendering() override { return false; };
   bool Supports(ERENDERFEATURE feature) override;
   bool Supports(ESCALINGMETHOD method) override;
+
+protected:
+  void ManageRenderArea() override;
 
 private:
   void Reset();

@@ -355,7 +355,7 @@ bool CWinSystemWayland::CreateNewWindow(const std::string& name,
   ApplyWindowGeometry();
 
   // Update resolution with real size as it could have changed due to configure()
-  UpdateDesktopResolution(res, 0, m_bufferSize.Width(), m_bufferSize.Height(), res.fRefreshRate);
+  UpdateDesktopResolution(res, m_bufferSize.Width(), m_bufferSize.Height(), res.fRefreshRate, 0);
   res.bFullScreen = fullScreen;
 
   m_seatRegistry.reset(new CRegistry{*m_connection});
@@ -424,23 +424,6 @@ bool CWinSystemWayland::CanDoWindowed()
   return true;
 }
 
-int CWinSystemWayland::GetNumScreens()
-{
-  // Multiple screen/resolution support in core Kodi badly needs refactoring, but as
-  // it touches a lot of code we just do it like X11 for the moment:
-  // Pretend that there is only one screen, show more screens with
-  // custom names in the GUI using an #ifdef in DisplaySettings
-  // - otherwise we would just get a selection between "Full Screen #1" and
-  // "Full Screen #2" etc. instead of actual monitor names.
-  return 1;
-}
-
-int CWinSystemWayland::GetCurrentScreen()
-{
-  // See GetNumScreens()
-  return 1;
-}
-
 void CWinSystemWayland::GetConnectedOutputs(std::vector<std::string>* outputs)
 {
   CSingleLock lock(m_outputsMutex);
@@ -499,7 +482,7 @@ void CWinSystemWayland::UpdateResolutions()
     CLog::LogF(LOGINFO, "- %dx%d @%.3f Hz pixel ratio %.3f%s", mode.size.Width(), mode.size.Height(), mode.refreshMilliHz / 1000.0f, pixelRatio, isCurrent ? " current" : "");
 
     RESOLUTION_INFO res;
-    UpdateDesktopResolution(res, 0, mode.size.Width(), mode.size.Height(), mode.GetRefreshInHz());
+    UpdateDesktopResolution(res, mode.size.Width(), mode.size.Height(), mode.GetRefreshInHz(), 0);
     res.strOutput = outputName;
     res.fPixelRatio = pixelRatio;
 
@@ -913,7 +896,7 @@ void CWinSystemWayland::SetResolutionInternal(CSizeInt size, std::int32_t scale,
       {
         // Add new resolution if none found
         RESOLUTION_INFO newResInfo;
-        UpdateDesktopResolution(newResInfo, 0, sizes.bufferSize.Width(), sizes.bufferSize.Height(), refreshRate);
+        UpdateDesktopResolution(newResInfo, sizes.bufferSize.Width(), sizes.bufferSize.Height(), refreshRate, 0);
         newResInfo.strOutput = CDisplaySettings::GetInstance().GetCurrentResolutionInfo().strOutput; // we just assume the compositor put us on the right output
         CDisplaySettings::GetInstance().AddResolutionInfo(newResInfo);
         CDisplaySettings::GetInstance().ApplyCalibrations();

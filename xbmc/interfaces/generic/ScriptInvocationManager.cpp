@@ -39,10 +39,6 @@
 
 using namespace XFILE;
 
-CScriptInvocationManager::CScriptInvocationManager()
-  : m_nextId(0)
-{ }
-
 CScriptInvocationManager::~CScriptInvocationManager()
 {
   Uninitialize();
@@ -115,9 +111,11 @@ void CScriptInvocationManager::Uninitialize()
     if (!it->done)
       it->thread->Stop(true);
   }
-  tempList.clear();
 
   lock.Enter();
+
+  tempList.clear();
+
   // uninitialize all invocation handlers and then remove them
   for (LanguageInvocationHandlerMap::iterator it = m_invocationHandlers.begin(); it != m_invocationHandlers.end(); ++it)
     it->second->Uninitialize();

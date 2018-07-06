@@ -72,9 +72,7 @@ using namespace ADDON;
 using KODI::UTILITY::CDigest;
 
 CMusicInfoScanner::CMusicInfoScanner()
-: m_needsCleanup(false),
-  m_scanType(0),
-  m_fileCountReader(this, "MusicFileCounter")
+: m_fileCountReader(this, "MusicFileCounter")
 {
   m_bStop = false;
   m_currentItem=0;
@@ -483,7 +481,10 @@ bool CMusicInfoScanner::DoScan(const std::string& strDirectory)
   // Discard all excluded files defined by m_musicExcludeRegExps
   const std::vector<std::string> &regexps = g_advancedSettings.m_audioExcludeFromScanRegExps;
 
-  if (IsExcluded(strDirectory, regexps))
+  if (CUtil::ExcludeFileOrFolder(strDirectory, regexps))
+    return true;
+
+  if (HasNoMedia(strDirectory))
     return true;
 
   // load subfolder

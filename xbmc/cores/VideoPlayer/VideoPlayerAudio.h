@@ -80,6 +80,7 @@ protected:
   //! Switch codec if needed. Called when the sample rate gotten from the
   //! codec changes, in which case we may want to switch passthrough on/off.
   bool SwitchCodecIfNeeded();
+  void SetSyncType(bool passthrough);
 
   CDVDMessageQueue m_messageQueue;
   CDVDMessageQueue& m_messageParent;
@@ -100,26 +101,17 @@ protected:
   IDVDStreamPlayer::ESyncState m_syncState;
   XbmcThreads::EndTime m_syncTimer;
 
-  //SYNC_DISCON, SYNC_SKIPDUP, SYNC_RESAMPLE
-  int    m_synctype;
-  int    m_setsynctype;
-  int    m_prevsynctype; //so we can print to the log
-
-  void   SetSyncType(bool passthrough);
+  int m_synctype;
+  int m_prevsynctype;
 
   bool   m_prevskipped;
   double m_maxspeedadjust;
 
   struct SInfo
   {
-    SInfo()
-    : pts(DVD_NOPTS_VALUE)
-    , passthrough(false)
-    {}
-
     std::string      info;
-    double           pts;
-    bool             passthrough;
+    double           pts = DVD_NOPTS_VALUE;
+    bool             passthrough = false;
   };
 
   CCriticalSection m_info_section;

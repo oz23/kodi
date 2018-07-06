@@ -1614,7 +1614,7 @@ CDemuxStream* CDVDDemuxFFmpeg::AddStream(int streamIdx)
       default:
       {
         // if analyzing streams is skipped, unknown streams may become valid later
-        if (m_streaminfo || IsVideoReady())
+        if (IsVideoReady())
         {
           CLog::Log(LOGDEBUG, "CDVDDemuxFFmpeg::AddStream - discarding unknown stream with id: %d", pStream->index);
           pStream->discard = AVDISCARD_ALL;
@@ -1633,7 +1633,6 @@ CDemuxStream* CDVDDemuxFFmpeg::AddStream(int streamIdx)
     stream->codec_fourcc = pStream->codecpar->codec_tag;
     stream->profile = pStream->codecpar->profile;
     stream->level = pStream->codecpar->level;
-    stream->realtime = m_pInput->IsRealtime();
 
     stream->source = STREAM_SOURCE_DEMUX;
     stream->pPrivate = pStream;
@@ -2078,7 +2077,7 @@ bool CDVDDemuxFFmpeg::IsVideoReady()
   AVStream *st;
   bool hasVideo = false;
 
-  if(!m_checkvideo)
+  if (!m_checkvideo)
     return true;
 
   if (m_program == 0 && !m_pFormatContext->nb_programs)

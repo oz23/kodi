@@ -660,7 +660,6 @@ CVideoPlayer::CVideoPlayer(IPlayerCallback& callback)
   m_offset_pts = 0.0;
   m_playSpeed = DVD_PLAYSPEED_NORMAL;
   m_streamPlayerSpeed = DVD_PLAYSPEED_NORMAL;
-  m_canTempo = false;
   m_caching = CACHESTATE_DONE;
   m_HasVideo = false;
   m_HasAudio = false;
@@ -777,7 +776,6 @@ bool CVideoPlayer::CloseFile(bool reopen)
 
   m_HasVideo = false;
   m_HasAudio = false;
-  m_canTempo = false;
 
   CLog::Log(LOGNOTICE, "VideoPlayer: finished waiting");
   m_renderManager.UnInit();
@@ -866,16 +864,6 @@ bool CVideoPlayer::OpenInputStream()
   m_dvd.Clear();
   m_errorCount = 0;
 
-  if (CServiceBroker::GetSettings().GetBool(CSettings::SETTING_VIDEOPLAYER_USEDISPLAYASCLOCK) &&
-      !m_pInputStream->IsRealtime())
-  {
-    m_canTempo = true;
-  }
-  else
-  {
-    m_canTempo = false;
-  }
-
   return true;
 }
 
@@ -912,6 +900,7 @@ bool CVideoPlayer::OpenDemuxStream()
   m_SelectionStreams.Update(m_pInputStream, m_pDemuxer);
   m_pDemuxer->GetPrograms(m_programs);
   UpdateContent();
+  m_demuxerSpeed = DVD_PLAYSPEED_NORMAL;
 
   int64_t len = m_pInputStream->GetLength();
   int64_t tim = m_pDemuxer->GetStreamLength();
@@ -1476,8 +1465,22 @@ void CVideoPlayer::Process()
     if ((!m_VideoPlayerAudio->AcceptsData() && m_CurrentAudio.id >= 0) ||
         (!m_VideoPlayerVideo->AcceptsData() && m_CurrentVideo.id >= 0))
     {
+      if (m_playSpeed == DVD_PLAYSPEED_PAUSE &&
+          m_demuxerSpeed != DVD_PLAYSPEED_PAUSE)
+      {
+        if (m_pDemuxer)
+          m_pDemuxer->SetSpeed(DVD_PLAYSPEED_PAUSE);
+        m_demuxerSpeed = DVD_PLAYSPEED_PAUSE;
+      }
       Sleep(10);
       continue;
+    }
+
+    if (m_demuxerSpeed == DVD_PLAYSPEED_PAUSE)
+    {
+      if (m_pDemuxer)
+        m_pDemuxer->SetSpeed(DVD_PLAYSPEED_NORMAL);
+      m_demuxerSpeed = DVD_PLAYSPEED_NORMAL;
     }
 
     // always yield to players if they have data levels > 50 percent
@@ -2204,6 +2207,16 @@ void CVideoPlayer::HandlePlaySpeed()
           }
         }
       }
+    }
+  }
+  
+  // reset tempo
+  if (!m_State.cantempo)
+  {
+    float currentTempo = m_processInfo->GetNewTempo();
+    if (currentTempo != 1.0)
+    {
+      SetTempo(1.0);
     }
   }
 }
@@ -2964,8 +2977,6 @@ void CVideoPlayer::HandleMessages()
       m_VideoPlayerAudio->SetSpeed(speed);
       m_VideoPlayerVideo->SetSpeed(speed);
       m_streamPlayerSpeed = speed;
-      if (m_pDemuxer)
-        m_pDemuxer->SetSpeed(speed);
     }
     else if (pMsg->IsType(CDVDMsg::PLAYER_FRAME_ADVANCE))
     {
@@ -3512,7 +3523,7 @@ void CVideoPlayer::FrameAdvance(int frames)
 
 bool CVideoPlayer::SupportsTempo()
 {
-  return m_canTempo;
+  return m_State.cantempo;
 }
 
 bool CVideoPlayer::OpenStream(CCurrentStream& current, int64_t demuxerId, int iStream, int source, bool reset /*= true*/)
@@ -4628,8 +4639,8 @@ int CVideoPlayer::AddSubtitleFile(const std::string& filename, const std::string
 
 void CVideoPlayer::UpdatePlayState(double timeout)
 {
-  if(m_State.timestamp != 0 &&
-     m_State.timestamp + DVD_MSEC_TO_TIME(timeout) > m_clock.GetAbsoluteClock())
+  if (m_State.timestamp != 0 &&
+      m_State.timestamp + DVD_MSEC_TO_TIME(timeout) > m_clock.GetAbsoluteClock())
     return;
 
   SPlayerState state(m_State);
@@ -4730,16 +4741,30 @@ void CVideoPlayer::UpdatePlayState(double timeout)
 
     state.canpause = m_pInputStream->CanPause();
     state.canseek = m_pInputStream->CanSeek();
+
+    bool realtime = m_pInputStream->IsRealtime();
+
+    if (CServiceBroker::GetSettings().GetBool(CSettings::SETTING_VIDEOPLAYER_USEDISPLAYASCLOCK) &&
+        !realtime)
+    {
+      state.cantempo = true;
+    }
+    else
+    {
+      state.cantempo = false;
+    }
+
+    m_processInfo->SetStateRealtime(realtime);
   }
 
   if (m_Edl.HasCut())
   {
-    state.time        = (double) m_Edl.RemoveCutTime(llrint(state.time));
-    state.timeMax  = (double) m_Edl.RemoveCutTime(llrint(state.timeMax));
+    state.time = (double) m_Edl.RemoveCutTime(llrint(state.time));
+    state.timeMax = (double) m_Edl.RemoveCutTime(llrint(state.timeMax));
   }
 
   if (state.timeMax <= 0)
-    state.canseek  = false;
+    state.canseek = false;
 
   if (m_caching > CACHESTATE_DONE && m_caching < CACHESTATE_PLAY)
     state.caching = true;
@@ -4749,14 +4774,14 @@ void CVideoPlayer::UpdatePlayState(double timeout)
   double level, delay, offset;
   if (GetCachingTimes(level, delay, offset))
   {
-    state.cache_delay  = std::max(0.0, delay);
-    state.cache_level  = std::max(0.0, std::min(1.0, level));
+    state.cache_delay = std::max(0.0, delay);
+    state.cache_level = std::max(0.0, std::min(1.0, level));
     state.cache_offset = offset;
   }
   else
   {
-    state.cache_delay  = 0.0;
-    state.cache_level  = std::min(1.0, GetQueueTime() / 8000.0);
+    state.cache_delay = 0.0;
+    state.cache_level = std::min(1.0, GetQueueTime() / 8000.0);
     state.cache_offset = GetQueueTime() / state.timeMax;
   }
 

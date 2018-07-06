@@ -42,9 +42,7 @@ using namespace KODI::MESSAGING::HELPERS;
 #define SETTING_RECORDING_LIFETIME "recording.lifetime"
 
 CGUIDialogPVRRecordingSettings::CGUIDialogPVRRecordingSettings() :
-  CGUIDialogSettingsManualBase(WINDOW_DIALOG_PVR_RECORDING_SETTING, "DialogSettings.xml"),
-  m_iPlayCount(0),
-  m_iLifetime(0)
+  CGUIDialogSettingsManualBase(WINDOW_DIALOG_PVR_RECORDING_SETTING, "DialogSettings.xml")
 {
   m_loadType = LOAD_EVERY_TIME;
 }
@@ -53,7 +51,7 @@ void CGUIDialogPVRRecordingSettings::SetRecording(const CPVRRecordingPtr &record
 {
   if (!recording)
   {
-    CLog::Log(LOGERROR, "CGUIDialogPVRRecordingSettings::SetRecording - no recording given");
+    CLog::LogF(LOGERROR, "No recording given");
     return;
   }
 
@@ -81,14 +79,14 @@ void CGUIDialogPVRRecordingSettings::InitializeSettings()
   const std::shared_ptr<CSettingCategory> category = AddCategory("pvrrecordingsettings", -1);
   if (category == nullptr)
   {
-    CLog::Log(LOGERROR, "CGUIDialogPVRRecordingSettings::InitializeSettings - Unable to add settings category");
+    CLog::LogF(LOGERROR, "Unable to add settings category");
     return;
   }
 
   const std::shared_ptr<CSettingGroup> group = AddGroup(category);
   if (group == nullptr)
   {
-    CLog::Log(LOGERROR, "CGUIDialogPVRRecordingSettings::InitializeSettings - Unable to add settings group");
+    CLog::LogF(LOGERROR, "Unable to add settings group");
     return;
   }
 
@@ -112,7 +110,7 @@ bool CGUIDialogPVRRecordingSettings::OnSettingChanging(std::shared_ptr<const CSe
 {
   if (setting == nullptr)
   {
-    CLog::Log(LOGERROR, "CGUIDialogPVRRecordingSettings::OnSettingChanging - No setting");
+    CLog::LogF(LOGERROR, "No setting");
     return false;
   }
 
@@ -137,7 +135,7 @@ void CGUIDialogPVRRecordingSettings::OnSettingChanged(std::shared_ptr<const CSet
 {
   if (setting == nullptr)
   {
-    CLog::Log(LOGERROR, "CGUIDialogPVRRecordingSettings::OnSettingChanged - No setting");
+    CLog::LogF(LOGERROR, "No setting");
     return;
   }
 
@@ -201,5 +199,5 @@ void CGUIDialogPVRRecordingSettings::LifetimesFiller(
     }
   }
   else
-    CLog::Log(LOGERROR, "CGUIDialogPVRRecordingSettings::LifetimesFiller - No dialog");
+    CLog::LogF(LOGERROR, "No dialog");
 }
