@@ -1,5 +1,5 @@
 /*
- *      Copyright (C) 2016-2017 Team Kodi
+ *      Copyright (C) 2018 Team Kodi
  *      http://kodi.tv
  *
  *  This Program is free software; you can redistribute it and/or modify
@@ -17,27 +17,24 @@
  *  <http://www.gnu.org/licenses/>.
  *
  */
-
 #pragma once
 
-#include "input/joysticks/JoystickTypes.h"
+#include "GameClientStreamVideo.h"
 
 namespace KODI
 {
-namespace JOYSTICK
+namespace GAME
 {
-  class IButtonSequence
-  {
-  public:
-    virtual ~IButtonSequence() = default;
 
-    virtual bool OnButtonPress(const FeatureName& feature) = 0;
+class CGameClientStreamSwFramebuffer : public CGameClientStreamVideo
+{
+public:
+  CGameClientStreamSwFramebuffer() = default;
+  ~CGameClientStreamSwFramebuffer() override = default;
 
-    /*!
-     * \brief Returns true if a sequence is being captured to prevent input
-     *        from falling through to the application
-     */
-    virtual bool IsCapturing() = 0;
-  };
-}
-}
+  // Implementation of IGameClientStream via CGameClientStreamVideo
+  bool GetBuffer(unsigned int width, unsigned int height, game_stream_buffer &buffer) override;
+};
+
+} // namespace GAME
+} // namespace KODI

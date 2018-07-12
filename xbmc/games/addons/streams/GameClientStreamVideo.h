@@ -47,12 +47,13 @@ public:
   void CloseStream() override;
   void AddData(const game_stream_packet& packet) override;
 
+protected:
+  // Stream parameters
+  RETRO::IRetroPlayerStream* m_stream = nullptr;
+
 private:
   // Utility functions
   static RETRO::VideoStreamProperties* TranslateProperties(const game_stream_video_properties &properties);
-
-  // Stream parameters
-  RETRO::IRetroPlayerStream* m_stream = nullptr;
 };
 
 } // namespace GAME
