@@ -28,7 +28,6 @@
 #include "games/addons/savestates/SavestateWriter.h"
 #include "games/GameServices.h"
 #include "games/GameSettings.h"
-#include "settings/Settings.h"
 #include "threads/SingleLock.h"
 #include "utils/MathUtils.h"
 #include "ServiceBroker.h"
@@ -54,7 +53,8 @@ CGameClientReversiblePlayback::CGameClientReversiblePlayback(CGameClient* gameCl
 {
   UpdateMemoryStream();
 
-  CServiceBroker::GetGameServices().GameSettings().RegisterObserver(this);
+  CGameSettings &gameSettings = CServiceBroker::GetGameServices().GameSettings();
+  gameSettings.RegisterObserver(this);
 
   m_gameLoop.Start();
 }
@@ -254,7 +254,7 @@ void CGameClientReversiblePlayback::RewindFrames(uint64_t frames)
     UpdatePlaybackStats();
   }
 
-  m_totalFrameCount -= std::min(m_totalFrameCount, static_cast<uint64_t>(frames));
+  m_totalFrameCount -= std::min(m_totalFrameCount, frames);
 }
 
 void CGameClientReversiblePlayback::AdvanceFrames(uint64_t frames)
@@ -303,12 +303,16 @@ void CGameClientReversiblePlayback::UpdateMemoryStream()
 
   bool bRewindEnabled = false;
 
+  CGameSettings &gameSettings = CServiceBroker::GetGameServices().GameSettings();
+
+  gameSettings.UnregisterObserver(this);
+
   if (m_gameClient->SerializeSize() > 0)
-    bRewindEnabled = CServiceBroker::GetSettings().GetBool(CSettings::SETTING_GAMES_ENABLEREWIND);
+    bRewindEnabled = gameSettings.RewindEnabled();
 
   if (bRewindEnabled)
   {
-    unsigned int rewindBufferSec = CServiceBroker::GetSettings().GetInt(CSettings::SETTING_GAMES_REWINDTIME);
+    unsigned int rewindBufferSec = gameSettings.MaxRewindTimeSec();
     if (rewindBufferSec < 10)
       rewindBufferSec = 10; // Sanity check
 

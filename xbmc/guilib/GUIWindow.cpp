@@ -394,7 +394,7 @@ void CGUIWindow::Close_Internal(bool forceClose /*= false*/, int nextWindowID /*
     if (!m_closing)
     {
       if (enableSound && IsSoundEnabled())
-        g_audioManager.PlayWindowSound(GetID(), SOUND_DEINIT);
+        CServiceBroker::GetGUI()->GetAudioManager().PlayWindowSound(GetID(), SOUND_DEINIT);
 
       // Perform the window out effect
       QueueAnimation(ANIM_TYPE_WINDOW_CLOSE);
@@ -541,7 +541,7 @@ void CGUIWindow::OnInitWindow()
 {
   //  Play the window specific init sound
   if (IsSoundEnabled())
-    g_audioManager.PlayWindowSound(GetID(), SOUND_INIT);
+    CServiceBroker::GetGUI()->GetAudioManager().PlayWindowSound(GetID(), SOUND_INIT);
 
   // set our rendered state
   m_hasProcessed = false;
@@ -903,7 +903,7 @@ bool CGUIWindow::ControlGroupHasFocus(int groupID, int controlID)
     {
       CGUIMessage message(GUI_MSG_ITEM_SELECTED, GetID(), group->GetID());
       group->OnMessage(message);
-      return (controlID == static_cast<int>(message.GetParam1()));
+      return (controlID == message.GetParam1());
     }
   }
   return false;
@@ -1038,7 +1038,7 @@ void CGUIWindow::SetProperty(const std::string &strKey, const CVariant &value)
 
 CVariant CGUIWindow::GetProperty(const std::string &strKey) const
 {
-  CSingleLock lock(*this);
+  CSingleLock lock(const_cast<CGUIWindow&>(*this));
   std::map<std::string, CVariant, icompare>::const_iterator iter = m_mapProperties.find(strKey);
   if (iter == m_mapProperties.end())
     return CVariant(CVariant::VariantTypeNull);

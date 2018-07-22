@@ -337,23 +337,22 @@ void CGLContextEGL::SwapBuffers()
   uint64_t ust1, ust2;
   uint64_t msc1, msc2;
   uint64_t sbc1, sbc2;
+  struct timespec nowTs;
+  uint64_t now;
 
   eglGetSyncValuesCHROMIUM(m_eglDisplay, m_eglSurface, &ust1, &msc1, &sbc1);
 
   eglSwapBuffers(m_eglDisplay, m_eglSurface);
+
+  clock_gettime(CLOCK_MONOTONIC, &nowTs);
+  now = nowTs.tv_sec * 1000000000 + nowTs.tv_nsec;
 
   eglGetSyncValuesCHROMIUM(m_eglDisplay, m_eglSurface, &ust2, &msc2, &sbc2);
 
   if ((msc1 - m_sync.msc1) > 2)
   {
     m_sync.cont = 0;
-    CLog::Log(LOGDEBUG, "CGLContextEGL::SwapBuffers: reset: msc: %ld, last-msc: %ld", msc1, m_sync.msc1);
   }
-
-  struct timespec nowTs;
-  uint64_t now;
-  clock_gettime(CLOCK_MONOTONIC, &nowTs);
-  now = nowTs.tv_sec * 1000000000 + nowTs.tv_nsec;
 
   // we want to block in SwapBuffers
   // if a vertical retrace occurs 5 times in a row outside
@@ -374,7 +373,13 @@ void CGLContextEGL::SwapBuffers()
   {
     // if no vertical retrace has occurred in eglSwapBuffers,
     // sleep until next vertical retrace
-    uint64_t sleeptime = m_sync.interval - (now / 1000 - ust2);
+    uint64_t lastIncrement = (now / 1000 - ust2);
+    uint64_t sleeptime = m_sync.interval - lastIncrement;
+    if (lastIncrement > m_sync.interval)
+    {
+      lastIncrement = m_sync.interval;
+      CLog::Log(LOGWARNING, "CGLContextEGL::SwapBuffers: last msc time greater than interval");
+    }
     usleep(sleeptime);
     m_sync.cont++;
     msc2++;
@@ -383,7 +388,13 @@ void CGLContextEGL::SwapBuffers()
   {
     // sleep until next vertical retrace
     // this avoids blocking outside of this function
-    uint64_t sleeptime = m_sync.interval - (now / 1000 - ust2);
+    uint64_t lastIncrement = (now / 1000 - ust2);
+    uint64_t sleeptime = m_sync.interval - lastIncrement;
+    if (lastIncrement > m_sync.interval)
+    {
+      lastIncrement = m_sync.interval;
+      CLog::Log(LOGWARNING, "CGLContextEGL::SwapBuffers: last msc time greater than interval (1)");
+    }
     usleep(sleeptime);
     msc2++;
   }
@@ -393,7 +404,6 @@ void CGLContextEGL::SwapBuffers()
   m_sync.msc1 = msc1;
   m_sync.msc2 = msc2;
   m_sync.sbc2 = sbc2;
-
 }
 
 uint64_t CGLContextEGL::GetFrameLatencyAdjustment()

@@ -480,10 +480,17 @@ void CActiveAESink::StateMachine(int signal, Protocol *port, Message *msg)
         case CSinkDataProtocol::SAMPLE:
           m_extError = false;
           OpenSink();
-          OutputSamples(&m_sampleOfSilence);
-          m_state = S_TOP_CONFIGURED_PLAY;
-          m_extTimeout = 0;
-          m_bStateMachineSelfTrigger = true;
+          if (!m_extError)
+          {
+            OutputSamples(&m_sampleOfSilence);
+            m_state = S_TOP_CONFIGURED_PLAY;
+            m_extTimeout = 0;
+            m_bStateMachineSelfTrigger = true;
+          }
+          else
+          {
+            m_state = S_TOP_UNCONFIGURED;
+          }
           return;
         case CSinkDataProtocol::DRAIN:
           msg->Reply(CSinkDataProtocol::ACC);
@@ -1083,7 +1090,7 @@ void CActiveAESink::GenerateNoise()
       }
       while(R1 == 0.0f);
 
-      noise[i] = (float) sqrt( -2.0f * log( R1 )) * cos( 2.0f * PI * R2 ) * 0.00001f;
+      noise[i] = sqrt( -2.0f * log( R1 )) * cos( 2.0f * PI * R2 ) * 0.00001f;
     }
   }
 

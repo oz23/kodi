@@ -523,7 +523,7 @@ int64_t CNFSFile::GetPosition()
 
   if (gNfsConnection.GetNfsContext() == NULL || m_pFileHandle == NULL) return 0;
 
-  ret = (int)gNfsConnection.GetImpl()->nfs_lseek(gNfsConnection.GetNfsContext(), m_pFileHandle, 0, SEEK_CUR, &offset);
+  ret = gNfsConnection.GetImpl()->nfs_lseek(gNfsConnection.GetNfsContext(), m_pFileHandle, 0, SEEK_CUR, &offset);
 
   if (ret < 0)
   {
@@ -677,7 +677,7 @@ int64_t CNFSFile::Seek(int64_t iFilePosition, int iWhence)
   if (m_pFileHandle == NULL || m_pNfsContext == NULL) return -1;
 
 
-  ret = (int)gNfsConnection.GetImpl()->nfs_lseek(m_pNfsContext, m_pFileHandle, iFilePosition, iWhence, &offset);
+  ret = gNfsConnection.GetImpl()->nfs_lseek(m_pNfsContext, m_pFileHandle, iFilePosition, iWhence, &offset);
   if (ret < 0)
   {
     CLog::Log(LOGERROR, "%s - Error( seekpos: %" PRId64", whence: %i, fsize: %" PRId64", %s)", __FUNCTION__, iFilePosition, iWhence, m_fileSize, gNfsConnection.GetImpl()->nfs_get_error(m_pNfsContext));
@@ -694,7 +694,7 @@ int CNFSFile::Truncate(int64_t iSize)
   if (m_pFileHandle == NULL || m_pNfsContext == NULL) return -1;
 
 
-  ret = (int)gNfsConnection.GetImpl()->nfs_ftruncate(m_pNfsContext, m_pFileHandle, iSize);
+  ret = gNfsConnection.GetImpl()->nfs_ftruncate(m_pNfsContext, m_pFileHandle, iSize);
   if (ret < 0)
   {
     CLog::Log(LOGERROR, "%s - Error( ftruncate: %" PRId64", fsize: %" PRId64", %s)", __FUNCTION__, iSize, m_fileSize, gNfsConnection.GetImpl()->nfs_get_error(m_pNfsContext));
@@ -751,10 +751,11 @@ ssize_t CNFSFile::Write(const void* lpBuf, size_t uiBufSize)
       chunkSize = leftBytes;//write last chunk with correct size
     }
     //write chunk
+    //! @bug libnfs < 2.0.0 isn't const correct
     writtenBytes = gNfsConnection.GetImpl()->nfs_write(m_pNfsContext,
                                   m_pFileHandle,
                                   chunkSize,
-                                  (char *)lpBuf + numberOfBytesWritten);
+                                  const_cast<char*>((const char *)lpBuf) + numberOfBytesWritten);
     //decrease left bytes
     leftBytes-= writtenBytes;
     //increase overall written bytes

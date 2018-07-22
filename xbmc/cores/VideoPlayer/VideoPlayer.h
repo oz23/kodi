@@ -517,7 +517,7 @@ protected:
 
   struct SContent
   {
-    CCriticalSection m_section;
+    mutable CCriticalSection m_section;
     CSelectionStreams m_selectionStreams;
     std::vector<ProgramInfo> m_programs;
     int m_program;
@@ -537,7 +537,6 @@ protected:
     double lastabstime;
   } m_SpeedState;
 
-  int m_errorCount;
   double m_offset_pts;
 
   CDVDMessageQueue m_messenger;
@@ -582,7 +581,7 @@ protected:
   } m_dvd;
 
   SPlayerState m_State;
-  CCriticalSection m_StateSection;
+  mutable CCriticalSection m_StateSection;
   XbmcThreads::EndTime m_syncTimer;
 
   CEdl m_Edl;

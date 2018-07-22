@@ -546,7 +546,7 @@ bool CGUIControlFactory::GetColor(const TiXmlNode *control, const char *strTag, 
   const TiXmlElement* node = control->FirstChildElement(strTag);
   if (node && node->FirstChild())
   {
-    value = g_colorManager.GetColor(node->FirstChild()->Value());
+    value = CServiceBroker::GetGUI()->GetColorManager().GetColor(node->FirstChild()->Value());
     return true;
   }
   return false;
@@ -779,8 +779,8 @@ CGUIControl* CGUIControlFactory::Create(int parentID, const CRect &rect, TiXmlEl
   // Read control properties from XML
   //
 
-  if (!pControlNode->Attribute("id", (int*) &id))
-    XMLUtils::GetInt(pControlNode, "id", (int&) id);       // backward compatibility - not desired
+  if (!pControlNode->Attribute("id", &id))
+    XMLUtils::GetInt(pControlNode, "id", id);       // backward compatibility - not desired
   //! @todo Perhaps we should check here whether id is valid for focusable controls
   //! such as buttons etc.  For labels/fadelabels/images it does not matter
 

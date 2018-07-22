@@ -139,13 +139,13 @@ static void LoadTexture(GLenum target
     glTexSubImage2D( target, 0
                    , 0, height, width, 1
                    , externalFormat, GL_UNSIGNED_BYTE
-                   , (unsigned char*)pixelData + stride * (height-1));
+                   , (const unsigned char*)pixelData + stride * (height-1));
 
   if(width  < width2)
     glTexSubImage2D( target, 0
                    , width, 0, 1, height
                    , externalFormat, GL_UNSIGNED_BYTE
-                   , (unsigned char*)pixelData + bytesPerPixel * (width-1));
+                   , (const unsigned char*)pixelData + bytesPerPixel * (width-1));
 
 #ifndef HAS_GLES
   glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
@@ -204,8 +204,8 @@ COverlayTextureGL::COverlayTextureGL(CDVDOverlayImage* o)
 
   if(o->source_width && o->source_height)
   {
-    float center_x = (float)(0.5f * o->width  + o->x) / o->source_width;
-    float center_y = (float)(0.5f * o->height + o->y) / o->source_height;
+    float center_x = (0.5f * o->width  + o->x) / o->source_width;
+    float center_y = (0.5f * o->height + o->y) / o->source_height;
 
     m_width  = (float)o->width  / o->source_width;
     m_height = (float)o->height / o->source_height;

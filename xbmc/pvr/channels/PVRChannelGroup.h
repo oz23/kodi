@@ -487,14 +487,20 @@ namespace PVR
      */
     virtual bool UpdateGroupEntries(const CPVRChannelGroup &channels);
 
+    /*!
+     * @brief Add new channels to this group; updtae data.
+     * @param channels The new channels to use for this group.
+     * @param bUseBackendChannelNumbers True, if channel numbers from backends shall be used.
+     * @return True if everything went well, false otherwise.
+     */
     virtual bool AddAndUpdateChannels(const CPVRChannelGroup &channels, bool bUseBackendChannelNumbers);
 
     /*!
      * @brief Remove deleted channels from this group.
      * @param channels The new channels to use for this group.
-     * @return True if everything went well, false otherwise.
+     * @return The removed channels.
      */
-    bool RemoveDeletedChannels(const CPVRChannelGroup &channels);
+    virtual std::vector<CPVRChannelPtr> RemoveDeletedChannels(const CPVRChannelGroup &channels);
 
     /*!
      * @brief Clear this channel list.
@@ -537,7 +543,7 @@ namespace PVR
     int              m_iPosition = 0;                   /*!< the position of this group within the group list */
     PVR_CHANNEL_GROUP_SORTED_MEMBERS m_sortedMembers; /*!< members sorted by channel number */
     PVR_CHANNEL_GROUP_MEMBERS        m_members;       /*!< members with key clientid+uniqueid */
-    CCriticalSection m_critSection;
+    mutable CCriticalSection m_critSection;
     std::vector<int> m_failedClientsForChannels;
     std::vector<int> m_failedClientsForChannelGroupMembers;
 

@@ -299,7 +299,7 @@ ssize_t CZipFile::Read(void* lpBuf, size_t uiBufSize)
   // flush what might be left in the string buffer
   if (m_iDataInStringBuffer > 0)
   {
-    size_t iMax = static_cast<size_t>((uiBufSize>m_iDataInStringBuffer?m_iDataInStringBuffer:uiBufSize));
+    size_t iMax = uiBufSize>m_iDataInStringBuffer?m_iDataInStringBuffer:uiBufSize;
     memcpy(lpBuf,m_szStartOfStringBuffer,iMax);
     uiBufSize -= iMax;
     m_iDataInStringBuffer -= iMax;
@@ -429,14 +429,14 @@ int CZipFile::UnpackFromMemory(std::string& strDest, const std::string& strInput
     if (isGZ)
     {
       m_ZStream.avail_in = strInput.size();
-      m_ZStream.next_in = (Bytef*)strInput.data();
+      m_ZStream.next_in = const_cast<Bytef*>((const Bytef*)strInput.data());
       temp = new char[8192];
       toRead = 8191;
     }
     else
     {
       m_ZStream.avail_in = mZipItem.csize;
-      m_ZStream.next_in = (Bytef*)strInput.data()+iPos+LHDR_SIZE+mZipItem.flength+mZipItem.elength;
+      m_ZStream.next_in = const_cast<Bytef*>((const Bytef*)strInput.data())+iPos+LHDR_SIZE+mZipItem.flength+mZipItem.elength;
       // init m_zipitem
       strDest.reserve(mZipItem.usize);
       temp = new char[mZipItem.usize+1];
@@ -478,7 +478,7 @@ bool CZipFile::DecompressGzip(const std::string& in, std::string& out)
   unsigned char buffer[bufferSize];
 
   strm.avail_in = in.size();
-  strm.next_in = (unsigned char*)in.c_str();
+  strm.next_in = const_cast<unsigned char*>((const unsigned char*)in.c_str());
 
   do
   {

@@ -277,7 +277,7 @@ namespace PythonBindings
         throw XBMCAddon::WrongTypeException("Incorrect type passed to \"%s\", was expecting a \"%s\" but received a \"%s\"",
                                  methodNameForErrorString,expectedType,typeInfo->swigType);
     }
-    return const_cast<XBMCAddon::AddonClass*>(reinterpret_cast<const PyHolder*>(pythonObj)->pSelf);
+    return const_cast<XBMCAddon::AddonClass*>(pythonObj->pSelf);
   }
 
   /**
@@ -369,7 +369,7 @@ namespace PythonBindings
 
     // retrieve the TypeInfo from the api class
     const TypeInfo* typeInfo = getTypeInfoForInstance(api);
-    PyTypeObject* typeObj = pytype == NULL ? (PyTypeObject*)(&(typeInfo->pythonType)) : pytype;
+    PyTypeObject* typeObj = pytype == NULL ? const_cast<PyTypeObject*>(&(typeInfo->pythonType)) : pytype;
 
     PyHolder* self = reinterpret_cast<PyHolder*>(typeObj->tp_alloc(typeObj,0));
     if (!self) return NULL;

@@ -57,5 +57,4 @@ protected:
     uint64_t sbc2 = 0;
     uint64_t interval = 0;
   } m_sync;
-
 };

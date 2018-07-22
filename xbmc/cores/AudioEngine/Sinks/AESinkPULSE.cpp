@@ -226,34 +226,43 @@ static void SinkChangedCallback(pa_context *c, pa_subscription_event_type_t t, u
   CSingleLock lock(p->m_sec);
   if (p->IsInitialized())
   {
-    if ((t & PA_SUBSCRIPTION_EVENT_TYPE_MASK) == PA_SUBSCRIPTION_EVENT_NEW)
-    {
-       CLog::Log(LOGDEBUG, "Sink appeared");
-       CServiceBroker::GetActiveAE()->DeviceChange();
-    }
-    else if ((t & PA_SUBSCRIPTION_EVENT_TYPE_MASK) == PA_SUBSCRIPTION_EVENT_REMOVE)
-    {
-      CLog::Log(LOGDEBUG, "Sink removed");
-      CServiceBroker::GetActiveAE()->DeviceChange();
-    }
-    else if ((t & PA_SUBSCRIPTION_EVENT_TYPE_MASK) == PA_SUBSCRIPTION_EVENT_CHANGE)
+    if ((t & PA_SUBSCRIPTION_EVENT_FACILITY_MASK) == PA_SUBSCRIPTION_EVENT_SINK_INPUT)
     {
       // when we get a sink input event volume might have changed
-      if (t & PA_SUBSCRIPTION_EVENT_SINK_INPUT)
+      if ((t & PA_SUBSCRIPTION_EVENT_TYPE_MASK) == PA_SUBSCRIPTION_EVENT_CHANGE)
       {
         if (idx != pa_stream_get_index(p->GetInternalStream()))
           return;
 
+        // we need to leave the lock as we trigger a second callback
+        CSingleExit exitlock(p->m_sec);
         pa_operation* op = pa_context_get_sink_input_info(c, idx, SinkInputInfoCallback, p);
         if (op == NULL)
           CLog::Log(LOGERROR, "PulseAudio: Failed to sync volume");
         else
           pa_operation_unref(op);
       }
-      else // legacy just for tracking
+    }
+    else if ((t & PA_SUBSCRIPTION_EVENT_FACILITY_MASK) == PA_SUBSCRIPTION_EVENT_SINK)
+    {
+      if ((t & PA_SUBSCRIPTION_EVENT_TYPE_MASK) == PA_SUBSCRIPTION_EVENT_NEW)
+      {
+        CLog::Log(LOGDEBUG, "Sink appeared");
+        CServiceBroker::GetActiveAE()->DeviceChange();
+      }
+      else if ((t & PA_SUBSCRIPTION_EVENT_TYPE_MASK) == PA_SUBSCRIPTION_EVENT_REMOVE)
+      {
+        CLog::Log(LOGDEBUG, "Sink removed");
+        CServiceBroker::GetActiveAE()->DeviceChange();
+      }
+      else if ((t & PA_SUBSCRIPTION_EVENT_TYPE_MASK) == PA_SUBSCRIPTION_EVENT_CHANGE)
       {
         CLog::Log(LOGDEBUG, "Sink changed");
       }
+    }
+    else
+    {
+      CLog::Log(LOGDEBUG, "Not subscribed to Event: %d", static_cast<int>(t));
     }
   }
 }
@@ -925,7 +934,7 @@ unsigned int CAESinkPULSE::AddPackets(uint8_t **data, unsigned int frames, unsig
   while ((length = pa_stream_writable_size(m_Stream)) < m_periodSize)
     pa_threaded_mainloop_wait(m_MainLoop);
 
-  length =  std::min((unsigned int)length, available);
+  length =  std::min(length, available);
 
   int error = pa_stream_write(m_Stream, buffer, length, NULL, 0, PA_SEEK_RELATIVE);
   pa_threaded_mainloop_unlock(m_MainLoop);
@@ -935,7 +944,7 @@ unsigned int CAESinkPULSE::AddPackets(uint8_t **data, unsigned int frames, unsig
     CLog::Log(LOGERROR, "CPulseAudioDirectSound::AddPackets - pa_stream_write failed\n");
     return 0;
   }
-  unsigned int res = (unsigned int)(length / m_format.m_frameSize);
+  unsigned int res = length / m_format.m_frameSize;
 
   return res;
 }

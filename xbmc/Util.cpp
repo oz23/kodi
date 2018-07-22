@@ -342,8 +342,8 @@ std::string CUtil::GetTitleFromPath(const CURL& url, bool bIsFolder /* = false *
   else if (url.IsProtocol("shout"))
   {
     const std::string strFileNameAndPath = url.Get();
-    const int genre = strFileNameAndPath.find_first_of('=');
-    if(genre <0)
+    const size_t genre = strFileNameAndPath.find_first_of('=');
+    if(genre == std::string::npos)
       strFilename = g_localizeStrings.Get(260);
     else
       strFilename = g_localizeStrings.Get(260) + " - " + strFileNameAndPath.substr(genre+1).c_str();
@@ -1654,7 +1654,7 @@ bool CUtil::Command(const std::vector<std::string>& arrArgs, bool waitExit)
       char **args = (char **)alloca(sizeof(char *) * (arrArgs.size() + 3));
       memset(args, 0, (sizeof(char *) * (arrArgs.size() + 3)));
       for (size_t i=0; i<arrArgs.size(); i++)
-        args[i] = (char *)arrArgs[i].c_str();
+        args[i] = const_cast<char *>(arrArgs[i].c_str());
       execvp(args[0], args);
     }
   }
@@ -1971,7 +1971,7 @@ int CUtil::ScanArchiveForAssociatedItems(const std::string& strArchivePath,
     std::string strExt = URIUtils::GetExtension(strPathInRar);
 
     // check that the found filename matches the movie filename
-    int fnl = videoNameNoExt.size();
+    size_t fnl = videoNameNoExt.size();
     if (fnl && !StringUtils::StartsWithNoCase(URIUtils::GetFileName(strPathInRar), videoNameNoExt))
       continue;
 
@@ -2051,8 +2051,8 @@ void CUtil::ScanForExternalSubtitles(const std::string& strMovie, std::vector<st
 
   ScanPathsForAssociatedItems(strSubtitle, items, exts, vecSubtitles);
 
-  int iSize = vecSubtitles.size();
-  for (int i = 0; i < iSize; i++)
+  size_t iSize = vecSubtitles.size();
+  for (size_t i = 0; i < iSize; i++)
   {
     if (URIUtils::HasExtension(vecSubtitles[i], ".smi"))
     {
@@ -2066,7 +2066,7 @@ void CUtil::ScanForExternalSubtitles(const std::string& strMovie, std::vector<st
         {
           for (const auto &lang : TagConv.m_Langclass)
           {
-            std::string strDest = StringUtils::Format("special://temp/subtitle.%s.%d.smi", lang.Name.c_str(), i);
+            std::string strDest = StringUtils::Format("special://temp/subtitle.%s.%zu.smi", lang.Name.c_str(), i);
             if (CFile::Copy(vecSubtitles[i], strDest))
             {
               CLog::Log(LOGINFO, " cached subtitle %s->%s\n", CURL::GetRedacted(vecSubtitles[i]).c_str(), strDest.c_str());
