@@ -1,21 +1,16 @@
 include ../../Makefile.include
-PLATFORM=$(NATIVEPLATFORM)
 DEPS= ../../Makefile.include Makefile
 
 # lib name, version
-LIBNAME=Python
-VERSION=2.7.15
+LIBNAME=fstrcmp
+VERSION=0.7.D001
 SOURCE=$(LIBNAME)-$(VERSION)
-ARCHIVE=$(SOURCE).tar.xz
-CWD=$(shell pwd)
-HOSTPYTHONDIR=$(CWD)/$(PLATFORM)/hostpython
+ARCHIVE=$(SOURCE).tar.gz
 
-CONFIGURE=./configure --prefix=$(NATIVEPREFIX) --disable-shared --disable-toolbox-glue --disable-framework
+# configuration settings
+CONFIGURE=./configure --prefix=$(PREFIX)
 
-LIBDYLIB=$(PLATFORM)/python
-ifeq ($(NATIVE_OS), osx)
-	LIBDYLIB=$(PLATFORM)/python.exe
-endif
+LIBDYLIB=$(PLATFORM)/lib/.libs/lib$(LIBNAME).a
 
 all: .installed-$(PLATFORM)
 
@@ -25,20 +20,21 @@ $(TARBALLS_LOCATION)/$(ARCHIVE):
 $(PLATFORM): $(TARBALLS_LOCATION)/$(ARCHIVE) $(DEPS)
 	rm -rf $(PLATFORM)/*; mkdir -p $(PLATFORM)
 	cd $(PLATFORM); $(ARCHIVE_TOOL) $(ARCHIVE_TOOL_FLAGS) $(TARBALLS_LOCATION)/$(ARCHIVE)
-	cd $(PLATFORM); $(CONFIGURE)
+	cd $(PLATFORM); autoreconf -vif; $(CONFIGURE)
 
 $(LIBDYLIB): $(PLATFORM)
-	cd $(PLATFORM); $(MAKE) regen-grammar
-	cd $(PLATFORM); $(MAKE)
+	$(MAKE) -C $(PLATFORM) lib/libfstrcmp.la
 
 .installed-$(PLATFORM): $(LIBDYLIB)
-	cd $(PLATFORM); $(MAKE) install
-	install $(PLATFORM)/Parser/pgen $(NATIVEPREFIX)/bin
-	touch $(LIBDYLIB)
+	mkdir -p $(PREFIX)/lib/pkgconfig
+	$(MAKE) -C $(PLATFORM) install-include install-libdir
+	rm -f $(PREFIX)/lib/libfstrcmp.so*
+	rm -f $(PREFIX)/lib/libfstrcmp.dylib*
 	touch $@
 
 clean:
-	rm -rf $(PLATFORM) .installed-$(PLATFORM)
+	$(MAKE) -C $(PLATFORM) clean
+	rm -f .installed-$(PLATFORM)
 
 distclean::
 	rm -rf $(PLATFORM) .installed-$(PLATFORM)
