@@ -1,21 +1,9 @@
 /*
- *      Copyright (C) 2005-2013 Team XBMC
- *      http://kodi.tv
+ *  Copyright (C) 2005-2018 Team Kodi
+ *  This file is part of Kodi - https://kodi.tv
  *
- *  This Program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2, or (at your option)
- *  any later version.
- *
- *  This Program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with XBMC; see the file COPYING.  If not, see
- *  <http://www.gnu.org/licenses/>.
- *
+ *  SPDX-License-Identifier: GPL-2.0-or-later
+ *  See LICENSES/README.md for more information.
  */
 
 #include "GUIInfoManager.h"
@@ -344,6 +332,12 @@ const infomap integer_bools[] =  {{ "isequal",          INTEGER_IS_EQUAL },
 ///     Returns true if pvr channel preview is active (used channel tag different
 ///     from played tag)
 ///   }
+///   \table_row3{   <b>`Player.FrameAdvance`</b>,
+///                  \anchor Player_FrameAdvance
+///                  _boolean_,
+///     Returns true if player is in frame advance mode. Skins should hide seek bar
+///     in this mode)
+///   }
 /// \table_end
 /// @}
 const infomap player_labels[] =  {{ "hasmedia",         PLAYER_HAS_MEDIA },           // bools from here
@@ -395,7 +389,8 @@ const infomap player_labels[] =  {{ "hasmedia",         PLAYER_HAS_MEDIA },     
                                   { "istempo", PLAYER_IS_TEMPO},
                                   { "playspeed", PLAYER_PLAYSPEED},
                                   { "hasprograms", PLAYER_HAS_PROGRAMS},
-                                  { "hasresolutions", PLAYER_HAS_RESOLUTIONS}};
+                                  { "hasresolutions", PLAYER_HAS_RESOLUTIONS},
+                                  { "frameadvance", PLAYER_FRAMEADVANCE}};
 
 /// \page modules__General__List_of_gui_access
 /// @{
@@ -6476,8 +6471,8 @@ bool CGUIInfoManager::GetMultiInfoBool(const CGUIInfo &info, int contextWindow, 
     {
       case STRING_IS_EMPTY:
         // note: Get*Image() falls back to Get*Label(), so this should cover all of them
-        if (item && item->IsFileItem())
-          bReturn = GetItemImage(static_cast<const CFileItem*>(item), contextWindow, info.GetData1()).empty();
+        if (item && item->IsFileItem() && IsListItemInfo(info.GetData1()))
+          bReturn = GetItemImage(item, contextWindow, info.GetData1()).empty();
         else
           bReturn = GetImage(info.GetData1(), contextWindow).empty();
         break;
@@ -6487,8 +6482,8 @@ bool CGUIInfoManager::GetMultiInfoBool(const CGUIInfo &info, int contextWindow, 
           if (info.GetData2() < 0) // info labels are stored with negative numbers
           {
             int info2 = -info.GetData2();
-            if (item && item->IsFileItem())
-              compare = GetItemImage(static_cast<const CFileItem*>(item), contextWindow, info2);
+            if (item && item->IsFileItem() && IsListItemInfo(info2))
+              compare = GetItemImage(item, contextWindow, info2);
             else
               compare = GetImage(info2, contextWindow);
           }
@@ -6496,8 +6491,8 @@ bool CGUIInfoManager::GetMultiInfoBool(const CGUIInfo &info, int contextWindow, 
           { // conditional string
             compare = info.GetData3();
           }
-          if (item && item->IsFileItem())
-            bReturn = StringUtils::EqualsNoCase(GetItemImage(static_cast<const CFileItem *>(item), contextWindow, info.GetData1()), compare);
+          if (item && item->IsFileItem() && IsListItemInfo(info.GetData1()))
+            bReturn = StringUtils::EqualsNoCase(GetItemImage(item, contextWindow, info.GetData1()), compare);
           else
             bReturn = StringUtils::EqualsNoCase(GetImage(info.GetData1(), contextWindow), compare);
         }
@@ -6512,8 +6507,8 @@ bool CGUIInfoManager::GetMultiInfoBool(const CGUIInfo &info, int contextWindow, 
           if (!GetInt(integer, info.GetData1(), contextWindow, item))
           {
             std::string value;
-            if (item && item->IsFileItem())
-              value = GetItemImage(static_cast<const CFileItem*>(item), contextWindow, info.GetData1());
+            if (item && item->IsFileItem() && IsListItemInfo(info.GetData1()))
+              value = GetItemImage(item, contextWindow, info.GetData1());
             else
               value = GetImage(info.GetData1(), contextWindow);
 
@@ -6546,16 +6541,11 @@ bool CGUIInfoManager::GetMultiInfoBool(const CGUIInfo &info, int contextWindow, 
           // our compare string is already in lowercase, so lower case our label as well
           // as std::string::Find() is case sensitive
           std::string label;
-          if (item && item->IsFileItem())
-          {
-            label = GetItemImage(static_cast<const CFileItem*>(item), contextWindow, info.GetData1());
-            StringUtils::ToLower(label);
-          }
+          if (item && item->IsFileItem() && IsListItemInfo(info.GetData1()))
+            label = GetItemImage(item, contextWindow, info.GetData1());
           else
-          {
             label = GetImage(info.GetData1(), contextWindow);
-            StringUtils::ToLower(label);
-          }
+          StringUtils::ToLower(label);
           if (condition == STRING_STARTS_WITH)
             bReturn = StringUtils::StartsWith(label, compare);
           else if (condition == STRING_ENDS_WITH)
@@ -6655,7 +6645,7 @@ std::string CGUIInfoManager::GetImage(int info, int contextWindow, std::string *
   {
     const CGUIListItemPtr item = GUIINFO::GetCurrentListItem(contextWindow);
     if (item && item->IsFileItem())
-      return GetItemImage(static_cast<CFileItem*>(item.get()), contextWindow, info, fallback);
+      return GetItemImage(item.get(), contextWindow, info, fallback);
   }
 
   return GetLabel(info, contextWindow, fallback);
@@ -6747,6 +6737,15 @@ int CGUIInfoManager::AddMultiInfo(const CGUIInfo &info)
   if (id > MULTI_INFO_END)
     CLog::Log(LOGERROR, "%s - too many multiinfo bool/labels in this skin", __FUNCTION__);
   return id;
+}
+
+bool CGUIInfoManager::IsListItemInfo(int info) const
+{
+  int iResolvedInfo = info;
+  while (iResolvedInfo >= MULTI_INFO_START && iResolvedInfo <= MULTI_INFO_END)
+    iResolvedInfo = m_multiInfo[iResolvedInfo - MULTI_INFO_START].m_info;
+
+  return (iResolvedInfo >= LISTITEM_START && iResolvedInfo <= LISTITEM_END);
 }
 
 bool CGUIInfoManager::GetItemInt(int &value, const CGUIListItem *item, int contextWindow, int info) const
@@ -6878,9 +6877,12 @@ std::string CGUIInfoManager::GetMultiInfoItemLabel(const CFileItem *item, int co
   return value;
 }
 
-std::string CGUIInfoManager::GetItemImage(const CFileItem *item, int contextWindow, int info, std::string *fallback /*= nullptr*/) const
+std::string CGUIInfoManager::GetItemImage(const CGUIListItem *item, int contextWindow, int info, std::string *fallback /*= nullptr*/) const
 {
-  return GetMultiInfoItemImage(item, contextWindow, CGUIInfo(info), fallback);
+  if (!item || !item->IsFileItem())
+    return std::string();
+
+  return GetMultiInfoItemImage(static_cast<const CFileItem*>(item), contextWindow, CGUIInfo(info), fallback);
 }
 
 std::string CGUIInfoManager::GetMultiInfoItemImage(const CFileItem *item, int contextWindow, const CGUIInfo &info, std::string *fallback /*= nullptr*/) const

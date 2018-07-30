@@ -1,21 +1,9 @@
 /*
- *      Copyright (C) 2005-2013 Team XBMC
- *      http://kodi.tv
+ *  Copyright (C) 2005-2018 Team Kodi
+ *  This file is part of Kodi - https://kodi.tv
  *
- *  This Program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2, or (at your option)
- *  any later version.
- *
- *  This Program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with XBMC; see the file COPYING.  If not, see
- *  <http://www.gnu.org/licenses/>.
- *
+ *  SPDX-License-Identifier: GPL-2.0-or-later
+ *  See LICENSES/README.md for more information.
  */
 
 #pragma once
@@ -671,6 +659,35 @@ private:
   bool SearchAlbums(const std::string& search, CFileItemList &albums);
   bool SearchSongs(const std::string& strSearch, CFileItemList &songs);
   int GetSongIDFromPath(const std::string &filePath);
+
+  /*! \brief Build SQL  for sort subquery from ignore article token list
+  \param strField original name or title field that articles could be removed from
+  \return SQL string e.g.  WHEN strField LIKE 'the_' ESCAPE '_' THEN SUBSTR(strArtist, 5)
+  */
+  std::string GetIgnoreArticleSQL(const std::string& strField);
+
+  /*! \brief Build SQL for sort name scalar subquery from sort attributes and ignore article list.
+  \param strAlias alias name of scalar subquery field
+  \param sortAttributes the sort attributes e.g. SortAttributeIgnoreArticle
+  \param strField original name or title field that articles could be removed from
+  \param strSortField sort name or title field to be used instead of original (when data not null)
+  \return SQL string e.g. 
+  CASE WHEN strArtistSort IS NOT NULL THEN strArtistSort    
+  WHEN strField LIKE 'the ' OR strField LIKE 'the_' ESCAPE '_' THEN SUBSTR(strArtist, 5)
+  ELSE strField
+  END AS strAlias
+  */
+  std::string SortnameBuildSQL(const std::string& strAlias, const SortAttribute& sortAttributes, 
+    const std::string& strField, const std::string& strSortField);
+
+  /*! \brief Build SQL for sorting field naturally and case insensitvely (in SQLite).
+  \param strField field name
+  \param sortOrder the sort order
+  \return SQL string e.g.   
+  CASE WHEN CAST(strTitle AS INTEGER) = 0 THEN 100000000 
+  ELSE CAST(strTitle AS INTEGER) END DESC, strTitle COLLATE NOCASE DESC
+  */
+  std::string AlphanumericSortSQL(const std::string& strField, const SortOrder& sortOrder);
 
   /*! \brief Checks that source table matches sources.xml
   returns true when they do 

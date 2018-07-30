@@ -1,21 +1,9 @@
 /*
- *      Copyright (C) 2005-2015 Team Kodi
- *      http://kodi.tv
+ *  Copyright (C) 2005-2018 Team Kodi
+ *  This file is part of Kodi - https://kodi.tv
  *
- *  This Program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2, or (at your option)
- *  any later version.
- *
- *  This Program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with Kodi; see the file COPYING.  If not, see
- *  <http://www.gnu.org/licenses/>.
- *
+ *  SPDX-License-Identifier: GPL-2.0-or-later
+ *  See LICENSES/README.md for more information.
  */
 
 #include "MusicDatabase.h"
@@ -43,6 +31,7 @@
 #include "guilib/GUIWindowManager.h"
 #include "guilib/LocalizeStrings.h"
 #include "interfaces/AnnouncementManager.h"
+#include "LangInfo.h"
 #include "messaging/helpers/DialogHelper.h"
 #include "messaging/helpers/DialogOKHelper.h"
 #include "music/tags/MusicInfoTag.h"
@@ -62,6 +51,7 @@
 #include "utils/FileUtils.h"
 #include "utils/LegacyPathTranslation.h"
 #include "utils/log.h"
+#include "utils/Random.h"
 #include "utils/StringUtils.h"
 #include "utils/URIUtils.h"
 #include "utils/XMLUtils.h"
@@ -4787,8 +4777,7 @@ static const translateJSONField JSONtoDBArtist[] = {
 
   // Scalar subquery fields
   { "dateadded",                 "string", true,  "dateAdded",              "(SELECT MAX(song.dateAdded) FROM song_artist JOIN song ON song.idSong = song_artist.idSong WHERE song_artist.idArtist = artist.idArtist) AS dateAdded" },
-  { "",                          "string", true,  "titlesort",              "(CASE WHEN strSortName is not null THEN strSortname ELSE strArtist END) AS titlesort" },
-
+  { "",                          "string", true,  "artistsortname",         "(CASE WHEN strSortName IS NOT NULL THEN strSortname ELSE strArtist END) AS artistsortname" },
   // JOIN fields (multivalue), same order as _JoinToArtistFields
   { "",                                "", false, "isSong",                 "" },
   { "sourceid",                  "string", false, "idSourceAlbum",          "album_source.idSource AS idSourceAlbum" },
@@ -4877,7 +4866,7 @@ bool CMusicDatabase::GetArtistsByWhereJSON(const std::set<std::string>& fields, 
     if (sortDescription.sortOrder == SortOrderDescending)
       DESC = " DESC";
     if (sortDescription.sortBy == SortByRandom)
-      orderfields.emplace_back("RANDOM()");
+      orderfields.emplace_back(PrepareSQL("RANDOM()")); // Adjust syntax
     else if (sortDescription.sortBy == SortByArtist)
       orderfields.emplace_back("strArtist");
     else if (sortDescription.sortBy == SortByDateAdded)
@@ -4887,9 +4876,23 @@ bool CMusicDatabase::GetArtistsByWhereJSON(const std::set<std::string>& fields, 
     if (sortDescription.sortBy != SortByRandom)
       orderfields.emplace_back("artist.idArtist");
 
-    // Fill inline view filter order fields
-    for (const auto& name : orderfields)
-      extFilter.AppendOrder(name + DESC);
+    // Fill inline view filter order fields, and build sort scalar subquery SQL
+    std::string artistsortSQL;
+    for (auto& name : orderfields)
+    {
+      //Add field for adjusted name sorting using sort name and ignoring articles
+      if (name.compare("strArtist") == 0)
+      {
+        artistsortSQL = SortnameBuildSQL("artistsortname", sortDescription.sortAttributes,
+          "strArtist", "strSortName");
+        if (!artistsortSQL.empty())
+          name = "artistsortname";
+        // Natural number case insensitve sort
+        extFilter.AppendOrder(AlphanumericSortSQL(name, sortDescription.sortOrder));
+      }
+      else
+        extFilter.AppendOrder(name + DESC);
+    }
 
     std::string strSQL;
 
@@ -4934,7 +4937,12 @@ bool CMusicDatabase::GetArtistsByWhereJSON(const std::set<std::string>& fields, 
             dbfieldindex.emplace_back(i);
           // Field from scaler subquery
           if (!JSONtoDBArtist[i].SQL.empty())
-            extFilter.AppendField(JSONtoDBArtist[i].SQL);
+          {
+            if (JSONtoDBArtist[i].fieldDB == "artistsortname")
+              extFilter.AppendField(artistsortSQL);
+            else
+              extFilter.AppendField(PrepareSQL(JSONtoDBArtist[i].SQL));
+          }
           else
             // Field from artist table
             extFilter.AppendField(JSONtoDBArtist[i].fieldDB);
@@ -5422,8 +5430,12 @@ bool CMusicDatabase::GetArtistsByWhereJSON(const std::set<std::string>& fields, 
 
       m_pDS->next();
     }
-
     m_pDS->close(); // cleanup recordset data
+
+    // Ensure random order of output when results set is sorted to process multi-value joins
+    if (sortDescription.sortBy == SortByRandom && joinLayout.HasFilterFields())
+      KODI::UTILS::RandomShuffle(result["artists"].begin_array(), result["artists"].end_array());
+
     return true;
   }
   catch (...)
@@ -5458,7 +5470,7 @@ static const translateJSONField JSONtoDBAlbum[] = {
   { "dateadded",                 "string", true,  "dateAdded",              "" },  // Scalar subquery in view
   { "lastplayed",                "string", true,  "lastPlayed",             "" },  // Scalar subquery in view
   // Scalar subquery fields
-  { "sourceid",                  "string", true,  "sourceid",               "(SELECT GROUP_CONCAT(album_source.idSource, '; ')  FROM album_source WHERE album_source.idAlbum = albumview.idAlbum) AS sources" },
+  { "sourceid",                  "string", true,  "sourceid",               "(SELECT GROUP_CONCAT(album_source.idSource SEPARATOR '; ')  FROM album_source WHERE album_source.idAlbum = albumview.idAlbum) AS sources" },
   // Single value JOIN fields
   { "thumbnail",                  "image", true,  "thumbnail",              "art.url AS thumbnail" }, // or (SELECT art.url FROM art WHERE art.media_id = album.idAlbum AND art.media_type = "album" AND art.type = "thumb") as url
   // JOIN fields (multivalue), same order as _JoinToAlbumFields
@@ -5467,6 +5479,7 @@ static const translateJSONField JSONtoDBAlbum[] = {
   { "musicbrainzalbumartistid",   "array", false, "strArtistMBID",          "artist.strMusicBrainzArtistID AS strArtistMBID" },
   { "songgenres",                 "array", false, "idSongGenre",            "song_genre.idGenre AS idSongGenre" },
   { "",                                "", false, "strSongGenre",           "genre.strGenre AS strSongGenre" },
+  { "",                                "", true, "artistsortname",          "CASE WHEN strArtistSort IS NOT NULL THEN strArtistSort ELSE strArtists END AS artistsortname"}
   /*
    Album "fanart" and "art" fields of JSON schema are fetched using thumbloader
    and separate queries to allow for fallback strategy.
@@ -5517,7 +5530,7 @@ bool CMusicDatabase::GetAlbumsByWhereJSON(const std::set<std::string>& fields, c
     if (sortDescription.sortOrder == SortOrderDescending)
       DESC = " DESC";
     if (sortDescription.sortBy == SortByRandom)
-      orderfields.emplace_back("RANDOM()");
+      orderfields.emplace_back(PrepareSQL("RANDOM()")); //Adjust styntax
     else if (sortDescription.sortBy == SortByAlbum ||
       sortDescription.sortBy == SortByLabel ||
       sortDescription.sortBy == SortByTitle)
@@ -5591,9 +5604,28 @@ bool CMusicDatabase::GetAlbumsByWhereJSON(const std::set<std::string>& fields, c
     if (sortDescription.sortBy != SortByRandom)
       orderfields.emplace_back("albumview.idAlbum");
 
-    // Fill inline view filter order fields
-    for (const auto& name : orderfields)
-      extFilter.AppendOrder(name + DESC);
+    // Fill inline view filter order fields, and build sort scalar subquery SQL
+    std::string artistsortSQL;
+    for (auto& name : orderfields)
+    {
+      //Add field for adjusted name sorting using sort name and ignoring articles
+      if (name.compare("strArtists") == 0)
+      {
+        artistsortSQL = SortnameBuildSQL("artistsortname", sortDescription.sortAttributes,
+          "strArtists", "strArtistSort");
+        if (!artistsortSQL.empty())
+          name = "artistsortname";
+        // Natural number case insensitve sort
+        extFilter.AppendOrder(AlphanumericSortSQL(name, sortDescription.sortOrder));
+      }
+      else if (name.compare("strAlbum") == 0 || 
+               name.compare("strType") == 0 ||
+               name.compare("strGenres") == 0)
+        // Natural number case insensitve sort
+        extFilter.AppendOrder(AlphanumericSortSQL(name, sortDescription.sortOrder));
+      else
+        extFilter.AppendOrder(name + DESC);
+    }
     
     std::string strSQL;
 
@@ -5639,17 +5671,11 @@ bool CMusicDatabase::GetAlbumsByWhereJSON(const std::set<std::string>& fields, c
             dbfieldindex.emplace_back(i);
           // Field from scaler subquery
           if (!JSONtoDBAlbum[i].SQL.empty())
-          { // Adjust "sources" SQL for MySQL syntax
-            if (JSONtoDBAlbum[i].fieldJSON == "sourceid" && 
-              StringUtils::EqualsNoCase(g_advancedSettings.m_databaseMusic.type, "mysql"))
-            { 
-              // MySQL has syntax GROUP_CONCAT(album_source.idSource SEPARATOR '; ')
-              std::string mysqlgc(JSONtoDBAlbum[i].SQL);
-              StringUtils::Replace(mysqlgc, ", '; '", " SEPARATOR '; '");
-              extFilter.AppendField(mysqlgc);
-            }
+          { 
+            if (JSONtoDBAlbum[i].fieldDB == "artistsortname")
+              extFilter.AppendField(artistsortSQL);
             else
-              extFilter.AppendField(JSONtoDBAlbum[i].SQL);
+              extFilter.AppendField(PrepareSQL(JSONtoDBAlbum[i].SQL));
           }
           else
             // Field from album table
@@ -5864,8 +5890,12 @@ bool CMusicDatabase::GetAlbumsByWhereJSON(const std::set<std::string>& fields, c
       }
       m_pDS->next();
     }
-
     m_pDS->close(); // cleanup recordset data
+
+    // Ensure random order of output when results set is sorted to process multi-value joins
+    if (sortDescription.sortBy == SortByRandom && joinLayout.HasFilterFields())
+      KODI::UTILS::RandomShuffle(result["albums"].begin_array(), result["albums"].end_array());
+
     return true;
   }
   catch (...)
@@ -5896,7 +5926,7 @@ static const translateJSONField JSONtoDBSong[] = {
   { "userrating",              "unsigned", true,  "song.userrating",        "" },
   { "mood",                       "array", true,  "mood",                   "" },
   { "dateadded",                 "string", true,  "dateAdded",              "" },
-  { "file",                      "string", true,  "strPathFile",            "path.strPath || strFilename AS strPathFile" }, 
+  { "file",                      "string", true,  "strPathFile",            "CONCAT(path.strPath, strFilename) AS strPathFile" }, 
   { "",                          "string", true,  "strPath",                "path.strPath AS strPath" },
   { "album",                     "string", true,  "strAlbum",               "album.strAlbum AS strAlbum" },
   { "albumreleasetype",          "string", true,  "strAlbumReleaseType",    "album.strReleaseType AS strAlbumReleaseType" },
@@ -5926,7 +5956,8 @@ static const translateJSONField JSONtoDBSong[] = {
   // Scalar subquery fields
   { "track",                    "integer", true,  "track",                  "(iTrack & 0xffff) AS track" },
   { "disc",                     "integer", true,  "disc",                   "(iTrack >> 16) AS disc" },
-  { "sourceid",                  "string", true,  "sourceid",               "(SELECT GROUP_CONCAT(album_source.idSource, '; ') FROM album_source WHERE album_source.idAlbum = song.idAlbum) AS sources" } 
+  { "sourceid",                  "string", true,  "sourceid",               "(SELECT GROUP_CONCAT(album_source.idSource SEPARATOR '; ') FROM album_source WHERE album_source.idAlbum = song.idAlbum) AS sources" },
+  { "",                                "", true,  "artistsortname",         "CASE WHEN song.strArtistSort IS NOT NULL THEN song.strArtistSort ELSE song.strArtistDisp END AS artistsortname"}
   /* 
   Song "thumbnail", "fanart" and "art" fields of JSON schema are fetched using
   thumbloader and separate queries to allow for fallback strategy
@@ -5999,7 +6030,7 @@ bool CMusicDatabase::GetSongsByWhereJSON(const std::set<std::string>& fields, co
     if (sortDescription.sortOrder == SortOrderDescending)
       DESC = " DESC";
     if (sortDescription.sortBy == SortByRandom)
-      orderfields.emplace_back("RANDOM()");
+      orderfields.emplace_back(PrepareSQL("RANDOM()")); //Adjust styntax
     else if (sortDescription.sortBy == SortByLabel)
     {
       orderfields.emplace_back("song.iTrack");
@@ -6082,9 +6113,29 @@ bool CMusicDatabase::GetSongsByWhereJSON(const std::set<std::string>& fields, co
     if (sortDescription.sortBy != SortByRandom)      
       orderfields.emplace_back("song.idSong");
 
-    // Fill inline view filter order fields
-    for (const auto& name : orderfields)
+    // Fill inline view filter order fields, and build sort scalar subquery SQL
+    std::string artistsortSQL;
+    for (auto& name : orderfields)
+    {
+      //Add field for adjusted name sorting using sort name and ignoring articles
+      if (name.compare("song.strArtistDisp") == 0)
+      {
+        artistsortSQL = SortnameBuildSQL("artistsortname", sortDescription.sortAttributes, 
+          "song.strArtistDisp", "song.strArtistSort");
+        if (!artistsortSQL.empty())
+          name = "artistsortname";
+        // Natural number case insensitve sort
+        extFilter.AppendOrder(AlphanumericSortSQL(name, sortDescription.sortOrder));
+      }
+      else if (name.compare("strTitle") == 0  || 
+               name.compare("strAlbum") == 0 || 
+               name.compare("song.strGenres") == 0)
+        // Natural number case insensitve sort
+        extFilter.AppendOrder(AlphanumericSortSQL(name, sortDescription.sortOrder));
+      else
+
       extFilter.AppendOrder(name + DESC);
+    }
 
     std::string strSQL;
 
@@ -6132,25 +6183,10 @@ bool CMusicDatabase::GetSongsByWhereJSON(const std::set<std::string>& fields, co
           // Field from scaler subquery
           if (!JSONtoDBSong[i].SQL.empty())
           { 
-            if (StringUtils::EqualsNoCase(g_advancedSettings.m_databaseMusic.type, "mysql"))
-            {
-              if (JSONtoDBSong[i].fieldJSON == "sourceid")
-              { // Adjust "sources" SQL for MySQL syntax
-                // GROUP_CONCAT(album_source.idSource SEPARATOR '; ')
-                std::string mysqlgc(JSONtoDBSong[i].SQL);
-                StringUtils::Replace(mysqlgc, ", '; '", " SEPARATOR '; '");
-                extFilter.AppendField(mysqlgc);
-              }
-              else if (JSONtoDBSong[i].fieldJSON == "file")
-              { // Adjust "file" SQL for MySQL syntax
-                // String concatenation is CONCAT not ||
-                extFilter.AppendField("CONCAT(path.strPath, strFilename) as strPathFile");
-              }
-              else
-                extFilter.AppendField(JSONtoDBSong[i].SQL);
-            }
+            if (JSONtoDBSong[i].fieldDB == "artistsortname")
+              extFilter.AppendField(artistsortSQL);
             else
-              extFilter.AppendField(JSONtoDBSong[i].SQL);
+              extFilter.AppendField(PrepareSQL(JSONtoDBSong[i].SQL));
           }
           else
             // Field from song table
@@ -6559,9 +6595,12 @@ bool CMusicDatabase::GetSongsByWhereJSON(const std::set<std::string>& fields, co
       }
       m_pDS->next();
     }
-
-
     m_pDS->close(); // cleanup recordset data
+
+    // Ensure random order of output when results set is sorted to process multi-value joins
+    if (sortDescription.sortBy == SortByRandom && joinLayout.HasFilterFields())
+      KODI::UTILS::RandomShuffle(result["songs"].begin_array(), result["songs"].end_array());
+
     return true;
   }
   catch (...)
@@ -6570,6 +6609,104 @@ bool CMusicDatabase::GetSongsByWhereJSON(const std::set<std::string>& fields, co
     CLog::Log(LOGERROR, "%s failed", __FUNCTION__);
   }
   return false;
+}
+
+std::string CMusicDatabase::GetIgnoreArticleSQL(const std::string& strField)
+{
+  /* 
+  Make SQL clause from ignore article list.
+  Group tokens the same length together, for example :
+    WHEN strArtist LIKE 'the ' OR strArtist LIKE 'the.' strArtist LIKE 'the_' ESCAPE '_'
+    THEN SUBSTR(strArtist, 5)
+    WHEN strArtist LIKE 'an ' OR strArtist LIKE 'an.' strArtist LIKE 'an_' ESCAPE '_'
+    THEN SUBSTR(strArtist, 4)
+  */
+  std::set<std::string> sortTokens = g_langInfo.GetSortTokens();
+  std::string sortclause;
+  size_t tokenlength = 0;
+  std::string strWhen;
+  for (const auto& token : sortTokens)
+  {
+    if (token.length() != tokenlength)
+    {
+      if (!strWhen.empty())
+      {
+        if (!sortclause.empty())
+           sortclause += " ";
+        std::string strThen = PrepareSQL(" THEN SUBSTR(%s, %i)", strField.c_str(), tokenlength + 1);
+        sortclause += "WHEN " + strWhen + strThen;
+        strWhen.clear();
+      }
+      tokenlength = token.length();
+    }
+    std::string tokenclause = token;
+    //Escape any ' or % in the token
+    StringUtils::Replace(tokenclause, "'", "''");
+    StringUtils::Replace(tokenclause, "%", "%%");
+    // Single %, _ and ' so avoid using PrepareSQL
+    tokenclause = strField + " LIKE '" + tokenclause + "%'";
+    if (token.find("_") != std::string::npos)
+       tokenclause += " ESCAPE '_'";
+    if (!strWhen.empty())
+       strWhen += " OR ";
+    strWhen += tokenclause;
+  }
+  if (!strWhen.empty())
+  {
+    if (!sortclause.empty())
+       sortclause += " ";
+    std::string strThen = PrepareSQL(" THEN SUBSTR(%s, %i)", strField.c_str(), tokenlength + 1);
+    sortclause += "WHEN " + strWhen + strThen;
+  }
+  return sortclause;
+}
+
+std::string CMusicDatabase::SortnameBuildSQL(const std::string& strAlias, const SortAttribute& sortAttributes, const std::string& strField, const std::string& strSortField)
+{
+  /*
+  Build SQL for sort name scalar subquery from sort attributes and ignore article list.
+  For example :
+  CASE WHEN strArtistSort IS NOT NULL THEN strArtistSort 
+  WHEN strField LIKE 'the ' OR strField LIKE 'the_' ESCAPE '_' THEN SUBSTR(strArtist, 5)
+  WHEN strField LIKE 'LIKE 'an.' strField LIKE 'an_' ESCAPE '_' THEN SUBSTR(strArtist, 4)
+  ELSE strField
+  END AS strAlias
+  */
+
+  std::string artistsortSQL;
+  if (sortAttributes & SortAttributeUseArtistSortName)
+    artistsortSQL = PrepareSQL("WHEN %s IS NOT NULL THEN %s ", strSortField.c_str(), strSortField.c_str());
+  if (sortAttributes & SortAttributeIgnoreArticle)
+  {
+    if (!artistsortSQL.empty())
+      artistsortSQL += " ";
+    // Make SQL from ignore article list, grouping tokens the same length together
+    artistsortSQL += GetIgnoreArticleSQL(strField);
+  }
+  if (!artistsortSQL.empty())
+  {
+    artistsortSQL = "CASE " + artistsortSQL;  // Not prepare as may contain ' and % etc.
+    artistsortSQL += PrepareSQL(" ELSE %s END AS %s", strField.c_str(), strAlias.c_str());
+  }
+
+  return artistsortSQL;
+}
+
+std::string CMusicDatabase::AlphanumericSortSQL(const std::string& strField, const SortOrder& sortOrder)
+{
+  /*
+  Make sort of initial numbers natural, and case insensitive in SQLite.
+  Collation NOCASE ould be more efficient done in table create.
+  MySQL uses case insensitive utf8_general_ci collation defined for tables.
+  Use PrepareSQL to adjust syntax removing NOCASE and add AS UNSIGNED INTEGER
+  */
+  std::string DESC;
+  if (sortOrder == SortOrderDescending)
+    DESC = " DESC";
+  return PrepareSQL("CASE WHEN CAST(%s AS INTEGER) = 0 "
+    "THEN 100000000 ELSE CAST(%s AS INTEGER) END%s, "
+    "%s COLLATE NOCASE%s",
+    strField.c_str(), strField.c_str(), DESC.c_str(), strField.c_str(), DESC.c_str());
 }
 
 void CMusicDatabase::UpdateTables(int version)
@@ -8485,7 +8622,7 @@ bool CMusicDatabase::UpdateArtistSortNames(int idArtist /*=-1*/)
 {
   // Propagate artist sort names into concatenated artist sort name string for songs and albums
   std::string strSQL;
-  // MySQL syntax for GROUP_CONCAT is different from that in SQLite
+  // MySQL syntax for GROUP_CONCAT with order is different from that in SQLite (not handled by PrepareSQL)
   bool bisMySQL = StringUtils::EqualsNoCase(g_advancedSettings.m_databaseMusic.type, "mysql");
 
   BeginMultipleExecute();

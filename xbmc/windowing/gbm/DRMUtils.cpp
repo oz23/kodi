@@ -1,21 +1,9 @@
 /*
- *      Copyright (C) 2005-2013 Team XBMC
- *      http://kodi.tv
+ *  Copyright (C) 2005-2018 Team Kodi
+ *  This file is part of Kodi - https://kodi.tv
  *
- *  This Program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2, or (at your option)
- *  any later version.
- *
- *  This Program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with XBMC; see the file COPYING.  If not, see
- *  <http://www.gnu.org/licenses/>.
- *
+ *  SPDX-License-Identifier: GPL-2.0-or-later
+ *  See LICENSES/README.md for more information.
  */
 
 #include <errno.h>
@@ -341,8 +329,7 @@ drmModePlanePtr CDRMUtils::FindPlane(drmModePlaneResPtr resources, int crtc_inde
             case VIDEO_PLANE:
             {
               if (SupportsFormat(plane, DRM_FORMAT_NV12) ||
-                  SupportsFormat(plane, DRM_FORMAT_YUV420) ||
-                  SupportsFormat(plane, DRM_FORMAT_YUYV))
+                  SupportsFormat(plane, DRM_FORMAT_YUV420))
               {
                 CLog::Log(LOGDEBUG, "CDRMUtils::%s - found video plane %u", __FUNCTION__, plane->plane_id);
                 drmModeFreeProperty(p);
@@ -359,7 +346,7 @@ drmModePlanePtr CDRMUtils::FindPlane(drmModePlaneResPtr resources, int crtc_inde
                 plane_id = m_primary_plane->plane->plane_id;
 
               if (plane->plane_id != plane_id &&
-                  SupportsFormat(plane, DRM_FORMAT_ARGB8888) &&
+                  (plane_id == 0 || SupportsFormat(plane, DRM_FORMAT_ARGB8888)) &&
                   SupportsFormat(plane, DRM_FORMAT_XRGB8888))
               {
                 CLog::Log(LOGDEBUG, "CDRMUtils::%s - found gui plane %u", __FUNCTION__, plane->plane_id);
@@ -397,6 +384,13 @@ bool CDRMUtils::FindPlanes()
 
   m_primary_plane->plane = FindPlane(plane_resources, m_crtc_index, VIDEO_PLANE);
   m_overlay_plane->plane = FindPlane(plane_resources, m_crtc_index, GUI_PLANE);
+
+  if (m_overlay_plane->plane == nullptr && m_primary_plane->plane != nullptr)
+  {
+    drmModeFreePlane(m_primary_plane->plane);
+    m_primary_plane->plane = nullptr;
+    m_overlay_plane->plane = FindPlane(plane_resources, m_crtc_index, GUI_PLANE);
+  }
 
   drmModeFreePlaneResources(plane_resources);
 
