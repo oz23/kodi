@@ -10,7 +10,7 @@
 
 #include "cores/VideoPlayer/DVDCodecs/Video/DVDVideoCodecDRMPRIME.h"
 #include "cores/VideoPlayer/VideoRenderers/BaseRenderer.h"
-#include "windowing/gbm/WinSystemGbmGLESContext.h"
+#include "windowing/gbm/WinSystemGbmEGLContext.h"
 
 class CRendererDRMPRIME
   : public CBaseRenderer
@@ -28,7 +28,7 @@ public:
   bool IsConfigured() override { return m_bConfigured; };
   void AddVideoPicture(const VideoPicture& picture, int index, double currentClock) override;
   void UnInit() override {};
-  void Flush() override;
+  bool Flush(bool saveBuffers) override;
   void ReleaseBuffer(int idx) override;
   bool NeedBuffer(int idx) override;
   bool IsGuiLayer() override { return false; };
