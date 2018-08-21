@@ -16,6 +16,7 @@
 #include "EGL/eglext.h"
 #include "WinSystemGbmGLContext.h"
 #include "OptionalsReg.h"
+#include "platform/linux/XTimeUtils.h"
 #include "utils/log.h"
 
 using namespace KODI;
@@ -32,6 +33,8 @@ std::unique_ptr<CWinSystemBase> CWinSystemBase::CreateWinSystem()
 
 bool CWinSystemGbmGLContext::InitWindowSystem()
 {
+  VIDEOPLAYER::CRendererFactory::ClearRenderer();
+  CDVDFactoryCodec::ClearHWAccels();
   CLinuxRendererGL::Register();
   RETRO::CRPProcessInfoGbm::Register();
   RETRO::CRPProcessInfoGbm::RegisterRendererFactory(new RETRO::CRendererFactoryOpenGL);
@@ -92,7 +95,7 @@ void CWinSystemGbmGLContext::PresentRender(bool rendered, bool videoLayer)
   }
   else
   {
-    CWinSystemGbm::WaitVBlank();
+    Sleep(10);
   }
 
   if (m_delayDispReset && m_dispResetTimer.IsTimePast())

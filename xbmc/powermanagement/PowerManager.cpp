@@ -11,6 +11,7 @@
 #include <list>
 #include <memory>
 
+#include "PowerTypes.h"
 #include "Application.h"
 #include "ServiceBroker.h"
 #include "cores/AudioEngine/Interfaces/AE.h"
@@ -25,6 +26,7 @@
 #include "pvr/PVRManager.h"
 #include "ServiceBroker.h"
 #include "settings/lib/Setting.h"
+#include "settings/lib/SettingsManager.h"
 #include "settings/Settings.h"
 #include "utils/log.h"
 #include "weather/WeatherManager.h"
@@ -34,9 +36,11 @@
 extern HWND g_hWnd;
 #endif
 
-using namespace ANNOUNCEMENT;
-
-CPowerManager::CPowerManager() = default;
+CPowerManager::CPowerManager(CSettings &settings) :
+  m_settings(settings)
+{
+  m_settings.GetSettingsManager()->RegisterSettingOptionsFiller("shutdownstates", SettingOptionsShutdownStatesFiller);
+}
 
 CPowerManager::~CPowerManager() = default;
 
@@ -47,7 +51,7 @@ void CPowerManager::Initialize()
 
 void CPowerManager::SetDefaults()
 {
-  int defaultShutdown = CServiceBroker::GetSettings().GetInt(CSettings::SETTING_POWERMANAGEMENT_SHUTDOWNSTATE);
+  int defaultShutdown = m_settings.GetInt(CSettings::SETTING_POWERMANAGEMENT_SHUTDOWNSTATE);
 
   switch (defaultShutdown)
   {
@@ -86,7 +90,7 @@ void CPowerManager::SetDefaults()
     break;
   }
 
-  std::static_pointer_cast<CSettingInt>(CServiceBroker::GetSettings().GetSetting(CSettings::SETTING_POWERMANAGEMENT_SHUTDOWNSTATE))->SetDefault(defaultShutdown);
+  std::static_pointer_cast<CSettingInt>(m_settings.GetSetting(CSettings::SETTING_POWERMANAGEMENT_SHUTDOWNSTATE))->SetDefault(defaultShutdown);
 }
 
 bool CPowerManager::Powerdown()
@@ -119,7 +123,7 @@ bool CPowerManager::Reboot()
 
   if (success)
   {
-    CAnnouncementManager::GetInstance().Announce(System, "xbmc", "OnRestart");
+    CServiceBroker::GetAnnouncementManager()->Announce(ANNOUNCEMENT::System, "xbmc", "OnRestart");
 
     CGUIDialogBusy* dialog = CServiceBroker::GetGUI()->GetWindowManager().GetWindow<CGUIDialogBusy>(WINDOW_DIALOG_BUSY);
     if (dialog)
@@ -164,7 +168,7 @@ void CPowerManager::ProcessEvents()
 
 void CPowerManager::OnSleep()
 {
-  CAnnouncementManager::GetInstance().Announce(System, "xbmc", "OnSleep");
+  CServiceBroker::GetAnnouncementManager()->Announce(ANNOUNCEMENT::System, "xbmc", "OnSleep");
 
   CGUIDialogBusy* dialog = CServiceBroker::GetGUI()->GetWindowManager().GetWindow<CGUIDialogBusy>(WINDOW_DIALOG_BUSY);
   if (dialog)
@@ -211,7 +215,7 @@ void CPowerManager::OnWake()
   CServiceBroker::GetPVRManager().OnWake();
   RestorePlayerState();
 
-  CAnnouncementManager::GetInstance().Announce(System, "xbmc", "OnWake");
+  CServiceBroker::GetAnnouncementManager()->Announce(ANNOUNCEMENT::System, "xbmc", "OnWake");
 }
 
 void CPowerManager::OnLowBattery()
@@ -220,7 +224,7 @@ void CPowerManager::OnLowBattery()
 
   CGUIDialogKaiToast::QueueNotification(CGUIDialogKaiToast::Warning, g_localizeStrings.Get(13050), "");
 
-  CAnnouncementManager::GetInstance().Announce(System, "xbmc", "OnLowBattery");
+  CServiceBroker::GetAnnouncementManager()->Announce(ANNOUNCEMENT::System, "xbmc", "OnLowBattery");
 }
 
 void CPowerManager::StorePlayerState()

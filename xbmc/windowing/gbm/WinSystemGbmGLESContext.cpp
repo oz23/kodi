@@ -18,6 +18,7 @@
 #include "cores/VideoPlayer/VideoRenderers/RenderFactory.h"
 
 #include "OptionalsReg.h"
+#include "platform/linux/XTimeUtils.h"
 #include "utils/log.h"
 #include "WinSystemGbmGLESContext.h"
 
@@ -39,6 +40,8 @@ std::unique_ptr<CWinSystemBase> CWinSystemBase::CreateWinSystem()
 
 bool CWinSystemGbmGLESContext::InitWindowSystem()
 {
+  VIDEOPLAYER::CRendererFactory::ClearRenderer();
+  CDVDFactoryCodec::ClearHWAccels();
   CLinuxRendererGLES::Register();
   RETRO::CRPProcessInfoGbm::Register();
   RETRO::CRPProcessInfoGbm::RegisterRendererFactory(new RETRO::CRendererFactoryGBM);
@@ -104,7 +107,7 @@ void CWinSystemGbmGLESContext::PresentRender(bool rendered, bool videoLayer)
   }
   else
   {
-    CWinSystemGbm::WaitVBlank();
+    Sleep(10);
   }
 
   if (m_delayDispReset && m_dispResetTimer.IsTimePast())
