@@ -1509,7 +1509,7 @@ bool CMusicDatabase::GetArtistDiscography(int idArtist, CFileItemList& items)
         { // Save new title (from album or discography)
           CFileItemPtr pItem(new CFileItem(strAlbum));
           pItem->SetLabel2(m_pDS->fv("iYear").get_asString());
-          pItem->GetMusicInfoTag()->SetDatabaseId(idAlbum, "album");
+          pItem->GetMusicInfoTag()->SetDatabaseId(idAlbum, MediaTypeAlbum);
 
           items.Add(pItem);
           strLastAlbum = strAlbum;
@@ -1517,7 +1517,7 @@ bool CMusicDatabase::GetArtistDiscography(int idArtist, CFileItemList& items)
         }
         else if (idAlbum > 0 && iLastID < 0)
         { // Amend previously saved discography item to set album ID
-          items[items.Size() - 1]->GetMusicInfoTag()->SetDatabaseId(idAlbum, "album");
+          items[items.Size() - 1]->GetMusicInfoTag()->SetDatabaseId(idAlbum, MediaTypeAlbum);
         }
       }
       m_pDS->next();
@@ -3481,7 +3481,7 @@ error:
 bool CMusicDatabase::LookupCDDBInfo(bool bRequery/*=false*/)
 {
 #ifdef HAS_DVD_DRIVE
-  if (!CServiceBroker::GetSettings().GetBool(CSettings::SETTING_AUDIOCDS_USECDDB))
+  if (!CServiceBroker::GetSettings()->GetBool(CSettings::SETTING_AUDIOCDS_USECDDB))
     return false;
 
   // check network connectivity
@@ -3941,6 +3941,7 @@ bool CMusicDatabase::GetYearsNav(const std::string& strBaseDir, CFileItemList& i
       SYSTEMTIME stTime;
       stTime.wYear = static_cast<unsigned short>(m_pDS->fv(0).get_asInt());
       pItem->GetMusicInfoTag()->SetReleaseDate(stTime);
+      pItem->GetMusicInfoTag()->SetDatabaseId(-1, "year");
 
       CMusicDbUrl itemUrl = musicUrl;
       std::string strDir = StringUtils::Format("%i/", m_pDS->fv(0).get_asInt());
@@ -7674,7 +7675,7 @@ bool CMusicDatabase::GetOldArtistPath(int idArtist, std::string &basePath)
 bool CMusicDatabase::GetArtistPath(const CArtist& artist, std::string &path)
 {
    // Get path for artist in the artists folder
-  path = CServiceBroker::GetSettings().GetString(CSettings::SETTING_MUSICLIBRARY_ARTISTSFOLDER);
+  path = CServiceBroker::GetSettings()->GetString(CSettings::SETTING_MUSICLIBRARY_ARTISTSFOLDER);
   if (path.empty())
     return false; // No Artists folder not set;
   // Get unique artist folder name
@@ -9442,7 +9443,7 @@ bool CMusicDatabase::GetItems(const std::string &strBaseDir, const std::string &
   else if (StringUtils::EqualsNoCase(itemType, "roles"))
     return GetRolesNav(strBaseDir, items, filter);
   else if (StringUtils::EqualsNoCase(itemType, "artists"))
-    return GetArtistsNav(strBaseDir, items, !CServiceBroker::GetSettings().GetBool(CSettings::SETTING_MUSICLIBRARY_SHOWCOMPILATIONARTISTS), -1, -1, -1, filter, sortDescription);
+    return GetArtistsNav(strBaseDir, items, !CServiceBroker::GetSettings()->GetBool(CSettings::SETTING_MUSICLIBRARY_SHOWCOMPILATIONARTISTS), -1, -1, -1, filter, sortDescription);
   else if (StringUtils::EqualsNoCase(itemType, "albums"))
     return GetAlbumsByWhere(strBaseDir, filter, items, sortDescription);
   else if (StringUtils::EqualsNoCase(itemType, "songs"))
@@ -9498,7 +9499,7 @@ void CMusicDatabase::ExportToXML(const CLibExportSettings& settings,  CGUIDialog
   {
     // Separate files with artists to library folder and albums to music folders.
     // Without an artist information folder can not export artist NFO files or images
-    strFolder = CServiceBroker::GetSettings().GetString(CSettings::SETTING_MUSICLIBRARY_ARTISTSFOLDER);
+    strFolder = CServiceBroker::GetSettings()->GetString(CSettings::SETTING_MUSICLIBRARY_ARTISTSFOLDER);
     if (!settings.IsItemExported(ELIBEXPORT_ALBUMS) && strFolder.empty())
       return;
   }
@@ -10240,7 +10241,7 @@ bool CMusicDatabase::GetFilter(CDbUrl &musicUrl, Filter &filter, SortDescription
       if (xsp.GetOrder() != SortByNone)
         sorting.sortBy = xsp.GetOrder();
       sorting.sortOrder = xsp.GetOrderAscending() ? SortOrderAscending : SortOrderDescending;
-      if (CServiceBroker::GetSettings().GetBool(CSettings::SETTING_FILELISTS_IGNORETHEWHENSORTING))
+      if (CServiceBroker::GetSettings()->GetBool(CSettings::SETTING_FILELISTS_IGNORETHEWHENSORTING))
         sorting.sortAttributes = SortAttributeIgnoreArticle;
     }
   }

@@ -381,7 +381,7 @@ bool CGUIWindowPVRGuideBase::OnMessage(CGUIMessage& message)
           {
             case ACTION_SELECT_ITEM:
             case ACTION_MOUSE_LEFT_CLICK:
-              switch(CServiceBroker::GetSettings().GetInt(CSettings::SETTING_EPG_SELECTACTION))
+              switch(CServiceBroker::GetSettings()->GetInt(CSettings::SETTING_EPG_SELECTACTION))
               {
                 case EPG_SELECT_ACTION_CONTEXT_MENU:
                   OnPopupMenu(iItem);
@@ -679,7 +679,7 @@ void CGUIWindowPVRGuideBase::OnInputDone()
   const CPVRChannelNumber channelNumber = GetChannelNumber();
   if (channelNumber.IsValid())
   {
-    for (const CFileItemPtr event : m_vecItems->GetList())
+    for (const CFileItemPtr event : *m_vecItems)
     {
       const CPVREpgInfoTagPtr tag(event->GetEPGInfoTag());
       if (tag->HasChannel() && tag->Channel()->ChannelNumber() == channelNumber)

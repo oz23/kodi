@@ -35,10 +35,16 @@ public:
   {
   }
 
-  ThreadMessage(uint32_t messageId, int p1, int p2, void* payload)
+  ThreadMessage(uint32_t messageId, int64_t p3)
+  : ThreadMessage{ messageId, -1, -1, nullptr, p3 }
+  {
+  }
+
+  ThreadMessage(uint32_t messageId, int p1, int p2, void* payload, int64_t p3 = 0)
     : dwMessage{ messageId }
     , param1{ p1 }
     , param2{ p2 }
+    , param3{ p3 }
     , lpVoid{ payload }
   {
   }
@@ -47,6 +53,7 @@ public:
     : dwMessage{ messageId }
     , param1{ p1 }
     , param2{ p2 }
+    , param3{ 0 }
     , lpVoid{ payload }
     , strParam( param )
     , params( vecParams )
@@ -57,6 +64,7 @@ public:
     : dwMessage(other.dwMessage),
     param1(other.param1),
     param2(other.param2),
+    param3(other.param3),
     lpVoid(other.lpVoid),
     strParam(other.strParam),
     params(other.params),
@@ -69,6 +77,7 @@ public:
     : dwMessage(other.dwMessage),
     param1(other.param1),
     param2(other.param2),
+    param3(other.param3),
     lpVoid(other.lpVoid),
     strParam(std::move(other.strParam)),
     params(std::move(other.params)),
@@ -84,6 +93,7 @@ public:
     dwMessage = other.dwMessage;
     param1 = other.param1;
     param2 = other.param2;
+    param3 = other.param3;
     lpVoid = other.lpVoid;
     strParam = other.strParam;
     params = other.params;
@@ -99,6 +109,7 @@ public:
     dwMessage = other.dwMessage;
     param1 = other.param1;
     param2 = other.param2;
+    param3 = other.param3;
     lpVoid = other.lpVoid;
     strParam = std::move(other.strParam);
     params = std::move(other.params);
@@ -110,6 +121,7 @@ public:
   uint32_t dwMessage;
   int param1;
   int param2;
+  int64_t param3;
   void* lpVoid;
   std::string strParam;
   std::vector<std::string> params;

@@ -199,6 +199,32 @@ CPVREpgInfoTagPtr CPVREpg::GetTagNext() const
   return CPVREpgInfoTagPtr();
 }
 
+CPVREpgInfoTagPtr CPVREpg::GetTagPrevious() const
+{
+  CPVREpgInfoTagPtr nowTag(GetTagNow());
+  if (nowTag)
+  {
+    CSingleLock lock(m_critSection);
+    std::map<CDateTime, CPVREpgInfoTagPtr>::const_iterator it = m_tags.find(nowTag->StartAsUTC());
+    if (it != m_tags.end() && it != m_tags.begin())
+    {
+      --it;
+      return it->second;
+    }
+  }
+  else if (Size() > 0)
+  {
+    /* return the first event that is in the past */
+    for (std::map<CDateTime, CPVREpgInfoTagPtr>::const_reverse_iterator it = m_tags.rbegin(); it != m_tags.rend(); ++it)
+    {
+      if (it->second->WasActive())
+        return it->second;
+    }
+  }
+
+  return CPVREpgInfoTagPtr();
+}
+
 bool CPVREpg::CheckPlayingEvent(void)
 {
   CPVREpgInfoTagPtr previousTag(GetTagNow(false));
@@ -342,7 +368,7 @@ bool CPVREpg::UpdateEntries(const CPVREpg &epg, bool bStoreInDb /* = true */)
 
 CDateTime CPVREpg::GetLastScanTime(void)
 {
-  bool bIgnore = CServiceBroker::GetSettings().GetBool(CSettings::SETTING_EPG_IGNOREDBFORCLIENT);
+  bool bIgnore = CServiceBroker::GetSettings()->GetBool(CSettings::SETTING_EPG_IGNOREDBFORCLIENT);
   CPVREpgDatabasePtr database = CServiceBroker::GetPVRManager().EpgContainer().GetEpgDatabase();
 
   CDateTime lastScanTime;
@@ -501,13 +527,7 @@ bool CPVREpg::Update(const time_t start, const time_t end, int iUpdateTime, bool
     bGrabSuccess = LoadFromClients(start, end);
 
   if (bGrabSuccess)
-  {
-    CPVRChannelPtr channel(CServiceBroker::GetPVRManager().GetPlayingChannel());
-    if (channel &&
-        channel->EpgID() == m_iEpgID)
-      CServiceBroker::GetPVRManager().ResetPlayingTag();
     m_bLoaded = true;
-  }
   else
     CLog::LogF(LOGERROR, "Failed to update table '%s'", Name().c_str());
 
@@ -549,7 +569,7 @@ int CPVREpg::Get(CFileItemList &results, const CPVREpgSearchFilter &filter) cons
 
 bool CPVREpg::Persist(void)
 {
-  if (CServiceBroker::GetSettings().GetBool(CSettings::SETTING_EPG_IGNOREDBFORCLIENT) || !NeedsSave())
+  if (CServiceBroker::GetSettings()->GetBool(CSettings::SETTING_EPG_IGNOREDBFORCLIENT) || !NeedsSave())
     return true;
 
   CPVREpgDatabasePtr database = CServiceBroker::GetPVRManager().EpgContainer().GetEpgDatabase();
@@ -772,13 +792,13 @@ bool CPVREpg::LoadFromClients(time_t start, time_t end)
   {
     CPVREpg tmpEpg(channel);
     if (tmpEpg.UpdateFromScraper(start, end))
-      bReturn = UpdateEntries(tmpEpg, !CServiceBroker::GetSettings().GetBool(CSettings::SETTING_EPG_IGNOREDBFORCLIENT));
+      bReturn = UpdateEntries(tmpEpg, !CServiceBroker::GetSettings()->GetBool(CSettings::SETTING_EPG_IGNOREDBFORCLIENT));
   }
   else
   {
     CPVREpg tmpEpg(m_iEpgID, m_strName, m_strScraperName);
     if (tmpEpg.UpdateFromScraper(start, end))
-      bReturn = UpdateEntries(tmpEpg, !CServiceBroker::GetSettings().GetBool(CSettings::SETTING_EPG_IGNOREDBFORCLIENT));
+      bReturn = UpdateEntries(tmpEpg, !CServiceBroker::GetSettings()->GetBool(CSettings::SETTING_EPG_IGNOREDBFORCLIENT));
   }
 
   return bReturn;

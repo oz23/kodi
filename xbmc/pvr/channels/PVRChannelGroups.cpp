@@ -44,7 +44,7 @@ void CPVRChannelGroups::Clear(void)
 
 bool CPVRChannelGroups::GetGroupsFromClients(void)
 {
-  if (! CServiceBroker::GetSettings().GetBool(CSettings::SETTING_PVRMANAGER_SYNCCHANNELGROUPS))
+  if (! CServiceBroker::GetSettings()->GetBool(CSettings::SETTING_PVRMANAGER_SYNCCHANNELGROUPS))
     return true;
 
   return CServiceBroker::GetPVRManager().Clients()->GetChannelGroups(this, m_failedClientsForChannelGroups) == PVR_ERROR_NO_ERROR;
@@ -203,7 +203,7 @@ void CPVRChannelGroups::RemoveFromAllGroups(const CPVRChannelPtr &channel)
 
 bool CPVRChannelGroups::Update(bool bChannelsOnly /* = false */)
 {
-  bool bUpdateAllGroups = !bChannelsOnly && CServiceBroker::GetSettings().GetBool(CSettings::SETTING_PVRMANAGER_SYNCCHANNELGROUPS);
+  bool bUpdateAllGroups = !bChannelsOnly && CServiceBroker::GetSettings()->GetBool(CSettings::SETTING_PVRMANAGER_SYNCCHANNELGROUPS);
   bool bReturn(true);
 
   // sync groups
@@ -229,7 +229,7 @@ bool CPVRChannelGroups::Update(bool bChannelsOnly /* = false */)
 
 bool CPVRChannelGroups::LoadUserDefinedChannelGroups(void)
 {
-  bool bSyncWithBackends = CServiceBroker::GetSettings().GetBool(CSettings::SETTING_PVRMANAGER_SYNCCHANNELGROUPS);
+  bool bSyncWithBackends = CServiceBroker::GetSettings()->GetBool(CSettings::SETTING_PVRMANAGER_SYNCCHANNELGROUPS);
 
   CSingleLock lock(m_critSection);
 
@@ -463,17 +463,8 @@ CPVRChannelGroupPtr CPVRChannelGroups::GetSelectedGroup(void) const
 
 void CPVRChannelGroups::SetSelectedGroup(const CPVRChannelGroupPtr &group)
 {
-  // update the selected group
-  {
-    CSingleLock lock(m_critSection);
-    if (m_selectedGroup)
-      m_selectedGroup->SetSelectedGroup(false);
-    m_selectedGroup = group;
-    group->SetSelectedGroup(true);
-  }
-
-  // update the channel number cache
-  group->Renumber();
+  CSingleLock lock(m_critSection);
+  m_selectedGroup = group;
 }
 
 bool CPVRChannelGroups::AddGroup(const std::string &strName)

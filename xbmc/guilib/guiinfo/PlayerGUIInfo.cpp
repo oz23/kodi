@@ -66,12 +66,7 @@ float CPlayerGUIInfo::GetSeekPercent() const
   float fPercentPlayTime = static_cast<float>(GetPlayTime() * 1000) / iTotal * 0.1f;
   float fPercentPerSecond = 100.0f / static_cast<float>(iTotal);
   float fPercent = fPercentPlayTime + fPercentPerSecond * g_application.GetAppPlayer().GetSeekHandler().GetSeekSize();
-
-  if (fPercent > 100.0f)
-    fPercent = 100.0f;
-  if (fPercent < 0.0f)
-    fPercent = 0.0f;
-
+  fPercent = std::max(0.0f, std::min(fPercent, 100.0f));
   return fPercent;
 }
 
@@ -289,6 +284,13 @@ bool CPlayerGUIInfo::GetLabel(std::string& value, const CFileItem *item, int con
     }
     case PLAYER_ITEM_ART:
       value = item->GetArt(info.GetData3());
+      return true;
+    case PLAYER_ICON:
+      value = item->GetArt("thumb");
+      if (value.empty())
+        value = item->GetIconImage();
+      if (fallback)
+        *fallback = item->GetIconImage();
       return true;
 
     ///////////////////////////////////////////////////////////////////////////////////////////////

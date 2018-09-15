@@ -375,9 +375,15 @@ const infomap integer_bools[] =  {{ "isequal",          INTEGER_IS_EQUAL },
 ///     Returns true if player is in frame advance mode. Skins should hide seek bar
 ///     in this mode)
 ///   }
+///   \table_row3{   <b>`Player.Icon`</b>,
+///                  \anchor Player_Icon
+///                  _string_,
+///     Returns the thumbnail of the currently playing item. If no thumbnail image exists\,
+///     the icon will be returned\, if available.
+///   }
 /// \table_end
 /// @}
-const infomap player_labels[] =  {{ "hasmedia",         PLAYER_HAS_MEDIA },           // bools from here
+const infomap player_labels[] =  {{ "hasmedia",         PLAYER_HAS_MEDIA },
                                   { "hasaudio",         PLAYER_HAS_AUDIO },
                                   { "hasvideo",         PLAYER_HAS_VIDEO },
                                   { "hasgame",          PLAYER_HAS_GAME },
@@ -405,7 +411,7 @@ const infomap player_labels[] =  {{ "hasmedia",         PLAYER_HAS_MEDIA },     
                                   { "muted",            PLAYER_MUTED },
                                   { "hasduration",      PLAYER_HASDURATION },
                                   { "passthrough",      PLAYER_PASSTHROUGH },
-                                  { "cachelevel",       PLAYER_CACHELEVEL },          // labels from here
+                                  { "cachelevel",       PLAYER_CACHELEVEL },
                                   { "title",            PLAYER_TITLE },
                                   { "progress",         PLAYER_PROGRESS },
                                   { "progresscache",    PLAYER_PROGRESS_CACHE },
@@ -421,13 +427,14 @@ const infomap player_labels[] =  {{ "hasmedia",         PLAYER_HAS_MEDIA },     
                                   { "isinternetstream", PLAYER_ISINTERNETSTREAM },
                                   { "pauseenabled",     PLAYER_CAN_PAUSE },
                                   { "seekenabled",      PLAYER_CAN_SEEK },
-                                  { "channelpreviewactive", PLAYER_IS_CHANNEL_PREVIEW_ACTIVE},
-                                  { "tempoenabled", PLAYER_SUPPORTS_TEMPO},
-                                  { "istempo", PLAYER_IS_TEMPO},
-                                  { "playspeed", PLAYER_PLAYSPEED},
-                                  { "hasprograms", PLAYER_HAS_PROGRAMS},
-                                  { "hasresolutions", PLAYER_HAS_RESOLUTIONS},
-                                  { "frameadvance", PLAYER_FRAMEADVANCE}};
+                                  { "channelpreviewactive", PLAYER_IS_CHANNEL_PREVIEW_ACTIVE },
+                                  { "tempoenabled",     PLAYER_SUPPORTS_TEMPO },
+                                  { "istempo",          PLAYER_IS_TEMPO },
+                                  { "playspeed",        PLAYER_PLAYSPEED },
+                                  { "hasprograms",      PLAYER_HAS_PROGRAMS },
+                                  { "hasresolutions",   PLAYER_HAS_RESOLUTIONS },
+                                  { "frameadvance",     PLAYER_FRAMEADVANCE },
+                                  { "icon",             PLAYER_ICON }};
 
 /// \page modules__General__List_of_gui_access
 /// @{
@@ -3645,6 +3652,11 @@ const infomap container_str[]  = {{ "property",         CONTAINER_PROPERTY },
 ///                  _string_,
 ///     Returns the title of the epg event associated with the item\, if any
 ///   }
+///   \table_row3{   <b>`ListItem.EpgEventIcon`</b>,
+///                  \anchor ListItem_EpgEventIcon
+///                  _string_,
+///     Returns the thumbnail for the epg event associated with the item (if it exists)
+///   }
 ///   \table_row3{   <b>`ListItem.InProgress`</b>,
 ///                  \anchor ListItem_InProgress
 ///                  _boolean_,
@@ -3898,6 +3910,7 @@ const infomap listitem_labels[]= {{ "thumb",            LISTITEM_THUMB },
                                   { "episodename",      LISTITEM_EPISODENAME },
                                   { "timertype",        LISTITEM_TIMERTYPE },
                                   { "epgeventtitle",    LISTITEM_EPG_EVENT_TITLE },
+                                  { "epgeventicon",     LISTITEM_EPG_EVENT_ICON },
                                   { "timerisactive",    LISTITEM_TIMERISACTIVE },
                                   { "timerhaserror",    LISTITEM_TIMERHASERROR },
                                   { "timerhasconflict", LISTITEM_TIMERHASCONFLICT },
@@ -4558,6 +4571,31 @@ const infomap playlist[] =       {{ "length",           PLAYLIST_LENGTH },
 ///                  _boolean_,
 ///     Returns true if PVR is currently playing a channel and if this channel is currently recorded.
 ///   }
+///   \table_row3{   <b>`PVR.TimeshiftProgressPlayPos`</b>,
+///                  \anchor PVR_TimeshiftProgressPlayPos
+///                  _integer_,
+///     Returns the percentage of the current play position within the PVR timeshift progress.
+///   }
+///   \table_row3{   <b>`PVR.TimeshiftProgressEpgStart`</b>,
+///                  \anchor PVR_TimeshiftProgressEpgStart
+///                  _integer_,
+///     Returns the percentage of the start of the currently playing epg event within the PVR timeshift progress.
+///   }
+///   \table_row3{   <b>`PVR.TimeshiftProgressEpgEnd`</b>,
+///                  \anchor PVR_TimeshiftProgressEpgEnd
+///                  _integer_,
+///     Returns the percentage of the end of the currently playing epg event within the PVR timeshift progress.
+///   }
+///   \table_row3{   <b>`PVR.TimeshiftProgressBufferStart`</b>,
+///                  \anchor PVR_TimeshiftProgressBufferStart
+///                  _integer_,
+///     Returns the percentage of the start of the timeshift buffer within the PVR timeshift progress.
+///   }
+///   \table_row3{   <b>`PVR.TimeshiftProgressBufferEnd`</b>,
+///                  \anchor PVR_TimeshiftProgressBufferEnd
+///                  _integer_,
+///     Returns the percentage of the end of the timeshift buffer within the PVR timeshift progress.
+///   }
 /// \table_end
 ///
 /// -----------------------------------------------------------------------------
@@ -4632,13 +4670,23 @@ const infomap pvr[] =            {{ "isrecording",              PVR_IS_RECORDING
                                   { "hasnonrecordingradiotimer",  PVR_HAS_NONRECORDING_RADIO_TIMER },
                                   { "channelnumberinput",         PVR_CHANNEL_NUMBER_INPUT },
                                   { "canrecordplayingchannel",    PVR_CAN_RECORD_PLAYING_CHANNEL },
-                                  { "isrecordingplayingchannel",  PVR_IS_RECORDING_PLAYING_CHANNEL }};
+                                  { "isrecordingplayingchannel",  PVR_IS_RECORDING_PLAYING_CHANNEL },
+                                  { "timeshiftprogressplaypos",   PVR_TIMESHIFT_PROGRESS_PLAY_POS },
+                                  { "timeshiftprogressepgstart",  PVR_TIMESHIFT_PROGRESS_EPG_START },
+                                  { "timeshiftprogressepgend",    PVR_TIMESHIFT_PROGRESS_EPG_END },
+                                  { "timeshiftprogressbufferstart", PVR_TIMESHIFT_PROGRESS_BUFFER_START },
+                                  { "timeshiftprogressbufferend", PVR_TIMESHIFT_PROGRESS_BUFFER_END }};
 
 /// \page modules__General__List_of_gui_access
 /// \section modules__General__List_of_gui_access_PvrTimes PvrTimes
 /// @{
 /// \table_start
 ///   \table_h3{ Labels, Type, Description }
+///   \table_row3{   <b>`PVR.EpgEventIcon`</b>,
+///                  \anchor PVR_EpgEventIcon
+///                  _string_,
+///     Returns the icon of the currently playing epg event, if any.
+///   }
 ///   \table_row3{   <b>`PVR.EpgEventDuration`</b>,
 ///                  \anchor PVR_EpgEventDuration
 ///                  _string_,
@@ -4774,11 +4822,57 @@ const infomap pvr[] =            {{ "isrecording",              PVR_IS_RECORDING
 ///     Added with Leia: (secs)\, (mins)\, (hours) for total time values and (m).
 ///     Example: 3661 seconds => h=1\, hh=01\, m=1\, mm=01\, ss=01\, hours=1\, mins=61\, secs=3661
 ///   }
+///   \table_row3{   <b>`PVR.TimeshiftProgressDuration`</b>,
+///                  \anchor PVR_TimeshiftProgressDuration
+///                  _string_,
+///     Returns the duration of the PVR timeshift progress in the
+///     format hh:mm:ss. hh: will be omitted if hours value is zero.
+///   }
+///   \table_row3{   <b>`PVR.TimeshiftProgressDuration(format)`</b>,
+///                  \anchor PVR_TimeshiftProgressDuration_format
+///                  _string_,
+///     Returns the duration of the PVR timeshift progress in different formats:
+///     Hours (hh)\, minutes (mm) or seconds (ss).
+///     Also supported: (hh:mm)\, (mm:ss)\, (hh:mm:ss)\, (h:mm:ss).
+///     Added with Leia: (secs)\, (mins)\, (hours) for total time values and (m).
+///     Example: 3661 seconds => h=1\, hh=01\, m=1\, mm=01\, ss=01\, hours=1\, mins=61\, secs=3661
+///   }
+///   \table_row3{   <b>`PVR.TimeshiftProgressStartTime`</b>,
+///                  \anchor PVR_TimeshiftProgressStartTime
+///                  _string_,
+///     Returns the start time of the PVR timeshift progress in the
+///     format hh:mm:ss. hh: will be omitted if hours value is zero.
+///   }
+///   \table_row3{   <b>`PVR.TimeshiftProgressStartTime(format)`</b>,
+///                  \anchor PVR_TimeshiftProgressStartTime_format
+///                  _string_,
+///     Returns the start time of the PVR timeshift progress in different formats:
+///     Hours (hh)\, minutes (mm) or seconds (ss).
+///     Also supported: (hh:mm)\, (mm:ss)\, (hh:mm:ss)\, (h:mm:ss).
+///     Added with Leia: (secs)\, (mins)\, (hours) for total time values and (m).
+///     Example: 3661 seconds => h=1\, hh=01\, m=1\, mm=01\, ss=01\, hours=1\, mins=61\, secs=3661
+///   }
+///   \table_row3{   <b>`PVR.TimeshiftProgressEndTime`</b>,
+///                  \anchor PVR_TimeshiftProgressEndTime
+///                  _string_,
+///     Returns the end time of the PVR timeshift progress in the
+///     format hh:mm:ss. hh: will be omitted if hours value is zero.
+///   }
+///   \table_row3{   <b>`PVR.TimeshiftProgressEndTime(format)`</b>,
+///                  \anchor PVR_TimeshiftProgressEndTime_format
+///                  _string_,
+///     Returns the end time of the PVR timeshift progress in different formats:
+///     Hours (hh)\, minutes (mm) or seconds (ss).
+///     Also supported: (hh:mm)\, (mm:ss)\, (hh:mm:ss)\, (h:mm:ss).
+///     Added with Leia: (secs)\, (mins)\, (hours) for total time values and (m).
+///     Example: 3661 seconds => h=1\, hh=01\, m=1\, mm=01\, ss=01\, hours=1\, mins=61\, secs=3661
+///   }
 /// \table_end
 ///
 /// -----------------------------------------------------------------------------
 /// @}
-const infomap pvr_times[] =      {{ "epgeventduration",       PVR_EPG_EVENT_DURATION },
+const infomap pvr_times[] =      {{ "epgeventicon",           PVR_EPG_EVENT_ICON },
+                                  { "epgeventduration",       PVR_EPG_EVENT_DURATION },
                                   { "epgeventelapsedtime",    PVR_EPG_EVENT_ELAPSED_TIME },
                                   { "epgeventremainingtime",  PVR_EPG_EVENT_REMAINING_TIME },
                                   { "epgeventfinishtime",     PVR_EPG_EVENT_FINISH_TIME },
@@ -4786,7 +4880,10 @@ const infomap pvr_times[] =      {{ "epgeventduration",       PVR_EPG_EVENT_DURA
                                   { "timeshiftstart",         PVR_TIMESHIFT_START_TIME },
                                   { "timeshiftend",           PVR_TIMESHIFT_END_TIME },
                                   { "timeshiftcur",           PVR_TIMESHIFT_PLAY_TIME },
-                                  { "timeshiftoffset",        PVR_TIMESHIFT_OFFSET }};
+                                  { "timeshiftoffset",        PVR_TIMESHIFT_OFFSET },
+                                  { "timeshiftprogressduration",  PVR_TIMESHIFT_PROGRESS_DURATION },
+                                  { "timeshiftprogressstarttime", PVR_TIMESHIFT_PROGRESS_START_TIME },
+                                  { "timeshiftprogressendtime",   PVR_TIMESHIFT_PROGRESS_END_TIME }};
 
 /// \page modules__General__List_of_gui_access
 /// \section modules__General__List_of_gui_access_RDS Radio RDS
@@ -5753,9 +5850,9 @@ int CGUIInfoManager::TranslateSingleString(const std::string &strCondition, bool
       }
       else if (prop.num_params() == 2)
       {
-        for (size_t i = 0; i < sizeof(string_bools) / sizeof(infomap); ++i)
+        for (const infomap& string_bool : string_bools)
         {
-          if (prop.name == string_bools[i].str)
+          if (prop.name == string_bool.str)
           {
             int data1 = TranslateSingleString(prop.param(0), listItemDependent);
             // pipe our original string through the localize parsing then make it lowercase (picks up $LBRACKET etc.)
@@ -5766,84 +5863,84 @@ int CGUIInfoManager::TranslateSingleString(const std::string &strCondition, bool
             {
               int data2 = TranslateSingleString(prop.param(1), listItemDependent);
               if (data2 > 0)
-                return AddMultiInfo(CGUIInfo(string_bools[i].val, data1, -data2));
+                return AddMultiInfo(CGUIInfo(string_bool.val, data1, -data2));
             }
-            return AddMultiInfo(CGUIInfo(string_bools[i].val, data1, label));
+            return AddMultiInfo(CGUIInfo(string_bool.val, data1, label));
           }
         }
       }
     }
     if (cat.name == "integer")
     {
-      for (size_t i = 0; i < sizeof(integer_bools) / sizeof(infomap); ++i)
+      for (const infomap& integer_bool : integer_bools)
       {
-        if (prop.name == integer_bools[i].str)
+        if (prop.name == integer_bool.str)
         {
           int data1 = TranslateSingleString(prop.param(0), listItemDependent);
           int data2 = atoi(prop.param(1).c_str());
-          return AddMultiInfo(CGUIInfo(integer_bools[i].val, data1, data2));
+          return AddMultiInfo(CGUIInfo(integer_bool.val, data1, data2));
         }
       }
     }
     else if (cat.name == "player")
     {
-      for (size_t i = 0; i < sizeof(player_labels) / sizeof(infomap); ++i)
+      for (const infomap& player_label : player_labels)
       {
-        if (prop.name == player_labels[i].str)
-          return player_labels[i].val;
+        if (prop.name == player_label.str)
+          return player_label.val;
       }
-      for (size_t i = 0; i < sizeof(player_times) / sizeof(infomap); ++i)
+      for (const infomap& player_time : player_times)
       {
-        if (prop.name == player_times[i].str)
-          return AddMultiInfo(CGUIInfo(player_times[i].val, TranslateTimeFormat(prop.param())));
+        if (prop.name == player_time.str)
+          return AddMultiInfo(CGUIInfo(player_time.val, TranslateTimeFormat(prop.param())));
       }
       if (prop.name == "process" && prop.num_params())
       {
-        for (size_t i = 0; i < sizeof(player_process) / sizeof(infomap); ++i)
+        for (const infomap& player_proces : player_process)
         {
-          if (StringUtils::EqualsNoCase(prop.param(), player_process[i].str))
-            return player_process[i].val;
+          if (StringUtils::EqualsNoCase(prop.param(), player_proces.str))
+            return player_proces.val;
         }
       }
       if (prop.num_params() == 1)
       {
-        for (size_t i = 0; i < sizeof(player_param) / sizeof(infomap); ++i)
+        for (const infomap& i : player_param)
         {
-          if (prop.name == player_param[i].str)
-            return AddMultiInfo(CGUIInfo(player_param[i].val, prop.param()));
+          if (prop.name == i.str)
+            return AddMultiInfo(CGUIInfo(i.val, prop.param()));
         }
       }
     }
     else if (cat.name == "weather")
     {
-      for (size_t i = 0; i < sizeof(weather) / sizeof(infomap); ++i)
+      for (const infomap& i : weather)
       {
-        if (prop.name == weather[i].str)
-          return weather[i].val;
+        if (prop.name == i.str)
+          return i.val;
       }
     }
     else if (cat.name == "network")
     {
-      for (size_t i = 0; i < sizeof(network_labels) / sizeof(infomap); ++i)
+      for (const infomap& network_label : network_labels)
       {
-        if (prop.name == network_labels[i].str)
-          return network_labels[i].val;
+        if (prop.name == network_label.str)
+          return network_label.val;
       }
     }
     else if (cat.name == "musicpartymode")
     {
-      for (size_t i = 0; i < sizeof(musicpartymode) / sizeof(infomap); ++i)
+      for (const infomap& i : musicpartymode)
       {
-        if (prop.name == musicpartymode[i].str)
-          return musicpartymode[i].val;
+        if (prop.name == i.str)
+          return i.val;
       }
     }
     else if (cat.name == "system")
     {
-      for (size_t i = 0; i < sizeof(system_labels) / sizeof(infomap); ++i)
+      for (const infomap& system_label : system_labels)
       {
-        if (prop.name == system_labels[i].str)
-          return system_labels[i].val;
+        if (prop.name == system_label.str)
+          return system_label.val;
       }
       if (prop.num_params() == 1)
       {
@@ -5854,10 +5951,10 @@ int CGUIInfoManager::TranslateSingleString(const std::string &strCondition, bool
           StringUtils::ToLower(paramCopy);
           return AddMultiInfo(CGUIInfo(SYSTEM_GET_BOOL, paramCopy));
         }
-        for (size_t i = 0; i < sizeof(system_param) / sizeof(infomap); ++i)
+        for (const infomap& i : system_param)
         {
-          if (prop.name == system_param[i].str)
-            return AddMultiInfo(CGUIInfo(system_param[i].val, param));
+          if (prop.name == i.str)
+            return AddMultiInfo(CGUIInfo(i.val, param));
         }
         if (prop.name == "memory")
         {
@@ -5968,10 +6065,10 @@ int CGUIInfoManager::TranslateSingleString(const std::string &strCondition, bool
     }
     else if (cat.name == "musicplayer")
     {
-      for (size_t i = 0; i < sizeof(player_times) / sizeof(infomap); ++i) //! @todo remove these, they're repeats
+      for (const infomap& player_time : player_times) //! @todo remove these, they're repeats
       {
-        if (prop.name == player_times[i].str)
-          return AddMultiInfo(CGUIInfo(player_times[i].val, TranslateTimeFormat(prop.param())));
+        if (prop.name == player_time.str)
+          return AddMultiInfo(CGUIInfo(player_time.val, TranslateTimeFormat(prop.param())));
       }
       if (prop.name == "content" && prop.num_params())
         return AddMultiInfo(CGUIInfo(MUSICPLAYER_CONTENT, prop.param(), 0));
@@ -5988,60 +6085,60 @@ int CGUIInfoManager::TranslateSingleString(const std::string &strCondition, bool
     {
       if (prop.name != "starttime") // player.starttime is semantically different from videoplayer.starttime which has its own implementation!
       {
-        for (size_t i = 0; i < sizeof(player_times) / sizeof(infomap); ++i) //! @todo remove these, they're repeats
+        for (const infomap& player_time : player_times) //! @todo remove these, they're repeats
         {
-          if (prop.name == player_times[i].str)
-            return AddMultiInfo(CGUIInfo(player_times[i].val, TranslateTimeFormat(prop.param())));
+          if (prop.name == player_time.str)
+            return AddMultiInfo(CGUIInfo(player_time.val, TranslateTimeFormat(prop.param())));
         }
       }
       if (prop.name == "content" && prop.num_params())
       {
         return AddMultiInfo(CGUIInfo(VIDEOPLAYER_CONTENT, prop.param(), 0));
       }
-      for (size_t i = 0; i < sizeof(videoplayer) / sizeof(infomap); ++i)
+      for (const infomap& i : videoplayer)
       {
-        if (prop.name == videoplayer[i].str)
-          return videoplayer[i].val;
+        if (prop.name == i.str)
+          return i.val;
       }
     }
     else if (cat.name == "retroplayer")
     {
-      for (size_t i = 0; i < sizeof(retroplayer) / sizeof(infomap); ++i)
+      for (const infomap& i : retroplayer)
       {
-        if (prop.name == retroplayer[i].str)
-          return retroplayer[i].val;
+        if (prop.name == i.str)
+          return i.val;
       }
     }
     else if (cat.name == "slideshow")
     {
-      for (size_t i = 0; i < sizeof(slideshow) / sizeof(infomap); ++i)
+      for (const infomap& i : slideshow)
       {
-        if (prop.name == slideshow[i].str)
-          return slideshow[i].val;
+        if (prop.name == i.str)
+          return i.val;
       }
     }
     else if (cat.name == "container")
     {
-      for (size_t i = 0; i < sizeof(mediacontainer) / sizeof(infomap); ++i) // these ones don't have or need an id
+      for (const infomap& i : mediacontainer) // these ones don't have or need an id
       {
-        if (prop.name == mediacontainer[i].str)
-          return mediacontainer[i].val;
+        if (prop.name == i.str)
+          return i.val;
       }
       int id = atoi(cat.param().c_str());
-      for (size_t i = 0; i < sizeof(container_bools) / sizeof(infomap); ++i) // these ones can have an id (but don't need to?)
+      for (const infomap& container_bool : container_bools) // these ones can have an id (but don't need to?)
       {
-        if (prop.name == container_bools[i].str)
-          return id ? AddMultiInfo(CGUIInfo(container_bools[i].val, id)) : container_bools[i].val;
+        if (prop.name == container_bool.str)
+          return id ? AddMultiInfo(CGUIInfo(container_bool.val, id)) : container_bool.val;
       }
-      for (size_t i = 0; i < sizeof(container_ints) / sizeof(infomap); ++i) // these ones can have an int param on the property
+      for (const infomap& container_int : container_ints) // these ones can have an int param on the property
       {
-        if (prop.name == container_ints[i].str)
-          return AddMultiInfo(CGUIInfo(container_ints[i].val, id, atoi(prop.param().c_str())));
+        if (prop.name == container_int.str)
+          return AddMultiInfo(CGUIInfo(container_int.val, id, atoi(prop.param().c_str())));
       }
-      for (size_t i = 0; i < sizeof(container_str) / sizeof(infomap); ++i) // these ones have a string param on the property
+      for (const infomap& i : container_str) // these ones have a string param on the property
       {
-        if (prop.name == container_str[i].str)
-          return AddMultiInfo(CGUIInfo(container_str[i].val, id, prop.param()));
+        if (prop.name == i.str)
+          return AddMultiInfo(CGUIInfo(i.val, id, prop.param()));
       }
       if (prop.name == "sortdirection")
       {
@@ -6065,26 +6162,26 @@ int CGUIInfoManager::TranslateSingleString(const std::string &strCondition, bool
     }
     else if (cat.name == "visualisation")
     {
-      for (size_t i = 0; i < sizeof(visualisation) / sizeof(infomap); ++i)
+      for (const infomap& i : visualisation)
       {
-        if (prop.name == visualisation[i].str)
-          return visualisation[i].val;
+        if (prop.name == i.str)
+          return i.val;
       }
     }
     else if (cat.name == "fanart")
     {
-      for (size_t i = 0; i < sizeof(fanart_labels) / sizeof(infomap); ++i)
+      for (const infomap& fanart_label : fanart_labels)
       {
-        if (prop.name == fanart_labels[i].str)
-          return fanart_labels[i].val;
+        if (prop.name == fanart_label.str)
+          return fanart_label.val;
       }
     }
     else if (cat.name == "skin")
     {
-      for (size_t i = 0; i < sizeof(skin_labels) / sizeof(infomap); ++i)
+      for (const infomap& skin_label : skin_labels)
       {
-        if (prop.name == skin_labels[i].str)
-          return skin_labels[i].val;
+        if (prop.name == skin_label.str)
+          return skin_label.val;
       }
       if (prop.num_params())
       {
@@ -6109,26 +6206,26 @@ int CGUIInfoManager::TranslateSingleString(const std::string &strCondition, bool
         if (winID != WINDOW_INVALID)
           return AddMultiInfo(CGUIInfo(WINDOW_PROPERTY, winID, prop.param()));
       }
-      for (size_t i = 0; i < sizeof(window_bools) / sizeof(infomap); ++i)
+      for (const infomap& window_bool : window_bools)
       {
-        if (prop.name == window_bools[i].str)
+        if (prop.name == window_bool.str)
         { //! @todo The parameter for these should really be on the first not the second property
           if (prop.param().find("xml") != std::string::npos)
-            return AddMultiInfo(CGUIInfo(window_bools[i].val, 0, prop.param()));
+            return AddMultiInfo(CGUIInfo(window_bool.val, 0, prop.param()));
           int winID = prop.param().empty() ? WINDOW_INVALID : CWindowTranslator::TranslateWindow(prop.param());
-          return AddMultiInfo(CGUIInfo(window_bools[i].val, winID, 0));
+          return AddMultiInfo(CGUIInfo(window_bool.val, winID, 0));
         }
       }
     }
     else if (cat.name == "control")
     {
-      for (size_t i = 0; i < sizeof(control_labels) / sizeof(infomap); ++i)
+      for (const infomap& control_label : control_labels)
       {
-        if (prop.name == control_labels[i].str)
+        if (prop.name == control_label.str)
         { //! @todo The parameter for these should really be on the first not the second property
           int controlID = atoi(prop.param().c_str());
           if (controlID)
-            return AddMultiInfo(CGUIInfo(control_labels[i].val, controlID, 0));
+            return AddMultiInfo(CGUIInfo(control_label.val, controlID, 0));
           return 0;
         }
       }
@@ -6142,11 +6239,11 @@ int CGUIInfoManager::TranslateSingleString(const std::string &strCondition, bool
     else if (cat.name == "playlist")
     {
       int ret = -1;
-      for (size_t i = 0; i < sizeof(playlist) / sizeof(infomap); ++i)
+      for (const infomap& i : playlist)
       {
-        if (prop.name == playlist[i].str)
+        if (prop.name == i.str)
         {
-          ret = playlist[i].val;
+          ret = i.val;
           break;
         }
       }
@@ -6169,15 +6266,15 @@ int CGUIInfoManager::TranslateSingleString(const std::string &strCondition, bool
     }
     else if (cat.name == "pvr")
     {
-      for (size_t i = 0; i < sizeof(pvr) / sizeof(infomap); ++i)
+      for (const infomap& i : pvr)
       {
-        if (prop.name == pvr[i].str)
-          return pvr[i].val;
+        if (prop.name == i.str)
+          return i.val;
       }
-      for (size_t i = 0; i < sizeof(pvr_times) / sizeof(infomap); ++i)
+      for (const infomap& pvr_time : pvr_times)
       {
-        if (prop.name == pvr_times[i].str)
-          return AddMultiInfo(CGUIInfo(pvr_times[i].val, TranslateTimeFormat(prop.param())));
+        if (prop.name == pvr_time.str)
+          return AddMultiInfo(CGUIInfo(pvr_time.val, TranslateTimeFormat(prop.param())));
       }
     }
     else if (cat.name == "rds")
@@ -6185,10 +6282,10 @@ int CGUIInfoManager::TranslateSingleString(const std::string &strCondition, bool
       if (prop.name == "getline")
         return AddMultiInfo(CGUIInfo(RDS_GET_RADIOTEXT_LINE, atoi(prop.param(0).c_str())));
 
-      for (size_t i = 0; i < sizeof(rds) / sizeof(infomap); ++i)
+      for (const infomap& rd : rds)
       {
-        if (prop.name == rds[i].str)
-          return rds[i].val;
+        if (prop.name == rd.str)
+          return rd.val;
       }
     }
   }
@@ -6252,13 +6349,13 @@ int CGUIInfoManager::TranslateSingleString(const std::string &strCondition, bool
     else if (info[0].name == "control")
     {
       const Property &prop = info[1];
-      for (size_t i = 0; i < sizeof(control_labels) / sizeof(infomap); ++i)
+      for (const infomap& control_label : control_labels)
       {
-        if (prop.name == control_labels[i].str)
+        if (prop.name == control_label.str)
         { //! @todo The parameter for these should really be on the first not the second property
           int controlID = atoi(prop.param().c_str());
           if (controlID)
-            return AddMultiInfo(CGUIInfo(control_labels[i].val, controlID, atoi(info[2].param(0).c_str())));
+            return AddMultiInfo(CGUIInfo(control_label.val, controlID, atoi(info[2].param(0).c_str())));
           return 0;
         }
       }
@@ -6297,11 +6394,11 @@ int CGUIInfoManager::TranslateListItem(const Property& cat, const Property& prop
 
   if (ret == 0)
   {
-    for (size_t i = 0; i < sizeof(listitem_labels) / sizeof(infomap); ++i) // these ones don't have or need an id
+    for (const infomap& listitem_label : listitem_labels) // these ones don't have or need an id
     {
-      if (prop.name == listitem_labels[i].str)
+      if (prop.name == listitem_label.str)
       {
-        ret = listitem_labels[i].val;
+        ret = listitem_label.val;
         break;
       }
     }
@@ -6332,10 +6429,10 @@ int CGUIInfoManager::TranslateListItem(const Property& cat, const Property& prop
 
 int CGUIInfoManager::TranslateMusicPlayerString(const std::string &info) const
 {
-  for (size_t i = 0; i < sizeof(musicplayer) / sizeof(infomap); ++i)
+  for (const infomap& i : musicplayer)
   {
-    if (info == musicplayer[i].str)
-      return musicplayer[i].val;
+    if (info == i.str)
+      return i.val;
   }
   return 0;
 }
@@ -6524,7 +6621,22 @@ bool CGUIInfoManager::GetMultiInfoBool(const CGUIInfo &info, int contextWindow, 
           if (info.GetData2() < 0) // info labels are stored with negative numbers
           {
             int info2 = -info.GetData2();
-            if (item && item->IsFileItem() && IsListItemInfo(info2))
+            CGUIListItemPtr item2;
+
+            if (IsListItemInfo(info2))
+            {
+              int iResolvedInfo2 = ResolveMultiInfo(info2);
+              if (iResolvedInfo2 != 0)
+              {
+                const GUIINFO::CGUIInfo& resolvedInfo2 = m_multiInfo[iResolvedInfo2 - MULTI_INFO_START];
+                if (resolvedInfo2.GetInfoFlag() & INFOFLAG_LISTITEM_CONTAINER)
+                  item2 = GUIINFO::GetCurrentListItem(contextWindow, resolvedInfo2.GetData1()); // data1 contains the container id
+              }
+            }
+
+            if (item2 && item2->IsFileItem())
+              compare = GetItemImage(item2.get(), contextWindow, info2);
+            else if (item && item->IsFileItem())
               compare = GetItemImage(item, contextWindow, info2);
             else
               compare = GetImage(info2, contextWindow);
@@ -6759,11 +6871,13 @@ void CGUIInfoManager::UpdateAVInfo()
   {
     VideoStreamInfo video;
     AudioStreamInfo audio;
+    SubtitleStreamInfo subtitle;
 
     g_application.GetAppPlayer().GetVideoStreamInfo(CURRENT_STREAM, video);
     g_application.GetAppPlayer().GetAudioStreamInfo(CURRENT_STREAM, audio);
+    g_application.GetAppPlayer().GetSubtitleStreamInfo(CURRENT_STREAM, subtitle);
 
-    m_infoProviders.UpdateAVInfo(audio, video);
+    m_infoProviders.UpdateAVInfo(audio, video, subtitle);
   }
 }
 
@@ -6779,6 +6893,20 @@ int CGUIInfoManager::AddMultiInfo(const CGUIInfo &info)
   if (id > MULTI_INFO_END)
     CLog::Log(LOGERROR, "%s - too many multiinfo bool/labels in this skin", __FUNCTION__);
   return id;
+}
+
+int CGUIInfoManager::ResolveMultiInfo(int info) const
+{
+  int iLastInfo = 0;
+
+  int iResolvedInfo = info;
+  while (iResolvedInfo >= MULTI_INFO_START && iResolvedInfo <= MULTI_INFO_END)
+  {
+    iLastInfo = iResolvedInfo;
+    iResolvedInfo = m_multiInfo[iResolvedInfo - MULTI_INFO_START].m_info;
+  }
+
+  return iLastInfo;
 }
 
 bool CGUIInfoManager::IsListItemInfo(int info) const

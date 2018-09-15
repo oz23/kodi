@@ -17,8 +17,9 @@
 #include "GUIWindowManager.h"
 
 static const SliderAction actions[] = {
-  {"seek",    "PlayerControl(SeekPercentage(%2f))", PLAYER_PROGRESS, false},
-  {"volume",  "SetVolume(%2f)",                     PLAYER_VOLUME,   true}
+  {"seek",     "PlayerControl(SeekPercentage(%2f))", PLAYER_PROGRESS,                 false},
+  {"pvr.seek", "PVR.SeekPercentage(%2f)",            PVR_TIMESHIFT_PROGRESS_PLAY_POS, false},
+  {"volume",   "SetVolume(%2f)",                     PLAYER_VOLUME,                   true}
  };
 
 CGUISliderControl::CGUISliderControl(int parentID, int controlID, float posX, float posY, float width, float height, const CTextureInfo& backGroundTexture, const CTextureInfo& nibTexture, const CTextureInfo& nibTextureFocus, int iType, ORIENTATION orientation)
@@ -699,11 +700,11 @@ float CGUISliderControl::GetProportion(RangeSelector selector /* = RangeSelector
 
 void CGUISliderControl::SetAction(const std::string &action)
 {
-  for (size_t i = 0; i < sizeof(actions)/sizeof(SliderAction); i++)
+  for (const SliderAction& a : actions)
   {
-    if (StringUtils::EqualsNoCase(action, actions[i].action))
+    if (StringUtils::EqualsNoCase(action, a.action))
     {
-      m_action = &actions[i];
+      m_action = &a;
       return;
     }
   }

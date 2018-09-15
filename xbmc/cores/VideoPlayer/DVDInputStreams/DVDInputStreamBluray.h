@@ -28,6 +28,14 @@ extern "C"
 #define BD_EVENT_MENU_ERROR   -2
 #define BD_EVENT_ENC_ERROR    -3
 
+#define HDMV_PID_VIDEO            0x1011
+#define HDMV_PID_AUDIO_FIRST      0x1100
+#define HDMV_PID_AUDIO_LAST       0x111f
+#define HDMV_PID_PG_FIRST         0x1200
+#define HDMV_PID_PG_LAST          0x121f
+#define HDMV_PID_IG_FIRST         0x1400
+#define HDMV_PID_IG_LAST          0x141f
+
 class CDVDOverlayImage;
 class IVideoPlayer;
 
@@ -123,9 +131,10 @@ protected:
 
   IVideoPlayer* m_player = nullptr;
   BLURAY* m_bd = nullptr;
-  BLURAY_TITLE_INFO* m_title = nullptr;
+  const BLURAY_TITLE* m_title = nullptr;
+  BLURAY_TITLE_INFO* m_titleInfo = nullptr;
   uint32_t m_playlist = MAX_PLAYLIST_ID + 1;
-  uint32_t m_clip = MAX_CLIP_ID + 1;
+  BLURAY_CLIP_INFO* m_clip = nullptr;
   uint32_t m_angle = 0;
   bool m_menu = false;
   bool m_navmode = false;
@@ -148,7 +157,8 @@ protected:
     HOLD_DATA,
     HOLD_STILL,
     HOLD_ERROR,
-    HOLD_EXIT
+    HOLD_EXIT,
+    HOLD_PAUSE
   } m_hold = HOLD_NONE;
   BD_EVENT m_event;
 #ifdef HAVE_LIBBLURAY_BDJ
@@ -158,6 +168,7 @@ protected:
   private:
     bool OpenStream(CFileItem &item);
     void SetupPlayerSettings();
+    void FreeTitleInfo();
     std::unique_ptr<CDVDInputStreamFile> m_pstream = nullptr;
     std::string m_rootPath;
 };

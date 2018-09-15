@@ -667,29 +667,10 @@ bool CPVRManager::IsRecordingOnPlayingChannel(void) const
   return currentChannel && currentChannel->IsRecording();
 }
 
-bool CPVRManager::IsTimeshifting(void) const
-{
-  bool bTimeshifting = false;
-  if (m_playingChannel)
-  {
-    const CPVRClientPtr client = GetClient(m_playingChannel->ClientID());
-    if (client)
-      client->IsTimeshifting(bTimeshifting);
-  }
-  return bTimeshifting;
-}
-
 bool CPVRManager::CanRecordOnPlayingChannel(void) const
 {
   const CPVRChannelPtr currentChannel = GetPlayingChannel();
   return currentChannel && currentChannel->CanRecord();
-}
-
-void CPVRManager::ResetPlayingTag(void)
-{
-  CSingleLock lock(m_critSection);
-  if (IsStarted() && m_guiInfo)
-    m_guiInfo->ResetPlayingTag();
 }
 
 void CPVRManager::RestartParentalTimer()
@@ -741,7 +722,7 @@ void CPVRManager::SetPlayingGroup(const CPVRChannelPtr &channel)
   }
 }
 
-CPVRChannelGroupPtr CPVRManager::GetPlayingGroup(bool bRadio /* = false */)
+CPVRChannelGroupPtr CPVRManager::GetPlayingGroup(bool bRadio /* = false */) const
 {
   if (m_channelGroups)
     return m_channelGroups->GetSelectedGroup(bRadio);

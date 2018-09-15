@@ -373,11 +373,6 @@ namespace PVR
     bool HasChanges(void) const;
 
     /*!
-     * @brief Reset the channel number cache if this is the selected group in the UI.
-     */
-    void ResetChannelNumberCache(void);
-
-    /*!
      * @brief Create an EPG table for each channel.
      * @brief bForce Create the tables, even if they already have been created before.
      * @return True if all tables were created successfully, false otherwise.
@@ -391,20 +386,6 @@ namespace PVR
      * @return The amount of entries that were added.
      */
     int GetEPGAll(CFileItemList &results, bool bIncludeChannelsWithoutEPG = false) const;
-
-    /*!
-     * @brief Get all entries that are active now.
-     * @param results The fileitem list to store the results in.
-     * @return The amount of entries that were added.
-     */
-    int GetEPGNow(CFileItemList &results) const { return GetEPGNowOrNext(results, false); }
-
-    /*!
-     * @brief Get all entries that will be active next.
-     * @param results The fileitem list to store the results in.
-     * @return The amount of entries that were added.
-     */
-    int GetEPGNext(CFileItemList &results) const { return GetEPGNowOrNext(results, true); }
 
     /*!
      * @brief Get the start time of the first entry.
@@ -435,8 +416,6 @@ namespace PVR
      */
     PVRChannelGroupMember& GetByUniqueID(const std::pair<int, int>& id);
     const PVRChannelGroupMember& GetByUniqueID(const std::pair<int, int>& id) const;
-
-    void SetSelectedGroup(bool bSetTo);
 
     void SetHidden(bool bHidden);
     bool IsHidden(void) const;
@@ -531,7 +510,6 @@ namespace PVR
     bool             m_bChanged = false;                    /*!< true if anything changed in this group that hasn't been persisted, false otherwise */
     bool             m_bUsingBackendChannelOrder = false;   /*!< true to use the channel order from backends, false otherwise */
     bool             m_bUsingBackendChannelNumbers = false; /*!< true to use the channel numbers from 1 backend, false otherwise */
-    bool             m_bSelectedGroup = false;              /*!< true when this is the selected group, false otherwise */
     bool             m_bPreventSortAndRenumber = false;     /*!< true when sorting and renumbering should not be done after adding/updating channels to the group */
     time_t           m_iLastWatched = 0;                /*!< last time group has been watched */
     bool             m_bHidden = false;                     /*!< true if this group is hidden, false otherwise */
@@ -544,12 +522,5 @@ namespace PVR
 
   private:
     CDateTime GetEPGDate(EpgDateType epgDateType) const;
-    /*!
-     * @brief Get all entries that will be active next.
-     * @param results The fileitem list to store the results in.
-     * @param bGetNext True to get the next item, false to get the current one
-     * @return The amount of entries that were added.
-     */
-    int GetEPGNowOrNext(CFileItemList &results, bool bGetNext) const;
   };
 }

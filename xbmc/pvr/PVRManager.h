@@ -192,12 +192,6 @@ namespace PVR
     bool IsPlayingEpgTag(const CPVREpgInfoTagPtr &epgTag) const;
 
     /*!
-     * @brief Check whether the currently playing livetv stream is timeshifted.
-     * @return True if there is a playing stream and if it is timeshifted, false otherwise.
-     */
-    bool IsTimeshifting() const;
-
-    /*!
      * @return True while the PVRManager is initialising.
      */
     inline bool IsInitialising(void) const
@@ -281,11 +275,6 @@ namespace PVR
     bool EpgsCreated(void) const;
 
     /*!
-     * @brief Reset the playing EPG tag.
-     */
-    void ResetPlayingTag(void);
-
-    /*!
      * @brief Inform PVR manager that playback of an item just started.
      * @param item The item that started to play.
      */
@@ -320,7 +309,7 @@ namespace PVR
      * @param bRadio True to get the current radio group, false to get the current TV group.
      * @return The current group or the group containing all channels if it's not set.
      */
-    CPVRChannelGroupPtr GetPlayingGroup(bool bRadio = false);
+    CPVRChannelGroupPtr GetPlayingGroup(bool bRadio = false) const;
 
     /*!
      * @brief Fill the file item for a recording, a channel or an epg tag with the properties required for playback. Values are obtained from the PVR backend.

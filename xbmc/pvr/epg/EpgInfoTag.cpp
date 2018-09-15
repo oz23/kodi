@@ -208,10 +208,9 @@ void CPVREpgInfoTag::ToSortable(SortItem& sortable, Field field) const
 
 CDateTime CPVREpgInfoTag::GetCurrentPlayingTime() const
 {
-  if (CServiceBroker::GetPVRManager().GetPlayingChannel() == Channel() &&
-      CServiceBroker::GetPVRManager().IsTimeshifting())
+  if (CServiceBroker::GetPVRManager().GetPlayingChannel() == Channel())
   {
-    // timeshifting; start time valid?
+    // start time valid?
     time_t startTime = CServiceBroker::GetDataCacheCore().GetStartTime();
     if (startTime > 0)
     {
@@ -219,7 +218,6 @@ CDateTime CPVREpgInfoTag::GetCurrentPlayingTime() const
     }
   }
 
-  // not timeshifting
   return CDateTime::GetUTCDateTime();
 }
 
@@ -353,7 +351,7 @@ std::string CPVREpgInfoTag::Title(bool bOverrideParental /* = false */) const
 
   if (!bOverrideParental && IsParentalLocked())
     strTitle = g_localizeStrings.Get(19266); // parental locked
-  else if (m_strTitle.empty() && !CServiceBroker::GetSettings().GetBool(CSettings::SETTING_EPG_HIDENOINFOAVAILABLE))
+  else if (m_strTitle.empty() && !CServiceBroker::GetSettings()->GetBool(CSettings::SETTING_EPG_HIDENOINFOAVAILABLE))
     strTitle = g_localizeStrings.Get(19055); // no information available
   else
     strTitle = m_strTitle;

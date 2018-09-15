@@ -100,17 +100,17 @@ static const ControlMapping controls[] =
 
 CGUIControl::GUICONTROLTYPES CGUIControlFactory::TranslateControlType(const std::string &type)
 {
-  for (unsigned int i = 0; i < ARRAY_SIZE(controls); ++i)
-    if (StringUtils::EqualsNoCase(type, controls[i].name))
-      return controls[i].type;
+  for (const ControlMapping& control : controls)
+    if (StringUtils::EqualsNoCase(type, control.name))
+      return control.type;
   return CGUIControl::GUICONTROL_UNKNOWN;
 }
 
 std::string CGUIControlFactory::TranslateControlType(CGUIControl::GUICONTROLTYPES type)
 {
-  for (unsigned int i = 0; i < ARRAY_SIZE(controls); ++i)
-    if (type == controls[i].type)
-      return controls[i].name;
+  for (const ControlMapping& control : controls)
+    if (type == control.type)
+      return control.name;
   return "";
 }
 
@@ -667,6 +667,7 @@ CGUIControl* CGUIControlFactory::Create(int parentID, const CRect &rect, TiXmlEl
   bool  defaultAlways = false;
   std::string strTmp;
   int singleInfo = 0;
+  int singleInfo2 = 0;
   std::string strLabel;
   int iUrlSet=0;
   std::string toggleSelect;
@@ -855,6 +856,8 @@ CGUIControl* CGUIControlFactory::Create(int parentID, const CRect &rect, TiXmlEl
   std::string infoString;
   if (XMLUtils::GetString(pControlNode, "info", infoString))
     singleInfo = CServiceBroker::GetGUI()->GetInfoManager().TranslateString(infoString);
+  if (XMLUtils::GetString(pControlNode, "info2", infoString))
+    singleInfo2 = CServiceBroker::GetGUI()->GetInfoManager().TranslateString(infoString);
 
   GetTexture(pControlNode, "texturefocus", textureFocus);
   GetTexture(pControlNode, "texturenofocus", textureNoFocus);
@@ -1288,7 +1291,7 @@ CGUIControl* CGUIControlFactory::Create(int parentID, const CRect &rect, TiXmlEl
         textureBackground, textureLeft, textureMid, textureRight,
         textureOverlay, bReveal);
 
-      static_cast<CGUIProgressControl*>(control)->SetInfo(singleInfo);
+      static_cast<CGUIProgressControl*>(control)->SetInfo(singleInfo, singleInfo2);
     }
     break;
   case CGUIControl::GUICONTROL_IMAGE:

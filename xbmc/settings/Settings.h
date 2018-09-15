@@ -161,6 +161,7 @@ public:
   static const std::string SETTING_PVRMANAGER_CHANNELSCAN;
   static const std::string SETTING_PVRMANAGER_RESETDB;
   static const std::string SETTING_PVRMENU_DISPLAYCHANNELINFO;
+  static const std::string SETTING_PVRMENU_USESIMPLETIMESHIFTOSD;
   static const std::string SETTING_PVRMENU_ICONPATH;
   static const std::string SETTING_PVRMENU_SEARCHICONS;
   static const std::string SETTING_EPG_PAST_DAYSTODISPLAY;
@@ -194,6 +195,7 @@ public:
   static const std::string SETTING_PVRCLIENT_MENUHOOK;
   static const std::string SETTING_PVRTIMERS_HIDEDISABLEDTIMERS;
   static const std::string SETTING_MUSICLIBRARY_SHOWCOMPILATIONARTISTS;
+  static const std::string SETTING_MUSICLIBRARY_USEARTISTSORTNAME;
   static const std::string SETTING_MUSICLIBRARY_DOWNLOADINFO;
   static const std::string SETTING_MUSICLIBRARY_ARTISTSFOLDER;
   static const std::string SETTING_MUSICLIBRARY_PREFERONLINEALBUMART;

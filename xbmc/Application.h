@@ -56,6 +56,7 @@ class CBookmark;
 class IActionListener;
 class CGUIComponent;
 class CAppInboundProtocol;
+class CSettings;
 
 namespace ADDON
 {
@@ -122,6 +123,10 @@ class CApplication : public CXBApplicationEx, public IPlayerCallback, public IMs
 friend class CAppInboundProtocol;
 
 public:
+
+  // If playback time of current item is greater than this value, ACTION_PREV_ITEM will seek to start
+  // of currently playing item, otherwise it will seek to start of the previous item in playlist
+  static const unsigned int ACTION_PREV_ITEM_THRESHOLD = 3; // seconds;
 
   enum ESERVERS
   {
@@ -396,6 +401,7 @@ protected:
   bool NotifyActionListeners(const CAction &action) const;
 
   std::shared_ptr<ANNOUNCEMENT::CAnnouncementManager> m_pAnnouncementManager;
+  std::shared_ptr<CSettings> m_pSettings;
   std::unique_ptr<CGUIComponent> m_pGUI;
   std::unique_ptr<CWinSystemBase> m_pWinSystem;
   std::unique_ptr<ActiveAE::CActiveAE> m_pActiveAE;
