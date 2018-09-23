@@ -18,6 +18,7 @@
 #include "guilib/GUIComponent.h"
 #include "guilib/GUIWindowManager.h" //! @todo Remove me
 #include "guilib/WindowIDs.h"
+#include "guilib/GUIMessage.h"
 #include "input/Action.h"
 #include "input/ActionIDs.h"
 #include "GUIInfoManager.h" //! @todo Remove me

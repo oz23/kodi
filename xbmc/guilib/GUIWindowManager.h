@@ -16,13 +16,13 @@
 #include "DirtyRegionTracker.h"
 #include "guilib/WindowIDs.h"
 #include "GUIWindow.h"
-#include "IMsgTargetCallback.h"
 #include "IWindowManagerCallback.h"
 #include "messaging/IMessageTarget.h"
 #include "utils/GlobalsHandling.h"
 
 class CGUIDialog;
 class CGUIMediaWindow;
+class CGUIComponent;
 
 #ifdef TARGET_WINDOWS_STORE
 #pragma pack(push, 8)
@@ -51,7 +51,7 @@ class CGUIWindowManager : public KODI::MESSAGING::IMessageTarget
   friend CGUIDialog;
   friend CGUIMediaWindow;
 public:
-  CGUIWindowManager();
+  CGUIWindowManager(CGUIComponent *gui);
   ~CGUIWindowManager() override;
   bool SendMessage(CGUIMessage& message);
   bool SendMessage(int message, int senderID, int destID, int param1 = 0, int param2 = 0);
@@ -186,7 +186,6 @@ public:
   // method to removed queued messages with message id in the requested message id list.
   // pMessageIDList: point to first integer of a 0 ends integer array.
   int RemoveThreadMessageByMessageIds(int *pMessageIDList);
-  void AddMsgTarget( IMsgTargetCallback* pMsgTarget );
   int GetActiveWindow() const;
   int GetActiveWindowOrDialog() const;
   bool HasModalDialog(bool ignoreClosing) const;
@@ -249,6 +248,7 @@ private:
 
   bool HandleAction(const CAction &action) const;
 
+  CGUIComponent *m_pGUI = nullptr;
   std::unordered_map<int, CGUIWindow*> m_mapWindows;
   std::vector<CGUIWindow*> m_vecCustomWindows;
   std::vector<CGUIWindow*> m_activeDialogs;
@@ -259,7 +259,6 @@ private:
   IWindowManagerCallback* m_pCallback;
   std::list< std::pair<CGUIMessage*,int> > m_vecThreadMessages;
   CCriticalSection m_critSection;
-  std::vector<IMsgTargetCallback*> m_vecMsgTargets;
 
   int  m_iNested;
   bool m_initialized;

@@ -25,6 +25,7 @@
 #include "guilib/GUIComponent.h"
 #include "guilib/GUIWindowManager.h"
 #include "guilib/LocalizeStrings.h"
+#include "guilib/GUIMessage.h"
 #include "interfaces/builtins/Builtins.h"
 #include "settings/lib/Setting.h"
 #include "settings/lib/SettingsManager.h"

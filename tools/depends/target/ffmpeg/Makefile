@@ -55,7 +55,7 @@ endif
 ifeq ($(OS), osx)
   ffmpg_config += --disable-decoder=mpeg_xvmc --disable-crystalhd --enable-videotoolbox
   ffmpg_config += --target-os=darwin
-  ffmpg_config += --disable-securetransport
+  ffmpg_config += --disable-securetransport --disable-optimizations
 endif
 ifeq ($(findstring arm, $(CPU)), arm)
   ffmpg_config += --enable-pic --disable-armv5te --disable-armv6t2

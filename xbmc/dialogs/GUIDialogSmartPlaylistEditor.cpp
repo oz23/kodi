@@ -20,6 +20,7 @@
 #include "guilib/GUIKeyboardFactory.h"
 #include "guilib/GUIWindowManager.h"
 #include "guilib/LocalizeStrings.h"
+#include "guilib/GUIMessage.h"
 #include "input/Key.h"
 #include "profiles/ProfilesManager.h"
 #include "settings/Settings.h"

@@ -17,6 +17,7 @@
 #include "filesystem/Directory.h"
 #include "filesystem/File.h"
 #include "guilib/GUIWindowManager.h"
+#include "guilib/GUIMessage.h"
 #include "profiles/ProfilesManager.h"
 #include "settings/Settings.h"
 #include "settings/lib/Setting.h"
