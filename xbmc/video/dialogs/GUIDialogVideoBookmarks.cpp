@@ -564,7 +564,7 @@ void CGUIDialogVideoBookmarks::OnJobComplete(unsigned int jobID,
     {
       unsigned int chapterIdx = (*iter).second;
       CGUIMessage m(GUI_MSG_REFRESH_LIST, GetID(), 0, 1, chapterIdx);
-      CApplicationMessenger::GetInstance().SendGUIMessage(m);
+      CServiceBroker::GetGUI()->GetWindowManager().SendThreadMessage(m);
       m_mapJobsChapter.erase(iter);
     }
   }

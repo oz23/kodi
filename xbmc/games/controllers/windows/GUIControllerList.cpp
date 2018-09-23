@@ -34,7 +34,7 @@
 #include "guilib/GUIControlGroupList.h"
 #include "guilib/GUIWindow.h"
 #include "guilib/WindowIDs.h"
-#include "messaging/ApplicationMessenger.h"
+#include "guilib/GUIWindowManager.h"
 #include "peripherals/Peripherals.h"
 #include "utils/StringUtils.h"
 #include "ServiceBroker.h"
@@ -164,7 +164,7 @@ void CGUIControllerList::OnEvent(const ADDON::AddonEvent& event)
   {
     using namespace MESSAGING;
     CGUIMessage msg(GUI_MSG_REFRESH_LIST, m_guiWindow->GetID(), CONTROL_CONTROLLER_LIST);
-    CApplicationMessenger::GetInstance().SendGUIMessage(msg);
+    CServiceBroker::GetGUI()->GetWindowManager().SendThreadMessage(msg);
   }
 }
 

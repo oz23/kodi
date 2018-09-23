@@ -15,6 +15,7 @@
 #include "ServiceBroker.h"
 #include "dialogs/GUIDialogBusy.h"
 #include "dialogs/GUIDialogNumeric.h"
+#include "guilib/GUIWindowManager.h"
 #include "input/Key.h"
 #include "messaging/ApplicationMessenger.h"
 #include "messaging/helpers/DialogHelper.h"
@@ -753,7 +754,7 @@ void CPVRRefreshTimelineItemsThread::Process()
     if (m_pGuideWindow->RefreshTimelineItems() && !m_bStop)
     {
       CGUIMessage m(GUI_MSG_REFRESH_LIST, m_pGuideWindow->GetID(), 0, ObservableMessageEpg);
-      KODI::MESSAGING::CApplicationMessenger::GetInstance().SendGUIMessage(m);
+      CServiceBroker::GetGUI()->GetWindowManager().SendThreadMessage(m);
     }
 
     if (m_bStop)

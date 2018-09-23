@@ -169,7 +169,7 @@ void CGUIWindowPVRBase::Notify(const Observable &obs, const ObservableMessage ms
   if (m_active)
   {
     CGUIMessage m(GUI_MSG_REFRESH_LIST, GetID(), 0, msg);
-    CApplicationMessenger::GetInstance().SendGUIMessage(m);
+    CServiceBroker::GetGUI()->GetWindowManager().SendThreadMessage(m);
   }
 }
 

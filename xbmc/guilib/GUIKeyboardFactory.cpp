@@ -9,7 +9,6 @@
 #include "Application.h"
 #include "ServiceBroker.h"
 #include "GUIComponent.h"
-#include "messaging/ApplicationMessenger.h"
 #include "LocalizeStrings.h"
 #include "GUIKeyboardFactory.h"
 #include "GUIUserMessages.h"
@@ -46,12 +45,12 @@ void CGUIKeyboardFactory::keyTypedCB(CGUIKeyboard *ref, const std::string &typed
       case FILTERING_SEARCH:
         message.SetParam1(GUI_MSG_SEARCH_UPDATE);
         message.SetStringParam(typedString);
-        CApplicationMessenger::GetInstance().SendGUIMessage(message, CServiceBroker::GetGUI()->GetWindowManager().GetActiveWindow());
+        CServiceBroker::GetGUI()->GetWindowManager().SendThreadMessage(message);
         break;
       case FILTERING_CURRENT:
         message.SetParam1(GUI_MSG_FILTER_ITEMS);
         message.SetStringParam(typedString);
-        CApplicationMessenger::GetInstance().SendGUIMessage(message);
+        CServiceBroker::GetGUI()->GetWindowManager().SendThreadMessage(message);
         break;
       case FILTERING_NONE:
         break;

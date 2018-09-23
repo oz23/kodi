@@ -150,7 +150,7 @@ void CGUIDialogPeripherals::Notify(const Observable &obs, const ObservableMessag
 void CGUIDialogPeripherals::UpdatePeripheralsAsync()
 {
   CGUIMessage msg(GUI_MSG_REFRESH_LIST, GetID(), -1);
-  MESSAGING::CApplicationMessenger::GetInstance().SendGUIMessage(msg);
+  CServiceBroker::GetGUI()->GetWindowManager().SendThreadMessage(msg);
 }
 
 void CGUIDialogPeripherals::UpdatePeripheralsSync()
