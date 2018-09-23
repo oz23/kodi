@@ -15162,7 +15162,8 @@ msgctxt "#24103"
 msgid "Skin is missing some files"
 msgstr ""
 
-#: xbmc/addons/Repository.cpp
+#. Error message shown when a game add-on can't be loaded due to missing dependencies
+#: xbmc/games/addons/GameClientProperties.cpp
 msgctxt "#24104"
 msgid "Add-on is incompatible due to unmet dependencies."
 msgstr ""
@@ -17311,6 +17312,7 @@ msgstr ""
 
 #. Dialog title when gameplay fails
 #: xbmc/games/addons/GameClient.cpp
+#: xbmc/games/addons/GameClientProperties.cpp
 #: xbmc/games/GameManager.cpp
 msgctxt "#35210"
 msgid "Failed to play game"
@@ -17388,7 +17390,11 @@ msgctxt "#35222"
 msgid "Exit"
 msgstr ""
 
-#empty string with id 35223
+#. Help text shown when playaing a game with missing add-on dependencies. {0:s} - list of add-ons that are missing
+#: xbmc/games/addons/GameClientProperties.cpp
+msgctxt "#35223"
+msgid "Missing: {0:s}"
+msgstr ""
 
 #. Label of button in the in-game menu for pausing and resuming playback
 #: addons/skin.estuary/xml/GameOSD.xml
@@ -17460,7 +17466,13 @@ msgctxt "#35234"
 msgid "Controls"
 msgstr ""
 
-#empty strings from id 35235 to 35249
+#. Help text shown when the user first plays a game. {0:s} - Button combo to open the in-game menu
+#: addons/skin.estuary/xml/GameOSD.xml
+msgctxt "#35235"
+msgid "Press {0:s} to open the in-game menu."
+msgstr ""
+
+#empty strings from id 35236 to 35249
 
 #: xbmc/windows/GUIMediaWindow.cpp
 msgctxt "#35250"
