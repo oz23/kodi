@@ -3280,6 +3280,7 @@ void CApplication::PlaybackCleanup()
   if (!m_appPlayer.IsPlaying())
   {
     m_stackHelper.Clear();
+    m_appPlayer.ResetPlayer();
   }
 
   if (IsEnableTestMode())
