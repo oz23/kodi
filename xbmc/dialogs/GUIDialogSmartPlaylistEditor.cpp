@@ -22,7 +22,7 @@
 #include "guilib/LocalizeStrings.h"
 #include "guilib/GUIMessage.h"
 #include "input/Key.h"
-#include "profiles/ProfilesManager.h"
+#include "profiles/ProfileManager.h"
 #include "settings/Settings.h"
 #include "settings/SettingsComponent.h"
 #include "Util.h"
@@ -145,9 +145,9 @@ bool CGUIDialogSmartPlaylistEditor::OnMessage(CGUIMessage& message)
       if (!startupList.empty())
       {
         int party = 0;
-        if (URIUtils::PathEquals(startupList, CServiceBroker::GetProfileManager().GetUserDataItem("PartyMode.xsp")))
+        if (URIUtils::PathEquals(startupList, CServiceBroker::GetSettingsComponent()->GetProfileManager()->GetUserDataItem("PartyMode.xsp")))
           party = 1;
-        else if (URIUtils::PathEquals(startupList, CServiceBroker::GetProfileManager().GetUserDataItem("PartyMode-Video.xsp")))
+        else if (URIUtils::PathEquals(startupList, CServiceBroker::GetSettingsComponent()->GetProfileManager()->GetUserDataItem("PartyMode-Video.xsp")))
           party = 2;
 
         if ((party && !XFILE::CFile::Exists(startupList)) ||
@@ -615,9 +615,9 @@ bool CGUIDialogSmartPlaylistEditor::EditPlaylist(const std::string &path, const 
   if (!editor) return false;
 
   editor->m_mode = type;
-  if (URIUtils::PathEquals(path, CServiceBroker::GetProfileManager().GetUserDataItem("PartyMode.xsp")))
+  if (URIUtils::PathEquals(path, CServiceBroker::GetSettingsComponent()->GetProfileManager()->GetUserDataItem("PartyMode.xsp")))
     editor->m_mode = "partymusic";
-  if (URIUtils::PathEquals(path, CServiceBroker::GetProfileManager().GetUserDataItem("PartyMode-Video.xsp")))
+  if (URIUtils::PathEquals(path, CServiceBroker::GetSettingsComponent()->GetProfileManager()->GetUserDataItem("PartyMode-Video.xsp")))
     editor->m_mode = "partyvideo";
 
   CSmartPlaylist playlist;

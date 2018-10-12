@@ -16,7 +16,6 @@
 #include "addons/LanguageResource.h"
 #include "addons/RepositoryUpdater.h"
 #include "Application.h"
-#include "FileItem.h"
 #include "ServiceBroker.h"
 #include "guilib/LocalizeStrings.h"
 #include "messaging/ApplicationMessenger.h"
@@ -25,7 +24,6 @@
 #include "settings/SettingsComponent.h"
 #include "settings/lib/Setting.h"
 #include "settings/Settings.h"
-#include "Util.h"
 #include "utils/CharsetConverter.h"
 #include "utils/LangCodeExpander.h"
 #include "utils/log.h"
@@ -1043,8 +1041,8 @@ const std::string& CLangInfo::GetSpeedUnitString(CSpeed::Unit speedUnit)
 std::set<std::string> CLangInfo::GetSortTokens() const
 {
   std::set<std::string> sortTokens = m_sortTokens;
-  sortTokens.insert(CServiceBroker::GetSettingsComponent()->GetAdvancedSettings()->m_vecTokens.begin(),
-                    CServiceBroker::GetSettingsComponent()->GetAdvancedSettings()->m_vecTokens.end());
+  for (const auto& t : CServiceBroker::GetSettingsComponent()->GetAdvancedSettings()->m_vecTokens)
+    sortTokens.insert(t);
 
   return sortTokens;
 }

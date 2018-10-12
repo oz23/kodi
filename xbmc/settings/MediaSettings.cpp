@@ -20,15 +20,12 @@
 #include "interfaces/builtins/Builtins.h"
 #include "music/MusicDatabase.h"
 #include "music/MusicLibraryQueue.h"
-#include "messaging/ApplicationMessenger.h"
 #include "messaging/helpers/DialogHelper.h"
-#include "profiles/ProfilesManager.h"
 #include "settings/lib/Setting.h"
 #include "settings/Settings.h"
 #include "storage/MediaManager.h"
 #include "threads/SingleLock.h"
 #include "utils/StringUtils.h"
-#include "utils/URIUtils.h"
 #include "utils/XBMCTinyXML.h"
 #include "utils/XMLUtils.h"
 #include "utils/Variant.h"
@@ -113,6 +110,8 @@ bool CMediaSettings::Load(const TiXmlNode *settings)
     XMLUtils::GetBoolean(pElement, "nonlinstretch", m_defaultVideoSettings.m_CustomNonLinStretch);
     if (!XMLUtils::GetInt(pElement, "stereomode", m_defaultVideoSettings.m_StereoMode))
       m_defaultVideoSettings.m_StereoMode = 0;
+    if (!XMLUtils::GetInt(pElement, "centermixlevel", m_defaultVideoSettings.m_CenterMixLevel))
+      m_defaultVideoSettings.m_CenterMixLevel = 0;
 
     m_defaultVideoSettings.m_ToneMapMethod = 1;
     m_defaultVideoSettings.m_ToneMapParam = 1.0f;
@@ -215,6 +214,7 @@ bool CMediaSettings::Save(TiXmlNode *settings) const
   XMLUtils::SetFloat(pNode, "subtitledelay", m_defaultVideoSettings.m_SubtitleDelay);
   XMLUtils::SetBoolean(pNode, "nonlinstretch", m_defaultVideoSettings.m_CustomNonLinStretch);
   XMLUtils::SetInt(pNode, "stereomode", m_defaultVideoSettings.m_StereoMode);
+  XMLUtils::SetInt(pNode, "centermixlevel", m_defaultVideoSettings.m_CenterMixLevel);
 
   // default audio settings for dsp addons
   TiXmlElement audioSettingsNode("defaultaudiosettings");

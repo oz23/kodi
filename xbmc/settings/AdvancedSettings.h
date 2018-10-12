@@ -16,7 +16,6 @@
 #include "pictures/PictureScalingAlgorithm.h"
 #include "settings/lib/ISettingCallback.h"
 #include "settings/lib/ISettingsHandler.h"
-#include "utils/GlobalsHandling.h"
 
 #define CACHE_BUFFER_MODE_INTERNET      0
 #define CACHE_BUFFER_MODE_ALL           1
@@ -25,7 +24,7 @@
 #define CACHE_BUFFER_MODE_REMOTE        4
 
 class CAppParamParser;
-class CProfilesManager;
+class CProfileManager;
 class CSettingsManager;
 class CVariant;
 
@@ -117,7 +116,7 @@ class CAdvancedSettings : public ISettingCallback, public ISettingsHandler
     void Uninitialize(CSettingsManager& settingsMgr);
     bool Initialized() const { return m_initialized; };
     void AddSettingsFile(const std::string &filename);
-    bool Load(const CProfilesManager &profileManager);
+    bool Load(const CProfileManager &profileManager);
 
     static void GetCustomTVRegexps(TiXmlElement *pRootElement, SETTINGS_TVSHOWLIST& settings);
     static void GetCustomRegexps(TiXmlElement *pRootElement, std::vector<std::string> &settings);
