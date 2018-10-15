@@ -48,7 +48,7 @@ CVideoPlayerVideo::CVideoPlayerVideo(CDVDClock* pClock
                                 ,CDVDMessageQueue& parent
                                 ,CRenderManager& renderManager
                                 ,CProcessInfo &processInfo)
-: CThread("VideoPlayerVideo")
+: CThread("VP-Video")
 , IDVDStreamPlayerVideo(processInfo)
 , m_messageQueue("video")
 , m_messageParent(parent)

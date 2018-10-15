@@ -45,7 +45,7 @@ public:
 
 
 CVideoPlayerAudio::CVideoPlayerAudio(CDVDClock* pClock, CDVDMessageQueue& parent, CProcessInfo &processInfo)
-: CThread("VideoPlayerAudio"), IDVDStreamPlayerAudio(processInfo)
+: CThread("VP-Audio"), IDVDStreamPlayerAudio(processInfo)
 , m_messageQueue("audio")
 , m_messageParent(parent)
 , m_audioSink(pClock)
