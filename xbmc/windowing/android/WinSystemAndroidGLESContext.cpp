@@ -32,10 +32,8 @@ bool CWinSystemAndroidGLESContext::InitWindowSystem()
     return false;
   }
 
-  const EGLint contextAttribs[] =
-  {
-    EGL_CONTEXT_CLIENT_VERSION, 2, EGL_NONE
-  };
+  CEGLAttributesVec contextAttribs;
+  contextAttribs.Add({{EGL_CONTEXT_CLIENT_VERSION, 2}});
 
   if (!m_pGLContext.CreateContext(contextAttribs))
   {
@@ -98,6 +96,11 @@ void CWinSystemAndroidGLESContext::PresentRenderImpl(bool rendered)
     throw std::runtime_error("eglSwapBuffers failed");
   }
   CXBMCApp::get()->WaitVSync(1000);
+}
+
+float CWinSystemAndroidGLESContext::GetFrameLatencyAdjustment()
+{
+  return CXBMCApp::GetFrameLatencyMs();
 }
 
 EGLDisplay CWinSystemAndroidGLESContext::GetEGLDisplay() const
