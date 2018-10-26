@@ -33,8 +33,8 @@
 #include "guilib/GUIWindowManager.h"
 #include "guilib/LocalizeStrings.h"
 #include "guilib/WindowIDs.h"
-#include "input/Action.h"
-#include "input/ActionIDs.h"
+#include "input/actions/Action.h"
+#include "input/actions/ActionIDs.h"
 #include "messaging/ApplicationMessenger.h"
 #include "settings/MediaSettings.h"
 #include "threads/SingleLock.h"
@@ -465,6 +465,14 @@ void CRetroPlayer::Render(bool clear, uint32_t alpha /* = 255 */, bool gui /* = 
 bool CRetroPlayer::IsRenderingVideo()
 {
   return true;
+}
+
+bool CRetroPlayer::HasGameAgent()
+{
+  if (m_gameClient)
+    return m_gameClient->Input().HasAgent();
+
+  return false;
 }
 
 std::string CRetroPlayer::GameClientID() const

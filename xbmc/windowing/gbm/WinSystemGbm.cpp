@@ -118,6 +118,9 @@ bool CWinSystemGbm::DestroyWindowSystem()
   m_GBM->DestroyDevice();
 
   CLog::Log(LOGDEBUG, "CWinSystemGbm::%s - deinitialized DRM", __FUNCTION__);
+
+  m_libinput.reset();
+
   return true;
 }
 
@@ -136,7 +139,10 @@ bool CWinSystemGbm::CreateNewWindow(const std::string& name,
 
   std::vector<uint64_t> *modifiers = m_DRM->GetOverlayPlaneModifiersForFormat(m_DRM->GetOverlayPlane()->format);
 
-  if (!m_GBM->CreateSurface(res.iWidth, res.iHeight, modifiers->data(), modifiers->size()))
+  // the gbm format needs alpha support
+  uint32_t format = CDRMUtils::FourCCWithAlpha(m_DRM->GetOverlayPlane()->GetFormat());
+
+  if (!m_GBM->CreateSurface(res.iWidth, res.iHeight, format, modifiers->data(), modifiers->size()))
   {
     CLog::Log(LOGERROR, "CWinSystemGbm::%s - failed to initialize GBM", __FUNCTION__);
     return false;

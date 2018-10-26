@@ -14,6 +14,7 @@
 #include "cores/VideoPlayer/DVDFileInfo.h"
 #include "FileItem.h"
 #include "ServiceBroker.h"
+#include "filesystem/Directory.h"
 #include "filesystem/DirectoryCache.h"
 #include "filesystem/StackDirectory.h"
 #include "guilib/GUIComponent.h"
@@ -186,16 +187,14 @@ CVideoThumbLoader::~CVideoThumbLoader()
 void CVideoThumbLoader::OnLoaderStart()
 {
   m_videoDatabase->Open();
-  m_showArt.clear();
-  m_seasonArt.clear();
+  m_artCache.clear();
   CThumbLoader::OnLoaderStart();
 }
 
 void CVideoThumbLoader::OnLoaderFinish()
 {
   m_videoDatabase->Close();
-  m_showArt.clear();
-  m_seasonArt.clear();
+  m_artCache.clear();
   CThumbLoader::OnLoaderFinish();
 }
 
@@ -222,27 +221,38 @@ static void SetupRarOptions(CFileItem& item, const std::string& path)
 
 std::vector<std::string> CVideoThumbLoader::GetArtTypes(const std::string &type)
 {
+  const std::shared_ptr<CAdvancedSettings> advancedSettings = CServiceBroker::GetSettingsComponent()->GetAdvancedSettings();
   std::vector<std::string> ret;
+  std::vector<std::string> extraart;
   if (type == MediaTypeEpisode)
-    ret.push_back("thumb");
-  else if (type == MediaTypeTvShow || type == MediaTypeSeason)
   {
-    ret.push_back("banner");
-    ret.push_back("poster");
-    ret.push_back("fanart");
+    ret = { "thumb" };
+    extraart = advancedSettings->m_videoEpisodeExtraArt;
   }
-  else if (type == MediaTypeMovie || type == MediaTypeMusicVideo || type == MediaTypeVideoCollection)
+  else if (type == MediaTypeTvShow)
   {
-    ret.push_back("poster");
-    ret.push_back("fanart");
+    ret = { "poster", "fanart", "banner" };
+    extraart = advancedSettings->m_videoTvShowExtraArt;
   }
-  else if (type.empty()) // unknown - just throw everything in
+  else if (type == MediaTypeSeason)
   {
-    ret.push_back("poster");
-    ret.push_back("banner");
-    ret.push_back("thumb");
-    ret.push_back("fanart");
+    ret = { "poster", "fanart", "banner" };
+    extraart = advancedSettings->m_videoTvSeasonExtraArt;
   }
+  else if (type == MediaTypeMovie || type == MediaTypeVideoCollection)
+  {
+    ret = { "poster", "fanart" };
+    extraart = advancedSettings->m_videoMovieExtraArt;
+  }
+  else if (type == MediaTypeMusicVideo)
+  {
+    ret = { "poster", "fanart" };
+    extraart = advancedSettings->m_videoMusicVideoExtraArt;
+  }
+  else if (type.empty()) // unknown, just the basics
+    ret = { "poster", "fanart", "banner", "thumb" };
+
+  ret.insert(ret.end(), extraart.begin(), extraart.end());
   return ret;
 }
 
@@ -473,34 +483,27 @@ bool CVideoThumbLoader::FillLibraryArt(CFileItem &item)
       // For episodes and seasons, we want to set fanart for that of the show
       if (!item.HasArt("tvshow.fanart") && tag.m_iIdShow >= 0)
       {
-        ArtCache::const_iterator i = m_showArt.find(tag.m_iIdShow);
-        if (i == m_showArt.end())
+        const ArtMap& artmap = GetArtFromCache(MediaTypeTvShow, tag.m_iIdShow);
+        if (!artmap.empty())
         {
-          std::map<std::string, std::string> showArt;
-          m_videoDatabase->GetArtForItem(tag.m_iIdShow, MediaTypeTvShow, showArt);
-          i = m_showArt.insert(std::make_pair(tag.m_iIdShow, showArt)).first;
-        }
-        if (i != m_showArt.end())
-        {
-          item.AppendArt(i->second, "tvshow");
+          item.AppendArt(artmap, MediaTypeTvShow);
           item.SetArtFallback("fanart", "tvshow.fanart");
           item.SetArtFallback("tvshow.thumb", "tvshow.poster");
         }
       }
 
-      if (!item.HasArt("season.poster") && tag.m_iSeason > -1)
+      if (tag.m_type == MediaTypeEpisode && !item.HasArt("season.poster") && tag.m_iSeason > -1)
       {
-        ArtCache::const_iterator i = m_seasonArt.find(tag.m_iIdSeason);
-        if (i == m_seasonArt.end())
-        {
-          std::map<std::string, std::string> seasonArt;
-          m_videoDatabase->GetArtForItem(tag.m_iIdSeason, MediaTypeSeason, seasonArt);
-          i = m_seasonArt.insert(std::make_pair(tag.m_iIdSeason, seasonArt)).first;
-        }
-
-        if (i != m_seasonArt.end())
-          item.AppendArt(i->second, MediaTypeSeason);
+        const ArtMap& artmap = GetArtFromCache(MediaTypeSeason, tag.m_iIdSeason);
+        if (!artmap.empty())
+          item.AppendArt(artmap, MediaTypeSeason);
       }
+    }
+    else if (tag.m_type == MediaTypeMovie && tag.m_set.id >= 0 && !item.HasArt("set.fanart"))
+    {
+      const ArtMap& artmap = GetArtFromCache(MediaTypeVideoCollection, tag.m_set.id);
+      if (!artmap.empty())
+        item.AppendArt(artmap, MediaTypeVideoCollection);
     }
     m_videoDatabase->Close();
   }
@@ -683,4 +686,17 @@ void CVideoThumbLoader::DetectAndAddMissingItemData(CFileItem &item)
 
   if (!stereoMode.empty())
     item.SetProperty("stereomode", CStereoscopicsManager::NormalizeStereoMode(stereoMode));
+}
+
+const ArtMap& CVideoThumbLoader::GetArtFromCache(const std::string &mediaType, const int id)
+{
+  std::pair<MediaType, int> key = std::make_pair(mediaType, id);
+  auto it = m_artCache.find(key);
+  if (it == m_artCache.end())
+  {
+    ArtMap newart;
+    m_videoDatabase->GetArtForItem(id, mediaType, newart);
+    it = m_artCache.insert(std::make_pair(key, std::move(newart))).first;
+  }
+  return it->second;
 }

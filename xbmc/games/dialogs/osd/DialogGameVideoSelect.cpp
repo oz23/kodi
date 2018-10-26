@@ -14,8 +14,7 @@
 #include "guilib/GUIMessage.h"
 #include "guilib/GUIComponent.h"
 #include "guilib/GUIWindowManager.h"
-#include "guilib/WindowIDs.h"
-#include "input/ActionIDs.h"
+#include "input/actions/ActionIDs.h"
 #include "settings/GameSettings.h"
 #include "settings/MediaSettings.h"
 #include "settings/Settings.h"
@@ -23,7 +22,6 @@
 #include "view/GUIViewControl.h"
 #include "view/ViewState.h"
 #include "Application.h"
-#include "ApplicationPlayer.h"
 #include "FileItem.h"
 #include "ServiceBroker.h"
 

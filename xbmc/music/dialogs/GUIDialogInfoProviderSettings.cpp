@@ -23,7 +23,6 @@
 #include "filesystem/Directory.h"
 #include "dialogs/GUIDialogFileBrowser.h"
 #include "dialogs/GUIDialogKaiToast.h"
-#include "dialogs/GUIDialogSelect.h"
 #include "guilib/GUIComponent.h"
 #include "guilib/GUIWindowManager.h"
 #include "guilib/LocalizeStrings.h"
@@ -31,15 +30,12 @@
 #include "interfaces/builtins/Builtins.h"
 #include "ServiceBroker.h"
 #include "settings/lib/Setting.h"
-#include "settings/lib/SettingsManager.h"
-#include "settings/SettingUtils.h"
 #include "settings/Settings.h"
 #include "settings/SettingsComponent.h"
 #include "settings/windows/GUIControlSettings.h"
 #include "storage/MediaManager.h"
 #include "Util.h"
 #include "utils/log.h"
-#include "utils/StringUtils.h"
 #include "utils/URIUtils.h"
 
 using namespace ADDON;

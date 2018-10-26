@@ -11,10 +11,10 @@
 #include "AppInboundProtocol.h"
 #include "guilib/GUIComponent.h"
 #include "guilib/GUIWindowManager.h"
+#include "input/actions/Action.h"
+#include "input/actions/ActionIDs.h"
 #include "input/mouse/MouseStat.h"
 #include "input/touch/generic/GenericTouchInputHandler.h"
-#include "input/Action.h"
-#include "input/ActionIDs.h"
 #include "interfaces/AnnouncementManager.h"
 #include "messaging/ApplicationMessenger.h"
 #include "platform/win10/input/RemoteControlXbox.h"
@@ -109,6 +109,8 @@ size_t CWinEventsWin10::GetQueueSize()
 
 void CWinEventsWin10::InitEventHandlers(const CoreWindow& window)
 {
+  CWinEventsWin10::InitOSKeymap();
+
   //window->SetPointerCapture();
 
   // window
