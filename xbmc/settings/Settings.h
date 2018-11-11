@@ -161,7 +161,6 @@ public:
   static const std::string SETTING_PVRMANAGER_CHANNELSCAN;
   static const std::string SETTING_PVRMANAGER_RESETDB;
   static const std::string SETTING_PVRMENU_DISPLAYCHANNELINFO;
-  static const std::string SETTING_PVRMENU_USESIMPLETIMESHIFTOSD;
   static const std::string SETTING_PVRMENU_ICONPATH;
   static const std::string SETTING_PVRMENU_SEARCHICONS;
   static const std::string SETTING_EPG_PAST_DAYSTODISPLAY;
@@ -176,6 +175,7 @@ public:
   static const std::string SETTING_PVRPLAYBACK_SIGNALQUALITY;
   static const std::string SETTING_PVRPLAYBACK_CONFIRMCHANNELSWITCH;
   static const std::string SETTING_PVRPLAYBACK_CHANNELENTRYTIMEOUT;
+  static const std::string SETTING_PVRPLAYBACK_DELAYMARKLASTWATCHED;
   static const std::string SETTING_PVRPLAYBACK_FPS;
   static const std::string SETTING_PVRRECORD_INSTANTRECORDACTION;
   static const std::string SETTING_PVRRECORD_INSTANTRECORDTIME;

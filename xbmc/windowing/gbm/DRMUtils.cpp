@@ -73,7 +73,7 @@ drm_fb * CDRMUtils::DrmFbGetFromBo(struct gbm_bo *bo)
     struct drm_fb *fb = static_cast<drm_fb *>(gbm_bo_get_user_data(bo));
     if(fb)
     {
-      if (m_overlay_plane->format == fb->format)
+      if (m_overlay_plane->GetFormat() == fb->format)
         return fb;
       else
         DrmFbDestroyCallback(bo, gbm_bo_get_user_data(bo));
@@ -82,7 +82,7 @@ drm_fb * CDRMUtils::DrmFbGetFromBo(struct gbm_bo *bo)
 
   struct drm_fb *fb = new drm_fb;
   fb->bo = bo;
-  fb->format = m_overlay_plane->format;
+  fb->format = m_overlay_plane->GetFormat();
 
   uint32_t width,
            height,
@@ -425,15 +425,13 @@ bool CDRMUtils::FindPlanes()
 
   m_primary_plane->plane = FindPlane(plane_resources, m_crtc_index, KODI_VIDEO_PLANE);
   m_overlay_plane->plane = FindPlane(plane_resources, m_crtc_index, KODI_GUI_10_PLANE);
-  m_overlay_plane->format = DRM_FORMAT_XRGB2101010;
-  m_overlay_plane->fallbackFormat = DRM_FORMAT_XRGB8888;
 
   /* fallback to 8bit plane if 10bit plane doesn't exist */
   if (m_overlay_plane->plane == nullptr)
   {
     drmModeFreePlane(m_overlay_plane->plane);
     m_overlay_plane->plane = FindPlane(plane_resources, m_crtc_index, KODI_GUI_PLANE);
-    m_overlay_plane->format = DRM_FORMAT_XRGB8888;
+    m_overlay_plane->SetFormat(DRM_FORMAT_XRGB8888);
   }
 
   drmModeFreePlaneResources(plane_resources);
@@ -465,7 +463,7 @@ bool CDRMUtils::FindPlanes()
     CLog::Log(LOGDEBUG, "CDRMUtils::%s - no drm modifiers present for the overlay plane", __FUNCTION__);
     m_overlay_plane->modifiers_map.emplace(DRM_FORMAT_ARGB8888, std::vector<uint64_t>{DRM_FORMAT_MOD_LINEAR});
     m_overlay_plane->modifiers_map.emplace(DRM_FORMAT_XRGB8888, std::vector<uint64_t>{DRM_FORMAT_MOD_LINEAR});
-    m_overlay_plane->modifiers_map.emplace(DRM_FORMAT_XRGB2101010, std::vector<uint64_t>{DRM_FORMAT_MOD_LINEAR});
+    m_overlay_plane->modifiers_map.emplace(DRM_FORMAT_ARGB2101010, std::vector<uint64_t>{DRM_FORMAT_MOD_LINEAR});
     m_overlay_plane->modifiers_map.emplace(DRM_FORMAT_XRGB2101010, std::vector<uint64_t>{DRM_FORMAT_MOD_LINEAR});
   }
 
@@ -529,42 +527,42 @@ bool CDRMUtils::OpenDrm(bool needConnector)
     "meson"
   };
 
-  for(int i = 0; i < 10; ++i)
+  for (auto module : modules)
   {
-    std::string device = "/dev/dri/card";
-    device.append(std::to_string(i));
-
-    for (auto module : modules)
+    m_fd.attach(drmOpenWithType(module, nullptr, DRM_NODE_PRIMARY));
+    if (m_fd)
     {
-      m_fd.attach(drmOpen(module, device.c_str()));
-      if (m_fd)
+      if(!GetResources())
       {
-        if(!GetResources())
+        continue;
+      }
+
+      if (needConnector)
+      {
+        if(!FindConnector())
         {
           continue;
         }
 
-        if (needConnector)
-        {
-          if(!FindConnector())
-          {
-            continue;
-          }
-
-          drmModeFreeConnector(m_connector->connector);
-          m_connector->connector = nullptr;
-          FreeProperties(m_connector);
-        }
-
-        drmModeFreeResources(m_drm_resources);
-        m_drm_resources = nullptr;
-
-        m_module = module;
-        m_device_path = device;
-
-        CLog::Log(LOGDEBUG, "CDRMUtils::%s - opened device: %s using module: %s", __FUNCTION__, device.c_str(), module);
-        return true;
+        drmModeFreeConnector(m_connector->connector);
+        m_connector->connector = nullptr;
+        FreeProperties(m_connector);
       }
+
+      drmModeFreeResources(m_drm_resources);
+      m_drm_resources = nullptr;
+
+      m_module = module;
+
+      CLog::Log(LOGDEBUG, "CDRMUtils::%s - opened device: %s using module: %s", __FUNCTION__, drmGetDeviceNameFromFd2(m_fd), module);
+
+      m_renderFd.attach(drmOpenWithType(module, nullptr, DRM_NODE_RENDER));
+      if (m_renderFd)
+      {
+        CLog::Log(LOGDEBUG, "CDRMUtils::%s - opened render node: %s using module: %s", __FUNCTION__, drmGetDeviceNameFromFd2(m_renderFd), module);
+      }
+
+      return true;
     }
   }
 
@@ -693,6 +691,7 @@ void CDRMUtils::DestroyDrm()
     CLog::Log(LOGDEBUG, "CDRMUtils::%s - failed to drop drm master: %s", __FUNCTION__, strerror(errno));
   }
 
+  m_renderFd.reset();
   m_fd.reset();
 
   drmModeFreeResources(m_drm_resources);
