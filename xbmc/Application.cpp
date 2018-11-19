@@ -702,14 +702,6 @@ bool CApplication::InitWindow(RESOLUTION res)
   return true;
 }
 
-bool CApplication::DestroyWindow()
-{
-  bool ret = CServiceBroker::GetWinSystem()->DestroyWindow();
-  CServiceBroker::UnregisterWinSystem();
-  m_pWinSystem.reset();
-  return ret;
-}
-
 bool CApplication::Initialize()
 {
 #if defined(HAS_DVD_DRIVE) && !defined(TARGET_WINDOWS) // somehow this throws an "unresolved external symbol" on win32
@@ -2442,10 +2434,7 @@ bool CApplication::Cleanup()
 
     CWinSystemBase *winSystem = CServiceBroker::GetWinSystem();
     if (winSystem)
-    {
       winSystem->DestroyWindow();
-      winSystem->DestroyWindowSystem();
-    }
 
     if (m_pGUI)
       m_pGUI->GetWindowManager().DestroyWindows();
@@ -2487,6 +2476,14 @@ bool CApplication::Cleanup()
     {
       m_pGUI->Deinit();
       m_pGUI.reset();
+    }
+
+    if (winSystem)
+    {
+      winSystem->DestroyWindowSystem();
+      CServiceBroker::UnregisterWinSystem();
+      winSystem = nullptr;
+      m_pWinSystem.reset();
     }
 
     // Cleanup was called more than once on exit during my tests
@@ -2810,6 +2807,7 @@ bool CApplication::PlayFile(CFileItem item, const std::string& player, bool bRes
     if(item.GetProperty("StartPercent").isString())
       fallback = atof(item.GetProperty("StartPercent").asString().c_str());
     options.startpercent = item.GetProperty("StartPercent").asDouble(fallback);
+    item.m_lStartOffset = 0;
   }
 
   options.starttime = CUtil::ConvertMilliSecsToSecs(item.m_lStartOffset);
@@ -3368,6 +3366,7 @@ bool CApplication::ToggleDPMS(bool manual)
       m_dpmsIsActive = false;
       m_dpmsIsManual = false;
       SetRenderGUI(true);
+      CheckOSScreenSaverInhibitionSetting();
       CServiceBroker::GetAnnouncementManager()->Announce(ANNOUNCEMENT::GUI, "xbmc", "OnDPMSDeactivated");
       return m_dpms->DisablePowerSaving();
     }
@@ -3378,6 +3377,7 @@ bool CApplication::ToggleDPMS(bool manual)
         m_dpmsIsActive = true;
         m_dpmsIsManual = manual;
         SetRenderGUI(false);
+        CheckOSScreenSaverInhibitionSetting();
         CServiceBroker::GetAnnouncementManager()->Announce(ANNOUNCEMENT::GUI, "xbmc", "OnDPMSActivated");
         return true;
       }
@@ -3490,7 +3490,10 @@ bool CApplication::WakeUpScreenSaver(bool bPowerOffKeyPressed /* = false */)
 void CApplication::CheckOSScreenSaverInhibitionSetting()
 {
   // Kodi screen saver overrides OS one: always inhibit OS screen saver then
-  if (!CServiceBroker::GetSettingsComponent()->GetSettings()->GetString(CSettings::SETTING_SCREENSAVER_MODE).empty() &&
+  // except when DPMS is active (inhibiting the screen saver then might also
+  // disable DPMS again)
+  if (!m_dpmsIsActive && 
+      !CServiceBroker::GetSettingsComponent()->GetSettings()->GetString(CSettings::SETTING_SCREENSAVER_MODE).empty() &&
       CServiceBroker::GetWinSystem()->GetOSScreenSaver())
   {
     if (!m_globalScreensaverInhibitor)
@@ -3542,7 +3545,10 @@ void CApplication::CheckScreenSaverAndDPMS()
   if (haveIdleActivity && CServiceBroker::GetWinSystem()->GetOSScreenSaver())
   {
     // Always inhibit OS screen saver during these kinds of activities
-    m_screensaverInhibitor = CServiceBroker::GetWinSystem()->GetOSScreenSaver()->CreateInhibitor();
+    if (!m_screensaverInhibitor)
+    {
+      m_screensaverInhibitor = CServiceBroker::GetWinSystem()->GetOSScreenSaver()->CreateInhibitor();
+    }
   }
   else if (m_screensaverInhibitor)
   {
@@ -3556,7 +3562,7 @@ void CApplication::CheckScreenSaverAndDPMS()
     maybeScreensaver = false;
   }
 
-  if (m_screensaverActive && m_appPlayer.IsPlayingVideo() && !m_appPlayer.IsPaused())
+  if (m_screensaverActive && haveIdleActivity)
   {
     WakeUpScreenSaverAndDPMS();
     return;
