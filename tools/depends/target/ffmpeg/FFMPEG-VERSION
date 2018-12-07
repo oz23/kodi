@@ -1,4 +1,4 @@
 LIBNAME=ffmpeg
-BASE_URL=https://github.com/xbmc/FFmpeg
-VERSION=release/4.0-kodi
+BASE_URL=https://github.com/FernetMenta/FFmpeg
+VERSION=release/4.1-kodi
 ARCHIVE=$(LIBNAME)-$(VERSION).tar.gz
