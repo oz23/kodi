@@ -450,6 +450,11 @@ bool CLinuxRendererGL::Flush(bool saveBuffers)
     DeleteTexture(i);
   }
 
+  delete m_pYUVShader;
+  m_pYUVShader = nullptr;
+  delete m_pVideoFilterShader;
+  m_pVideoFilterShader = nullptr;
+
   glFinish();
   m_bValidated = false;
   m_fbo.fbo.Cleanup();

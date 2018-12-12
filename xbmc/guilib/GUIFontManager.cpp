@@ -337,6 +337,10 @@ void GUIFontManager::Clear()
   m_vecFonts.clear();
   m_vecFontFiles.clear();
   m_vecFontInfo.clear();
+
+#if defined(HAS_GLES) || defined (HAS_GL)
+  CGUIFontTTFGL::DestroyStaticVertexBuffers();
+#endif
 }
 
 void GUIFontManager::LoadFonts(const std::string& fontSet)
