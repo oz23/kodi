@@ -394,7 +394,7 @@ void CVideoDatabase::CreateViews()
                                        "        episode.idShow=tvshow.idShow"
                                        "      LEFT JOIN files ON"
                                        "        files.idFile=episode.idFile "
-                                       "    GROUP BY tvshow.idShow");
+                                       "GROUP BY tvshow.idShow");
   m_pDS->exec(tvshowcounts);
 
   CLog::Log(LOGINFO, "create tvshow_view");
@@ -419,13 +419,17 @@ void CVideoDatabase::CreateViews()
                                      "  LEFT JOIN rating ON"
                                      "    rating.rating_id=tvshow.c%02d "
                                      "  LEFT JOIN uniqueid ON"
-                                     "    uniqueid.uniqueid_id=tvshow.c%02d "
-                                     "GROUP BY tvshow.idShow",
+                                     "    uniqueid.uniqueid_id=tvshow.c%02d ",
                                      VIDEODB_ID_TV_RATING_ID, VIDEODB_ID_TV_IDENT_ID);
   m_pDS->exec(tvshowview);
+  
   CLog::Log(LOGINFO, "create season_view");
   std::string seasonview = PrepareSQL("CREATE VIEW season_view AS SELECT "
-                                     "  seasons.*, "
+                                     "  seasons.idSeason AS idSeason,"
+                                     "  seasons.idShow AS idShow,"
+                                     "  seasons.season AS season,"
+                                     "  seasons.name AS name,"
+                                     "  seasons.userrating AS userrating,"
                                      "  tvshow_view.strPath AS strPath,"
                                      "  tvshow_view.c%02d AS showTitle,"
                                      "  tvshow_view.c%02d AS plot,"
@@ -443,10 +447,23 @@ void CVideoDatabase::CreateViews()
                                      "    episode.idShow = seasons.idShow AND episode.c%02d = seasons.season"
                                      "  JOIN files ON"
                                      "    files.idFile = episode.idFile "
-                                     "GROUP BY seasons.idSeason",
+                                     "GROUP BY seasons.idSeason,"
+				     "         seasons.idShow,"
+				     "         seasons.season,"
+				     "         seasons.name,"
+				     "         seasons.userrating,"
+				     "         tvshow_view.strPath,"
+				     "         tvshow_view.c%02d,"
+				     "         tvshow_view.c%02d,"
+				     "         tvshow_view.c%02d,"
+				     "         tvshow_view.c%02d,"
+				     "         tvshow_view.c%02d,"
+				     "         tvshow_view.c%02d ",
                                      VIDEODB_ID_TV_TITLE, VIDEODB_ID_TV_PLOT, VIDEODB_ID_TV_PREMIERED,
                                      VIDEODB_ID_TV_GENRE, VIDEODB_ID_TV_STUDIOS, VIDEODB_ID_TV_MPAA,
-                                     VIDEODB_ID_EPISODE_AIRED, VIDEODB_ID_EPISODE_SEASON);
+                                     VIDEODB_ID_EPISODE_AIRED, VIDEODB_ID_EPISODE_SEASON,
+                                     VIDEODB_ID_TV_TITLE, VIDEODB_ID_TV_PLOT, VIDEODB_ID_TV_PREMIERED,
+                                     VIDEODB_ID_TV_GENRE, VIDEODB_ID_TV_STUDIOS, VIDEODB_ID_TV_MPAA);
   m_pDS->exec(seasonview);
 
   CLog::Log(LOGINFO, "create musicvideo_view");
@@ -4882,6 +4899,8 @@ public:
 
 void CVideoDatabase::UpdateTables(int iVersion)
 {
+  // Important: DO NOT use CREATE TABLE [...] AS SELECT [...] - it does not work on MySQL with GTID consistency enforced
+
   if (iVersion < 76)
   {
     m_pDS->exec("ALTER TABLE settings ADD StereoMode integer");
@@ -5363,9 +5382,15 @@ void CVideoDatabase::UpdateTables(int iVersion)
 
   if (iVersion < 109)
   {
-    m_pDS->exec("CREATE TABLE settingsnew AS SELECT idFile, Deinterlace, ViewMode, ZoomAmount, PixelRatio, VerticalShift, AudioStream, SubtitleStream, SubtitleDelay, SubtitlesOn, Brightness, Contrast, Gamma, VolumeAmplification, AudioDelay, ResumeTime, Sharpness, NoiseReduction, NonLinStretch, PostProcess, ScalingMethod, DeinterlaceMode, StereoMode, StereoInvert, VideoStream FROM settings");
-    m_pDS->exec("DROP TABLE settings");
-    m_pDS->exec("ALTER TABLE settingsnew RENAME TO settings");
+    m_pDS->exec("ALTER TABLE settings RENAME TO settingsold");
+    m_pDS->exec("CREATE TABLE settings ( idFile integer, Deinterlace bool,"
+                "ViewMode integer,ZoomAmount float, PixelRatio float, VerticalShift float, AudioStream integer, SubtitleStream integer,"
+                "SubtitleDelay float, SubtitlesOn bool, Brightness float, Contrast float, Gamma float,"
+                "VolumeAmplification float, AudioDelay float, ResumeTime integer,"
+                "Sharpness float, NoiseReduction float, NonLinStretch bool, PostProcess bool,"
+                "ScalingMethod integer, DeinterlaceMode integer, StereoMode integer, StereoInvert bool, VideoStream integer)");
+    m_pDS->exec("INSERT INTO settings SELECT idFile, Deinterlace, ViewMode, ZoomAmount, PixelRatio, VerticalShift, AudioStream, SubtitleStream, SubtitleDelay, SubtitlesOn, Brightness, Contrast, Gamma, VolumeAmplification, AudioDelay, ResumeTime, Sharpness, NoiseReduction, NonLinStretch, PostProcess, ScalingMethod, DeinterlaceMode, StereoMode, StereoInvert, VideoStream FROM settingsold");
+    m_pDS->exec("DROP TABLE settingsold");
   }
 
   if (iVersion < 110)
@@ -5428,7 +5453,7 @@ void CVideoDatabase::UpdateTables(int iVersion)
 
 int CVideoDatabase::GetSchemaVersion() const
 {
-  return 113;
+  return 114;
 }
 
 bool CVideoDatabase::LookupByFolders(const std::string &path, bool shows)
@@ -7013,6 +7038,7 @@ bool CVideoDatabase::GetMoviesByWhere(const std::string& strBaseDir, const Filte
         std::string path = StringUtils::Format("%i", movie.m_iDbId);
         itemUrl.AppendPath(path);
         pItem->SetPath(itemUrl.ToString());
+        pItem->SetDynPath(movie.m_strFileNameAndPath);
 
         pItem->SetOverlayImage(CGUIListItem::ICON_OVERLAY_UNWATCHED,movie.GetPlayCount() > 0);
         items.Add(pItem);
@@ -7237,12 +7263,12 @@ bool CVideoDatabase::GetEpisodesByWhere(const std::string& strBaseDir, const Fil
       unsigned int targetRow = (unsigned int)i.at(FieldRow).asInteger();
       const dbiplus::sql_record* const record = data.at(targetRow);
 
-      CVideoInfoTag movie = GetDetailsForEpisode(record, getDetails);
+      CVideoInfoTag episode = GetDetailsForEpisode(record, getDetails);
       if (m_profileManager.GetMasterProfile().getLockMode() == LOCK_MODE_EVERYONE ||
           g_passwordManager.bMasterUser                                     ||
-          g_passwordManager.IsDatabasePathUnlocked(movie.m_strPath, *CMediaSourceSettings::GetInstance().GetSources("video")))
+          g_passwordManager.IsDatabasePathUnlocked(episode.m_strPath, *CMediaSourceSettings::GetInstance().GetSources("video")))
       {
-        CFileItemPtr pItem(new CFileItem(movie));
+        CFileItemPtr pItem(new CFileItem(episode));
         formatter.FormatLabel(pItem.get());
 
         int idEpisode = record->at(0).get_asInt();
@@ -7250,14 +7276,15 @@ bool CVideoDatabase::GetEpisodesByWhere(const std::string& strBaseDir, const Fil
         CVideoDbUrl itemUrl = videoUrl;
         std::string path;
         if (appendFullShowPath && videoUrl.GetItemType() != "episodes")
-          path = StringUtils::Format("%i/%i/%i", record->at(VIDEODB_DETAILS_EPISODE_TVSHOW_ID).get_asInt(), movie.m_iSeason, idEpisode);
+          path = StringUtils::Format("%i/%i/%i", record->at(VIDEODB_DETAILS_EPISODE_TVSHOW_ID).get_asInt(), episode.m_iSeason, idEpisode);
         else
           path = StringUtils::Format("%i", idEpisode);
         itemUrl.AppendPath(path);
         pItem->SetPath(itemUrl.ToString());
+        pItem->SetDynPath(episode.m_strFileNameAndPath);
 
-        pItem->SetOverlayImage(CGUIListItem::ICON_OVERLAY_UNWATCHED, movie.GetPlayCount() > 0);
-        pItem->m_dateTime = movie.m_firstAired;
+        pItem->SetOverlayImage(CGUIListItem::ICON_OVERLAY_UNWATCHED, episode.GetPlayCount() > 0);
+        pItem->m_dateTime = episode.m_firstAired;
         items.Add(pItem);
       }
     }
