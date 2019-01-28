@@ -282,7 +282,7 @@ void CGUIFontTTFGL::LastEnd()
 
 CVertexBuffer CGUIFontTTFGL::CreateVertexBuffer(const std::vector<SVertex> &vertices) const
 {
-  assert(!vertices.empty());
+//  assert(!vertices.empty());
   assert(vertices.size() % 4 == 0);
 
   // Generate a unique buffer object name and put it in bufferHandle
