@@ -454,9 +454,9 @@ bool CDVDDemuxFFmpeg::Open(std::shared_ptr<CDVDInputStream> pInput, bool streami
   bool isBluray = pInput->IsStreamType(DVDSTREAM_TYPE_BLURAY);
   if (iformat && (strcmp(iformat->name, "mpegts") == 0) && !fileinfo && !isBluray)
   {
-    av_opt_set_int(m_pFormatContext, "analyzeduration", 500000, 0);
     m_checkvideo = true;
     skipCreateStreams = true;
+    m_streaminfo = false;
   }
   else if (!iformat || (strcmp(iformat->name, "mpegts") != 0))
   {
@@ -501,6 +501,9 @@ bool CDVDDemuxFFmpeg::Open(std::shared_ptr<CDVDInputStream> pInput, bool streami
     }
     CLog::Log(LOGDEBUG, "%s - av_find_stream_info finished", __FUNCTION__);
 
+    // print some extra information
+    av_dump_format(m_pFormatContext, 0, CURL::GetRedacted(strFile).c_str(), 0);
+
     if (m_checkvideo)
     {
       // make sure we start video with an i-frame
@@ -519,9 +522,6 @@ bool CDVDDemuxFFmpeg::Open(std::shared_ptr<CDVDInputStream> pInput, bool streami
 
   // if format can be nonblocking, let's use that
   m_pFormatContext->flags |= AVFMT_FLAG_NONBLOCK;
-
-  // print some extra information
-  av_dump_format(m_pFormatContext, 0, CURL::GetRedacted(strFile).c_str(), 0);
 
   // deprecated, will be always set in future versions
   m_pFormatContext->flags |= AVFMT_FLAG_KEEP_SIDE_DATA;
@@ -960,6 +960,9 @@ DemuxPacket* CDVDDemuxFFmpeg::Read()
 
       if (IsProgramChange())
       {
+        CLog::Log(LOGNOTICE, "CDVDDemuxFFmpeg::Read() stream change");
+        av_dump_format(m_pFormatContext, 0, CURL::GetRedacted(m_pInput->GetFileName()).c_str(), 0);
+
         // update streams
         CreateStreams(m_program);
 
