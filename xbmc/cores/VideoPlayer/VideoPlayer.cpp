@@ -1446,7 +1446,7 @@ void CVideoPlayer::Process()
     m_VideoPlayerSubtitle->Process(m_clock.GetClock() + m_State.time_offset - m_VideoPlayerVideo->GetSubtitleDelay(), m_State.time_offset);
 
     // tell demuxer if we want to fill buffers
-    if (m_playSpeed != DVD_PLAYSPEED_PAUSE)
+    if (m_demuxerSpeed != DVD_PLAYSPEED_PAUSE)
     {
       int audioLevel = 90;
       int videoLevel = 90;
