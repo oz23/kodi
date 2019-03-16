@@ -4006,6 +4006,8 @@ void CVideoPlayer::FlushBuffers(double pts, bool accurate, bool sync)
     m_clock.Discontinuity(pts);
   UpdatePlayState(0);
 
+  m_demuxerSpeed = DVD_PLAYSPEED_NORMAL;
+
   if (m_omxplayer_mode)
   {
     m_OmxPlayerState.av_clock.OMXFlush();
