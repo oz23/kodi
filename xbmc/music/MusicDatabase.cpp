@@ -1401,7 +1401,7 @@ bool CMusicDatabase::GetArtist(int idArtist, CArtist &artist, bool fetchAll /* =
     int discographyOffset = artist_enumCount;
 
     artist.discography.clear();
-    artist = GetArtistFromDataset(m_pDS.get()->get_sql_record(), 0, fetchAll);
+    artist = GetArtistFromDataset(m_pDS.get()->get_sql_record(), 0, true); // inc scraped art URLs
     if (fetchAll)
     {
       while (!m_pDS->eof())
@@ -9707,7 +9707,7 @@ void CMusicDatabase::ExportToXML(const CLibExportSettings& settings,  CGUIDialog
       for (const auto &artistId : artistIds)
       {
         CArtist artist;
-        GetArtist(artistId, artist);
+        GetArtist(artistId, artist, true); // include discography
         std::string strPath;
         std::map<std::string, std::string> artwork;
         if (settings.IsSingleFile())
@@ -9866,7 +9866,7 @@ void CMusicDatabase::ImportFromXML(const std::string &xmlFile)
         if (idArtist > -1)
         {
           CArtist artist;
-          GetArtist(idArtist, artist);
+          GetArtist(idArtist, artist, true); // include discography
           artist.MergeScrapedArtist(importedArtist, true);
           UpdateArtist(artist);
         }
@@ -9966,7 +9966,7 @@ void CMusicDatabase::SetPropertiesFromAlbum(CFileItem& item, const CAlbum& album
   item.SetProperty("album_genre_array", album.genre);
   item.SetProperty("album_title", album.strAlbum);
   if (album.fRating > 0)
-    item.SetProperty("album_rating", album.fRating);
+    item.SetProperty("album_rating", StringUtils::FormatNumber(album.fRating));
   if (album.iUserrating > 0)
     item.SetProperty("album_userrating", album.iUserrating);
   if (album.iVotes > 0)
@@ -10484,13 +10484,6 @@ bool CMusicDatabase::GetFilter(CDbUrl &musicUrl, Filter &filter, SortDescription
     }
     // remove the null string
     filter.AppendWhere("artistview.strArtist != ''");
-
-    // and the various artist entry if applicable
-    if (!albumArtistsOnly)
-    {
-      std::string strVariousArtists = g_localizeStrings.Get(340);
-      filter.AppendWhere(PrepareSQL("artistview.strArtist <> '%s'", strVariousArtists.c_str()));
-    }
   }
   else if (type == "albums")
   {

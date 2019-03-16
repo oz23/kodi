@@ -4159,6 +4159,9 @@ CVideoInfoTag CVideoDatabase::GetDetailsForMusicVideo(const dbiplus::sql_record*
 {
   CVideoInfoTag details;
 
+  if (record == nullptr)
+    return details;
+
   unsigned int time = XbmcThreads::SystemClockMillis();
   int idMVideo = record->at(0).get_asInt();
 
@@ -6574,7 +6577,8 @@ bool CVideoDatabase::GetYearsNav(const std::string& strBaseDir, CFileItemList& i
         {
           CDateTime time;
           time.SetFromDateString(dateString);
-          lYear = time.GetYear();
+          if (time.IsValid())
+            lYear = time.GetYear();
         }
         auto it = mapYears.find(lYear);
         if (it == mapYears.end())
@@ -6622,8 +6626,11 @@ bool CVideoDatabase::GetYearsNav(const std::string& strBaseDir, CFileItemList& i
         {
           CDateTime time;
           time.SetFromDateString(strLabel);
-          lYear = time.GetYear();
-          strLabel = StringUtils::Format("%i", lYear);
+          if (time.IsValid())
+          {
+            lYear = time.GetYear();
+            strLabel = StringUtils::Format("%i", lYear);
+          }
         }
         if (lYear == 0)
         {

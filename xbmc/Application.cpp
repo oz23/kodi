@@ -2522,7 +2522,7 @@ bool CApplication::Cleanup()
 
 void CApplication::Stop(int exitCode)
 {
-  CLog::Log(LOGNOTICE, "stop player");
+  CLog::Log(LOGNOTICE, "Stopping player");
   m_appPlayer.ClosePlayer();
 
   {
@@ -2579,7 +2579,7 @@ void CApplication::Stop(int exitCode)
     CApplicationMessenger::GetInstance().Stop();
     m_AppFocused = false;
     m_ExitCode = exitCode;
-    CLog::Log(LOGNOTICE, "stop all");
+    CLog::Log(LOGNOTICE, "Stopping all");
 
     // cancel any jobs from the jobmanager
     CJobManager::GetInstance().CancelJobs();
@@ -2598,7 +2598,7 @@ void CApplication::Stop(int exitCode)
 #ifdef HAS_ZEROCONF
     if(CZeroconfBrowser::IsInstantiated())
     {
-      CLog::Log(LOGNOTICE, "stop zeroconf browser");
+      CLog::Log(LOGNOTICE, "Stopping zeroconf browser");
       CZeroconfBrowser::GetInstance()->Stop();
       CZeroconfBrowser::ReleaseInstance();
     }
@@ -2634,7 +2634,7 @@ void CApplication::Stop(int exitCode)
     m_pActiveAE->Shutdown();
     m_pActiveAE.reset();
 
-    CLog::Log(LOGNOTICE, "stopped");
+    CLog::Log(LOGNOTICE, "Application stopped");
   }
   catch (...)
   {
@@ -3046,9 +3046,8 @@ void CApplication::OnPlayBackStarted(const CFileItem &file)
 {
   CLog::LogF(LOGDEBUG,"CApplication::OnPlayBackStarted");
 
-  // check if VideoPlayer should set file item stream details from its current streams
-  if (file.GetProperty("get_stream_details_from_player").asBoolean())
-    m_appPlayer.SetUpdateStreamDetails();
+  // Always update file item stream details
+  m_appPlayer.SetUpdateStreamDetails();
 
   if (m_stackHelper.IsPlayingISOStack() || m_stackHelper.IsPlayingRegularStack())
     m_itemCurrentFile.reset(new CFileItem(*m_stackHelper.GetRegisteredStack(file)));

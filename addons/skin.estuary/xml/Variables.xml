@@ -211,7 +211,6 @@
 	</variable>
 	<variable name="VideoOSDHelpTextVar">
 		<value condition="Control.HasFocus(87) + [Player.Rewinding | Player.Forwarding]">$LOCALIZE[31050]</value>
-		<value condition="Control.HasFocus(70011)">$LOCALIZE[20060]</value>
 		<value condition="Control.HasFocus(700)">$LOCALIZE[298]</value>
 		<value condition="Control.HasFocus(703)">$LOCALIZE[31106]</value>
 		<value condition="Control.HasFocus(704)">$LOCALIZE[24012]</value>
@@ -272,14 +271,14 @@
 	<variable name="NowPlayingBreadcrumbsVar">
 		<value condition="VideoPlayer.Content(livetv)">$INFO[VideoPlayer.Title]</value>
 		<value condition="VideoPlayer.Content(episodes) + !String.IsEmpty(Player.Art(tvshow.clearlogo))">$INFO[VideoPlayer.Season,[COLOR button_focus]S,[/COLOR]]$INFO[VideoPlayer.Episode,[COLOR button_focus]E,: [/COLOR]]$INFO[VideoPlayer.Title]</value>
-		<value condition="Window.IsActive(fullscreenvideo)">$INFO[VideoPlayer.Title]$INFO[VideoPlayer.Year, ([COLOR button_focus],[/COLOR])]</value>
+		<value condition="Window.IsActive(fullscreenvideo)">$INFO[VideoPlayer.TVShowTitle]$INFO[VideoPlayer.Year, ([COLOR button_focus],[/COLOR])]</value>
 		<value condition="MusicPartyMode.Enabled">$LOCALIZE[589]</value>
 		<value>$LOCALIZE[31000]...</value>
 	</variable>
 	<variable name="OSDSubLabelVar">
 		<value condition="Window.IsActive(visualisation) + Integer.IsGreater(Playlist.Length,1) + Integer.IsGreater(Playlist.Position,0)">$LOCALIZE[554] $INFO[Playlist.Position] / $INFO[Playlist.Length]</value>
 		<value condition="VideoPlayer.Content(musicvideos)">$INFO[VideoPlayer.Artist]$INFO[VideoPlayer.Album, - ]</value>
-		<value condition="VideoPlayer.Content(episodes)">$INFO[VideoPlayer.Season,[COLOR button_focus]S,[/COLOR]]$INFO[VideoPlayer.Episode,[COLOR button_focus]E,: [/COLOR]]$INFO[VideoPlayer.TVShowTitle]</value>
+		<value condition="VideoPlayer.Content(episodes)">$INFO[VideoPlayer.Season,[COLOR button_focus]S,[/COLOR]]$INFO[VideoPlayer.Episode,[COLOR button_focus]E,: [/COLOR]]$INFO[VideoPlayer.Title]</value>
 		<value condition="VideoPlayer.Content(LiveTV) | PVR.IsPlayingRecording | PVR.IsPlayingEpgTag">$INFO[VideoPlayer.ChannelNumberLabel,([COLOR button_focus],[/COLOR]) ]$INFO[VideoPlayer.ChannelName] $INFO[VideoPlayer.EpisodeName, - ]</value>
 		<value>$INFO[VideoPlayer.Genre]</value>
 	</variable>

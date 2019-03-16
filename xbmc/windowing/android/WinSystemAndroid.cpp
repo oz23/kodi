@@ -62,10 +62,7 @@ CWinSystemAndroid::CWinSystemAndroid()
 
 CWinSystemAndroid::~CWinSystemAndroid()
 {
-  if(m_nativeWindow)
-  {
-    m_nativeWindow = nullptr;
-  }
+  m_nativeWindow = nullptr;
   delete m_dispResetTimer, m_dispResetTimer = nullptr;
 }
 
@@ -91,6 +88,7 @@ bool CWinSystemAndroid::InitWindowSystem()
 
 bool CWinSystemAndroid::DestroyWindowSystem()
 {
+  CLog::Log(LOGNOTICE, "CWinSystemAndroid::%s", __FUNCTION__);
   delete m_android;
   m_android = nullptr;
 
@@ -118,7 +116,7 @@ bool CWinSystemAndroid::CreateNewWindow(const std::string& name,
     (current_resolution.dwFlags & D3DPRESENTFLAG_MODEMASK) == (res.dwFlags & D3DPRESENTFLAG_MODEMASK) &&
     m_stereo_mode == stereo_mode)
   {
-    CLog::Log(LOGDEBUG, "CWinSystemEGL::CreateNewWindow: No need to create a new window");
+    CLog::Log(LOGDEBUG, "CWinSystemAndroid::CreateNewWindow: No need to create a new window");
     return true;
   }
 
@@ -134,6 +132,9 @@ bool CWinSystemAndroid::CreateNewWindow(const std::string& name,
 
 bool CWinSystemAndroid::DestroyWindow()
 {
+  CLog::Log(LOGNOTICE, "CWinSystemAndroid::%s", __FUNCTION__);
+  m_nativeWindow = nullptr;
+  m_bWindowCreated = false;
   return true;
 }
 
@@ -146,7 +147,7 @@ void CWinSystemAndroid::UpdateResolutions()
 
   if (!m_android->ProbeResolutions(resolutions) || resolutions.empty())
   {
-    CLog::Log(LOGWARNING, "%s: ProbeResolutions failed.",__FUNCTION__);
+    CLog::Log(LOGWARNING, "CWinSystemAndroid::%s failed.", __FUNCTION__);
   }
 
   /* ProbeResolutions includes already all resolutions.
@@ -200,29 +201,37 @@ void CWinSystemAndroid::OnTimeout()
   SetHDMIState(true);
 }
 
-void CWinSystemAndroid::SetHDMIState(bool connected, uint32_t timeoutMs)
+void CWinSystemAndroid::SetHDMIState(bool connected)
 {
   CSingleLock lock(m_resourceSection);
-  if (connected && m_dispResetState == RESET_WAITEVENT)
+  CLog::Log(LOGDEBUG, "CWinSystemAndroid::SetHDMIState: connected: %d, dispResetState: %d", static_cast<int>(connected), m_dispResetState);
+  if (connected && m_dispResetState != RESET_NOTWAITING)
   {
     for (auto resource : m_resources)
       resource->OnResetDisplay();
+    m_dispResetState = RESET_NOTWAITING;
+    m_dispResetTimer->Stop();
   }
   else if (!connected)
   {
+    if (m_dispResetState == RESET_WAITTIMER)
+    {
+      //HDMI_AUDIOPLUG arrived, use this
+      m_dispResetTimer->Stop();
+      m_dispResetState = RESET_WAITEVENT;
+      return;
+    }
+    else if (m_dispResetState != RESET_NOTWAITING)
+      return;
+
     int delay = CServiceBroker::GetSettingsComponent()->GetSettings()->GetInt("videoscreen.delayrefreshchange") * 100;
 
-    if (timeoutMs > delay)
-      delay = timeoutMs;
+    if (delay < 2000)
+      delay = 2000;
 
-    if (delay > 0)
-    {
-       m_dispResetState = RESET_WAITTIMER;
-       m_dispResetTimer->Stop();
-       m_dispResetTimer->Start(delay);
-    }
-    else
-      m_dispResetState = RESET_WAITEVENT;
+    m_dispResetState = RESET_WAITTIMER;
+    m_dispResetTimer->Stop();
+    m_dispResetTimer->Start(delay);
 
     for (auto resource : m_resources)
       resource->OnLostDisplay();
