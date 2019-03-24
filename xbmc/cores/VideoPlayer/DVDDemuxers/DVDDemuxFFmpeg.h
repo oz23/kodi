@@ -17,7 +17,7 @@
 #include <memory>
 
 extern "C" {
-#include "libavformat/avformat.h"
+#include <libavformat/avformat.h>
 }
 
 class CDVDDemuxFFmpeg;
