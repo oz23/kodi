@@ -10,7 +10,6 @@
 
 #include <memory>
 #include <string>
-#include <vector>
 
 class CGUIWindowManager;
 class CGUITextureManager;
@@ -19,12 +18,9 @@ class CStereoscopicsManager;
 class CGUIInfoManager;
 class CGUIColorManager;
 class CGUIAudioManager;
-class IMsgTargetCallback;
-class CGUIMessage;
 
 class CGUIComponent
 {
-  friend CGUIWindowManager;
 public:
   CGUIComponent();
   virtual ~CGUIComponent();
@@ -41,11 +37,7 @@ public:
 
   bool ConfirmDelete(std::string path);
 
-  void AddMsgTarget(IMsgTargetCallback* pMsgTarget);
-
 protected:
-  bool ProcessMsgHooks(CGUIMessage& message);
-
   // members are pointers in order to avoid includes
   std::unique_ptr<CGUIWindowManager> m_pWindowManager;
   std::unique_ptr<CGUITextureManager> m_pTextureManager;
@@ -54,6 +46,4 @@ protected:
   std::unique_ptr<CGUIInfoManager> m_guiInfoManager;
   std::unique_ptr<CGUIColorManager> m_guiColorManager;
   std::unique_ptr<CGUIAudioManager> m_guiAudioManager;
-
-  std::vector<IMsgTargetCallback*> m_msgTargets;
 };

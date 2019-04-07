@@ -13,7 +13,6 @@
 #include "guilib/GUITextBox.h"
 #include "guilib/GUIComponent.h"
 #include "guilib/GUIWindowManager.h"
-#include "guilib/GUIMessage.h"
 #include "utils/log.h"
 #include "ServiceBroker.h"
 

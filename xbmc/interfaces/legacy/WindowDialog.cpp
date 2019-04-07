@@ -12,7 +12,6 @@
 #include "guilib/GUIComponent.h"
 #include "guilib/GUIWindow.h"
 #include "guilib/GUIWindowManager.h"
-#include "guilib/GUIMessage.h"
 #include "WindowInterceptor.h"
 
 namespace XBMCAddon

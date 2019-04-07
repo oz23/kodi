@@ -13,7 +13,6 @@
 #include "messaging/ApplicationMessenger.h"
 #include "guilib/GUIComponent.h"
 #include "guilib/GUIWindowManager.h"
-#include "guilib/GUIMessage.h"
 
 using namespace KODI::MESSAGING;
 

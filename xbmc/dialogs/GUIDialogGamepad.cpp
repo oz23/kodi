@@ -13,7 +13,6 @@
 #include "guilib/GUIComponent.h"
 #include "guilib/GUIAudioManager.h"
 #include "guilib/GUIWindowManager.h"
-#include "guilib/GUIMessage.h"
 #include "input/Key.h"
 #include "guilib/LocalizeStrings.h"
 #include "messaging/helpers/DialogOKHelper.h"

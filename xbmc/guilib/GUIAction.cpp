@@ -12,7 +12,6 @@
 #include "GUIInfoManager.h"
 #include "GUIComponent.h"
 #include "ServiceBroker.h"
-#include "GUIMessage.h"
 
 CGUIAction::CGUIAction(int controlID)
 {

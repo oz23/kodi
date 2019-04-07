@@ -19,7 +19,6 @@
 #include "guilib/GUIKeyboardFactory.h"
 #include "guilib/GUIWindowManager.h"
 #include "guilib/LocalizeStrings.h"
-#include "guilib/GUIMessage.h"
 #include "GUIPassword.h"
 #include "profiles/dialogs/GUIDialogLockSettings.h"
 #include "profiles/ProfileManager.h"

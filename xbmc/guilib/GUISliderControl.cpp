@@ -14,7 +14,6 @@
 #include "utils/MathUtils.h"
 #include "utils/StringUtils.h"
 #include "guilib/guiinfo/GUIInfoLabels.h"
-#include "GUIMessage.h"
 #include "GUIWindowManager.h"
 
 static const SliderAction actions[] = {
