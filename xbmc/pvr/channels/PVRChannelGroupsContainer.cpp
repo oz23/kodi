@@ -8,10 +8,13 @@
 
 #include "PVRChannelGroupsContainer.h"
 
-#include "FileItem.h"
+#include "pvr/channels/PVRChannel.h"
+#include "pvr/channels/PVRChannelGroups.h"
+#include "pvr/epg/EpgInfoTag.h"
+#include "threads/SingleLock.h"
 #include "utils/log.h"
 
-#include "pvr/epg/EpgInfoTag.h"
+#include <memory>
 
 using namespace PVR;
 
@@ -107,22 +110,16 @@ std::shared_ptr<CPVRChannel> CPVRChannelGroupsContainer::GetChannelForEpgTag(con
   if (!epgTag)
     return {};
 
-  const CPVRChannelGroups* groups = epgTag->IsRadio() ? m_groupsRadio : m_groupsTV;
-  return groups->GetGroupAll()->GetByUniqueID(epgTag->UniqueChannelID(), epgTag->ClientID());
+  return Get(epgTag->IsRadio())->GetGroupAll()->GetByUniqueID(epgTag->UniqueChannelID(), epgTag->ClientID());
 }
 
-CFileItemPtr CPVRChannelGroupsContainer::GetByPath(const std::string &strPath) const
+std::shared_ptr<CPVRChannel> CPVRChannelGroupsContainer::GetByPath(const std::string& strPath) const
 {
-  for (unsigned int bRadio = 0; bRadio <= 1; ++bRadio)
-  {
-    const CPVRChannelGroups *groups = Get(bRadio == 1);
-    CFileItemPtr retVal = groups->GetByPath(strPath);
-    if (retVal && retVal->HasPVRChannelInfoTag())
-      return retVal;
-  }
+  const CPVRChannelsPath path(strPath);
+  if (path.IsValid())
+    return Get(path.IsRadio())->GetByPath(path);
 
-  CFileItemPtr retVal(new CFileItem);
-  return retVal;
+  return {};
 }
 
 CPVRChannelGroupPtr CPVRChannelGroupsContainer::GetSelectedGroup(bool bRadio) const
@@ -145,26 +142,13 @@ CPVRChannelPtr CPVRChannelGroupsContainer::GetByUniqueID(int iUniqueChannelId, i
   return channel;
 }
 
-void CPVRChannelGroupsContainer::SearchMissingChannelIcons(void) const
+std::shared_ptr<CPVRChannel> CPVRChannelGroupsContainer::GetLastPlayedChannel() const
 {
-  CLog::Log(LOGINFO, "Starting PVR channel icon search");
-
-  CPVRChannelGroupPtr channelgrouptv  = GetGroupAllTV();
-  CPVRChannelGroupPtr channelgroupradio = GetGroupAllRadio();
-
-  if (channelgrouptv)
-    channelgrouptv->SearchAndSetChannelIcons(true);
-  if (channelgroupradio)
-    channelgroupradio->SearchAndSetChannelIcons(true);
-}
-
-CFileItemPtr CPVRChannelGroupsContainer::GetLastPlayedChannel(void) const
-{
-  CFileItemPtr channelTV = m_groupsTV->GetGroupAll()->GetLastPlayedChannel();
-  CFileItemPtr channelRadio = m_groupsRadio->GetGroupAll()->GetLastPlayedChannel();
+  const std::shared_ptr<CPVRChannel> channelTV = m_groupsTV->GetGroupAll()->GetLastPlayedChannel();
+  const std::shared_ptr<CPVRChannel> channelRadio = m_groupsRadio->GetGroupAll()->GetLastPlayedChannel();
 
   if (!channelTV ||
-      (channelRadio && channelRadio->GetPVRChannelInfoTag()->LastWatched() > channelTV->GetPVRChannelInfoTag()->LastWatched()))
+      (channelRadio && channelRadio->LastWatched() > channelTV->LastWatched()))
      return channelRadio;
 
   return channelTV;

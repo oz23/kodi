@@ -8,20 +8,22 @@
 
 #pragma once
 
-#include <map>
-#include <string>
-#include <vector>
-
+#include "XBDateTime.h"
+#include "addons/kodi-addon-dev-kit/include/kodi/xbmc_pvr_types.h"
+#include "pvr/PVRTypes.h"
 #include "threads/CriticalSection.h"
 #include "utils/Observer.h"
 
-#include "pvr/PVRTypes.h"
-#include "pvr/epg/EpgInfoTag.h"
+#include <map>
+#include <memory>
+#include <string>
+#include <vector>
 
-/** EPG container for CPVREpgInfoTag instances */
 namespace PVR
 {
   class CPVREpgChannelData;
+  class CPVREpgDatabase;
+  class CPVREpgInfoTag;
 
   class CPVREpg : public Observable
   {
@@ -159,10 +161,9 @@ namespace PVR
      * @brief Update an entry in this EPG.
      * @param data The tag to update.
      * @param iClientId The id of the pvr client this event belongs to.
-     * @param bUpdateDatabase If set to true, this event will be persisted in the database.
      * @return True if it was updated successfully, false otherwise.
      */
-    bool UpdateEntry(const EPG_TAG *data, int iClientId, bool bUpdateDatabase);
+    bool UpdateEntry(const EPG_TAG *data, int iClientId);
 
     /*!
      * @brief Update an entry in this EPG.

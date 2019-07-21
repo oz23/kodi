@@ -8,23 +8,24 @@
 
 #include "PVRRecordings.h"
 
-#include <utility>
-
-#include "FileItem.h"
 #include "ServiceBroker.h"
-#include "filesystem/Directory.h"
+#include "pvr/PVRManager.h"
+#include "pvr/addons/PVRClients.h"
+#include "pvr/epg/EpgInfoTag.h"
+#include "pvr/recordings/PVRRecording.h"
+#include "pvr/recordings/PVRRecordingsPath.h"
 #include "threads/SingleLock.h"
 #include "utils/URIUtils.h"
 #include "utils/log.h"
 #include "video/VideoDatabase.h"
 
-#include "pvr/PVRManager.h"
-#include "pvr/addons/PVRClients.h"
-#include "pvr/epg/EpgContainer.h"
-#include "pvr/epg/EpgInfoTag.h"
-#include "pvr/recordings/PVRRecordingsPath.h"
+#include <memory>
+#include <utility>
+#include <vector>
 
 using namespace PVR;
+
+CPVRRecordings::CPVRRecordings() = default;
 
 CPVRRecordings::~CPVRRecordings()
 {
@@ -101,74 +102,6 @@ bool CPVRRecordings::HasDeletedRadioRecordings() const
   return m_bDeletedRadioRecordings;
 }
 
-bool CPVRRecordings::Delete(const CFileItem& item)
-{
-  return item.m_bIsFolder ? DeleteDirectory(item) : DeleteRecording(item);
-}
-
-bool CPVRRecordings::DeleteDirectory(const CFileItem& directory)
-{
-  CFileItemList items;
-  XFILE::CDirectory::GetDirectory(directory.GetPath(), items, "", XFILE::DIR_FLAG_DEFAULTS);
-
-  bool allDeleted = true;
-  for (const auto& item : items)
-    allDeleted &= Delete(*item);
-
-  return allDeleted;
-}
-
-bool CPVRRecordings::DeleteRecording(const CFileItem &item)
-{
-  if (!item.IsPVRRecording())
-  {
-    CLog::LogF(LOGERROR, "Cannot delete item: no valid recording tag");
-    return false;
-  }
-
-  CPVRRecordingPtr tag = item.GetPVRRecordingInfoTag();
-  return tag->Delete();
-}
-
-bool CPVRRecordings::Undelete(const CFileItem &item)
-{
-  if (!item.IsDeletedPVRRecording())
-  {
-    CLog::LogF(LOGERROR, "Cannot undelete item: no valid recording tag");
-    return false;
-  }
-
-  CPVRRecordingPtr tag = item.GetPVRRecordingInfoTag();
-  return tag->Undelete();
-}
-
-bool CPVRRecordings::RenameRecording(CFileItem &item, std::string &strNewName)
-{
-  if (!item.IsUsablePVRRecording())
-  {
-    CLog::LogF(LOGERROR, "Cannot rename item: no valid recording tag");
-    return false;
-  }
-
-  CPVRRecordingPtr tag = item.GetPVRRecordingInfoTag();
-  return tag->Rename(strNewName);
-}
-
-bool CPVRRecordings::DeleteAllRecordingsFromTrash()
-{
-  return CServiceBroker::GetPVRManager().Clients()->DeleteAllRecordingsFromTrash() == PVR_ERROR_NO_ERROR;
-}
-
-bool CPVRRecordings::SetRecordingsPlayCount(const CFileItemPtr &item, int count)
-{
-  return ChangeRecordingsPlayCount(item, count);
-}
-
-bool CPVRRecordings::IncrementRecordingsPlayCount(const CFileItemPtr &item)
-{
-  return ChangeRecordingsPlayCount(item, INCREMENT_PLAY_COUNT);
-}
-
 std::vector<std::shared_ptr<CPVRRecording>> CPVRRecordings::GetAll() const
 {
   std::vector<std::shared_ptr<CPVRRecording>> recordings;
@@ -182,20 +115,19 @@ std::vector<std::shared_ptr<CPVRRecording>> CPVRRecordings::GetAll() const
   return recordings;
 }
 
-CFileItemPtr CPVRRecordings::GetById(unsigned int iId) const
+std::shared_ptr<CPVRRecording> CPVRRecordings::GetById(unsigned int iId) const
 {
-  CFileItemPtr item;
   CSingleLock lock(m_critSection);
   for (const auto recording : m_recordings)
   {
     if (iId == recording.second->m_iRecordingId)
-      item = CFileItemPtr(new CFileItem(recording.second));
+      return recording.second;
   }
 
-  return item;
+  return {};
 }
 
-CFileItemPtr CPVRRecordings::GetByPath(const std::string &path)
+std::shared_ptr<CPVRRecording> CPVRRecordings::GetByPath(const std::string& path) const
 {
   CSingleLock lock(m_critSection);
 
@@ -213,13 +145,11 @@ CFileItemPtr CPVRRecordings::GetByPath(const std::string &path)
           bDeleted != current->IsDeleted() || bRadio != current->IsRadio())
         continue;
 
-      CFileItemPtr fileItem(new CFileItem(current));
-      return fileItem;
+      return current;
     }
   }
 
-  CFileItemPtr fileItem(new CFileItem);
-  return fileItem;
+  return {};
 }
 
 CPVRRecordingPtr CPVRRecordings::GetById(int iClientId, const std::string &strRecordingId) const
@@ -299,86 +229,57 @@ CPVRRecordingPtr CPVRRecordings::GetRecordingForEpgTag(const CPVREpgInfoTagPtr &
   return CPVRRecordingPtr();
 }
 
-bool CPVRRecordings::ChangeRecordingsPlayCount(const CFileItemPtr &item, int count)
+bool CPVRRecordings::SetRecordingsPlayCount(const std::shared_ptr<CPVRRecording>& recording, int count)
 {
-  bool bResult = false;
+  return ChangeRecordingsPlayCount(recording, count);
+}
 
-  CSingleLock lock(m_critSection);
+bool CPVRRecordings::IncrementRecordingsPlayCount(const std::shared_ptr<CPVRRecording>& recording)
+{
+  return ChangeRecordingsPlayCount(recording, INCREMENT_PLAY_COUNT);
+}
 
-  CVideoDatabase& db = GetVideoDatabase();
-  if (db.IsOpen())
+bool CPVRRecordings::ChangeRecordingsPlayCount(const std::shared_ptr<CPVRRecording>& recording, int count)
+{
+  if (recording)
   {
-    bResult = true;
+    CSingleLock lock(m_critSection);
 
-    CLog::LogFC(LOGDEBUG, LOGPVR, "Item path %s", item->GetPath().c_str());
-    CFileItemList items;
-    if (item->m_bIsFolder)
+    CVideoDatabase& db = GetVideoDatabase();
+    if (db.IsOpen())
     {
-      XFILE::CDirectory::GetDirectory(item->GetPath(), items, "", XFILE::DIR_FLAG_DEFAULTS);
-    }
-    else
-      items.Add(item);
+      if (count == INCREMENT_PLAY_COUNT)
+        recording->IncrementPlayCount();
+      else
+        recording->SetPlayCount(count);
 
-    CLog::LogFC(LOGDEBUG, LOGPVR, "Will set watched for %d items", items.Size());
-    for (int i = 0; i < items.Size(); ++i)
-    {
-      CLog::LogFC(LOGDEBUG, LOGPVR, "Setting watched for item %d", i);
-
-      CFileItemPtr pItem=items[i];
-      if (pItem->m_bIsFolder)
+      // Clear resume bookmark
+      if (recording->GetPlayCount() > 0)
       {
-        CLog::LogFC(LOGDEBUG, LOGPVR, "Path %s is a folder, will call recursively", pItem->GetPath().c_str());
-        if (pItem->GetLabel() != "..")
-        {
-          ChangeRecordingsPlayCount(pItem, count);
-        }
-        continue;
+        db.ClearBookMarksOfFile(recording->m_strFileNameAndPath, CBookmark::RESUME);
+        recording->SetResumePoint(CBookmark());
       }
 
-      if (!pItem->HasPVRRecordingInfoTag())
-        continue;
-
-      const CPVRRecordingPtr recording = pItem->GetPVRRecordingInfoTag();
-      if (recording)
-      {
-        if (count == INCREMENT_PLAY_COUNT)
-          recording->IncrementPlayCount();
-        else
-          recording->SetPlayCount(count);
-
-        // Clear resume bookmark
-        if (recording->GetPlayCount() > 0)
-        {
-          db.ClearBookMarksOfFile(pItem->GetPath(), CBookmark::RESUME);
-          recording->SetResumePoint(CBookmark());
-        }
-
-        if (count == INCREMENT_PLAY_COUNT)
-          db.IncrementPlayCount(*pItem);
-        else
-          db.SetPlayCount(*pItem, count);
-      }
+      CServiceBroker::GetPVRManager().PublishEvent(PVREvent::RecordingsInvalidated);
+      return true;
     }
-
-    CServiceBroker::GetPVRManager().PublishEvent(PVREvent::RecordingsInvalidated);
   }
 
-  return bResult;
+  return false;
 }
 
-bool CPVRRecordings::MarkWatched(const CFileItemPtr &item, bool bWatched)
+bool CPVRRecordings::MarkWatched(const std::shared_ptr<CPVRRecording>& recording, bool bWatched)
 {
   if (bWatched)
-    return IncrementRecordingsPlayCount(item);
+    return IncrementRecordingsPlayCount(recording);
   else
-    return SetRecordingsPlayCount(item, 0);
+    return SetRecordingsPlayCount(recording, 0);
 }
 
-bool CPVRRecordings::ResetResumePoint(const CFileItemPtr item)
+bool CPVRRecordings::ResetResumePoint(const std::shared_ptr<CPVRRecording>& recording)
 {
   bool bResult = false;
 
-  const CPVRRecordingPtr recording = item->GetPVRRecordingInfoTag();
   if (recording)
   {
     CSingleLock lock(m_critSection);
@@ -388,7 +289,7 @@ bool CPVRRecordings::ResetResumePoint(const CFileItemPtr item)
     {
       bResult = true;
 
-      db.ClearBookMarksOfFile(item->GetPath(), CBookmark::RESUME);
+      db.ClearBookMarksOfFile(recording->m_strFileNameAndPath, CBookmark::RESUME);
       recording->SetResumePoint(CBookmark());
 
       CServiceBroker::GetPVRManager().PublishEvent(PVREvent::RecordingsInvalidated);

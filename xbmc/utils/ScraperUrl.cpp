@@ -6,20 +6,21 @@
  *  See LICENSES/README.md for more information.
  */
 
-#include "XMLUtils.h"
 #include "ScraperUrl.h"
-#include "ServiceBroker.h"
-#include "settings/AdvancedSettings.h"
-#include "settings/SettingsComponent.h"
+
 #include "CharsetConverter.h"
-#include "utils/CharsetDetection.h"
-#include "utils/StringUtils.h"
+#include "ServiceBroker.h"
+#include "URIUtils.h"
 #include "URL.h"
+#include "XMLUtils.h"
 #include "filesystem/CurlFile.h"
 #include "filesystem/ZipFile.h"
-#include "URIUtils.h"
-#include "utils/XBMCTinyXML.h"
+#include "settings/AdvancedSettings.h"
+#include "settings/SettingsComponent.h"
+#include "utils/CharsetDetection.h"
 #include "utils/Mime.h"
+#include "utils/StringUtils.h"
+#include "utils/XBMCTinyXML.h"
 #include "utils/log.h"
 
 #include <algorithm>
@@ -325,7 +326,7 @@ bool CScraperUrl::ParseEpisodeGuide(std::string strUrls)
   return true;
 }
 
-void CScraperUrl::AddElement(std::string url, std::string aspect, std::string referrer, std::string cache, bool post, bool isgz, int season)
+void CScraperUrl::AddElement(std::string url, std::string aspect, std::string preview, std::string referrer, std::string cache, bool post, bool isgz, int season)
 {
   TiXmlElement thumb("thumb");
   thumb.SetAttribute("spoof", referrer);
@@ -340,6 +341,7 @@ void CScraperUrl::AddElement(std::string url, std::string aspect, std::string re
     thumb.SetAttribute("type", "season");
   }
   thumb.SetAttribute("aspect", aspect);
+  thumb.SetAttribute("preview", preview);
   TiXmlText text(url);
   thumb.InsertEndChild(text);
   m_xml << thumb;

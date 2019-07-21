@@ -6,24 +6,24 @@
  *  See LICENSES/README.md for more information.
  */
 
-#include <cstdlib>
-#include <sstream>
-
 #include "ListItem.h"
-#include "AddonUtils.h"
 
-#include "video/VideoInfoTag.h"
+#include "AddonUtils.h"
+#include "ServiceBroker.h"
+#include "Util.h"
+#include "games/GameTypes.h"
+#include "games/tags/GameInfoTag.h"
 #include "music/tags/MusicInfoTag.h"
 #include "pictures/PictureInfoTag.h"
-#include "games/tags/GameInfoTag.h"
-#include "games/GameTypes.h"
-#include "utils/log.h"
-#include "utils/Variant.h"
-#include "utils/StringUtils.h"
 #include "settings/AdvancedSettings.h"
 #include "settings/SettingsComponent.h"
-#include "Util.h"
-#include "ServiceBroker.h"
+#include "utils/StringUtils.h"
+#include "utils/Variant.h"
+#include "utils/log.h"
+#include "video/VideoInfoTag.h"
+
+#include <cstdlib>
+#include <sstream>
 
 namespace XBMCAddon
 {
@@ -743,10 +743,10 @@ namespace XBMCAddon
       GetVideoInfoTag()->m_fanart.Pack();
     }
 
-    void ListItem::addAvailableArtwork(std::string url, std::string art_type, std::string referrer, std::string cache, bool post, bool isgz, int season)
+    void ListItem::addAvailableArtwork(std::string url, std::string art_type, std::string preview, std::string referrer, std::string cache, bool post, bool isgz, int season)
     {
       XBMCAddonUtils::GuiLock lock(languageHook, m_offscreen);
-      GetVideoInfoTag()->m_strPictureURL.AddElement(url, art_type, referrer, cache, post, isgz, season);
+      GetVideoInfoTag()->m_strPictureURL.AddElement(url, art_type, preview, referrer, cache, post, isgz, season);
     }
 
     void ListItem::addStreamInfo(const char* cType, const Properties& dictionary)

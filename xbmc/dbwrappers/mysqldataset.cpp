@@ -18,13 +18,13 @@
 
 #include "mysqldataset.h"
 #ifdef HAS_MYSQL
-#include "mysql/errmsg.h"
+#include <mysql/errmsg.h>
 #elif defined(HAS_MARIADB)
 #include <mariadb/errmsg.h>
 #endif
 
 #ifdef TARGET_POSIX
-#include "platform/linux/ConvUtils.h"
+#include "platform/posix/ConvUtils.h"
 #endif
 
 #define MYSQL_OK          0
@@ -122,13 +122,14 @@ void MysqlDatabase::configure_connection() {
         std::string column = row[0];
         std::vector<std::string> split = StringUtils::Split(column, ',');
 
-        for (std::vector<std::string>::iterator itIn = split.begin(); itIn != split.end(); ++itIn)
+        for (std::string& itIn : split)
         {
-          if (StringUtils::Trim(*itIn) == "derived_merge=on")
+          if (StringUtils::Trim(itIn) == "derived_merge=on")
           {
             strcpy(sqlcmd, "SET SESSION optimizer_switch = 'derived_merge=off'");
             if ((ret = mysql_real_query(conn, sqlcmd, strlen(sqlcmd))) != MYSQL_OK)
-              throw DbErrors("Can't set optimizer_switch = '%s': '%s' (%d)", StringUtils::Trim(*itIn).c_str(), db.c_str(), ret);
+              throw DbErrors("Can't set optimizer_switch = '%s': '%s' (%d)",
+                             StringUtils::Trim(itIn).c_str(), db.c_str(), ret);
             break;
           }
         }
@@ -1193,7 +1194,7 @@ void MysqlDatabase::mysqlVXPrintf(
         if( n>etBUFSIZE ){
           bufpt = zExtra = (char *)malloc(n);
           if( bufpt==0 ){
-            pAccum->mallocFailed = 1;
+            pAccum->mallocFailed = true;
             return;
           }
         }else{
@@ -1262,7 +1263,7 @@ bool MysqlDatabase::mysqlStrAccumAppend(StrAccum *p, const char *z, int N) {
     szNew += N + 1;
     if( szNew > p->mxAlloc ){
       mysqlStrAccumReset(p);
-      p->tooBig = 1;
+      p->tooBig = true;
       return false;
     }else{
       p->nAlloc = szNew;
@@ -1273,7 +1274,7 @@ bool MysqlDatabase::mysqlStrAccumAppend(StrAccum *p, const char *z, int N) {
       mysqlStrAccumReset(p);
       p->zText = zNew;
     }else{
-      p->mallocFailed = 1;
+      p->mallocFailed = true;
       mysqlStrAccumReset(p);
       return false;
     }
@@ -1306,7 +1307,7 @@ char * MysqlDatabase::mysqlStrAccumFinish(StrAccum *p){
       if( p->zText ){
         memcpy(p->zText, p->zBase, p->nChar+1);
       }else{
-        p->mallocFailed = 1;
+        p->mallocFailed = true;
       }
     }
   }
@@ -1331,8 +1332,8 @@ void MysqlDatabase::mysqlStrAccumInit(StrAccum *p, char *zBase, int n, int mx){
   p->nChar = 0;
   p->nAlloc = n;
   p->mxAlloc = mx;
-  p->tooBig = 0;
-  p->mallocFailed = 0;
+  p->tooBig = false;
+  p->mallocFailed = false;
 }
 
 /*
@@ -1390,9 +1391,9 @@ void MysqlDataset::make_query(StringList &_sql) {
   {
     if (autocommit) db->start_transaction();
 
-    for (std::list<std::string>::iterator i =_sql.begin(); i!=_sql.end(); ++i)
+    for (const std::string& i : _sql)
     {
-      query = *i;
+      query = i;
       Dataset::parse_sql(query);
       if ((static_cast<MysqlDatabase*>(db)->query_with_reconnect(query.c_str())) != MYSQL_OK)
       {

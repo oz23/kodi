@@ -8,28 +8,30 @@
 
 #pragma once
 
-#include <list>
-#include <map>
-#include <memory>
-#include <utility>
-
 #include "XBDateTime.h"
+#include "addons/kodi-addon-dev-kit/include/kodi/xbmc_pvr_types.h"
+#include "pvr/PVRSettings.h"
+#include "pvr/PVRTypes.h"
 #include "threads/CriticalSection.h"
+#include "threads/Event.h"
 #include "threads/Thread.h"
 #include "utils/Observer.h"
 
-#include "pvr/PVRSettings.h"
-#include "pvr/PVRTypes.h"
-#include "pvr/epg/Epg.h"
-#include "pvr/epg/EpgDatabase.h"
-
-class CFileItem;
+#include <list>
+#include <map>
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
 
 namespace PVR
 {
-  class CPVREpgChannelData;
   class CEpgUpdateRequest;
   class CEpgTagStateChange;
+  class CPVREpg;
+  class CPVREpgChannelData;
+  class CPVREpgDatabase;
+  class CPVREpgInfoTag;
 
   class CPVREpgContainer : public Observer, public Observable, private CThread
   {
@@ -111,6 +113,12 @@ namespace PVR
     const CDateTime GetLastEPGDate(void);
 
     /*!
+     * @brief Get all EPGs.
+     * @return The EPGs.
+     */
+    std::vector<std::shared_ptr<CPVREpg>> GetAllEpgs() const;
+
+    /*!
      * @brief Get an EPG given its ID.
      * @param iEpgId The database ID of the table.
      * @return The EPG or nullptr if it wasn't found.
@@ -141,9 +149,9 @@ namespace PVR
 
     /*!
      * @brief Check whether data should be persisted to the EPG database.
-     * @return True if data should not be persisted to the EPG database, false otherwise.
+     * @return True if data should be persisted to the EPG database, false otherwise.
      */
-    bool IgnoreDB() const;
+    bool UseDatabase() const;
 
     /*!
      * @brief Notify EPG container that there are pending manual EPG updates
@@ -179,15 +187,13 @@ namespace PVR
 
     /*!
      * @brief Inform the epg container that playback of an item just started.
-     * @param item The item that started to play.
      */
-    void OnPlaybackStarted(const std::shared_ptr<CFileItem>& item);
+    void OnPlaybackStarted();
 
     /*!
      * @brief Inform the epg container that playback of an item was stopped due to user interaction.
-     * @param item The item that stopped to play.
      */
-    void OnPlaybackStopped(const std::shared_ptr<CFileItem>& item);
+    void OnPlaybackStopped();
 
   private:
     /*!

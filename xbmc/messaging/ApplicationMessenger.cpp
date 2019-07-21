@@ -8,13 +8,13 @@
 
 #include "ApplicationMessenger.h"
 
-#include <memory>
-#include <utility>
-
-#include "windowing/GraphicContext.h"
 #include "guilib/GUIMessage.h"
 #include "messaging/IMessageTarget.h"
 #include "threads/SingleLock.h"
+#include "windowing/GraphicContext.h"
+
+#include <memory>
+#include <utility>
 
 namespace KODI
 {
@@ -99,7 +99,7 @@ int CApplicationMessenger::SendMsg(ThreadMessage&& message, bool wait)
     message.result = std::make_shared<int>(-1);
     // check that we're not being called from our application thread, else we'll be waiting
     // forever!
-    if (!CThread::IsCurrentThread(m_guiThreadId))
+    if (m_guiThreadId != CThread::GetCurrentThreadId())
     {
       message.waitEvent.reset(new CEvent(true));
       waitEvent = message.waitEvent;
@@ -137,6 +137,9 @@ int CApplicationMessenger::SendMsg(ThreadMessage&& message, bool wait)
   {
     // ensure the thread doesn't hold the graphics lock
     CWinSystemBase* winSystem = CServiceBroker::GetWinSystem();
+    //! @todo This won't really help as winSystem can die every single
+    // moment on shutdown. A shared ptr would be a more valid solution
+    // depending on the design dependencies.
     if (winSystem)
     {
       CSingleExit exit(winSystem->GetGfxContext());

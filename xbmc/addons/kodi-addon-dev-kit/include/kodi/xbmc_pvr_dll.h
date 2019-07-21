@@ -78,14 +78,14 @@ extern "C"
    * Request the EPG for a channel from the backend.
    * EPG entries are added to Kodi by calling TransferEpgEntry() on the callback.
    * @param handle Handle to pass to the callback method.
-   * @param channel The channel to get the EPG table for.
+   * @param iChannelUid The UID of the channel to get the EPG table for.
    * @param iStart Get events after this time (UTC).
    * @param iEnd Get events before this time (UTC).
    * @return PVR_ERROR_NO_ERROR if the table has been fetched successfully.
    * @remarks Required if bSupportsEPG is set to true.
    *          Return PVR_ERROR_NOT_IMPLEMENTED if this add-on won't provide this function.
    */
-  PVR_ERROR GetEPGForChannel(ADDON_HANDLE handle, const PVR_CHANNEL& channel, time_t iStart, time_t iEnd);
+  PVR_ERROR GetEPGForChannel(ADDON_HANDLE handle, int iChannelUid, time_t iStart, time_t iEnd);
 
   /*
    * Check if the given EPG tag can be recorded.
@@ -654,12 +654,6 @@ extern "C"
   const char* GetBackendHostname();
 
   /*!
-   *  Check if timeshift is active
-   *  @return true if timeshift is active
-   */
-  bool IsTimeshifting();
-
-  /*!
    *  Check for real-time streaming
    *  @return true if current stream is real-time
    */
@@ -775,7 +769,6 @@ extern "C"
 
     pClient->toAddon.GetBackendHostname             = GetBackendHostname;
 
-    pClient->toAddon.IsTimeshifting                 = IsTimeshifting;
     pClient->toAddon.IsRealTimeStream               = IsRealTimeStream;
 
     pClient->toAddon.SetEPGTimeFrame                = SetEPGTimeFrame;

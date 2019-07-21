@@ -8,27 +8,19 @@
 
 #include "WinSystemAndroid.h"
 
-#include <string.h>
-#include <float.h>
-
-#include <EGL/egl.h>
-#include <EGL/eglplatform.h>
-
+#include "OSScreenSaverAndroid.h"
+#include "ServiceBroker.h"
+#include "WinEventsAndroid.h"
 #include "addons/interfaces/platform/android/System.h"
 #include "cores/RetroPlayer/process/android/RPProcessInfoAndroid.h"
 #include "cores/RetroPlayer/rendering/VideoRenderers/RPRendererOpenGLES.h"
-#include "cores/VideoPlayer/DVDCodecs/Video/DVDVideoCodecAndroidMediaCodec.h"
 #include "cores/VideoPlayer/DVDCodecs/Audio/DVDAudioCodecAndroidMediaCodec.h"
-#include "cores/VideoPlayer/VideoRenderers/HwDecRender/RendererMediaCodec.h"
+#include "cores/VideoPlayer/DVDCodecs/Video/DVDVideoCodecAndroidMediaCodec.h"
 #include "cores/VideoPlayer/Process/android/ProcessInfoAndroid.h"
+#include "cores/VideoPlayer/VideoRenderers/HwDecRender/RendererMediaCodec.h"
 #include "cores/VideoPlayer/VideoRenderers/HwDecRender/RendererMediaCodecSurface.h"
 #include "guilib/DispResource.h"
-#include "OSScreenSaverAndroid.h"
-#include "platform/android/powermanagement/AndroidPowerSyscall.h"
-#include "platform/android/media/drm/MediaDrmCryptoSession.h"
-#include "platform/android/media/decoderfilter/MediaCodecDecoderFilterManager.h"
-#include "platform/android/activity/XBMCApp.h"
-#include "ServiceBroker.h"
+#include "rendering/gles/ScreenshotSurfaceGLES.h"
 #include "settings/DisplaySettings.h"
 #include "settings/Settings.h"
 #include "settings/SettingsComponent.h"
@@ -36,7 +28,17 @@
 #include "utils/log.h"
 #include "windowing/GraphicContext.h"
 #include "windowing/Resolution.h"
-#include "WinEventsAndroid.h"
+
+#include "platform/android/activity/XBMCApp.h"
+#include "platform/android/media/decoderfilter/MediaCodecDecoderFilterManager.h"
+#include "platform/android/media/drm/MediaDrmCryptoSession.h"
+#include "platform/android/powermanagement/AndroidPowerSyscall.h"
+
+#include <float.h>
+#include <string.h>
+
+#include <EGL/egl.h>
+#include <EGL/eglplatform.h>
 
 using namespace KODI;
 
@@ -85,6 +87,9 @@ bool CWinSystemAndroid::InitWindowSystem()
   ADDON::Interface_Android::Register();
   DRM::CMediaDrmCryptoSession::Register();
   VIDEOPLAYER::CProcessInfoAndroid::Register();
+
+  CScreenshotSurfaceGLES::Register();
+
   return CWinSystemBase::InitWindowSystem();
 }
 

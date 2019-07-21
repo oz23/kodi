@@ -8,15 +8,17 @@
 
 #pragma once
 
-#include <string>
-
-#include "settings/SettingConditions.h"
-#include "settings/dialogs/GUIDialogSettingsManualBase.h"
-#include "settings/lib/SettingDependency.h"
-
 #include "pvr/PVRTypes.h"
+#include "settings/dialogs/GUIDialogSettingsManualBase.h"
 
+#include <memory>
+#include <string>
+#include <vector>
+
+class CFileItem;
 class CSetting;
+
+struct IntegerSettingOption;
 
 namespace PVR
 {
@@ -43,7 +45,7 @@ namespace PVR
 
   private:
     static void LifetimesFiller(std::shared_ptr<const CSetting> setting,
-                                std::vector<std::pair<std::string, int>> &list,
+                                std::vector<IntegerSettingOption> &list,
                                 int &current, void *data);
 
     CPVRRecordingPtr m_recording;

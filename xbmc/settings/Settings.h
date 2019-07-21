@@ -8,11 +8,11 @@
 
 #pragma once
 
-#include <string>
-
 #include "settings/SettingControl.h"
 #include "settings/SettingCreator.h"
 #include "settings/SettingsBase.h"
+
+#include <string>
 
 class CSettingList;
 class TiXmlNode;
@@ -95,10 +95,6 @@ public:
   static const std::string SETTING_VIDEOPLAYER_QUITSTEREOMODEONSTOP;
   static const std::string SETTING_VIDEOPLAYER_RENDERMETHOD;
   static const std::string SETTING_VIDEOPLAYER_HQSCALERS;
-  static const std::string SETTING_VIDEOPLAYER_USEAMCODEC;
-  static const std::string SETTING_VIDEOPLAYER_USEAMCODECMPEG2;
-  static const std::string SETTING_VIDEOPLAYER_USEAMCODECMPEG4;
-  static const std::string SETTING_VIDEOPLAYER_USEAMCODECH264;
   static const std::string SETTING_VIDEOPLAYER_USEMEDIACODEC;
   static const std::string SETTING_VIDEOPLAYER_USEMEDIACODECSURFACE;
   static const std::string SETTING_VIDEOPLAYER_USEVDPAU;
@@ -107,7 +103,6 @@ public:
   static const std::string SETTING_VIDEOPLAYER_USEVDPAUMPEG4;
   static const std::string SETTING_VIDEOPLAYER_USEVDPAUVC1;
   static const std::string SETTING_VIDEOPLAYER_USEDXVA2;
-  static const std::string SETTING_VIDEOPLAYER_USEOMXPLAYER;
   static const std::string SETTING_VIDEOPLAYER_USEVTB;
   static const std::string SETTING_VIDEOPLAYER_USEMMAL;
   static const std::string SETTING_VIDEOPLAYER_USEPRIMEDECODER;
@@ -170,7 +165,7 @@ public:
   static const std::string SETTING_EPG_HIDENOINFOAVAILABLE;
   static const std::string SETTING_EPG_EPGUPDATE;
   static const std::string SETTING_EPG_PREVENTUPDATESWHILEPLAYINGTV;
-  static const std::string SETTING_EPG_IGNOREDBFORCLIENT;
+  static const std::string SETTING_EPG_STOREEPGINDATABASE;
   static const std::string SETTING_EPG_RESETEPG;
   static const std::string SETTING_PVRPLAYBACK_SWITCHTOFULLSCREEN;
   static const std::string SETTING_PVRPLAYBACK_SIGNALQUALITY;
@@ -184,6 +179,8 @@ public:
   static const std::string SETTING_PVRRECORD_MARGINEND;
   static const std::string SETTING_PVRRECORD_TIMERNOTIFICATIONS;
   static const std::string SETTING_PVRRECORD_GROUPRECORDINGS;
+  static const std::string SETTING_PVRREMINDERS_AUTOCLOSEDELAY;
+  static const std::string SETTING_PVRREMINDERS_AUTORECORD;
   static const std::string SETTING_PVRPOWERMANAGEMENT_ENABLED;
   static const std::string SETTING_PVRPOWERMANAGEMENT_BACKENDIDLETIME;
   static const std::string SETTING_PVRPOWERMANAGEMENT_SETWAKEUPCMD;

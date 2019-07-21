@@ -6,10 +6,8 @@
  *  See LICENSES/README.md for more information.
  */
 
-#include <algorithm>
-#include <vector>
-
 #include "AddonSettings.h"
+
 #include "FileItem.h"
 #include "GUIInfoManager.h"
 #include "LangInfo.h"
@@ -22,19 +20,24 @@
 #include "guilib/LocalizeStrings.h"
 #include "messaging/ApplicationMessenger.h"
 #include "settings/SettingAddon.h"
+#include "settings/SettingConditions.h"
 #include "settings/SettingControl.h"
 #include "settings/SettingDateTime.h"
 #include "settings/SettingPath.h"
 #include "settings/lib/Setting.h"
+#include "settings/lib/SettingDefinitions.h"
 #include "settings/lib/SettingSection.h"
 #include "settings/lib/SettingsManager.h"
 #include "threads/SingleLock.h"
 #include "utils/FileExtensionProvider.h"
-#include "utils/log.h"
 #include "utils/StringUtils.h"
 #include "utils/URIUtils.h"
 #include "utils/XBMCTinyXML.h"
 #include "utils/XMLUtils.h"
+#include "utils/log.h"
+
+#include <algorithm>
+#include <vector>
 
 static const std::string OldSettingValuesSeparator = "|";
 
@@ -391,6 +394,13 @@ void CAddonSettings::InitializeControls()
 
 void CAddonSettings::InitializeConditions()
 {
+  CSettingConditions::Initialize();
+
+  // add basic conditions
+  const std::set<std::string>& simpleConditions = CSettingConditions::GetSimpleConditions();
+  for (const auto& condition : simpleConditions)
+    GetSettingsManager()->AddCondition(condition);
+
   GetSettingsManager()->AddDynamicCondition("InfoBool", InfoBool);
 }
 
@@ -941,7 +951,7 @@ SettingPtr CAddonSettings::InitializeFromOldSettingSelect(const std::string& set
 
       StringSettingOptions options;
       for (const auto& value : values)
-        options.push_back(std::make_pair(value, value));
+        options.push_back(StringSettingOption(value, value));
       settingString->SetOptions(options);
 
       setting = settingString;
@@ -1083,7 +1093,7 @@ SettingPtr CAddonSettings::InitializeFromOldSettingEnums(const std::string& sett
         if (settingEntries.size() > i)
           value = static_cast<int>(strtol(settingEntries[i].c_str(), nullptr, 0));
 
-        options.push_back(std::make_pair(label, value));
+        options.push_back(IntegerSettingOption(label, value));
       }
 
       settingInt->SetOptions(options);
@@ -1123,7 +1133,7 @@ SettingPtr CAddonSettings::InitializeFromOldSettingEnums(const std::string& sett
         if (settingEntries.size() > i)
           value = settingEntries[i];
 
-        options.push_back(std::make_pair(value, value));
+        options.push_back(StringSettingOption(value, value));
       }
 
       settingString->SetOptions(options);
@@ -1427,7 +1437,7 @@ bool CAddonSettings::ParseOldCondition(std::shared_ptr<const CSetting> setting, 
         {
           const auto& options = referencedSettingString->GetOptions();
           if (options.size() > valueIndex)
-            expression.m_value = options.at(valueIndex).second;
+            expression.m_value = options.at(valueIndex).value;
           break;
         }
 
@@ -1491,7 +1501,7 @@ bool CAddonSettings::ParseOldConditionExpression(std::string str, ConditionExpre
   return true;
 }
 
-void CAddonSettings::FileEnumSettingOptionsFiller(std::shared_ptr<const CSetting> setting, std::vector< std::pair<std::string, std::string> > &list, std::string &current, void *data)
+void CAddonSettings::FileEnumSettingOptionsFiller(std::shared_ptr<const CSetting> setting, std::vector<StringSettingOption> &list, std::string &current, void *data)
 {
   if (setting == nullptr)
     return;
@@ -1516,7 +1526,7 @@ void CAddonSettings::FileEnumSettingOptionsFiller(std::shared_ptr<const CSetting
     {
       if (settingPath->HideExtension())
         item->RemoveExtension();
-      list.push_back(std::make_pair(item->GetLabel(), item->GetLabel()));
+      list.push_back(StringSettingOption(item->GetLabel(), item->GetLabel()));
     }
   }
 }

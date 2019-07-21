@@ -42,7 +42,7 @@ public:
 
   std::string m_description;
 protected:
-  CDVDDemuxFFmpeg *m_parent;
+  CDVDDemuxFFmpeg* m_parent;
   AVStream* m_stream  = nullptr;
 };
 
@@ -55,7 +55,7 @@ public:
 
   std::string m_description;
 protected:
-  CDVDDemuxFFmpeg *m_parent;
+  CDVDDemuxFFmpeg* m_parent;
   AVStream* m_stream = nullptr;
 };
 
@@ -100,7 +100,7 @@ public:
   int GetChapterCount() override;
   int GetChapter() override;
   void GetChapterName(std::string& strChapterName, int chapterIdx=-1) override;
-  int64_t GetChapterPos(int chapterIdx=-1) override;
+  int64_t GetChapterPos(int chapterIdx = -1) override;
   std::string GetStreamCodecName(int iStreamId) override;
 
   bool Aborted();
@@ -117,19 +117,19 @@ protected:
   void AddStream(int streamIdx, CDemuxStream* stream);
   void CreateStreams(unsigned int program = UINT_MAX);
   void DisposeStreams();
-  void ParsePacket(AVPacket *pkt);
+  void ParsePacket(AVPacket* pkt);
   bool IsVideoReady();
   void ResetVideoStreams();
-  AVDictionary *GetFFMpegOptionsFromInput();
+  AVDictionary* GetFFMpegOptionsFromInput();
   double ConvertTimestamp(int64_t pts, int den, int num);
   void UpdateCurrentPTS();
   bool IsProgramChange();
   unsigned int HLSSelectProgram();
 
-  std::string GetStereoModeFromMetadata(AVDictionary *pMetadata);
-  std::string ConvertCodecToInternalStereoMode(const std::string &mode, const StereoModeConversionMap *conversionMap);
+  std::string GetStereoModeFromMetadata(AVDictionary* pMetadata);
+  std::string ConvertCodecToInternalStereoMode(const std::string& mode, const StereoModeConversionMap* conversionMap);
 
-  void GetL16Parameters(int &channels, int &samplerate);
+  void GetL16Parameters(int& channels, int& samplerate);
   double SelectAspect(AVStream* st, bool& forced);
 
   CCriticalSection m_critSection;
@@ -146,6 +146,8 @@ protected:
   unsigned int m_program;
   unsigned int m_streamsInProgram;
   unsigned int m_newProgram;
+  unsigned int m_initialProgramNumber;
+  int m_seekStream = -1;
 
   XbmcThreads::EndTime  m_timeout;
 
@@ -164,6 +166,4 @@ protected:
   double m_dtsAtDisplayTime;
   bool m_seekToKeyFrame = false;
   double m_startTime = 0;
-  int m_seekStream = -1;
 };
-

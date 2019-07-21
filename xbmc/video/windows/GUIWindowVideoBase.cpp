@@ -7,52 +7,53 @@
  */
 
 #include "GUIWindowVideoBase.h"
-#include "ServiceBroker.h"
-#include "Util.h"
-#include "video/VideoInfoDownloader.h"
-#include "video/VideoInfoScanner.h"
-#include "video/VideoLibraryQueue.h"
-#include "addons/GUIDialogAddonInfo.h"
-#include "video/dialogs/GUIDialogVideoInfo.h"
-#include "dialogs/GUIDialogSmartPlaylistEditor.h"
-#include "dialogs/GUIDialogProgress.h"
-#include "dialogs/GUIDialogYesNo.h"
-#include "view/GUIViewState.h"
-#include "playlists/PlayListFactory.h"
+
 #include "Application.h"
-#include "PlayListPlayer.h"
-#include "cores/playercorefactory/PlayerCoreFactory.h"
+#include "Autorun.h"
 #include "GUIPassword.h"
+#include "GUIUserMessages.h"
+#include "PartyModeManager.h"
+#include "PlayListPlayer.h"
+#include "ServiceBroker.h"
+#include "TextureDatabase.h"
+#include "URL.h"
+#include "Util.h"
+#include "addons/GUIDialogAddonInfo.h"
+#include "cores/playercorefactory/PlayerCoreFactory.h"
+#include "dialogs/GUIDialogProgress.h"
+#include "dialogs/GUIDialogSelect.h"
+#include "dialogs/GUIDialogSmartPlaylistEditor.h"
+#include "dialogs/GUIDialogYesNo.h"
+#include "filesystem/Directory.h"
 #include "filesystem/StackDirectory.h"
 #include "filesystem/VideoDatabaseDirectory.h"
-#include "PartyModeManager.h"
 #include "guilib/GUIComponent.h"
-#include "guilib/GUIWindowManager.h"
-#include "dialogs/GUIDialogSelect.h"
 #include "guilib/GUIKeyboardFactory.h"
-#include "filesystem/Directory.h"
+#include "guilib/GUIWindowManager.h"
+#include "guilib/LocalizeStrings.h"
+#include "input/Key.h"
 #include "messaging/helpers/DialogOKHelper.h"
 #include "playlists/PlayList.h"
+#include "playlists/PlayListFactory.h"
 #include "profiles/ProfileManager.h"
 #include "settings/AdvancedSettings.h"
 #include "settings/MediaSettings.h"
 #include "settings/Settings.h"
 #include "settings/SettingsComponent.h"
 #include "settings/dialogs/GUIDialogContentSettings.h"
-#include "input/Key.h"
-#include "guilib/LocalizeStrings.h"
-#include "utils/FileExtensionProvider.h"
-#include "utils/StringUtils.h"
-#include "utils/log.h"
-#include "utils/FileUtils.h"
-#include "utils/Variant.h"
-#include "utils/URIUtils.h"
-#include "GUIUserMessages.h"
 #include "storage/MediaManager.h"
-#include "Autorun.h"
-#include "URL.h"
+#include "utils/FileExtensionProvider.h"
+#include "utils/FileUtils.h"
 #include "utils/GroupUtils.h"
-#include "TextureDatabase.h"
+#include "utils/StringUtils.h"
+#include "utils/URIUtils.h"
+#include "utils/Variant.h"
+#include "utils/log.h"
+#include "video/VideoInfoDownloader.h"
+#include "video/VideoInfoScanner.h"
+#include "video/VideoLibraryQueue.h"
+#include "video/dialogs/GUIDialogVideoInfo.h"
+#include "view/GUIViewState.h"
 
 using namespace XFILE;
 using namespace PLAYLIST;
@@ -378,6 +379,22 @@ bool CGUIWindowVideoBase::ShowIMDB(CFileItemPtr item, const ScraperPtr &info2, b
         item->SetPath(item->GetVideoInfoTag()->GetPath());
     }
   }
+  
+  if (needsRefresh)
+  {
+    // Delete stream details (=media flags). This allows users to force
+    // a refresh of the stream details by performing a video info refresh
+    const int fileId = item->GetVideoInfoTag()->m_iFileId;
+    if (fileId > 0)
+    {
+      CVideoDatabase db;
+      if (db.Open())
+      {
+        db.DeleteStreamDetails(fileId);
+        db.Close();
+      }
+    }
+  }
 
   const std::shared_ptr<CProfileManager> profileManager = CServiceBroker::GetSettingsComponent()->GetProfileManager();
 
@@ -679,6 +696,9 @@ bool CGUIWindowVideoBase::OnFileAction(int iItem, int action, std::string player
     if (!OnPlayStackPart(iItem))
       return false;
     break;
+  case SELECT_ACTION_QUEUE:
+    OnQueueItem(iItem);
+    return true;
   case SELECT_ACTION_PLAY:
   default:
     break;
@@ -699,6 +719,11 @@ bool CGUIWindowVideoBase::OnItemInfo(int iItem)
 
   if (!m_vecItems->IsPlugin() && (item->IsPlugin() || item->IsScript()))
     return CGUIDialogAddonInfo::ShowForItem(item);
+
+  if (item->m_bIsFolder &&
+      item->IsVideoDb() &&
+      StringUtils::StartsWith(item->GetPath(), "videodb://movies/sets/"))
+    return ShowIMDB(item, nullptr, true);
 
   ADDON::ScraperPtr scraper;
   if (!m_vecItems->IsPlugin() && !m_vecItems->IsRSS() && !m_vecItems->IsLiveTV())

@@ -7,7 +7,9 @@
  */
 
 #include "AEStreamInfo.h"
+
 #include "utils/log.h"
+
 #include <algorithm>
 #include <string.h>
 
@@ -154,7 +156,7 @@ int CAEStreamParser::AddData(uint8_t *data, unsigned int size, uint8_t **buffer/
     unsigned int consumed = 0;
     unsigned int offset = 0;
     unsigned int room = sizeof(m_buffer) - m_bufferSize;
-    while(1)
+    while(true)
     {
       if (!size)
       {

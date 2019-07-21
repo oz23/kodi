@@ -8,19 +8,19 @@
 
 #pragma once
 
+#include "AddonClass.h"
+#include "AddonString.h"
+#include "Alternative.h"
+#include "Dictionary.h"
+#include "FileItem.h"
+#include "InfoTagMusic.h"
+#include "InfoTagVideo.h"
+#include "ListItem.h"
+#include "Tuple.h"
+#include "commons/Exception.h"
+
 #include <map>
 #include <vector>
-
-#include "AddonClass.h"
-#include "Tuple.h"
-#include "Dictionary.h"
-#include "Alternative.h"
-#include "ListItem.h"
-#include "FileItem.h"
-#include "AddonString.h"
-#include "commons/Exception.h"
-#include "InfoTagVideo.h"
-#include "InfoTagMusic.h"
 
 
 namespace XBMCAddon
@@ -798,6 +798,7 @@ namespace XBMCAddon
       ///
       /// @param url            string (image path url)
       /// @param art_type       string (image type)
+      /// @param preview        [opt] string (image preview path url)
       /// @param referrer       [opt] string (referrer url)
       /// @param cache          [opt] string (filename in cache)
       /// @param post           [opt] bool (use post to retrieve the image, default false)
@@ -807,6 +808,7 @@ namespace XBMCAddon
       ///
       ///-----------------------------------------------------------------------
       /// @python_v18 New function added.
+      /// @python_v19 New param added (preview).
       ///
       /// **Example:**
       /// ~~~~~~~~~~~~~{.py}
@@ -817,7 +819,7 @@ namespace XBMCAddon
       ///
       addAvailableArtwork(...);
 #else
-      void addAvailableArtwork(std::string url, std::string art_type = "", std::string referrer = "", std::string cache = "", bool post = false, bool isgz = false, int season = -1);
+      void addAvailableArtwork(std::string url, std::string art_type = "", std::string preview = "", std::string referrer = "", std::string cache = "", bool post = false, bool isgz = false, int season = -1);
 #endif
 
 #ifdef DOXYGEN_SHOULD_USE_THIS

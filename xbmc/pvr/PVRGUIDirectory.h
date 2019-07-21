@@ -10,6 +10,8 @@
 
 #include "URL.h"
 
+#include <string>
+
 class CFileItemList;
 
 namespace PVR
@@ -78,12 +80,24 @@ public:
    */
   static bool HasDeletedRadioRecordings();
 
-private:
+  /*!
+   * @brief Get the list of channel groups.
+   * @param bRadio If true, obtain radio groups, tv groups otherwise.
+   * @param bExcludeHidden If true exclude hidden groups, include hidden groups otherwise.
+   * @param results The file list to store the results in.
+   * @return True on success, false otherwise..
+   */
+  static bool GetChannelGroupsDirectory(bool bRadio, bool bExcludeHidden, CFileItemList& results);
 
-  bool FilterDirectory(CFileItemList& results) const;
-
-  bool GetChannelGroupsDirectory(bool bRadio, CFileItemList& results) const;
+  /*!
+   * @brief Get the list of channels.
+   * @param results The file list to store the results in.
+   * @return True on success, false otherwise..
+   */
   bool GetChannelsDirectory(CFileItemList& results) const;
+
+private:
+  bool FilterDirectory(CFileItemList& results) const;
   bool GetTimersDirectory(CFileItemList& results) const;
   bool GetRecordingsDirectory(CFileItemList& results) const;
 

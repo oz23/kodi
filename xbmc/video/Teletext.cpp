@@ -13,13 +13,14 @@
  * Many thanks to the TuxBox Teletext Team for this great work.
  */
 
-#include "threads/SystemClock.h"
 #include "Teletext.h"
+
 #include "Application.h"
-#include "utils/log.h"
 #include "filesystem/SpecialProtocol.h"
-#include "windowing/GraphicContext.h"
 #include "input/Key.h"
+#include "threads/SystemClock.h"
+#include "utils/log.h"
+#include "windowing/GraphicContext.h"
 
 static inline void SDL_memset4(uint32_t* dst, uint32_t val, size_t len)
 {
@@ -553,7 +554,7 @@ bool CTeletextDecoder::HandleAction(const CAction &action)
   if (m_RenderInfo.PageCatching)
   {
     m_txtCache->PageUpdate    = true;
-    m_RenderInfo.PageCatching = 0;
+    m_RenderInfo.PageCatching = false;
     return true;
   }
 

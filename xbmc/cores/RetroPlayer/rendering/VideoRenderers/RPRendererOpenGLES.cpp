@@ -7,6 +7,7 @@
  */
 
 #include "RPRendererOpenGLES.h"
+
 #include "cores/RetroPlayer/buffers/RenderBufferOpenGLES.h"
 #include "cores/RetroPlayer/buffers/RenderBufferPoolOpenGLES.h"
 #include "cores/RetroPlayer/rendering/RenderContext.h"
@@ -92,26 +93,16 @@ void CRPRendererOpenGLES::FlushInternal()
 
 bool CRPRendererOpenGLES::Supports(RENDERFEATURE feature) const
 {
-  if (feature == RENDERFEATURE::STRETCH         ||
-      feature == RENDERFEATURE::ZOOM            ||
-      feature == RENDERFEATURE::PIXEL_RATIO     ||
-      feature == RENDERFEATURE::ROTATION)
-  {
-    return true;
-  }
-
-  return false;
+  return feature == RENDERFEATURE::STRETCH         ||
+         feature == RENDERFEATURE::ZOOM            ||
+         feature == RENDERFEATURE::PIXEL_RATIO     ||
+         feature == RENDERFEATURE::ROTATION;
 }
 
 bool CRPRendererOpenGLES::SupportsScalingMethod(SCALINGMETHOD method)
 {
-  if (method == SCALINGMETHOD::NEAREST ||
-      method == SCALINGMETHOD::LINEAR)
-  {
-    return true;
-  }
-
-  return false;
+  return method == SCALINGMETHOD::NEAREST ||
+         method == SCALINGMETHOD::LINEAR;
 }
 
 void CRPRendererOpenGLES::ClearBackBuffer()

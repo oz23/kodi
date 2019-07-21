@@ -168,8 +168,8 @@
 #include "input/InputManager.h"
 
 #ifdef TARGET_POSIX
-#include "XHandle.h"
-#include "XTimeUtils.h"
+#include "platform/posix/XHandle.h"
+#include "platform/posix/XTimeUtils.h"
 #include "platform/posix/filesystem/PosixDirectory.h"
 #include "platform/posix/PlatformPosix.h"
 #endif
@@ -184,13 +184,9 @@
 #include "platform/Environment.h"
 #endif
 
-#if defined(HAS_LIBAMCODEC)
-#include "utils/AMLUtils.h"
-#endif
-
 //TODO: XInitThreads
 #ifdef HAVE_X11
-#include "X11/Xlib.h"
+#include <X11/Xlib.h>
 #endif
 
 #include "cores/FFmpeg.h"
@@ -221,7 +217,6 @@ using KODI::MESSAGING::HELPERS::DialogResponse;
 
 #define MAX_FFWD_SPEED 5
 
-//extern IDirectSoundRenderer* m_pAudioDecoder;
 CApplication::CApplication(void)
 :
 #ifdef HAS_DVD_DRIVE
@@ -282,7 +277,7 @@ void CApplication::HandlePortEvents()
 #ifdef TARGET_WINDOWS
           else
           {
-            // this may occurs when OS tries to resize application window 
+            // this may occurs when OS tries to resize application window
             //CDisplaySettings::GetInstance().SetCurrentResolution(RES_DESKTOP, true);
             //auto& gfxContext = CServiceBroker::GetWinSystem()->GetGfxContext();
             //gfxContext.SetVideoResolution(gfxContext.GetVideoResolution(), true);
@@ -760,13 +755,11 @@ bool CApplication::Initialize()
   // GUI depends on seek handler
   m_appPlayer.GetSeekHandler().Configure();
 
-  // Init DPMS, before creating the corresponding setting control.
-  m_dpms.reset(new DPMSSupport());
   bool uiInitializationFinished = false;
+
   if (CServiceBroker::GetGUI()->GetWindowManager().Initialized())
   {
     const std::shared_ptr<CSettings> settings = CServiceBroker::GetSettingsComponent()->GetSettings();
-    settings->GetSetting(CSettings::SETTING_POWERMANAGEMENT_DISPLAYSOFF)->SetRequirementsMet(m_dpms->IsSupported());
 
     CServiceBroker::GetGUI()->GetWindowManager().CreateWindows();
 
@@ -943,7 +936,7 @@ void CApplication::StartServices()
 #if !defined(TARGET_WINDOWS) && defined(HAS_DVD_DRIVE)
   // Start Thread for DVD Mediatype detection
   CLog::Log(LOGNOTICE, "start dvd mediatype detection");
-  m_DetectDVDType.Create(false, THREAD_MINSTACKSIZE);
+  m_DetectDVDType.Create(false);
 #endif
 }
 
@@ -1098,19 +1091,6 @@ bool CApplication::OnSettingUpdate(std::shared_ptr<CSetting> setting, const char
   if (setting == NULL)
     return false;
 
-#if defined(HAS_LIBAMCODEC)
-  if (setting->GetId() == CSettings::SETTING_VIDEOPLAYER_USEAMCODEC)
-  {
-    // Do not permit amcodec to be used on non-aml platforms.
-    // The setting will be hidden but the default value is true,
-    // so change it to false.
-    if (!aml_present())
-    {
-      std::shared_ptr<CSettingBool> useamcodec = std::static_pointer_cast<CSettingBool>(setting);
-      return useamcodec->SetValue(false);
-    }
-  }
-#endif
 #if defined(TARGET_DARWIN_OSX)
   if (setting->GetId() == CSettings::SETTING_AUDIOOUTPUT_AUDIODEVICE)
   {
@@ -1135,10 +1115,7 @@ bool CApplication::OnSettingsSaving() const
   // don't save settings when we're busy stopping the application
   // a lot of screens try to save settings on deinit and deinit is
   // called for every screen when the application is stopping
-  if (m_bStop)
-    return false;
-
-  return true;
+  return !m_bStop;
 }
 
 void CApplication::ReloadSkin(bool confirm/*=false*/)
@@ -3000,7 +2977,7 @@ void CApplication::PlaybackCleanup()
       //  resets to res_desktop or look&feel resolution (including refreshrate)
       CServiceBroker::GetWinSystem()->GetGfxContext().SetFullScreenVideo(false);
     }
-#ifdef TARGET_DARWIN_IOS
+#ifdef TARGET_DARWIN_EMBEDDED
     CDarwinUtils::SetScheduling(false);
 #endif
   }
@@ -3157,7 +3134,7 @@ void CApplication::OnPlayBackStopped()
 {
   CLog::LogF(LOGDEBUG, "CApplication::OnPlayBackStopped");
 
-#if defined(TARGET_DARWIN_IOS)
+#if defined(TARGET_DARWIN_EMBEDDED)
   CDarwinUtils::EnableOSScreenSaver(true);
 #endif
 
@@ -3185,7 +3162,7 @@ void CApplication::OnPlayBackPaused()
 #ifdef HAS_PYTHON
   g_pythonParser.OnPlayBackPaused();
 #endif
-#if defined(TARGET_DARWIN_IOS)
+#if defined(TARGET_DARWIN_EMBEDDED)
   CDarwinUtils::EnableOSScreenSaver(true);
 #endif
 
@@ -3200,7 +3177,7 @@ void CApplication::OnPlayBackResumed()
 #ifdef HAS_PYTHON
   g_pythonParser.OnPlayBackResumed();
 #endif
-#if defined(TARGET_DARWIN_IOS)
+#if defined(TARGET_DARWIN_EMBEDDED)
   if (m_appPlayer.IsPlayingVideo())
     CDarwinUtils::EnableOSScreenSaver(false);
 #endif
@@ -3347,7 +3324,7 @@ void CApplication::ResetSystemIdleTimer()
 {
   // reset system idle timer
   m_idleTimer.StartZero();
-#if defined(TARGET_DARWIN_IOS)
+#if defined(TARGET_DARWIN_EMBEDDED)
   CDarwinUtils::ResetSystemIdleTimer();
 #endif
 }
@@ -3375,6 +3352,14 @@ void CApplication::StopScreenSaverTimer()
 
 bool CApplication::ToggleDPMS(bool manual)
 {
+  auto winSystem = CServiceBroker::GetWinSystem();
+  if (!winSystem)
+    return false;
+
+  std::shared_ptr<CDPMSSupport> dpms = winSystem->GetDPMSManager();
+  if (!dpms)
+    return false;
+
   if (manual || (m_dpmsIsManual == manual))
   {
     if (m_dpmsIsActive)
@@ -3384,11 +3369,11 @@ bool CApplication::ToggleDPMS(bool manual)
       SetRenderGUI(true);
       CheckOSScreenSaverInhibitionSetting();
       CServiceBroker::GetAnnouncementManager()->Announce(ANNOUNCEMENT::GUI, "xbmc", "OnDPMSDeactivated");
-      return m_dpms->DisablePowerSaving();
+      return dpms->DisablePowerSaving();
     }
     else
     {
-      if (m_dpms->EnablePowerSaving(m_dpms->GetSupportedModes()[0]))
+      if (dpms->EnablePowerSaving(dpms->GetSupportedModes()[0]))
       {
         m_dpmsIsActive = true;
         m_dpmsIsManual = manual;
@@ -3508,7 +3493,7 @@ void CApplication::CheckOSScreenSaverInhibitionSetting()
   // Kodi screen saver overrides OS one: always inhibit OS screen saver then
   // except when DPMS is active (inhibiting the screen saver then might also
   // disable DPMS again)
-  if (!m_dpmsIsActive && 
+  if (!m_dpmsIsActive &&
       !CServiceBroker::GetSettingsComponent()->GetSettings()->GetString(CSettings::SETTING_SCREENSAVER_MODE).empty() &&
       CServiceBroker::GetWinSystem()->GetOSScreenSaver())
   {
@@ -3533,10 +3518,16 @@ void CApplication::CheckScreenSaverAndDPMS()
   else if (CServiceBroker::GetSettingsComponent()->GetSettings()->GetString(CSettings::SETTING_SCREENSAVER_MODE).empty())
     maybeScreensaver = false;
 
+  auto winSystem = CServiceBroker::GetWinSystem();
+  if (!winSystem)
+    return;
+
+  std::shared_ptr<CDPMSSupport> dpms = winSystem->GetDPMSManager();
+
   bool maybeDPMS = true;
   if (m_dpmsIsActive)
     maybeDPMS = false;
-  else if (!m_dpms->IsSupported())
+  else if (!dpms || !dpms->IsSupported())
     maybeDPMS = false;
   else if (CServiceBroker::GetSettingsComponent()->GetSettings()->GetInt(CSettings::SETTING_POWERMANAGEMENT_DISPLAYSOFF) <= 0)
     maybeDPMS = false;
@@ -3762,7 +3753,7 @@ bool CApplication::OnMessage(CGUIMessage& message)
 
   case GUI_MSG_PLAYBACK_STARTED:
     {
-#ifdef TARGET_DARWIN_IOS
+#ifdef TARGET_DARWIN_EMBEDDED
       // @TODO move this away to platform code
       CDarwinUtils::SetScheduling(m_appPlayer.IsPlayingVideo());
 #endif
@@ -4217,7 +4208,7 @@ void CApplication::Restart(bool bSamePosition)
     return ;
 
   // do we want to return to the current position in the file
-  if (false == bSamePosition)
+  if (!bSamePosition)
   {
     // no, then just reopen the file and start at the beginning
     PlayFile(*m_itemCurrentFile, "", true);
@@ -4762,7 +4753,7 @@ bool CApplication::ProcessAndStartPlaylist(const std::string& strPlayList, CPlay
 
 bool CApplication::IsCurrentThread() const
 {
-  return CThread::IsCurrentThread(m_threadID);
+  return m_threadID == CThread::GetCurrentThreadId();
 }
 
 void CApplication::SetRenderGUI(bool renderGUI)

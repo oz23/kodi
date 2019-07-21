@@ -7,15 +7,16 @@
  */
 
 #include "RendererVTBGLES.h"
+
 #include "../RenderFactory.h"
 #include "ServiceBroker.h"
 #include "cores/IPlayer.h"
-#include "utils/log.h"
-#include "utils/GLUtils.h"
 #include "cores/VideoPlayer/DVDCodecs/Video/VTB.h"
 #include "settings/MediaSettings.h"
-#include "windowing/osx/WinSystemIOS.h"
-#include "platform/darwin/DarwinUtils.h"
+#include "utils/GLUtils.h"
+#include "utils/log.h"
+#include "windowing/ios/WinSystemIOS.h"
+
 #include <CoreVideo/CVBuffer.h>
 #include <CoreVideo/CVPixelBuffer.h>
 #include <OpenGLES/ES2/glext.h>
@@ -93,16 +94,9 @@ EShaderFormat CRendererVTB::GetShaderFormat()
 
 bool CRendererVTB::LoadShadersHook()
 {
-  float ios_version = CDarwinUtils::GetIOSVersion();
   CLog::Log(LOGNOTICE, "GL: Using CVBREF render method");
   m_textureTarget = GL_TEXTURE_2D;
   m_renderMethod = RENDER_CUSTOM;
-
-  if (ios_version < 5.0)
-  {
-    CLog::Log(LOGNOTICE, "GL: ios version < 5 is not supported");
-    return false;
-  }
 
   if (!m_textureCache)
   {

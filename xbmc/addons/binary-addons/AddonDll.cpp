@@ -10,6 +10,7 @@
 
 #include "addons/AddonStatusHandler.h"
 #include "GUIUserMessages.h"
+#include "addons/binary-addons/BinaryAddonBase.h"
 #include "addons/settings/AddonSettings.h"
 #include "addons/settings/GUIDialogAddonSettings.h"
 #include "events/EventLog.h"
@@ -28,6 +29,7 @@
 #include "Util.h"
 
 // Global addon callback handle classes
+#include "addons/interfaces/AudioEngine.h"
 #include "addons/interfaces/Filesystem.h"
 #include "addons/interfaces/General.h"
 #include "addons/interfaces/Network.h"
@@ -40,8 +42,8 @@ namespace ADDON
 
 std::vector<ADDON_GET_INTERFACE_FN> CAddonDll::s_registeredInterfaces;
 
-CAddonDll::CAddonDll(CAddonInfo addonInfo, BinaryAddonBasePtr addonBase)
-  : CAddon(std::move(addonInfo)),
+CAddonDll::CAddonDll(const AddonInfoPtr& addonInfo, BinaryAddonBasePtr addonBase)
+  : CAddon(addonInfo, addonBase->MainType()),
     m_pHelpers(nullptr),
     m_binaryAddonBase(addonBase),
     m_pDll(nullptr),
@@ -50,8 +52,8 @@ CAddonDll::CAddonDll(CAddonInfo addonInfo, BinaryAddonBasePtr addonBase)
 {
 }
 
-CAddonDll::CAddonDll(CAddonInfo addonInfo)
-  : CAddon(std::move(addonInfo)),
+CAddonDll::CAddonDll(const AddonInfoPtr& addonInfo, TYPE addonType)
+  : CAddon(addonInfo, addonType),
     m_pHelpers(nullptr),
     m_binaryAddonBase(nullptr),
     m_pDll(nullptr),
@@ -502,7 +504,7 @@ bool CAddonDll::UpdateSettingInActiveDialog(const char* id, const std::string& v
     return false;
 
   CGUIDialogAddonSettings* dialog = CServiceBroker::GetGUI()->GetWindowManager().GetWindow<CGUIDialogAddonSettings>(WINDOW_DIALOG_ADDON_SETTINGS);
-  if (dialog->GetCurrentAddonID() != m_addonInfo.ID())
+  if (dialog->GetCurrentAddonID() != m_addonInfo->ID())
     return false;
 
   CGUIMessage message(GUI_MSG_SETTING_UPDATED, 0, 0);
@@ -559,6 +561,7 @@ bool CAddonDll::InitInterface(KODI_HANDLE firstKodiInstance)
   m_interface.toAddon = (KodiToAddonFuncTable_Addon*) calloc(1, sizeof(KodiToAddonFuncTable_Addon));
 
   Interface_General::Init(&m_interface);
+  Interface_AudioEngine::Init(&m_interface);
   Interface_Filesystem::Init(&m_interface);
   Interface_Network::Init(&m_interface);
   Interface_GUIGeneral::Init(&m_interface);
@@ -573,6 +576,7 @@ void CAddonDll::DeInitInterface()
   Interface_GUIGeneral::DeInit(&m_interface);
   Interface_Network::DeInit(&m_interface);
   Interface_Filesystem::DeInit(&m_interface);
+  Interface_AudioEngine::DeInit(&m_interface);
   Interface_General::DeInit(&m_interface);
 
   if (m_interface.libBasePath)

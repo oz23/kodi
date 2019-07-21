@@ -8,14 +8,14 @@
 
 #include "GenericTouchActionHandler.h"
 
-#include <cmath>
-
 #include "AppInboundProtocol.h"
 #include "ServiceBroker.h"
 #include "guilib/GUIComponent.h"
 #include "guilib/GUIWindowManager.h"
 #include "guilib/GUIMessage.h"
 #include "input/Key.h"
+
+#include <cmath>
 
 using namespace KODI::MESSAGING;
 

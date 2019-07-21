@@ -9,10 +9,12 @@
 #include "system.h"
 
 #include "AESinkFactory.h"
-#include "ServiceBroker.h"
+
 #include "Interfaces/AESink.h"
-#include "utils/log.h"
+#include "ServiceBroker.h"
 #include "utils/StringUtils.h"
+#include "utils/log.h"
+
 #include <algorithm>
 
 using namespace AE;

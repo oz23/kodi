@@ -8,8 +8,22 @@
 
 #pragma once
 
-#include "cores/VideoPlayer/VideoRenderers/LinuxRendererGLES.h"
 #include "DRMPRIMEEGL.h"
+#include "cores/VideoPlayer/VideoRenderers/LinuxRendererGLES.h"
+
+#include <array>
+#include <memory>
+
+namespace KODI
+{
+namespace UTILS
+{
+namespace EGL
+{
+class CEGLFence;
+}
+}
+}
 
 #include <array>
 #include <memory>

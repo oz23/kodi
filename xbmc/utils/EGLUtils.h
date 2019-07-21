@@ -10,8 +10,8 @@
 
 #include <array>
 #include <set>
-#include <string>
 #include <stdexcept>
+#include <string>
 #include <vector>
 
 #include <EGL/egl.h>
@@ -151,6 +151,11 @@ public:
   EGLint const * Get() const
   {
     return m_attributes.data();
+  }
+
+  int Size() const
+  {
+    return m_writePosition;
   }
 
 private:

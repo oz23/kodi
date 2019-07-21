@@ -12,25 +12,34 @@
 #include "addons/PVRClient.h"
 #include "addons/kodi-addon-dev-kit/include/kodi/xbmc_pvr_types.h"
 #include "cores/DataCacheCore.h"
+#include "pvr/PVRManager.h"
+#include "pvr/epg/Epg.h"
+#include "pvr/epg/EpgChannelData.h"
+#include "pvr/epg/EpgDatabase.h"
 #include "settings/AdvancedSettings.h"
 #include "settings/SettingsComponent.h"
+#include "threads/SingleLock.h"
 #include "utils/StringUtils.h"
 #include "utils/Variant.h"
 #include "utils/log.h"
 
-#include "pvr/PVRManager.h"
-#include "pvr/epg/EpgChannelData.h"
-#include "pvr/epg/EpgDatabase.h"
+#include <memory>
+#include <string>
+#include <vector>
 
 using namespace PVR;
 
 CPVREpgInfoTag::CPVREpgInfoTag()
-: m_channelData(new CPVREpgChannelData)
+: m_iUniqueBroadcastID(EPG_TAG_INVALID_UID),
+  m_iFlags(EPG_TAG_FLAG_UNDEFINED),
+  m_channelData(new CPVREpgChannelData)
 {
 }
 
 CPVREpgInfoTag::CPVREpgInfoTag(const std::shared_ptr<CPVREpgChannelData>& channelData, int iEpgID)
-: m_iEpgID(iEpgID)
+: m_iUniqueBroadcastID(EPG_TAG_INVALID_UID),
+  m_iFlags(EPG_TAG_FLAG_UNDEFINED),
+  m_iEpgID(iEpgID)
 {
   if (channelData)
     m_channelData = channelData;
@@ -41,8 +50,7 @@ CPVREpgInfoTag::CPVREpgInfoTag(const std::shared_ptr<CPVREpgChannelData>& channe
 }
 
 CPVREpgInfoTag::CPVREpgInfoTag(const EPG_TAG& data, int iClientId, const std::shared_ptr<CPVREpgChannelData>& channelData, int iEpgID)
-: m_bNotify(data.bNotify),
-  m_iParentalRating(data.iParentalRating),
+: m_iParentalRating(data.iParentalRating),
   m_iStarRating(data.iStarRating),
   m_iSeriesNumber(data.iSeriesNumber),
   m_iEpisodeNumber(data.iEpisodeNumber),
@@ -116,8 +124,7 @@ bool CPVREpgInfoTag::operator ==(const CPVREpgInfoTag& right) const
     return true;
 
   CSingleLock lock(m_critSection);
-  return (m_bNotify            == right.m_bNotify &&
-          m_iDatabaseID        == right.m_iDatabaseID &&
+  return (m_iDatabaseID        == right.m_iDatabaseID &&
           m_iGenreType         == right.m_iGenreType &&
           m_iGenreSubType      == right.m_iGenreSubType &&
           m_iParentalRating    == right.m_iParentalRating &&
@@ -468,11 +475,6 @@ int CPVREpgInfoTag::StarRating(void) const
   return m_iStarRating;
 }
 
-bool CPVREpgInfoTag::Notify(void) const
-{
-  return m_bNotify;
-}
-
 int CPVREpgInfoTag::SeriesNumber(void) const
 {
   return m_iSeriesNumber;
@@ -528,7 +530,6 @@ bool CPVREpgInfoTag::Update(const CPVREpgInfoTag &tag, bool bUpdateBroadcastId /
       m_firstAired         != tag.m_firstAired ||
       m_iParentalRating    != tag.m_iParentalRating ||
       m_iStarRating        != tag.m_iStarRating ||
-      m_bNotify            != tag.m_bNotify ||
       m_iEpisodeNumber     != tag.m_iEpisodeNumber ||
       m_iEpisodePart       != tag.m_iEpisodePart ||
       m_iSeriesNumber      != tag.m_iSeriesNumber ||
@@ -580,7 +581,6 @@ bool CPVREpgInfoTag::Update(const CPVREpgInfoTag &tag, bool bUpdateBroadcastId /
     m_firstAired         = tag.m_firstAired;
     m_iParentalRating    = tag.m_iParentalRating;
     m_iStarRating        = tag.m_iStarRating;
-    m_bNotify            = tag.m_bNotify;
     m_iEpisodeNumber     = tag.m_iEpisodeNumber;
     m_iEpisodePart       = tag.m_iEpisodePart;
     m_iSeriesNumber      = tag.m_iSeriesNumber;
