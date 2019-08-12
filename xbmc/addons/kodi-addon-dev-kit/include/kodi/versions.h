@@ -30,7 +30,7 @@
  * overview.
  */
 
-#define ADDON_GLOBAL_VERSION_MAIN                     "1.0.14"
+#define ADDON_GLOBAL_VERSION_MAIN                     "1.1.0"
 #define ADDON_GLOBAL_VERSION_MAIN_MIN                 "1.0.12"
 #define ADDON_GLOBAL_VERSION_MAIN_XML_ID              "kodi.binary.global.main"
 #define ADDON_GLOBAL_VERSION_MAIN_DEPENDS             "AddonBase.h" \
@@ -44,8 +44,8 @@
 #define ADDON_GLOBAL_VERSION_GENERAL_XML_ID           "kodi.binary.global.general"
 #define ADDON_GLOBAL_VERSION_GENERAL_DEPENDS          "General.h"
 
-#define ADDON_GLOBAL_VERSION_GUI                      "5.12.1"
-#define ADDON_GLOBAL_VERSION_GUI_MIN                  "5.10.0"
+#define ADDON_GLOBAL_VERSION_GUI                      "5.14.0"
+#define ADDON_GLOBAL_VERSION_GUI_MIN                  "5.14.0"
 #define ADDON_GLOBAL_VERSION_GUI_XML_ID               "kodi.binary.global.gui"
 #define ADDON_GLOBAL_VERSION_GUI_DEPENDS              "libKODI_guilib.h" \
                                                       "gui/"
