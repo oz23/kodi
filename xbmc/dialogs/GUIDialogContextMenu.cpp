@@ -98,7 +98,7 @@ void CGUIDialogContextMenu::OnInitWindow()
 {
   m_clickedButton = -1;
   // set initial control focus
-  m_lastControlID = BUTTON_START;
+  m_lastControlID = m_initiallyFocusedButtonIdx + BUTTON_START;
   CGUIDialog::OnInitWindow();
 }
 
@@ -280,10 +280,11 @@ bool CGUIDialogContextMenu::OnContextButton(const std::string &type, const CFile
   switch (button)
   {
     case CONTEXT_BUTTON_EJECT_DRIVE:
-      return g_mediaManager.Eject(item->GetPath());
+      return CServiceBroker::GetMediaManager().Eject(item->GetPath());
 #ifdef HAS_DVD_DRIVE
     case CONTEXT_BUTTON_EJECT_DISC:
-      g_mediaManager.ToggleTray(g_mediaManager.TranslateDevicePath(item->GetPath())[0]);
+      CServiceBroker::GetMediaManager().ToggleTray(
+          CServiceBroker::GetMediaManager().TranslateDevicePath(item->GetPath())[0]);
 #endif
       return true;
     default:
@@ -397,7 +398,7 @@ bool CGUIDialogContextMenu::OnContextButton(const std::string &type, const CFile
 
       std::string strThumb;
       VECSOURCES shares;
-      g_mediaManager.GetLocalDrives(shares);
+      CServiceBroker::GetMediaManager().GetLocalDrives(shares);
       if (!CGUIDialogFileBrowser::ShowAndGetImage(items, shares, g_localizeStrings.Get(1030), strThumb))
         return false;
 
@@ -574,6 +575,7 @@ void CGUIDialogContextMenu::OnDeinitWindow(int nextWindowID)
   }
 
   m_buttons.clear();
+  m_initiallyFocusedButtonIdx = 0;
   CGUIDialog::OnDeinitWindow(nextWindowID);
 }
 
@@ -624,7 +626,7 @@ void CGUIDialogContextMenu::SwitchMedia(const std::string& strType, const std::s
   }
 }
 
-int CGUIDialogContextMenu::Show(const CContextButtons& choices)
+int CGUIDialogContextMenu::Show(const CContextButtons& choices, int focusedButtonIdx /* = 0 */)
 {
   auto dialog = CServiceBroker::GetGUI()->GetWindowManager().GetWindow<CGUIDialogContextMenu>(WINDOW_DIALOG_CONTEXT_MENU);
   if (!dialog)
@@ -635,6 +637,7 @@ int CGUIDialogContextMenu::Show(const CContextButtons& choices)
   dialog->SetInitialVisibility();
   dialog->SetupButtons();
   dialog->PositionAtCurrentFocus();
+  dialog->m_initiallyFocusedButtonIdx = focusedButtonIdx;
   dialog->Open();
   return dialog->m_clickedButton;
 }

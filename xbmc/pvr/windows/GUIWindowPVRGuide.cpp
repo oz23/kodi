@@ -11,31 +11,35 @@
 #include "FileItem.h"
 #include "GUIUserMessages.h"
 #include "ServiceBroker.h"
+#include "addons/Skin.h"
 #include "dialogs/GUIDialogBusy.h"
 #include "dialogs/GUIDialogContextMenu.h"
 #include "dialogs/GUIDialogNumeric.h"
 #include "guilib/GUIMessage.h"
+#include "guilib/GUIWindowManager.h"
 #include "guilib/LocalizeStrings.h"
 #include "input/actions/Action.h"
 #include "input/actions/ActionIDs.h"
 #include "messaging/ApplicationMessenger.h"
 #include "messaging/helpers/DialogHelper.h"
-#include "pvr/PVRGUIActions.h"
 #include "pvr/PVRManager.h"
+#include "pvr/PVRPlaybackState.h"
 #include "pvr/channels/PVRChannel.h"
 #include "pvr/channels/PVRChannelGroup.h"
 #include "pvr/channels/PVRChannelGroupsContainer.h"
 #include "pvr/epg/EpgChannelData.h"
 #include "pvr/epg/EpgContainer.h"
 #include "pvr/epg/EpgInfoTag.h"
+#include "pvr/guilib/GUIEPGGridContainer.h"
+#include "pvr/guilib/PVRGUIActions.h"
 #include "pvr/recordings/PVRRecordings.h"
 #include "pvr/timers/PVRTimers.h"
-#include "pvr/windows/GUIEPGGridContainer.h"
 #include "settings/Settings.h"
 #include "settings/SettingsComponent.h"
 #include "threads/SingleLock.h"
 #include "view/GUIViewState.h"
 
+#include <functional>
 #include <memory>
 #include <utility>
 #include <vector>
@@ -43,19 +47,19 @@
 using namespace KODI::MESSAGING;
 using namespace PVR;
 
-CGUIWindowPVRGuideBase::CGUIWindowPVRGuideBase(bool bRadio, int id, const std::string &xmlFile) :
+CGUIWindowPVRGuideBase::CGUIWindowPVRGuideBase(bool bRadio, int id, const std::string& xmlFile) :
   CGUIWindowPVRBase(bRadio, id, xmlFile),
   m_bChannelSelectionRestored(false),
   m_bFirstOpen(true)
 {
   m_bRefreshTimelineItems = false;
   m_bSyncRefreshTimelineItems = false;
-  CServiceBroker::GetPVRManager().EpgContainer().RegisterObserver(this);
+  CServiceBroker::GetPVRManager().EpgContainer().Events().Subscribe(static_cast<CGUIWindowPVRBase*>(this), &CGUIWindowPVRBase::Notify);
 }
 
 CGUIWindowPVRGuideBase::~CGUIWindowPVRGuideBase()
 {
-  CServiceBroker::GetPVRManager().EpgContainer().UnregisterObserver(this);
+  CServiceBroker::GetPVRManager().EpgContainer().Events().Unsubscribe(this);
 
   m_bRefreshTimelineItems = false;
   m_bSyncRefreshTimelineItems = false;
@@ -69,7 +73,7 @@ CGUIEPGGridContainer* CGUIWindowPVRGuideBase::GetGridControl()
 
 void CGUIWindowPVRGuideBase::InitEpgGridControl()
 {
-  CGUIEPGGridContainer *epgGridContainer = GetGridControl();
+  CGUIEPGGridContainer* epgGridContainer = GetGridControl();
   if (epgGridContainer)
   {
     m_bChannelSelectionRestored = epgGridContainer->SetChannel(CServiceBroker::GetPVRManager().GUIActions()->GetSelectedItemPath(m_bRadio));
@@ -95,7 +99,7 @@ void CGUIWindowPVRGuideBase::ClearData()
 
 void CGUIWindowPVRGuideBase::OnInitWindow()
 {
-  if (m_guiState.get())
+  if (m_guiState)
     m_viewControl.SetCurrentView(m_guiState->GetViewAsControl(), false);
 
   if (InitChannelGroup()) // no channels -> lazy init
@@ -120,6 +124,12 @@ void CGUIWindowPVRGuideBase::OnDeinitWindow(int nextWindowID)
     }
   }
 
+  CGUIDialog* dialog = CServiceBroker::GetGUI()->GetWindowManager().GetDialog(WINDOW_DIALOG_PVR_GUIDE_CONTROLS);
+  if (dialog && dialog->IsDialogRunning())
+  {
+    dialog->Close();
+  }
+
   CGUIWindowPVRBase::OnDeinitWindow(nextWindowID);
 }
 
@@ -136,18 +146,18 @@ void CGUIWindowPVRGuideBase::StopRefreshTimelineItemsThread()
     m_refreshTimelineItemsThread->Stop();
 }
 
-void CGUIWindowPVRGuideBase::Notify(const Observable &obs, const ObservableMessage msg)
+void CGUIWindowPVRGuideBase::NotifyEvent(const PVREvent& event)
 {
-  if (msg == ObservableMessageEpg ||
-      msg == ObservableMessageEpgContainer ||
-      msg == ObservableMessageChannelGroupReset ||
-      msg == ObservableMessageChannelGroup)
+  if (event == PVREvent::Epg ||
+      event == PVREvent::EpgContainer ||
+      event == PVREvent::ChannelGroupInvalidated ||
+      event == PVREvent::ChannelGroup)
   {
     m_bRefreshTimelineItems = true;
     // no base class call => do async refresh
     return;
   }
-  else if (msg == ObservableMessageChannelPlaybackStopped)
+  else if (event == PVREvent::ChannelPlaybackStopped)
   {
     if (m_guiState && m_guiState->GetSortMethod().sortBy == SortByLastPlayed)
     {
@@ -157,40 +167,37 @@ void CGUIWindowPVRGuideBase::Notify(const Observable &obs, const ObservableMessa
   }
 
   // do sync refresh if dirty
-  CGUIWindowPVRBase::Notify(obs, msg);
+  CGUIWindowPVRBase::NotifyEvent(event);
 }
 
 void CGUIWindowPVRGuideBase::SetInvalid()
 {
-  CGUIEPGGridContainer *epgGridContainer = GetGridControl();
+  CGUIEPGGridContainer* epgGridContainer = GetGridControl();
   if (epgGridContainer)
     epgGridContainer->SetInvalid();
 
   CGUIWindowPVRBase::SetInvalid();
 }
 
-void CGUIWindowPVRGuideBase::GetContextButtons(int itemNumber, CContextButtons &buttons)
+void CGUIWindowPVRGuideBase::GetContextButtons(int itemNumber, CContextButtons& buttons)
 {
-  buttons.Add(CONTEXT_BUTTON_BEGIN, 19063); /* Go to begin */
-  buttons.Add(CONTEXT_BUTTON_NOW,   19070); /* Go to now */
-  buttons.Add(CONTEXT_BUTTON_DATE,  19288); /* Go to date */
-  buttons.Add(CONTEXT_BUTTON_END,   19064); /* Go to end */
-
   CGUIWindowPVRBase::GetContextButtons(itemNumber, buttons);
+
+  buttons.Add(CONTEXT_BUTTON_NAVIGATE, 19326); // Navigate...
 }
 
 void CGUIWindowPVRGuideBase::UpdateSelectedItemPath()
 {
-  CGUIEPGGridContainer *epgGridContainer = GetGridControl();
+  CGUIEPGGridContainer* epgGridContainer = GetGridControl();
   if (epgGridContainer)
   {
-    CPVRChannelPtr channel(epgGridContainer->GetSelectedChannel());
+    std::shared_ptr<CPVRChannel> channel(epgGridContainer->GetSelectedChannel());
     if (channel)
       CServiceBroker::GetPVRManager().GUIActions()->SetSelectedItemPath(m_bRadio, channel->Path());
   }
 }
 
-void CGUIWindowPVRGuideBase::UpdateButtons(void)
+void CGUIWindowPVRGuideBase::UpdateButtons()
 {
   CGUIWindowPVRBase::UpdateButtons();
 
@@ -198,7 +205,7 @@ void CGUIWindowPVRGuideBase::UpdateButtons(void)
   SET_CONTROL_LABEL(CONTROL_LABEL_HEADER2, GetChannelGroup()->GroupName());
 }
 
-bool CGUIWindowPVRGuideBase::Update(const std::string &strDirectory, bool updateFilterPath /* = true */)
+bool CGUIWindowPVRGuideBase::Update(const std::string& strDirectory, bool updateFilterPath /* = true */)
 {
   if (m_bUpdating)
   {
@@ -219,7 +226,7 @@ bool CGUIWindowPVRGuideBase::Update(const std::string &strDirectory, bool update
   return bReturn;
 }
 
-bool CGUIWindowPVRGuideBase::GetDirectory(const std::string &strDirectory, CFileItemList &items)
+bool CGUIWindowPVRGuideBase::GetDirectory(const std::string& strDirectory, CFileItemList& items)
 {
   {
     CSingleLock lock(m_critSection);
@@ -250,7 +257,7 @@ bool CGUIWindowPVRGuideBase::GetDirectory(const std::string &strDirectory, CFile
   return true;
 }
 
-void CGUIWindowPVRGuideBase::FormatAndSort(CFileItemList &items)
+void CGUIWindowPVRGuideBase::FormatAndSort(CFileItemList& items)
 {
   if (&items == m_vecItems)
   {
@@ -275,7 +282,7 @@ CFileItemPtr CGUIWindowPVRGuideBase::GetCurrentListItem(int offset /*= 0*/)
 
 bool CGUIWindowPVRGuideBase::ShouldNavigateToGridContainer(int iAction)
 {
-  CGUIEPGGridContainer *epgGridContainer = GetGridControl();
+  CGUIEPGGridContainer* epgGridContainer = GetGridControl();
   CGUIControl* control = GetControl(CONTROL_LSTCHANNELGROUPS);
   if (epgGridContainer && control &&
       GetFocusedControlID() == control->GetID())
@@ -298,7 +305,7 @@ bool CGUIWindowPVRGuideBase::ShouldNavigateToGridContainer(int iAction)
   return false;
 }
 
-bool CGUIWindowPVRGuideBase::OnAction(const CAction &action)
+bool CGUIWindowPVRGuideBase::OnAction(const CAction& action)
 {
   switch (action.GetID())
   {
@@ -310,7 +317,7 @@ bool CGUIWindowPVRGuideBase::OnAction(const CAction &action)
       // Check whether grid container is configured as channel group selector's navigation target for the given action.
       if (ShouldNavigateToGridContainer(action.GetID()))
       {
-        CGUIEPGGridContainer *epgGridContainer = GetGridControl();
+        CGUIEPGGridContainer* epgGridContainer = GetGridControl();
         if (epgGridContainer)
         {
           CGUIWindowPVRBase::OnAction(action);
@@ -434,7 +441,7 @@ bool CGUIWindowPVRGuideBase::OnMessage(CGUIMessage& message)
                   break;
                 case EPG_SELECT_ACTION_SMART_SELECT:
                 {
-                  const CPVREpgInfoTagPtr tag(pItem->GetEPGInfoTag());
+                  const std::shared_ptr<CPVREpgInfoTag> tag(pItem->GetEPGInfoTag());
                   if (tag)
                   {
                     const CDateTime start(tag->StartAsUTC());
@@ -513,7 +520,7 @@ bool CGUIWindowPVRGuideBase::OnMessage(CGUIMessage& message)
             case ACTION_PLAYER_PLAY:
             {
               // EPG "gap" selected => switch to associated channel.
-              CGUIEPGGridContainer *epgGridContainer = GetGridControl();
+              CGUIEPGGridContainer* epgGridContainer = GetGridControl();
               if (epgGridContainer)
               {
                 const CFileItemPtr item(epgGridContainer->GetSelectedGridItem());
@@ -558,32 +565,33 @@ bool CGUIWindowPVRGuideBase::OnMessage(CGUIMessage& message)
       break;
     }
     case GUI_MSG_REFRESH_LIST:
-      switch(message.GetParam1())
+    {
+      switch (static_cast<PVREvent>(message.GetParam1()))
       {
-        case ObservableMessageChannelGroupsLoaded:
-        {
+        case PVREvent::ChannelGroupsLoaded:
           // late init
           InitChannelGroup();
           InitEpgGridControl();
           break;
-        }
-        case ObservableMessageChannelGroupReset:
-        case ObservableMessageChannelGroup:
-        case ObservableMessageEpg:
-        case ObservableMessageEpgContainer:
-        case ObservableMessageChannelPlaybackStopped:
-        {
+
+        case PVREvent::ChannelGroup:
+        case PVREvent::ChannelGroupInvalidated:
+        case PVREvent::ChannelPlaybackStopped:
+        case PVREvent::Epg:
+        case PVREvent::EpgContainer:
           Refresh(true);
           break;
-        }
-        case ObservableMessageTimersReset:
-        case ObservableMessageTimers:
-        {
+
+        case PVREvent::Timers:
+        case PVREvent::TimersInvalidated:
           SetInvalid();
           break;
-        }
+
+        default:
+          break;
       }
       break;
+    }
   }
 
   return bReturn || CGUIWindowPVRBase::OnMessage(message);
@@ -591,28 +599,94 @@ bool CGUIWindowPVRGuideBase::OnMessage(CGUIMessage& message)
 
 bool CGUIWindowPVRGuideBase::OnContextButton(int itemNumber, CONTEXT_BUTTON button)
 {
-  switch (button)
-  {
-    case CONTEXT_BUTTON_BEGIN:
-      return OnContextButtonBegin();
-
-    case CONTEXT_BUTTON_NOW:
-      return OnContextButtonNow();
-
-    case CONTEXT_BUTTON_DATE:
-      return OnContextButtonDate();
-
-    case CONTEXT_BUTTON_END:
-      return OnContextButtonEnd();
-
-    default:
-      break;
-  }
+  if (OnContextButtonNavigate(button))
+    return true;
 
   if (itemNumber < 0 || itemNumber >= m_vecItems->Size())
     return false;
 
   return CGUIMediaWindow::OnContextButton(itemNumber, button);
+}
+
+namespace
+{
+
+template<typename A>
+class CContextMenuFunctions : public CContextButtons
+{
+public:
+  explicit CContextMenuFunctions(A* instance) : m_instance(instance) {}
+
+  void Add(bool (A::*function)(), unsigned int resId)
+  {
+    CContextButtons::Add(size(), resId);
+    m_functions.emplace_back(std::bind(function, m_instance));
+  }
+
+  bool Call(int idx)
+  {
+    if (idx < 0 || idx >= static_cast<int>(m_functions.size()))
+      return false;
+
+    return m_functions[idx]();
+  }
+
+private:
+  A* m_instance = nullptr;
+  std::vector<std::function<bool()>> m_functions;
+};
+
+} // unnamed namespace
+
+bool CGUIWindowPVRGuideBase::OnContextButtonNavigate(CONTEXT_BUTTON button)
+{
+  bool bReturn = false;
+
+  if (button == CONTEXT_BUTTON_NAVIGATE)
+  {
+    if (g_SkinInfo->HasSkinFile("DialogPVRGuideControls.xml"))
+    {
+      // use controls dialog
+      CGUIDialog* dialog = CServiceBroker::GetGUI()->GetWindowManager().GetDialog(WINDOW_DIALOG_PVR_GUIDE_CONTROLS);
+      if (dialog && !dialog->IsDialogRunning())
+      {
+        dialog->Open();
+      }
+    }
+    else
+    {
+      // use context menu
+      CContextMenuFunctions<CGUIWindowPVRGuideBase> buttons(this);
+      buttons.Add(&CGUIWindowPVRGuideBase::GotoBegin, 19063); // First programme
+      buttons.Add(&CGUIWindowPVRGuideBase::Go12HoursBack, 19317); // 12 hours back
+      buttons.Add(&CGUIWindowPVRGuideBase::GotoNow, 19070); // Current programme
+      buttons.Add(&CGUIWindowPVRGuideBase::Go12HoursForward, 19318); // 12 hours forward
+      buttons.Add(&CGUIWindowPVRGuideBase::GotoEnd, 19064); // Last programme
+      buttons.Add(&CGUIWindowPVRGuideBase::OpenDateSelectionDialog, 19288); // Date selector
+      buttons.Add(&CGUIWindowPVRGuideBase::GotoFirstChannel, 19322); // First channel
+      if (CServiceBroker::GetPVRManager().PlaybackState()->IsPlayingTV() ||
+          CServiceBroker::GetPVRManager().PlaybackState()->IsPlayingRadio())
+        buttons.Add(&CGUIWindowPVRGuideBase::GotoPlayingChannel, 19323); // Playing channel
+      buttons.Add(&CGUIWindowPVRGuideBase::GotoLastChannel, 19324); // Last channel
+      buttons.Add(&CGUIWindowPVRBase::ActivatePreviousChannelGroup, 19319); // Previous group
+      buttons.Add(&CGUIWindowPVRBase::ActivateNextChannelGroup, 19320); // Next group
+      buttons.Add(&CGUIWindowPVRBase::OpenChannelGroupSelectionDialog, 19321); // Group selector
+
+      int buttonIdx = 0;
+      int lastButtonIdx = 2; // initially select "Current programme"
+
+      // loop until canceled
+      while (buttonIdx >= 0)
+      {
+        buttonIdx = CGUIDialogContextMenu::Show(buttons, lastButtonIdx);
+        lastButtonIdx = buttonIdx;
+        buttons.Call(buttonIdx);
+      }
+    }
+    bReturn = true;
+  }
+
+  return bReturn;
 }
 
 bool CGUIWindowPVRGuideBase::RefreshTimelineItems()
@@ -625,7 +699,7 @@ bool CGUIWindowPVRGuideBase::RefreshTimelineItems()
     CGUIEPGGridContainer* epgGridContainer = GetGridControl();
     if (epgGridContainer)
     {
-      const CPVRChannelGroupPtr group(GetChannelGroup());
+      const std::shared_ptr<CPVRChannelGroup> group(GetChannelGroup());
       if (!group)
         return false;
 
@@ -636,13 +710,13 @@ bool CGUIWindowPVRGuideBase::RefreshTimelineItems()
         m_bFirstOpen = false;
 
         // very first open of the window. come up with some data very fast...
-        const std::vector<PVRChannelGroupMember> groupMembers = group->GetMembers(CPVRChannelGroup::Include::ONLY_VISIBLE);
+        const std::vector<std::shared_ptr<PVRChannelGroupMember>> groupMembers = group->GetMembers(CPVRChannelGroup::Include::ONLY_VISIBLE);
         for (const auto& groupMember : groupMembers)
         {
           // fake a channel without epg
 
           const std::shared_ptr<CPVREpgInfoTag> gapTag
-            = std::make_shared<CPVREpgInfoTag>(std::make_shared<CPVREpgChannelData>(*(groupMember.channel)), -1);
+            = std::make_shared<CPVREpgInfoTag>(std::make_shared<CPVREpgChannelData>(*(groupMember->channel)), -1);
           timeline->Add(std::make_shared<CFileItem>(gapTag));
         }
 
@@ -684,7 +758,7 @@ bool CGUIWindowPVRGuideBase::RefreshTimelineItems()
       if (endDate > maxFutureDate)
         endDate = maxFutureDate;
 
-      if (m_guiState.get())
+      if (m_guiState)
         timeline->Sort(m_guiState->GetSortMethod());
 
       // can be very expensive. never call with lock acquired.
@@ -702,25 +776,25 @@ bool CGUIWindowPVRGuideBase::RefreshTimelineItems()
   return false;
 }
 
-bool CGUIWindowPVRGuideBase::OnContextButtonBegin()
+bool CGUIWindowPVRGuideBase::GotoBegin()
 {
   GetGridControl()->GoToBegin();
   return true;
 }
 
-bool CGUIWindowPVRGuideBase::OnContextButtonEnd()
+bool CGUIWindowPVRGuideBase::GotoEnd()
 {
   GetGridControl()->GoToEnd();
   return true;
 }
 
-bool CGUIWindowPVRGuideBase::OnContextButtonNow()
+bool CGUIWindowPVRGuideBase::GotoNow()
 {
   GetGridControl()->GoToNow();
   return true;
 }
 
-bool CGUIWindowPVRGuideBase::OnContextButtonDate()
+bool CGUIWindowPVRGuideBase::OpenDateSelectionDialog()
 {
   bool bReturn = false;
 
@@ -735,6 +809,46 @@ bool CGUIWindowPVRGuideBase::OnContextButtonDate()
   }
 
   return bReturn;
+}
+
+bool CGUIWindowPVRGuideBase::Go12HoursBack()
+{
+  return GotoDate(-12);
+}
+
+bool CGUIWindowPVRGuideBase::Go12HoursForward()
+{
+  return GotoDate(+12);
+}
+
+bool CGUIWindowPVRGuideBase::GotoDate(int deltaHours)
+{
+  CGUIEPGGridContainer* epgGridContainer = GetGridControl();
+  epgGridContainer->GoToDate(epgGridContainer->GetSelectedDate() + CDateTimeSpan(0, deltaHours, 0, 0));
+  return true;
+}
+
+bool CGUIWindowPVRGuideBase::GotoFirstChannel()
+{
+  GetGridControl()->GoToFirstChannel();
+  return true;
+}
+
+bool CGUIWindowPVRGuideBase::GotoLastChannel()
+{
+  GetGridControl()->GoToLastChannel();
+  return true;
+}
+
+bool CGUIWindowPVRGuideBase::GotoPlayingChannel()
+{
+  const std::shared_ptr<CPVRChannel> channel = CServiceBroker::GetPVRManager().PlaybackState()->GetPlayingChannel();
+  if (channel)
+  {
+    GetGridControl()->SetChannel(channel);
+    return true;
+  }
+  return false;
 }
 
 void CGUIWindowPVRGuideBase::OnInputDone()
@@ -760,12 +874,12 @@ void CGUIWindowPVRGuideBase::OnInputDone()
 
 void CGUIWindowPVRGuideBase::GetChannelNumbers(std::vector<std::string>& channelNumbers)
 {
-  const CPVRChannelGroupPtr group = GetChannelGroup();
+  const std::shared_ptr<CPVRChannelGroup> group = GetChannelGroup();
   if (group)
     group->GetChannelNumbers(channelNumbers);
 }
 
-CPVRRefreshTimelineItemsThread::CPVRRefreshTimelineItemsThread(CGUIWindowPVRGuideBase *pGuideWindow)
+CPVRRefreshTimelineItemsThread::CPVRRefreshTimelineItemsThread(CGUIWindowPVRGuideBase* pGuideWindow)
 : CThread("epg-grid-refresh-timeline-items"),
   m_pGuideWindow(pGuideWindow),
   m_ready(true),
@@ -811,7 +925,7 @@ void CPVRRefreshTimelineItemsThread::Process()
 
     if (m_pGuideWindow->RefreshTimelineItems() && !m_bStop)
     {
-      CGUIMessage m(GUI_MSG_REFRESH_LIST, m_pGuideWindow->GetID(), 0, ObservableMessageEpg);
+      CGUIMessage m(GUI_MSG_REFRESH_LIST, m_pGuideWindow->GetID(), 0, static_cast<int>(PVREvent::Epg));
       KODI::MESSAGING::CApplicationMessenger::GetInstance().SendGUIMessage(m);
     }
 

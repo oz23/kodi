@@ -93,12 +93,6 @@ if (NOT PLATFORMDEFS_DIR STREQUAL "")
 endif()
 
 find_package(PkgConfig)
-if(KODI_DEPENDSBUILD)
-  if(PKG_CONFIG_EXECUTABLE)
-    set(PKG_CONFIG_FOUND TRUE)
-  endif()
-endif()
-
 find_package(Threads REQUIRED QUIET)
 list(APPEND DEPLIBS ${CMAKE_THREAD_LIBS_INIT})
 
@@ -169,6 +163,8 @@ find_package(JsonSchemaBuilder REQUIRED)
 core_optional_dep(${optional_deps})
 core_require_dep(${required_deps})
 
+SET(PYTHON_VERSION 3.7)
+
 if(ENABLE_MARIADBCLIENT AND NOT ENABLE_MARIADBCLIENT STREQUAL AUTO AND ENABLE_MYSQLCLIENT AND NOT ENABLE_MYSQLCLIENT STREQUAL AUTO)
   MESSAGE(FATAL_ERROR "You can not use MySql and MariaDB at the same time. Disable one by adding -DENABLE_MYSQLCLIENT=OFF or -DENABLE_MARIADBCLIENT=OFF.")
 elseif(ENABLE_MYSQLCLIENT AND NOT ENABLE_MYSQLCLIENT STREQUAL AUTO)
@@ -223,6 +219,7 @@ add_custom_command(OUTPUT ${CORE_BUILD_DIR}/xbmc/CompileInfo.cpp
                                             -Dprefix=${CMAKE_BINARY_DIR}/${CORE_BUILD_DIR}
                                             -P ${CMAKE_SOURCE_DIR}/cmake/scripts/common/GenerateVersionedFiles.cmake
                    DEPENDS ${CMAKE_SOURCE_DIR}/version.txt
+                           export-files
                            ${ADDON_XML_DEPENDS}
                            ${CMAKE_SOURCE_DIR}/xbmc/CompileInfo.cpp.in)
 list(APPEND install_data ${ADDON_INSTALL_DATA})
@@ -341,7 +338,7 @@ elseif(CORE_SYSTEM_NAME STREQUAL android)
   # Nothing
 elseif(CORE_SYSTEM_NAME STREQUAL darwin_embedded)
   set_target_properties(${APP_NAME_LC} PROPERTIES OUTPUT_NAME ${APP_NAME}
-                                                  MACOSX_BUNDLE_INFO_PLIST ${CMAKE_SOURCE_DIR}/xbmc/platform/darwin/${CORE_PLATFORM_NAME}/Info.plist.in)
+                                                  MACOSX_BUNDLE_INFO_PLIST ${PLATFORM_BUNDLE_INFO_PLIST})
 else()
   set_target_properties(${APP_NAME_LC} PROPERTIES SUFFIX ${APP_BINARY_SUFFIX})
 endif()

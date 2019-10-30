@@ -150,6 +150,7 @@ public:
   static const std::string SETTING_PVRMANAGER_SYNCCHANNELGROUPS;
   static const std::string SETTING_PVRMANAGER_BACKENDCHANNELORDER;
   static const std::string SETTING_PVRMANAGER_USEBACKENDCHANNELNUMBERS;
+  static const std::string SETTING_PVRMANAGER_STARTGROUPCHANNELNUMBERSFROMONE;
   static const std::string SETTING_PVRMANAGER_CLIENTPRIORITIES;
   static const std::string SETTING_PVRMANAGER_CHANNELMANAGER;
   static const std::string SETTING_PVRMANAGER_GROUPMANAGER;
@@ -344,6 +345,7 @@ public:
   static const std::string SETTING_DEBUG_EXTRALOGGING;
   static const std::string SETTING_DEBUG_SETEXTRALOGLEVEL;
   static const std::string SETTING_DEBUG_SCREENSHOTPATH;
+  static const std::string SETTING_DEBUG_SHARE_LOG;
   static const std::string SETTING_EVENTLOG_ENABLED;
   static const std::string SETTING_EVENTLOG_ENABLED_NOTIFICATIONS;
   static const std::string SETTING_EVENTLOG_SHOW;

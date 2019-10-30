@@ -22,8 +22,8 @@ namespace EGL
 {
 class CEGLFence;
 }
-}
-}
+} // namespace UTILS
+} // namespace KODI
 
 #include <array>
 #include <memory>
@@ -43,14 +43,14 @@ class CRendererDRMPRIMEGLES : public CLinuxRendererGLES
 {
 public:
   CRendererDRMPRIMEGLES() = default;
-  ~CRendererDRMPRIMEGLES();
+  ~CRendererDRMPRIMEGLES() override;
 
   // Registration
   static CBaseRenderer* Create(CVideoBuffer* buffer);
   static void Register();
 
   // CLinuxRendererGLES overrides
-  bool Configure(const VideoPicture &picture, float fps, unsigned int orientation) override;
+  bool Configure(const VideoPicture& picture, float fps, unsigned int orientation) override;
   void ReleaseBuffer(int index) override;
   bool NeedBuffer(int index) override;
 

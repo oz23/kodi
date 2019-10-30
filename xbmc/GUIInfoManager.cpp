@@ -1704,6 +1704,16 @@ const infomap system_labels[] =  {{ "hasnetwork",       SYSTEM_ETHERNET_LINK_ACT
 ///                  _boolean_,
 ///     @return **True** if the specified addon is installed on the system.
 ///     @param id - the addon id
+///     @skinning_v19 **[Boolean Condition Updated]** \link System_HasAddon `System.HasAddon(id)`\endlink
+///     <p>
+///   }
+///   \table_row3{   <b>`System.AddonIsEnabled(id)`</b>,
+///                  \anchor AddonIsEnabled
+///                  _boolean_,
+///     @return **True** if the specified addon is enabled on the system..
+///     @param id - The addon Id
+///     <p><hr>
+///     @skinning_v19 **[New Boolean Condition]** \link System_AddonIsEnabled `System.AddonIsEnabled(id)`\endlink
 ///     <p>
 ///   }
 ///   \table_row3{   <b>`System.HasCoreId(id)`</b>,
@@ -1740,6 +1750,7 @@ const infomap system_param[] =   {{ "hasalarm",         SYSTEM_HAS_ALARM },
                                   { "hascoreid",        SYSTEM_HAS_CORE_ID },
                                   { "setting",          SYSTEM_SETTING },
                                   { "hasaddon",         SYSTEM_HAS_ADDON },
+                                  { "addonisenabled",   SYSTEM_ADDON_IS_ENABLED },
                                   { "coreusage",        SYSTEM_GET_CORE_USAGE }};
 
 /// \page modules__infolabels_boolean_conditions
@@ -5717,6 +5728,14 @@ const infomap container_str[]  = {{ "property",         CONTAINER_PROPERTY },
 ///     @skinning_v19 **[New Infolabel]** \link ListItem_CurrentItem `ListItem.CurrentItem`\endlink
 ///     <p>
 ///   }
+///   \table_row3{   <b>`ListItem.IsNew`</b>,
+///                  \anchor ListItem_IsNew
+///                  _boolean_,
+///     @return **True** if the item is new (for example, a Live TV show that will be first aired).
+///     <p><hr>
+///     @skinning_v19 **[New Infolabel]** \link ListItem_IsNew `ListItem.IsNew`\endlink
+///     <p>
+///   }
 /// \table_end
 ///
 /// -----------------------------------------------------------------------------
@@ -5908,7 +5927,8 @@ const infomap listitem_labels[]= {{ "thumb",            LISTITEM_THUMB },
                                   { "art",              LISTITEM_ART },
                                   { "property",         LISTITEM_PROPERTY },
                                   { "parentalrating",   LISTITEM_PARENTAL_RATING },
-                                  { "currentitem",      LISTITEM_CURRENTITEM }
+                                  { "currentitem",      LISTITEM_CURRENTITEM },
+                                  { "isnew",            LISTITEM_IS_NEW },
 };
 
 /// \page modules__infolabels_boolean_conditions
@@ -9133,13 +9153,13 @@ int CGUIInfoManager::TranslateSingleString(const std::string &strCondition, bool
       {
         int position = atoi(info[1].param().c_str());
         int value = TranslateMusicPlayerString(info[2].name); // musicplayer.position(foo).bar
-        return AddMultiInfo(CGUIInfo(value, 0, position));
+        return AddMultiInfo(CGUIInfo(value, 2, position)); // 2 => absolute (0 used for not set)
       }
       else if (info[1].name == "offset")
       {
         int position = atoi(info[1].param().c_str());
         int value = TranslateMusicPlayerString(info[2].name); // musicplayer.offset(foo).bar
-        return AddMultiInfo(CGUIInfo(value, 1, position));
+        return AddMultiInfo(CGUIInfo(value, 1, position)); // 1 => relative
       }
     }
     else if (info[0].name == "container")
@@ -9639,9 +9659,6 @@ void CGUIInfoManager::SetCurrentItem(const CFileItem &item)
 
   m_infoProviders.InitCurrentItem(m_currentFile);
 
-  SetChanged();
-  NotifyObservers(ObservableMessageCurrentItem);
-  // @todo this should be handled by one of the observers above and forwarded
   CServiceBroker::GetAnnouncementManager()->Announce(ANNOUNCEMENT::Info, "xbmc", "OnChanged");
 }
 

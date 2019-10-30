@@ -756,7 +756,7 @@ bool CVideoPlayer::OpenInputStream()
   if (URIUtils::IsProtocol(filename, "dvd") ||
       StringUtils::EqualsNoCase(filename, "iso9660://video_ts/video_ts.ifo"))
   {
-    m_item.SetPath(g_mediaManager.TranslateDevicePath(""));
+    m_item.SetPath(CServiceBroker::GetMediaManager().TranslateDevicePath(""));
   }
 
   m_pInputStream = CDVDFactoryInputStream::CreateInputStream(this, m_item, true);
@@ -2640,7 +2640,17 @@ void CVideoPlayer::HandleMessages()
         offset = DVD_TIME_TO_MSEC(start) - static_cast<int>(beforeSeek);
         m_callback.OnPlayBackSeekChapter(msg.GetChapter());
       }
-
+      else if (m_pInputStream)
+      {
+        CDVDInputStream::IChapter* pChapter = m_pInputStream->GetIChapter();
+        if (pChapter && pChapter->SeekChapter(msg.GetChapter()))
+        {
+          FlushBuffers(start, true, true);
+          int64_t beforeSeek = GetTime();
+          offset = DVD_TIME_TO_MSEC(start) - static_cast<int>(beforeSeek);
+          m_callback.OnPlayBackSeekChapter(msg.GetChapter());
+        }
+      }
       CServiceBroker::GetGUI()->GetInfoManager().GetInfoProviders().GetPlayerInfoProvider().SetDisplayAfterSeek(2500, offset);
     }
     else if (pMsg->IsType(CDVDMsg::DEMUXER_RESET))
@@ -3615,11 +3625,10 @@ bool CVideoPlayer::OpenVideoStream(CDVDStreamInfo& hint, bool reset)
 
     // look for any EDL files
     m_Edl.Clear();
-    if (hint.fpsrate > 0 && hint.fpsscale > 0)
-    {
-      float fFramesPerSecond = (float)m_CurrentVideo.hint.fpsrate / (float)m_CurrentVideo.hint.fpsscale;
-      m_Edl.ReadEditDecisionLists(m_item, fFramesPerSecond, m_CurrentVideo.hint.height);
-    }
+    float fFramesPerSecond = 0.0f;
+    if (m_CurrentVideo.hint.fpsscale > 0.0f)
+      fFramesPerSecond = static_cast<float>(m_CurrentVideo.hint.fpsrate) / static_cast<float>(m_CurrentVideo.hint.fpsscale);
+    m_Edl.ReadEditDecisionLists(m_item, fFramesPerSecond);
     CServiceBroker::GetDataCacheCore().SetCutList(m_Edl.GetCutList());
 
     static_cast<IDVDStreamPlayerVideo*>(player)->SetSpeed(m_streamPlayerSpeed);
@@ -4545,11 +4554,11 @@ void CVideoPlayer::UpdatePlayState(double timeout)
     state.chapters.clear();
     if (m_pDemuxer->GetChapterCount() > 0)
     {
-      for (int i = 0; i < m_pDemuxer->GetChapterCount(); ++i)
+      for (int i = 0, ie = m_pDemuxer->GetChapterCount(); i < ie; ++i)
       {
         std::string name;
         m_pDemuxer->GetChapterName(name, i + 1);
-        state.chapters.push_back(make_pair(name, m_pDemuxer->GetChapterPos(i + 1)));
+        state.chapters.emplace_back(name, m_pDemuxer->GetChapterPos(i + 1));
       }
     }
     CServiceBroker::GetDataCacheCore().SetChapters(state.chapters);
@@ -4566,6 +4575,27 @@ void CVideoPlayer::UpdatePlayState(double timeout)
 
   if (m_pInputStream)
   {
+    CDVDInputStream::IChapter* pChapter = m_pInputStream->GetIChapter();
+    if (pChapter)
+    {
+      if (IsInMenuInternal())
+        state.chapter = 0;
+      else
+        state.chapter = pChapter->GetChapter();
+
+      state.chapters.clear();
+      if (pChapter->GetChapterCount() > 0)
+      {
+        for (int i = 0, ie = pChapter->GetChapterCount(); i < ie; ++i)
+        {
+          std::string name;
+          pChapter->GetChapterName(name, i + 1);
+          state.chapters.push_back(make_pair(name, pChapter->GetChapterPos(i + 1)));
+        }
+      }
+      CServiceBroker::GetDataCacheCore().SetChapters(state.chapters);
+    }
+
     CDVDInputStream::ITimes* pTimes = m_pInputStream->GetITimes();
     CDVDInputStream::IDisplayTime* pDisplayTime = m_pInputStream->GetIDisplayTime();
 

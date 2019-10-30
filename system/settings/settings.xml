@@ -143,6 +143,16 @@
           <default>true</default>
           <control type="toggle" />
         </setting>
+        <setting id="winsystem.ishdrdisplay" type="boolean" label="13436" help="36299">
+          <dependencies>
+            <dependency type="visible">
+              <condition on="property" name="ishdrdisplay" />
+            </dependency>
+          </dependencies>
+          <level>2</level>
+          <default>true</default>
+          <control type="toggle" />
+        </setting>
       </group>
       <group id="4" label="14232">
         <setting id="videoplayer.stereoscopicplaybackmode" type="integer" label="36520" help="36537">
@@ -1181,6 +1191,15 @@
           <level>2</level>
           <dependencies>
             <dependency type="visible" on="property" name="pvrsettingvisible" setting="pvrmanager.usebackendchannelnumbers" operator="is">true</dependency>
+          </dependencies>
+          <default>false</default>
+          <control type="toggle" />
+        </setting>
+        <setting id="pvrmanager.startgroupchannelnumbersfromone" type="boolean" parent="pvrmanager.usebackendchannelnumbers" label="19316" help="36306">
+          <level>2</level>
+          <dependencies>
+            <dependency type="visible" on="property" name="pvrsettingvisible" setting="pvrmanager.usebackendchannelnumbers" operator="is">true</dependency>
+            <dependency type="enable" setting="pvrmanager.usebackendchannelnumbers" operator="is">false</dependency>
           </dependencies>
           <default>false</default>
           <control type="toggle" />

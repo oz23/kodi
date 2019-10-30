@@ -94,8 +94,8 @@ Before Android SDK can be used, you need to accept the licenses and configure it
 cd $HOME/android-tools/android-sdk-linux/tools/bin
 ./sdkmanager --licenses
 ./sdkmanager platform-tools
-./sdkmanager "platforms;android-26"
-./sdkmanager "build-tools;25.0.3"
+./sdkmanager "platforms;android-28"
+./sdkmanager "build-tools;28.0.3"
 ```
 
 ### 3.3. Create a key to sign debug APKs
@@ -193,6 +193,12 @@ Configure CMake build:
 ```
 cd $HOME/kodi
 make -C tools/depends/target/cmakebuildsys
+```
+
+**TIP:** BUILD_DIR can be provided as an argument to cmakebuildsys. This allows you to provide an alternate build location. Change all paths onwards as required if BUILD_DIR option used.
+```
+mkdir $HOME/kodi-build
+make -C tools/depends/target/cmakebuildsys BUILD_DIR=$HOME/kodi-build
 ```
 
 Build Kodi:

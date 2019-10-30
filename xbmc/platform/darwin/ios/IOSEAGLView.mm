@@ -60,7 +60,7 @@ using namespace KODI::MESSAGING;
 //--------------------------------------------------------------
 - (void) resizeFrameBuffer
 {
-  CGRect frame = [currentScreen bounds];
+  auto frame = self.bounds;
   CAEAGLLayer *eaglLayer = (CAEAGLLayer *)[self layer];
   //allow a maximum framebuffer size of 1080p
   //needed for tvout on iPad3/4 and iphone4/5 and maybe AppleTV3
@@ -90,32 +90,9 @@ using namespace KODI::MESSAGING;
 
 - (CGFloat)getScreenScale:(UIScreen *)screen
 {
-  CGFloat ret = 1.0;
-
-  // normal other iDevices report 1.0 here
-  // retina devices report 2.0 here
-  // this info is true as of 19.3.2012.
-  if ([screen scale] > 1.0)
-  {
-    ret = [screen scale];
-  }
-
-  //if no retina display scale detected yet -
-  //ensure retina resolution on supported devices mainScreen
-  //even on older iOS SDKs
-  double screenScale = 1.0;
-  bool hasRetina = CDarwinUtils::DeviceHasRetina(screenScale);
-  if (ret == 1.0 && screen == [UIScreen mainScreen] && hasRetina)
-  {
-    ret = screenScale;//set scale factor from our static list in case older SDKs report 1.0
-  }
-
-  // fix for ip6 plus which seems to report 2.0 when not compiled with ios8 sdk
-  if (hasRetina && screenScale == 3.0)
-  {
-    ret = screenScale;
-  }
-  return ret;
+  CLog::Log(LOGDEBUG, "nativeScale {}, scale {}, traitScale {}", screen.nativeScale, screen.scale,
+            screen.traitCollection.displayScale);
+  return std::max({screen.nativeScale, screen.scale, screen.traitCollection.displayScale});
 }
 
 - (void) setScreen:(UIScreen *)screen withFrameBufferResize:(BOOL)resize
@@ -404,6 +381,7 @@ using namespace KODI::MESSAGING;
       CServiceBroker::GetSettingsComponent()->GetAdvancedSettings()->m_startFullScreen = true;
       CServiceBroker::GetSettingsComponent()->GetAdvancedSettings()->m_canWindowed = false;
       xbmcAlive = TRUE;
+      [g_xbmcController onXbmcAlive];
       try
       {
         @autoreleasepool

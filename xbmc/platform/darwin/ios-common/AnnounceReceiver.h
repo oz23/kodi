@@ -20,8 +20,8 @@ public:
   void    Initialize();
   void    DeInitialize();
 
-  virtual void Announce(ANNOUNCEMENT::AnnouncementFlag flag, const char *sender, const char *message, const CVariant &data);
+  void Announce(ANNOUNCEMENT::AnnouncementFlag flag, const char* sender, const char* message, const CVariant& data) override;
 
 private:
-  CAnnounceReceiver() {};
+  CAnnounceReceiver() = default;
 };

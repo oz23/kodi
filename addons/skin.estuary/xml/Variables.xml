@@ -136,7 +136,7 @@
 	</variable>
 	<variable name="WidgetStudioIconVar">
 		<value condition="System.HasAddon(resource.images.studios.white)">$INFO[ListItem.Label,resource://resource.images.studios.white/,.png]</value>
-		<value>DefaultStudio.png</value>
+		<value>DefaultStudios.png</value>
 	</variable>
 	<variable name="AddonsLabel2Var">
 		<value condition="ListItem.Property(addon.downloading)">$INFO[ListItem.Property(addon.status)]</value>
@@ -213,6 +213,20 @@
 		<value condition="Player.Seeking">$INFO[Player.SeekTime]$INFO[Player.Duration, / ]</value>
 		<value condition="VideoPlayer.HasEpg">$INFO[PVR.EpgEventElapsedTime]$INFO[PVR.EpgEventDuration, / ]</value>
 		<value>$INFO[Player.Time]$INFO[Player.Duration, / ]</value>
+	</variable>
+	<variable name="PVRGuideControlsHelpTextVar">
+		<value condition="Control.HasFocus(600)">$LOCALIZE[19063]</value>
+		<value condition="Control.HasFocus(601)">$LOCALIZE[19317]</value>
+		<value condition="Control.HasFocus(602)">$LOCALIZE[19070]</value>
+		<value condition="Control.HasFocus(603)">$LOCALIZE[19318]</value>
+		<value condition="Control.HasFocus(604)">$LOCALIZE[19064]</value>
+		<value condition="Control.HasFocus(605)">$LOCALIZE[19288]</value>
+		<value condition="Control.HasFocus(70040)">$LOCALIZE[19322]</value>
+		<value condition="Control.HasFocus(70041)">$LOCALIZE[19323]</value>
+		<value condition="Control.HasFocus(70042)">$LOCALIZE[19324]</value>
+		<value condition="Control.HasFocus(70043)">$LOCALIZE[19319]</value>
+		<value condition="Control.HasFocus(70044)">$LOCALIZE[19320]</value>
+		<value condition="Control.HasFocus(70045)">$LOCALIZE[19321]</value>
 	</variable>
 	<variable name="VideoOSDHelpTextVar">
 		<value condition="Control.HasFocus(87) + [Player.Rewinding | Player.Forwarding]">$LOCALIZE[31050]</value>
@@ -369,7 +383,9 @@
 		<value>$LOCALIZE[19021] / $INFO[Control.GetLabel(29)] - $INFO[Control.GetLabel(30)]</value>
 	</variable>
 	<variable name="BreadcrumbsPVRRecordingsVar">
-		<value condition="Window.IsActive(TVRecordings)">$LOCALIZE[19020] / $LOCALIZE[19017]$INFO[Control.GetLabel(30), / ]</value>
+		<value condition="Window.IsActive(TVRecordings) + String.Contains(Control.GetLabel(7),*)">$LOCALIZE[19020] / $LOCALIZE[19017]$INFO[Control.GetLabel(30), / ] - $LOCALIZE[19179]</value>
+		<value condition="Window.IsActive(TVRecordings) + !String.Contains(Control.GetLabel(7),*)">$LOCALIZE[19020] / $LOCALIZE[19017]$INFO[Control.GetLabel(30), / ]</value>
+		<value condition="Window.IsActive(RadioRecordings) + String.Contains(Control.GetLabel(7),*)">$LOCALIZE[19021] / $LOCALIZE[19017]$INFO[Control.GetLabel(30), / ] - $LOCALIZE[19179]</value>
 		<value>$LOCALIZE[19021] / $LOCALIZE[19017]$INFO[Control.GetLabel(30), / ]</value>
 	</variable>
 	<variable name="BreadcrumbsPVRTimersVar">
@@ -446,6 +462,10 @@
 	<variable name="SeasonEpisodeLabel">
 		<value condition="String.IsEmpty(ListItem.EpisodeName)">$INFO[ListItem.Season,S]$INFO[ListItem.Episode,E]</value>
 		<value>$INFO[ListItem.Season,S]$INFO[ListItem.Episode,E,: ]</value>
+	</variable>
+	<variable name="PremieredLabel">
+		<value condition="!String.IsEmpty(ListItem.Premiered) + ListItem.IsNew">[COLOR grey]$LOCALIZE[20416]:[/COLOR] $INFO[ListItem.Premiered] [B]([COLOR button_focus]$LOCALIZE[842][/COLOR])[/B][CR]</value>
+		<value>$INFO[ListItem.Premiered,[COLOR grey]$LOCALIZE[20416]:[/COLOR] ,[CR]]</value>
 	</variable>
 	<variable name="ExpirationDateTimeLabel">
 		<value condition="!String.IsEmpty(ListItem.ExpirationDate)">[COLOR grey]$LOCALIZE[19299]:[/COLOR] $INFO[ListItem.ExpirationDate] $INFO[ListItem.ExpirationTime][CR]</value>

@@ -1101,7 +1101,7 @@ void CXBMCApp::onNewIntent(CJNIIntent intent)
       {
         std::vector<std::string> params;
         params.push_back(targeturl.Get());
-        params.push_back("return");
+        params.emplace_back("return");
         CApplicationMessenger::GetInstance().PostMsg(TMSG_GUI_ACTIVATE_WINDOW, WINDOW_VIDEO_NAV, 0, nullptr, "", params);
       }
       else if (targeturl.IsProtocol("musicdb")
@@ -1109,7 +1109,7 @@ void CXBMCApp::onNewIntent(CJNIIntent intent)
       {
         std::vector<std::string> params;
         params.push_back(targeturl.Get());
-        params.push_back("return");
+        params.emplace_back("return");
         CApplicationMessenger::GetInstance().PostMsg(TMSG_GUI_ACTIVATE_WINDOW, WINDOW_MUSIC_NAV, 0, nullptr, "", params);
       }
     }
@@ -1184,7 +1184,7 @@ int CXBMCApp::WaitForActivityResult(const CJNIIntent &intent, int requestCode, C
 void CXBMCApp::onVolumeChanged(int volume)
 {
   // System volume was used; Reset Kodi volume to 100% if it isn't, already
-  if (g_application.GetVolume(false) != 1.0)
+  if (g_application.GetVolumeRatio() != 1.0)
     CApplicationMessenger::GetInstance().PostMsg(TMSG_GUI_ACTION, WINDOW_INVALID, -1, static_cast<void*>(
                                                  new CAction(ACTION_VOLUME_SET, static_cast<float>(CXBMCApp::GetMaxSystemVolume()))));
 }
@@ -1305,7 +1305,7 @@ void CXBMCApp::SetupEnv()
     setenv("HOME", getenv("KODI_TEMP"), 0);
 
   std::string apkPath = getenv("KODI_ANDROID_APK");
-  apkPath += "/assets/python2.7";
+  apkPath += "/assets/python3.7";
   setenv("PYTHONHOME", apkPath.c_str(), 1);
   setenv("PYTHONPATH", "", 1);
   setenv("PYTHONOPTIMIZE","", 1);

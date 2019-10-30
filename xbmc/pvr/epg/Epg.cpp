@@ -9,9 +9,9 @@
 #include "Epg.h"
 
 #include "ServiceBroker.h"
-#include "addons/PVRClient.h"
 #include "guilib/LocalizeStrings.h"
 #include "pvr/PVRManager.h"
+#include "pvr/addons/PVRClient.h"
 #include "pvr/epg/EpgChannelData.h"
 #include "pvr/epg/EpgDatabase.h"
 #include "pvr/epg/EpgInfoTag.h"
@@ -45,23 +45,22 @@ CPVREpg::CPVREpg(int iEpgID, const std::string& strName, const std::string& strS
 {
 }
 
-CPVREpg::~CPVREpg(void)
+CPVREpg::~CPVREpg()
 {
   Clear();
 }
 
-void CPVREpg::ForceUpdate(void)
+void CPVREpg::ForceUpdate()
 {
   {
     CSingleLock lock(m_critSection);
     m_bUpdatePending = true;
   }
 
-  SetChanged(true);
-  NotifyObservers(ObservableMessageEpgUpdatePending);
+  m_events.Publish(PVREvent::EpgUpdatePending);
 }
 
-bool CPVREpg::HasValidEntries(void) const
+bool CPVREpg::HasValidEntries() const
 {
   CSingleLock lock(m_critSection);
   return (m_iEpgID > 0 && /* valid EPG ID */
@@ -69,7 +68,7 @@ bool CPVREpg::HasValidEntries(void) const
           m_tags.rbegin()->second->EndAsUTC() >= CDateTime::GetCurrentDateTime().GetAsUTCDateTime()); /* the last end time hasn't passed yet */
 }
 
-void CPVREpg::Clear(void)
+void CPVREpg::Clear()
 {
   CSingleLock lock(m_critSection);
   m_tags.clear();
@@ -81,7 +80,7 @@ void CPVREpg::Cleanup(int iPastDays)
   Cleanup(cleanupTime);
 }
 
-void CPVREpg::Cleanup(const CDateTime &time)
+void CPVREpg::Cleanup(const CDateTime& time)
 {
   CSingleLock lock(m_critSection);
   for (auto it = m_tags.begin(); it != m_tags.end();)
@@ -100,7 +99,7 @@ void CPVREpg::Cleanup(const CDateTime &time)
   }
 }
 
-CPVREpgInfoTagPtr CPVREpg::GetTagNow(bool bUpdateIfNeeded /* = true */) const
+std::shared_ptr<CPVREpgInfoTag> CPVREpg::GetTagNow(bool bUpdateIfNeeded /* = true */) const
 {
   CSingleLock lock(m_critSection);
   if (m_nowActiveStart.IsValid())
@@ -112,7 +111,7 @@ CPVREpgInfoTagPtr CPVREpg::GetTagNow(bool bUpdateIfNeeded /* = true */) const
 
   if (bUpdateIfNeeded)
   {
-    CPVREpgInfoTagPtr lastActiveTag;
+    std::shared_ptr<CPVREpgInfoTag> lastActiveTag;
 
     /* one of the first items will always match if the list is sorted */
     for (const auto& tag : m_tags)
@@ -132,12 +131,12 @@ CPVREpgInfoTagPtr CPVREpg::GetTagNow(bool bUpdateIfNeeded /* = true */) const
       return lastActiveTag;
   }
 
-  return CPVREpgInfoTagPtr();
+  return std::shared_ptr<CPVREpgInfoTag>();
 }
 
-CPVREpgInfoTagPtr CPVREpg::GetTagNext() const
+std::shared_ptr<CPVREpgInfoTag> CPVREpg::GetTagNext() const
 {
-  const CPVREpgInfoTagPtr nowTag = GetTagNow();
+  const std::shared_ptr<CPVREpgInfoTag> nowTag = GetTagNow();
   if (nowTag)
   {
     CSingleLock lock(m_critSection);
@@ -155,12 +154,12 @@ CPVREpgInfoTagPtr CPVREpg::GetTagNext() const
     }
   }
 
-  return CPVREpgInfoTagPtr();
+  return std::shared_ptr<CPVREpgInfoTag>();
 }
 
-CPVREpgInfoTagPtr CPVREpg::GetTagPrevious() const
+std::shared_ptr<CPVREpgInfoTag> CPVREpg::GetTagPrevious() const
 {
-  const CPVREpgInfoTagPtr nowTag = GetTagNow();
+  const std::shared_ptr<CPVREpgInfoTag> nowTag = GetTagNow();
   if (nowTag)
   {
     CSingleLock lock(m_critSection);
@@ -181,41 +180,41 @@ CPVREpgInfoTagPtr CPVREpg::GetTagPrevious() const
     }
   }
 
-  return CPVREpgInfoTagPtr();
+  return std::shared_ptr<CPVREpgInfoTag>();
 }
 
-bool CPVREpg::CheckPlayingEvent(void)
+bool CPVREpg::CheckPlayingEvent()
 {
-  const CPVREpgInfoTagPtr previousTag = GetTagNow(false);
-  const CPVREpgInfoTagPtr newTag = GetTagNow(true);
+  const std::shared_ptr<CPVREpgInfoTag> previousTag = GetTagNow(false);
+  const std::shared_ptr<CPVREpgInfoTag> newTag = GetTagNow(true);
 
   bool bTagChanged = newTag && (!previousTag || *previousTag != *newTag);
   bool bTagRemoved = !newTag && previousTag;
   if (bTagChanged || bTagRemoved)
   {
-    NotifyObservers(ObservableMessageEpgActiveItem);
+    m_events.Publish(PVREvent::EpgActiveItem);
     return true;
   }
   return false;
 }
 
-CPVREpgInfoTagPtr CPVREpg::GetTagByBroadcastId(unsigned int iUniqueBroadcastId) const
+std::shared_ptr<CPVREpgInfoTag> CPVREpg::GetTagByBroadcastId(unsigned int iUniqueBroadcastId) const
 {
   if (iUniqueBroadcastId != EPG_TAG_INVALID_UID)
   {
     CSingleLock lock(m_critSection);
-    for (const auto &infoTag : m_tags)
+    for (const auto& infoTag : m_tags)
     {
       if (infoTag.second->UniqueBroadcastID() == iUniqueBroadcastId)
         return infoTag.second;
     }
   }
-  return CPVREpgInfoTagPtr();
+  return std::shared_ptr<CPVREpgInfoTag>();
 }
 
-CPVREpgInfoTagPtr CPVREpg::GetTagBetween(const CDateTime &beginTime, const CDateTime &endTime, bool bUpdateFromClient /* = false */)
+std::shared_ptr<CPVREpgInfoTag> CPVREpg::GetTagBetween(const CDateTime& beginTime, const CDateTime& endTime, bool bUpdateFromClient /* = false */)
 {
-  CPVREpgInfoTagPtr tag;
+  std::shared_ptr<CPVREpgInfoTag> tag;
 
   CSingleLock lock(m_critSection);
   for (const auto& epgTag : m_tags)
@@ -249,9 +248,9 @@ CPVREpgInfoTagPtr CPVREpg::GetTagBetween(const CDateTime &beginTime, const CDate
   return tag;
 }
 
-void CPVREpg::AddEntry(const CPVREpgInfoTag &tag)
+void CPVREpg::AddEntry(const CPVREpgInfoTag& tag)
 {
-  CPVREpgInfoTagPtr newTag;
+  std::shared_ptr<CPVREpgInfoTag> newTag;
 
   CSingleLock lock(m_critSection);
   const auto it = m_tags.find(tag.StartAsUTC());
@@ -278,7 +277,7 @@ bool CPVREpg::Load(const std::shared_ptr<CPVREpgDatabase>& database)
     return bReturn;
   }
 
-  const std::vector<CPVREpgInfoTagPtr> result = database->Get(*this);
+  const std::vector<std::shared_ptr<CPVREpgInfoTag>> result = database->Get(*this);
 
   CSingleLock lock(m_critSection);
   if (result.empty())
@@ -307,7 +306,7 @@ bool CPVREpg::Load(const std::shared_ptr<CPVREpgDatabase>& database)
   return bReturn;
 }
 
-bool CPVREpg::UpdateEntries(const CPVREpg &epg, bool bStoreInDb /* = true */)
+bool CPVREpg::UpdateEntries(const CPVREpg& epg, bool bStoreInDb /* = true */)
 {
   CSingleLock lock(m_critSection);
   /* copy over tags */
@@ -320,15 +319,11 @@ bool CPVREpg::UpdateEntries(const CPVREpg &epg, bool bStoreInDb /* = true */)
   m_lastScanTime = CDateTime::GetUTCDateTime();
   m_bUpdateLastScanTime = true;
 
-  SetChanged(true);
-
-  lock.Leave();
-  NotifyObservers(ObservableMessageEpg);
-
+  m_events.Publish(PVREvent::Epg);
   return true;
 }
 
-bool CPVREpg::UpdateEntry(const EPG_TAG *data, int iClientId)
+bool CPVREpg::UpdateEntry(const EPG_TAG* data, int iClientId)
 {
   if (!data)
     return false;
@@ -337,9 +332,9 @@ bool CPVREpg::UpdateEntry(const EPG_TAG *data, int iClientId)
   return UpdateEntry(tag, CServiceBroker::GetSettingsComponent()->GetSettings()->GetBool(CSettings::SETTING_EPG_STOREEPGINDATABASE));
 }
 
-bool CPVREpg::UpdateEntry(const CPVREpgInfoTagPtr &tag, bool bUpdateDatabase)
+bool CPVREpg::UpdateEntry(const std::shared_ptr<CPVREpgInfoTag>& tag, bool bUpdateDatabase)
 {
-  CPVREpgInfoTagPtr infoTag;
+  std::shared_ptr<CPVREpgInfoTag> infoTag;
 
   CSingleLock lock(m_critSection);
   const auto it = m_tags.find(tag->StartAsUTC());
@@ -366,7 +361,7 @@ bool CPVREpg::UpdateEntry(const CPVREpgInfoTagPtr &tag, bool bUpdateDatabase)
   return true;
 }
 
-bool CPVREpg::UpdateEntry(const CPVREpgInfoTagPtr &tag, EPG_EVENT_STATE newState, bool bUpdateDatabase)
+bool CPVREpg::UpdateEntry(const std::shared_ptr<CPVREpgInfoTag>& tag, EPG_EVENT_STATE newState, bool bUpdateDatabase)
 {
   bool bRet = true;
   bool bNotify = true;
@@ -414,10 +409,7 @@ bool CPVREpg::UpdateEntry(const CPVREpgInfoTagPtr &tag, EPG_EVENT_STATE newState
   }
 
   if (bRet && bNotify)
-  {
-    SetChanged();
-    NotifyObservers(ObservableMessageEpgItemUpdate);
-  }
+    m_events.Publish(PVREvent::EpgItemUpdate);
 
   return bRet;
 }
@@ -521,8 +513,8 @@ bool CPVREpg::Persist(const std::shared_ptr<CPVREpgDatabase>& database)
 
     m_deletedTags.clear();
     m_changedTags.clear();
-    m_bChanged            = false;
-    m_bTagsChanged        = false;
+    m_bChanged = false;
+    m_bTagsChanged = false;
     m_bUpdateLastScanTime = false;
   }
 
@@ -532,7 +524,7 @@ bool CPVREpg::Persist(const std::shared_ptr<CPVREpgDatabase>& database)
   return bRet;
 }
 
-CDateTime CPVREpg::GetFirstDate(void) const
+CDateTime CPVREpg::GetFirstDate() const
 {
   CDateTime first;
 
@@ -543,7 +535,7 @@ CDateTime CPVREpg::GetFirstDate(void) const
   return first;
 }
 
-CDateTime CPVREpg::GetLastDate(void) const
+CDateTime CPVREpg::GetLastDate() const
 {
   CDateTime last;
 
@@ -557,7 +549,7 @@ CDateTime CPVREpg::GetLastDate(void) const
 bool CPVREpg::FixOverlappingEvents(bool bUpdateDb /* = false */)
 {
   bool bReturn = true;
-  CPVREpgInfoTagPtr previousTag, currentTag;
+  std::shared_ptr<CPVREpgInfoTag> previousTag, currentTag;
 
   for (auto it = m_tags.begin(); it != m_tags.end(); it != m_tags.end() ? it++ : it)
   {
@@ -721,43 +713,43 @@ void CPVREpg::SetChannelData(const std::shared_ptr<CPVREpgChannelData>& data)
     tag.second->SetChannelData(data);
 }
 
-int CPVREpg::ChannelID(void) const
+int CPVREpg::ChannelID() const
 {
   CSingleLock lock(m_critSection);
   return m_channelData->ChannelId();
 }
 
-const std::string& CPVREpg::ScraperName(void) const
+const std::string& CPVREpg::ScraperName() const
 {
   CSingleLock lock(m_critSection);
   return m_strScraperName;
 }
 
-const std::string& CPVREpg::Name(void) const
+const std::string& CPVREpg::Name() const
 {
   CSingleLock lock(m_critSection);
   return m_strName;
 }
 
-int CPVREpg::EpgID(void) const
+int CPVREpg::EpgID() const
 {
   CSingleLock lock(m_critSection);
   return m_iEpgID;
 }
 
-bool CPVREpg::UpdatePending(void) const
+bool CPVREpg::UpdatePending() const
 {
   CSingleLock lock(m_critSection);
   return m_bUpdatePending;
 }
 
-bool CPVREpg::NeedsSave(void) const
+bool CPVREpg::NeedsSave() const
 {
   CSingleLock lock(m_critSection);
   return !m_changedTags.empty() || !m_deletedTags.empty() || m_bChanged;
 }
 
-bool CPVREpg::IsValid(void) const
+bool CPVREpg::IsValid() const
 {
   CSingleLock lock(m_critSection);
   if (ScraperName() == "client")

@@ -86,6 +86,26 @@ bool CAddonVideoCodec::CopyToInitData(VIDEOCODEC_INITDATA &initData, CDVDStreamI
     break;
   case AV_CODEC_ID_VP9:
     initData.codec = VIDEOCODEC_INITDATA::CodecVp9;
+    switch (hints.profile)
+    {
+    case FF_PROFILE_UNKNOWN:
+      initData.codecProfile = STREAMCODEC_PROFILE::CodecProfileUnknown;
+      break;
+    case FF_PROFILE_VP9_0:
+      initData.codecProfile = STREAMCODEC_PROFILE::VP9CodecProfile0;
+      break;
+    case FF_PROFILE_VP9_1:
+      initData.codecProfile = STREAMCODEC_PROFILE::VP9CodecProfile1;
+      break;
+    case FF_PROFILE_VP9_2:
+      initData.codecProfile = STREAMCODEC_PROFILE::VP9CodecProfile2;
+      break;
+    case FF_PROFILE_VP9_3:
+      initData.codecProfile = STREAMCODEC_PROFILE::VP9CodecProfile3;
+      break;
+    default:
+      return false;
+    }
     break;
   default:
     return false;

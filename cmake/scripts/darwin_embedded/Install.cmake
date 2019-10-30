@@ -1,26 +1,6 @@
 # IOS packaging
 
-set(BUNDLE_RESOURCES ${CMAKE_SOURCE_DIR}/xbmc/platform/darwin/ios/LaunchImage-1100-Landscape-2436h@3x.png
-                     ${CMAKE_SOURCE_DIR}/xbmc/platform/darwin/ios/LaunchImage-1100-Portrait-2436h@3x.png
-                     ${CMAKE_SOURCE_DIR}/xbmc/platform/darwin/ios/LaunchImage-1200-Landscape-1792h@2x.png
-                     ${CMAKE_SOURCE_DIR}/xbmc/platform/darwin/ios/LaunchImage-1200-Portrait-2224h@2x.png
-                     ${CMAKE_SOURCE_DIR}/xbmc/platform/darwin/ios/LaunchImage-1200-Landscape-2224h@2x.png
-                     ${CMAKE_SOURCE_DIR}/xbmc/platform/darwin/ios/LaunchImage-1200-Portrait-2388h@2x.png
-                     ${CMAKE_SOURCE_DIR}/xbmc/platform/darwin/ios/LaunchImage-1200-Landscape-2388h@2x.png
-                     ${CMAKE_SOURCE_DIR}/xbmc/platform/darwin/ios/LaunchImage-1200-Landscape-2688h@3x.png
-                     ${CMAKE_SOURCE_DIR}/xbmc/platform/darwin/ios/LaunchImage-1200-Portrait-1792h@2x.png
-                     ${CMAKE_SOURCE_DIR}/xbmc/platform/darwin/ios/LaunchImage-1200-Portrait-2688h@3x.png
-                     ${CMAKE_SOURCE_DIR}/xbmc/platform/darwin/ios/LaunchImage-568h@2x.png
-                     ${CMAKE_SOURCE_DIR}/xbmc/platform/darwin/ios/LaunchImage-700-568h@2x.png
-                     ${CMAKE_SOURCE_DIR}/xbmc/platform/darwin/ios/LaunchImage-700-Landscape@2x~ipad.png
-                     ${CMAKE_SOURCE_DIR}/xbmc/platform/darwin/ios/LaunchImage-700-Portrait@2x~ipad.png
-                     ${CMAKE_SOURCE_DIR}/xbmc/platform/darwin/ios/LaunchImage-700@2x.png
-                     ${CMAKE_SOURCE_DIR}/xbmc/platform/darwin/ios/LaunchImage-800-667h@2x.png
-                     ${CMAKE_SOURCE_DIR}/xbmc/platform/darwin/ios/LaunchImage-800-Landscape-736h@3x.png
-                     ${CMAKE_SOURCE_DIR}/xbmc/platform/darwin/ios/LaunchImage-800-Portrait-736h@3x.png
-                     ${CMAKE_SOURCE_DIR}/xbmc/platform/darwin/ios/LaunchImage-Landscape@2x~ipad.png
-                     ${CMAKE_SOURCE_DIR}/xbmc/platform/darwin/ios/LaunchImage-Portrait@2x~ipad.png
-                     ${CMAKE_SOURCE_DIR}/xbmc/platform/darwin/ios/LaunchImage@2x.png
+set(BUNDLE_RESOURCES ${CMAKE_SOURCE_DIR}/media/splash.jpg
                      ${CMAKE_SOURCE_DIR}/tools/darwin/packaging/media/ios/rounded/AppIcon29x29.png
                      ${CMAKE_SOURCE_DIR}/tools/darwin/packaging/media/ios/rounded/AppIcon29x29@2x.png
                      ${CMAKE_SOURCE_DIR}/tools/darwin/packaging/media/ios/rounded/AppIcon40x40.png
@@ -41,15 +21,25 @@ foreach(file IN LISTS BUNDLE_RESOURCES)
   set_source_files_properties(${file} PROPERTIES MACOSX_PACKAGE_LOCATION .)
 endforeach()
 
-target_sources(${APP_NAME_LC} PRIVATE ${CMAKE_SOURCE_DIR}/xbmc/platform/darwin/ios/English.lproj/InfoPlist.strings)
-set_source_files_properties(${CMAKE_SOURCE_DIR}/xbmc/platform/darwin/ios/English.lproj/InfoPlist.strings PROPERTIES MACOSX_PACKAGE_LOCATION "./English.lproj")
+target_sources(${APP_NAME_LC} PRIVATE ${CMAKE_SOURCE_DIR}/xbmc/platform/darwin/ios/LaunchScreen.storyboard)
+set_source_files_properties(${CMAKE_SOURCE_DIR}/xbmc/platform/darwin/ios/LaunchScreen.storyboard PROPERTIES MACOSX_PACKAGE_LOCATION "Resources")
 
-# Options for code signing propagated as env vars to Codesign.command via Xcode
-set(CODE_SIGN_IDENTITY "" CACHE STRING "Code Sign Identity")
-if(CODE_SIGN_IDENTITY)
-  set_target_properties(${APP_NAME_LC} PROPERTIES XCODE_ATTRIBUTE_CODE_SIGNING_REQUIRED TRUE
-                                                  XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY ${CODE_SIGN_IDENTITY})
+# setup code signing
+
+# dev team ID / identity (certificate)
+set(DEVELOPMENT_TEAM "" CACHE STRING "Development Team")
+set(CODE_SIGN_IDENTITY $<IF:$<BOOL:${DEVELOPMENT_TEAM}>,iPhone\ Developer,> CACHE STRING "Code Sign Identity")
+
+# app provisioning profile
+set(CODE_SIGN_STYLE_APP Automatic)
+set(PROVISIONING_PROFILE_APP "" CACHE STRING "Provisioning profile name for the Kodi app")
+if(PROVISIONING_PROFILE_APP)
+  set(CODE_SIGN_STYLE_APP Manual)
 endif()
+set_target_properties(${APP_NAME_LC} PROPERTIES XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY "${CODE_SIGN_IDENTITY}"
+                                                XCODE_ATTRIBUTE_CODE_SIGN_STYLE ${CODE_SIGN_STYLE_APP}
+                                                XCODE_ATTRIBUTE_DEVELOPMENT_TEAM "${DEVELOPMENT_TEAM}"
+                                                XCODE_ATTRIBUTE_PROVISIONING_PROFILE_SPECIFIER "${PROVISIONING_PROFILE_APP}")
 
 add_custom_command(TARGET ${APP_NAME_LC} POST_BUILD
     # TODO: Remove in sync with CopyRootFiles-darwin_embedded expecting the ".bin" file
@@ -59,30 +49,12 @@ add_custom_command(TARGET ${APP_NAME_LC} POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_BINARY_DIR}/${CORE_BUILD_DIR}/DllPaths_generated.h
                                      ${CMAKE_BINARY_DIR}/xbmc/DllPaths_generated.h
     COMMAND "ACTION=build"
-            "TARGET_BUILD_DIR=$<TARGET_FILE_DIR:${APP_NAME_LC}>/.."
-            "TARGET_NAME=${APP_NAME}.app"
-            "APP_NAME=${APP_NAME}"
-            "PRODUCT_NAME=${APP_NAME}"
-            "WRAPPER_EXTENSION=app"
-            "SRCROOT=${CMAKE_BINARY_DIR}"
             ${CMAKE_SOURCE_DIR}/tools/darwin/Support/CopyRootFiles-darwin_embedded.command
     COMMAND "XBMC_DEPENDS=${DEPENDS_PATH}"
-            "TARGET_BUILD_DIR=$<TARGET_FILE_DIR:${APP_NAME_LC}>/.."
-            "TARGET_NAME=${APP_NAME}.app"
-            "APP_NAME=${APP_NAME}"
-            "PRODUCT_NAME=${APP_NAME}"
-            "FULL_PRODUCT_NAME=${APP_NAME}.app"
-            "WRAPPER_EXTENSION=app"
-            "SRCROOT=${CMAKE_BINARY_DIR}"
+            "PYTHON_VERSION=${PYTHON_VERSION}"
             ${CMAKE_SOURCE_DIR}/tools/darwin/Support/copyframeworks-darwin_embedded.command
     COMMAND "XBMC_DEPENDS=${DEPENDS_PATH}"
             "NATIVEPREFIX=${NATIVEPREFIX}"
-            "PLATFORM_NAME=${PLATFORM}"
-            "CODESIGNING_FOLDER_PATH=$<TARGET_FILE_DIR:${APP_NAME_LC}>"
-            "BUILT_PRODUCTS_DIR=$<TARGET_FILE_DIR:${APP_NAME_LC}>/.."
-            "WRAPPER_NAME=${APP_NAME}.app"
-            "APP_NAME=${APP_NAME}"
-            "CURRENT_ARCH=${ARCH}"
             ${CMAKE_SOURCE_DIR}/tools/darwin/Support/Codesign.command
 )
 

@@ -7,7 +7,7 @@ AC_CONFIG_FILES([target/config.site native/config.site.native Makefile.include t
 AC_CANONICAL_HOST
 
 m4_include([m4/xbmc_arch.m4])
-m4_include([m4/ax_cxx_compile_stdcxx_11.m4])
+m4_include([m4/ax_cxx_compile_stdcxx_14.m4])
 
 # check for not same cpu value
 AC_DEFUN([MC_CHECK_NOT_CPU],
@@ -229,9 +229,9 @@ AC_PATH_TOOL([CC],[$platform_cc],,$PATH_FOR_HOST)
 AC_PATH_TOOL([CXX],[$platform_cxx],,$PATH_FOR_HOST)
 AC_PROG_CPP
 
-AX_CXX_COMPILE_STDCXX_11([noext],[mandatory])
-c11_flags=$(echo "$CFLAGS" | sed 's/-O@<:@123@:>@//g;s/-g //g;s/ //g')
-cxx11_flags=$(echo "$CXXFLAGS" | sed 's/-O@<:@123@:>@//g;s/-g //g;s/ //g')
+AX_CXX_COMPILE_STDCXX_14([noext],[mandatory])
+c14_flags=$(echo "$CFLAGS" | sed 's/-O@<:@123@:>@//g;s/-g //g;s/ //g')
+cxx14_flags=$(echo "$CXXFLAGS" | sed 's/-O@<:@123@:>@//g;s/-g //g;s/ //g')
 
 
 case $host in
@@ -331,7 +331,8 @@ case $host in
         esac
 
         # setup which sdk to use
-        found_sdk_version=[`$use_xcodebuild -showsdks | sed -E -n 's/.*macosx([0-9]+)\.([0-9]+)/\1.\2/p' | sort  -n -t. -k1,1 -k2,2 | tail -n 1`]
+        target_platform=macosx
+        found_sdk_version=[`$use_xcodebuild -showsdks | grep $target_platform | sort | tail -n 1 | awk '{ print $2}'`]
         use_sdk="${use_sdk:-$found_sdk_version}"
 
         # now that we know which sdk, error check sdk_name
@@ -342,10 +343,11 @@ case $host in
           10.12);;
           10.13);;
           10.14);;
+          10.15);;
           *)
             AC_MSG_ERROR(error in configure of --with-sdk=$use_sdk)
         esac
-        sdk_name=macosx$use_sdk
+        sdk_name=$target_platform$use_sdk
         platform_min_version="macosx-version-min=10.9"
 
         use_sdk_path=[`$use_xcodebuild -version -sdk $sdk_name Path`]
@@ -357,14 +359,8 @@ case $host in
 
         # setup which sdk to use
         if test "$use_platform" = "tvos"; then
-          # setup which cpu to use
-          if test "x$use_cpu" = "xauto"; then
-            use_cpu=arm64
-          fi
-
+          use_cpu=arm64
           target_platform=appletvos
-          platform_cflags+=" -fembed-bitcode"
-          platform_cxxflags+=" -fembed-bitcode"
           platform_min_version="$target_platform-version-min=11.0"
         else
           # setup which cpu to use
@@ -376,7 +372,7 @@ case $host in
           platform_min_version="$target_platform-version-min=9.0"
         fi
 
-        found_sdk_version=[`$use_xcodebuild -showsdks | grep $target_platform | sort | tail -n 1 | awk '{ print $2}'`]
+        found_sdk_version=[`$use_xcodebuild -showsdks | grep "\-sdk $target_platform" | awk '{ print $2}'`]
         use_sdk="${use_sdk:-$found_sdk_version}"
         sdk_name=$target_platform$use_sdk
 
@@ -384,6 +380,7 @@ case $host in
           case $use_sdk in
             11.*);;
             12.*);;
+            13.*);;
               *)
                 AC_MSG_ERROR(error in configure of --with-sdk=$use_sdk)
               ;;
@@ -394,6 +391,7 @@ case $host in
             10.*);;
             11.*);;
             12.*);;
+            13.*);;
               *)
                 AC_MSG_ERROR(error in configure of --with-sdk=$use_sdk)
               ;;
@@ -411,7 +409,7 @@ case $host in
         platform_cflags+=" -Wno-error=implicit-function-declaration"
         optimize_flags="-O3"
         use_sdk_path=[`$use_xcodebuild -version -sdk $sdk_name | grep ^Path | awk '{ print $2}'`]
-        platform_ldflags+=" -L$use_sdk_path/usr/lib/system"
+        platform_ldflags+=" -L$use_sdk_path/usr/lib"
         platform_cxxflags+=" $cpu_flags"
       ;;
     esac
@@ -458,6 +456,8 @@ case $use_platform in
      platform_ldflags="-lpthread"
      ;;
   tvos)
+    platform_cflags+=" -fembed-bitcode"
+    platform_cxxflags+=" -fembed-bitcode"
     if test "$platform_os" != "darwin_embedded"; then
       AC_MSG_ERROR([$use_platform is only supported on the darwin_embedded platform])
     fi
@@ -611,8 +611,8 @@ if [ ! `mkdir -p $use_tarballs` ]; then
 fi
 
 # remove unwanted optimization flags
-tmp_cflags=$(echo $c11_flags $platform_cflags | sed 's/-O@<:@123@:>@//g;s/-g //g;s/ \{2,\}//g')
-tmp_cxxflags=$(echo $cxx11_flags $platform_cxxflags | sed 's/-O@<:@123@:>@//g;s/-g //g;s/ \{2,\}//g')
+tmp_cflags=$(echo $c14_flags $platform_cflags | sed 's/-O@<:@123@:>@//g;s/-g //g;s/ \{2,\}//g')
+tmp_cxxflags=$(echo $cxx14_flags $platform_cxxflags | sed 's/-O@<:@123@:>@//g;s/-g //g;s/ \{2,\}//g')
 
 release_cflags="-DNDEBUG=1"
 
@@ -687,15 +687,11 @@ AC_SUBST(ffmpeg_options)
 AC_OUTPUT
 
 if test "$platform_os" == "darwin_embedded"; then
-  if test "$use_platform" = "tvos"; then
-    simulator_sdk_path=[`$use_xcodebuild -version -sdk appletvsimulator$use_sdk  | grep ^Path | awk '{ print $2}'`]
-  else
+  if test "$use_platform" = "ios"; then
     simulator_sdk_path=[`$use_xcodebuild -version -sdk iphonesimulator$use_sdk  | grep ^Path | awk '{ print $2}'`]
+    echo -e "use simulator:\t $simulator_sdk_path"
   fi
-  cp -vf $simulator_sdk_path/usr/include/crt_externs.h $prefix/$deps_dir/include
 fi
-
-echo -e "use simulator:\t $use_simulator"
 
 cp -vf target/config.site $prefix/$deps_dir/share
 cp -vf target/config-binaddons.site $prefix/$tool_dir/share

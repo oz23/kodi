@@ -29,12 +29,12 @@ namespace PVR
     /*!
      * @brief Create a new instance of the EPG database.
      */
-    CPVREpgDatabase(void) = default;
+    CPVREpgDatabase() = default;
 
     /*!
      * @brief Destroy this instance.
      */
-    ~CPVREpgDatabase(void) override = default;
+    ~CPVREpgDatabase() override = default;
 
     /*!
      * @brief Open the database.
@@ -61,13 +61,13 @@ namespace PVR
      * @brief Get the minimal database version that is required to operate correctly.
      * @return The minimal database version.
      */
-    int GetSchemaVersion(void) const override { return 12; }
+    int GetSchemaVersion() const override { return 12; }
 
     /*!
      * @brief Get the default sqlite database filename.
      * @return The default filename.
      */
-    const char *GetBaseDBName(void) const override { return "Epg"; }
+    const char* GetBaseDBName() const override { return "Epg"; }
 
     /*! @name EPG methods */
     //@{
@@ -76,28 +76,28 @@ namespace PVR
      * @brief Remove all EPG information from the database
      * @return True if the EPG information was erased, false otherwise.
      */
-    bool DeleteEpg(void);
+    bool DeleteEpg();
 
     /*!
      * @brief Delete an EPG table.
      * @param table The table to remove.
      * @return True if the table was removed successfully, false otherwise.
      */
-    bool Delete(const CPVREpg &table);
+    bool Delete(const CPVREpg& table);
 
     /*!
      * @brief Erase all EPG entries with an end time less than the given time.
      * @param maxEndTime The maximum allowed end time.
      * @return True if the entries were removed successfully, false otherwise.
      */
-    bool DeleteEpgEntries(const CDateTime &maxEndTime);
+    bool DeleteEpgEntries(const CDateTime& maxEndTime);
 
     /*!
      * @brief Remove a single EPG entry.
      * @param tag The entry to remove.
      * @return True if it was removed successfully, false otherwise.
      */
-    bool Delete(const CPVREpgInfoTag &tag);
+    bool Delete(const CPVREpgInfoTag& tag);
 
     /*!
      * @brief Get all EPG tables from the database. Does not get the EPG tables' entries.
@@ -110,7 +110,7 @@ namespace PVR
      * @param epg The EPG table to get the entries for.
      * @return The entries.
      */
-    std::vector<std::shared_ptr<CPVREpgInfoTag>> Get(const CPVREpg &epg);
+    std::vector<std::shared_ptr<CPVREpgInfoTag>> Get(const CPVREpg& epg);
 
     /*!
      * @brief Get the last stored EPG scan time.
@@ -118,7 +118,7 @@ namespace PVR
      * @param lastScan The last scan time or -1 if it wasn't found.
      * @return True if the time was fetched successfully, false otherwise.
      */
-    bool GetLastEpgScanTime(int iEpgId, CDateTime *lastScan);
+    bool GetLastEpgScanTime(int iEpgId, CDateTime* lastScan);
 
     /*!
      * @brief Update the last scan time.
@@ -135,7 +135,7 @@ namespace PVR
      * @param bQueueWrite Don't execute the query immediately but queue it if true.
      * @return The database ID of this entry or 0 if bSingleUpdate is false and the query was queued.
      */
-    int Persist(const CPVREpg &epg, bool bQueueWrite = false);
+    int Persist(const CPVREpg& epg, bool bQueueWrite = false);
 
     /*!
      * @brief Persist an infotag.
@@ -143,12 +143,12 @@ namespace PVR
      * @param bSingleUpdate If true, this is a single update and the query will be executed immediately.
      * @return The database ID of this entry or 0 if bSingleUpdate is false and the query was queued.
      */
-    int Persist(const CPVREpgInfoTag &tag, bool bSingleUpdate = true);
+    int Persist(const CPVREpgInfoTag& tag, bool bSingleUpdate = true);
 
     /*!
      * @return Last EPG id in the database
      */
-    int GetLastEPGId(void);
+    int GetLastEPGId();
 
     //@}
 

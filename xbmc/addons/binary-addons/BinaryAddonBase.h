@@ -41,6 +41,7 @@ namespace ADDON
 
     const AddonVersion& Version() const;
     const AddonVersion& MinVersion() const;
+    const AddonVersion& DependencyVersion(const std::string& dependencyID) const;
     const std::string& Name() const;
     const std::string& Summary() const;
     const std::string& Description() const;
@@ -50,7 +51,7 @@ namespace ADDON
     const ArtMap& Art() const;
     const std::string& Disclaimer() const;
 
-    bool MeetsVersion(const AddonVersion& version) const;
+    bool MeetsVersion(const AddonVersion& versionMin, const AddonVersion& version) const;
 
     AddonDllPtr GetAddon(const IAddonInstanceHandler* handler);
     void ReleaseAddon(const IAddonInstanceHandler* handler);
