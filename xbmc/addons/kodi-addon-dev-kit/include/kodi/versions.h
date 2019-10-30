@@ -118,8 +118,7 @@
 #define ADDON_INSTANCE_VERSION_VISUALIZATION          "2.0.2"
 #define ADDON_INSTANCE_VERSION_VISUALIZATION_MIN      "2.0.2"
 #define ADDON_INSTANCE_VERSION_VISUALIZATION_XML_ID   "kodi.binary.instance.visualization"
-#define ADDON_INSTANCE_VERSION_VISUALIZATION_DEPENDS  "xbmc_vis_dll.h" \
-                                                      "xbmc_vis_types.h"
+#define ADDON_INSTANCE_VERSION_VISUALIZATION_DEPENDS  "addon-instance/Visualization.h"
 
 #define ADDON_INSTANCE_VERSION_VIDEOCODEC             "1.0.1"
 #define ADDON_INSTANCE_VERSION_VIDEOCODEC_MIN         "1.0.1"
