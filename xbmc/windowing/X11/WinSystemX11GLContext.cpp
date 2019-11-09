@@ -54,6 +54,11 @@ CWinSystemX11GLContext::CWinSystemX11GLContext()
   {
     OPTIONALS::PulseAudioRegister();
   }
+  else if (StringUtils::EqualsNoCase(envSink, "ALSA+PULSE"))
+  {
+    OPTIONALS::ALSARegister();
+    OPTIONALS::PulseAudioRegister();
+  }
   else if (StringUtils::EqualsNoCase(envSink, "OSS"))
   {
     OPTIONALS::OSSRegister();
