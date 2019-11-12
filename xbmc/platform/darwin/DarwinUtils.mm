@@ -13,7 +13,6 @@
 #include "utils/URIUtils.h"
 #include "CompileInfo.h"
 
-#if defined(TARGET_DARWIN)
 #if defined(TARGET_DARWIN_IOS)
   #import <Foundation/Foundation.h>
   #import <UIKit/UIKit.h>
@@ -82,12 +81,15 @@ enum iosPlatform
   iPhone7,
   iPhone8,
   iPhoneXR,
+  iPhone11,
   iPadAir2Wifi,
   iPadAir2Cellular,
   iPadPro9_7InchWifi,
   iPadPro9_7InchCellular,
   iPad6thGeneration9_7InchWifi,
   iPad6thGeneration9_7InchCellular,
+  iPad7thGeneration10_2InchWifi,
+  iPad7thGeneration10_2InchCellular,
   iPadPro12_9InchWifi,
   iPadPro12_9InchCellular,
   iPadPro2_12_9InchWifi,
@@ -109,6 +111,8 @@ enum iosPlatform
   iPhoneX,
   iPhoneXS,
   iPhoneXSMax,
+  iPhone11Pro,
+  iPhone11ProMax,
 };
 
 // platform strings are based on http://theiphonewiki.com/wiki/Models
@@ -175,6 +179,9 @@ enum iosPlatform getIosPlatform()
     else if (devStr == "iPhone11,2") eDev = iPhoneXS;
     else if (devStr == "iPhone11,6") eDev = iPhoneXSMax;
     else if (devStr == "iPhone11,8") eDev = iPhoneXR;
+    else if (devStr == "iPhone12,1") eDev = iPhone11;
+    else if (devStr == "iPhone12,3") eDev = iPhone11Pro;
+    else if (devStr == "iPhone12,5") eDev = iPhone11ProMax;
     else if (devStr == "iPod1,1") eDev = iPodTouch1G;
     else if (devStr == "iPod2,1") eDev = iPodTouch2G;
     else if (devStr == "iPod3,1") eDev = iPodTouch3G;
@@ -221,6 +228,8 @@ enum iosPlatform getIosPlatform()
     else if (devStr == "iPad7,4") eDev = iPadPro_10_5InchCellular;
     else if (devStr == "iPad7,5") eDev = iPad6thGeneration9_7InchWifi;
     else if (devStr == "iPad7,6") eDev = iPad6thGeneration9_7InchCellular;
+    else if (devStr == "iPad7,11") eDev = iPad7thGeneration10_2InchWifi;
+    else if (devStr == "iPad7,12") eDev = iPad7thGeneration10_2InchCellular;
     else if (devStr == "iPad8,1") eDev = iPadPro11InchWifi;
     else if (devStr == "iPad8,2") eDev = iPadPro11InchWifi;
     else if (devStr == "iPad8,3") eDev = iPadPro11InchCellular;
@@ -457,6 +466,13 @@ bool CDarwinUtils::IsIosSandboxed(void)
       // Some time after ios8, Apple decided to change this yet again
       if (strlen("/var/containers/Bundle/") < path_size &&
         strncmp(given_path, "/var/containers/Bundle/", strlen("/var/containers/Bundle/")) == 0)
+      {
+        ret = 1;
+      }
+
+      // since iOS 13
+      if (strlen("/private/var/containers/Bundle/") < path_size &&
+        strncmp(given_path, "/private/var/containers/Bundle/", strlen("/private/var/containers/Bundle/")) == 0)
       {
         ret = 1;
       }
@@ -705,5 +721,3 @@ bool CDarwinUtils::CreateAliasShortcut(const std::string& fromPath, const std::s
 #endif
   return ret;
 }
-
-#endif

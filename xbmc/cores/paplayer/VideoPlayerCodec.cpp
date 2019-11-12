@@ -510,7 +510,12 @@ CAEStreamInfo::DataType VideoPlayerCodec::GetPassthroughStreamType(AVCodecID cod
       break;
 
     case AV_CODEC_ID_DTS:
-      format.m_streamInfo.m_type = CAEStreamInfo::STREAM_TYPE_DTSHD_CORE;
+      format.m_streamInfo.m_type = CAEStreamInfo::STREAM_TYPE_DTSHD;
+      format.m_streamInfo.m_sampleRate = samplerate;
+      break;
+
+    case AV_CODEC_ID_TRUEHD:
+      format.m_streamInfo.m_type = CAEStreamInfo::STREAM_TYPE_TRUEHD;
       format.m_streamInfo.m_sampleRate = samplerate;
       break;
 
@@ -519,6 +524,12 @@ CAEStreamInfo::DataType VideoPlayerCodec::GetPassthroughStreamType(AVCodecID cod
   }
 
   bool supports = CServiceBroker::GetActiveAE()->SupportsRaw(format);
+
+  if (!supports && codecId == AV_CODEC_ID_DTS)
+  {
+    format.m_streamInfo.m_type = CAEStreamInfo::STREAM_TYPE_DTSHD_CORE;
+    supports = CServiceBroker::GetActiveAE()->SupportsRaw(format);
+  }
 
   if (supports)
     return format.m_streamInfo.m_type;

@@ -8,8 +8,17 @@
 
 #pragma once
 
+/*!
+\file IMsgTargetCallback.h
+\brief
+*/
+
 #include "GUIMessage.h"
 
+/*!
+ \ingroup winman
+ \brief
+ */
 class IMsgTargetCallback
 {
 public:

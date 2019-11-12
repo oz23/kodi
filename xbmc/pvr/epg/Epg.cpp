@@ -258,11 +258,12 @@ void CPVREpg::AddEntry(const CPVREpgInfoTag &tag)
     newTag = it->second;
   else
   {
-    newTag = std::make_shared<CPVREpgInfoTag>(m_channelData, m_iEpgID);
+    newTag.reset(new CPVREpgInfoTag());
     m_tags.insert(std::make_pair(tag.StartAsUTC(), newTag));
   }
 
   newTag->Update(tag);
+  newTag->SetChannelData(m_channelData);
   newTag->SetEpgID(m_iEpgID);
 }
 
@@ -326,13 +327,13 @@ bool CPVREpg::UpdateEntries(const CPVREpg &epg, bool bStoreInDb /* = true */)
   return true;
 }
 
-bool CPVREpg::UpdateEntry(const EPG_TAG *data, int iClientId, bool bUpdateDatabase)
+bool CPVREpg::UpdateEntry(const EPG_TAG *data, int iClientId)
 {
   if (!data)
     return false;
 
   const std::shared_ptr<CPVREpgInfoTag> tag = std::make_shared<CPVREpgInfoTag>(*data, iClientId, m_channelData, m_iEpgID);
-  return UpdateEntry(tag, bUpdateDatabase);
+  return UpdateEntry(tag, !CServiceBroker::GetSettingsComponent()->GetSettings()->GetBool(CSettings::SETTING_EPG_IGNOREDBFORCLIENT));
 }
 
 bool CPVREpg::UpdateEntry(const CPVREpgInfoTagPtr &tag, bool bUpdateDatabase)
@@ -348,13 +349,14 @@ bool CPVREpg::UpdateEntry(const CPVREpgInfoTagPtr &tag, bool bUpdateDatabase)
   }
   else
   {
-    infoTag = std::make_shared<CPVREpgInfoTag>(m_channelData, m_iEpgID);
+    infoTag.reset(new CPVREpgInfoTag());
     infoTag->SetUniqueBroadcastID(tag->UniqueBroadcastID());
     m_tags.insert(std::make_pair(tag->StartAsUTC(), infoTag));
     bNewTag = true;
   }
 
   infoTag->Update(*tag, bNewTag);
+  infoTag->SetChannelData(m_channelData);
   infoTag->SetEpgID(m_iEpgID);
 
   if (bUpdateDatabase)

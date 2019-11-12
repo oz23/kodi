@@ -189,21 +189,21 @@ bool CWinSystemIOS::SetFullScreen(bool fullScreen, RESOLUTION_INFO& res, bool bl
 
 UIScreenMode *getModeForResolution(int width, int height, unsigned int screenIdx)
 {
-  UIScreen *aScreen = [[UIScreen screens]objectAtIndex:screenIdx];
-  for ( UIScreenMode *mode in [aScreen availableModes] )
+  auto screen = UIScreen.screens[screenIdx];
+  for (UIScreenMode* mode in screen.availableModes)
   {
     //for main screen also find modes where width and height are
     //exchanged (because of the 90°degree rotated buildinscreens)
-    if((mode.size.width == width && mode.size.height == height) ||
-        (screenIdx == 0 && mode.size.width == height && mode.size.height == width)
-       || screenIdx == 0) // for screenIdx == 0 - which is the mainscreen - we only have one resolution - match it every time
+    auto modeSize = mode.size;
+    if ((modeSize.width == width && modeSize.height == height) ||
+        (screenIdx == 0 && modeSize.width == height && modeSize.height == width))
     {
-      CLog::Log(LOGDEBUG,"Found matching mode");
+      CLog::Log(LOGDEBUG, "Found matching mode: {} x {}", modeSize.width, modeSize.height);
       return mode;
     }
   }
   CLog::Log(LOGERROR,"No matching mode found!");
-  return NULL;
+  return nil;
 }
 
 bool CWinSystemIOS::SwitchToVideoMode(int width, int height, double refreshrate)
@@ -228,6 +228,7 @@ bool CWinSystemIOS::GetScreenResolution(int* w, int* h, double* fps, int screenI
   *w = screenSize.width;
   *h = screenSize.height;
   *fps = 0.0;
+
   //if current mode is 0x0 (happens with external screens which aren't active)
   //then use the preferred mode
   if(*h == 0 || *w ==0)
@@ -236,15 +237,27 @@ bool CWinSystemIOS::GetScreenResolution(int* w, int* h, double* fps, int screenI
     *w = firstMode.size.width;
     *h = firstMode.size.height;
   }
-
-  //for mainscreen exchange w and h
-  //because mainscreen is build in
-  //in 90° rotated
+  
+  // for mainscreen use the eagl bounds from xbmcController
+  // because mainscreen is might be 90° rotate dependend on
+  // the device and eagl gives the correct values in all cases.
   if(screenIdx == 0)
   {
-    int tmp = *w;
-    *w = *h;
-    *h = tmp;
+    // at very first start up we cache the internal screen resolution
+    // because when using external screens and need to go back
+    // to internal we are not able to determine the eagl bounds
+    // before we really switched back to internal
+    // but display settings ask for the internal resolution before
+    // switching. So we give the cached values back in that case.
+    if (m_internalTouchscreenResolutionWidth == -1 &&
+        m_internalTouchscreenResolutionHeight == -1)
+    {
+      m_internalTouchscreenResolutionWidth = [g_xbmcController getScreenSize].width;
+      m_internalTouchscreenResolutionHeight = [g_xbmcController getScreenSize].height;
+    }
+    
+    *w = m_internalTouchscreenResolutionWidth;
+    *h = m_internalTouchscreenResolutionHeight;
   }
   CLog::Log(LOGDEBUG,"Current resolution Screen: %i with %i x %i",screenIdx, *w, *h);
   return true;

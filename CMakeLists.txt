@@ -134,15 +134,8 @@ set(required_deps ASS
                   Sqlite3
                   TagLib
                   TinyXML
+                  ZLIB
                   ${PLATFORM_REQUIRED_DEPS})
-if(NOT WIN32)
-  list(APPEND required_deps ZLIB)
-else()
-  list(APPEND required_deps D3DX11Effects)
-endif()
-if(CORE_SYSTEM_NAME STREQUAL android)
-  list(APPEND required_deps Zip)
-endif()
 
 # Optional dependencies. Keep in alphabetical order please
 set(optional_deps Alsa
@@ -232,6 +225,7 @@ add_custom_command(OUTPUT ${CORE_BUILD_DIR}/xbmc/CompileInfo.cpp
                                             -Dprefix=${CMAKE_BINARY_DIR}/${CORE_BUILD_DIR}
                                             -P ${CMAKE_SOURCE_DIR}/cmake/scripts/common/GenerateVersionedFiles.cmake
                    DEPENDS ${CMAKE_SOURCE_DIR}/version.txt
+                           export-files
                            ${ADDON_XML_DEPENDS}
                            ${CMAKE_SOURCE_DIR}/xbmc/CompileInfo.cpp.in)
 list(APPEND install_data ${ADDON_INSTALL_DATA})

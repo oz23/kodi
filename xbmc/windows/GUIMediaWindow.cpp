@@ -427,7 +427,15 @@ bool CGUIMediaWindow::OnMessage(CGUIMessage& message)
         { // need to remove the disc cache
           CFileItemList items;
           items.SetPath(URIUtils::GetDirectory(newItem->GetPath()));
-          items.RemoveDiscCache(GetID());
+          if (newItem->HasProperty("cachefilename"))
+          {
+            // Use stored cache file name
+            std::string crcfile = newItem->GetProperty("cachefilename").asString();
+            items.RemoveDiscCacheCRC(crcfile);
+          }
+          else
+            // No stored cache file name, attempt using truncated item path as list path
+            items.RemoveDiscCache(GetID());
         }
       }
       else if (message.GetParam1()==GUI_MSG_UPDATE_PATH)
@@ -1284,8 +1292,7 @@ void CGUIMediaWindow::SaveSelectedItemInHistory()
   if (iItem >= 0 && iItem < m_vecItems->Size())
   {
     CFileItemPtr pItem = m_vecItems->Get(iItem);
-    if (!pItem->IsParentFolder())
-      GetDirectoryHistoryString(pItem.get(), strSelectedItem);
+    GetDirectoryHistoryString(pItem.get(), strSelectedItem);
   }
 
   m_history.SetSelectedItem(strSelectedItem, m_vecItems->GetPath());

@@ -550,6 +550,7 @@ public:
   void DeleteMusicVideo(const std::string& strFilenameAndPath, bool bKeepId = false);
   void DeleteDetailsForTvShow(int idTvShow);
   void DeleteDetailsForTvShow(const std::string& strPath);
+  void DeleteStreamDetails(int idFile);
   void RemoveContentForPath(const std::string& strPath,CGUIDialogProgress *progress = NULL);
   void UpdateFanart(const CFileItem &item, VIDEODB_CONTENT_TYPE type);
   void DeleteSet(int idSet);
@@ -848,6 +849,14 @@ public:
   bool GetTvShowSeasonArt(int mediaId, std::map<int, std::map<std::string, std::string> > &seasonArt);
   bool GetArtTypes(const MediaType &mediaType, std::vector<std::string> &artTypes);
 
+  /*! \brief Fetch the distinct types of available-but-unassigned art held in the
+  database for a specific media item.
+  \param mediaId the id in the media table.
+  \param mediaType the type of media, which corresponds to the table the item resides in.
+  \return the types of art e.g. "thumb", "fanart", etc.
+  */
+  std::vector<std::string> GetAvailableArtTypesForItem(int mediaId, const MediaType& mediaType);
+
   int AddTag(const std::string &tag);
   void AddTagToItem(int idItem, int idTag, const std::string &type);
   void RemoveTagFromItem(int idItem, int idTag, const std::string &type);
@@ -921,7 +930,6 @@ protected:
 
   void AddCast(int mediaId, const char *mediaType, const std::vector<SActorInfo> &cast);
 
-  void DeleteStreamDetails(int idFile);
   CVideoInfoTag GetDetailsForMovie(std::unique_ptr<dbiplus::Dataset> &pDS, int getDetails = VideoDbDetailsNone);
   CVideoInfoTag GetDetailsForMovie(const dbiplus::sql_record* const record, int getDetails = VideoDbDetailsNone);
   CVideoInfoTag GetDetailsForTvShow(std::unique_ptr<dbiplus::Dataset> &pDS, int getDetails = VideoDbDetailsNone, CFileItem* item = NULL);
