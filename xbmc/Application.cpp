@@ -364,6 +364,8 @@ bool CApplication::Create(const CAppParamParser &params)
   m_bTestMode = params.m_testmode;
   m_bStandalone = params.m_standAlone;
 
+  CServiceBroker::RegisterCPUInfo(CCPUInfo::GetCPUInfo());
+
   m_pSettingsComponent.reset(new CSettingsComponent());
   m_pSettingsComponent->Init(params);
 
@@ -3756,6 +3758,9 @@ bool CApplication::OnMessage(CGUIMessage& message)
         ShowAppMigrationMessage();
 
         m_bInitializing = false;
+
+        if (message.GetSenderId() == WINDOW_SETTINGS_PROFILES)
+          g_application.ReloadSkin(false);
       }
       else if (message.GetParam1() == GUI_MSG_UPDATE_ITEM && message.GetItem())
       {
