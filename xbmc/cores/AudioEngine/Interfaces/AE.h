@@ -234,4 +234,12 @@ public:
    * @return Returns true on success, else false.
    */
   virtual bool GetCurrentSinkFormat(AEAudioFormat &SinkFormat) { return false; }
+
+  /**
+   * Sets output device without chaning gui setting
+   *
+   * @param Current sink data format. For more details see AEAudioFormat.
+   * @return Returns true on success, else false.
+   */
+  virtual void SetSink(std::string device) {}
 };

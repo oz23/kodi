@@ -74,6 +74,7 @@ public:
     SUSPEND,
     DEVICECHANGE,
     DEVICECOUNTCHANGE,
+    SETSINK,
     MUTE,
     VOLUME,
     PAUSESTREAM,
@@ -256,6 +257,7 @@ public:
   void KeepConfiguration(unsigned int millis) override;
   void DeviceChange() override;
   void DeviceCountChange(std::string driver) override;
+  void SetSink(std::string device) override;
   bool GetCurrentSinkFormat(AEAudioFormat &SinkFormat) override;
 
   void RegisterAudioCallback(IAudioCallback* pCallback) override;
@@ -288,7 +290,7 @@ protected:
 protected:
   void Process() override;
   void StateMachine(int signal, Protocol *port, Message *msg);
-  bool InitSink();
+  bool InitSink(std::string sink);
   void DrainSink();
   void UnconfigureSink();
   void Dispose();
@@ -351,6 +353,7 @@ protected:
   IAEEncoder *m_encoder;
   std::string m_currDevice;
   std::unique_ptr<CActiveAESettings> m_settingsHandler;
+  std::string m_tmpDevice;
 
   // buffers
   CActiveAEBufferPoolResample *m_sinkBuffers;

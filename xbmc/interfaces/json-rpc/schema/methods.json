@@ -362,7 +362,7 @@
         "zoom": { "type": "number", "required": true },
         "pixelratio": { "type": "number", "required": true },
         "verticalshift": { "type": "number", "required": true },
-        "nonlinearstretch": { "type": "boolean", "required": true }		
+        "nonlinearstretch": { "type": "boolean", "required": true }
         }
       }
   },
@@ -2472,6 +2472,26 @@
       { "name": "mute", "required": true, "$ref": "Global.Toggle" }
     ],
     "returns": { "type": "boolean", "description": "Mute state" }
+  },
+  "Application.GetAudioSinks": {
+    "type": "method",
+    "description": "Retrieves list of audio sinks",
+    "transport": "Response",
+    "permission": "ControlPlayback",
+    "params": [],
+    "returns": { "type": "array",
+      "items": { "type": "string" }
+    }
+  },
+  "Application.SetAudioSink": {
+    "type": "method",
+    "description": "Sets an audio sinks",
+    "transport": "Response",
+    "permission": "ControlPlayback",
+    "params": [
+      { "name": "sink", "type": "string", "required": true, "description": "Sink name" }
+    ],
+    "returns": "string"
   },
   "Application.Quit": {
     "type": "method",

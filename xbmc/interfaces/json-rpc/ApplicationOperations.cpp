@@ -10,6 +10,7 @@
 
 #include "Application.h"
 #include "CompileInfo.h"
+#include "cores/AudioEngine/Interfaces/AE.h"
 #include "GUIInfoManager.h"
 #include "InputOperations.h"
 #include "LangInfo.h"
@@ -93,6 +94,36 @@ JSONRPC_STATUS CApplicationOperations::SetMute(const std::string &method, ITrans
     return InvalidParams;
 
   return GetPropertyValue("muted", result);
+}
+
+JSONRPC_STATUS CApplicationOperations::GetAudioSinks(const std::string &method, ITransportLayer *transport, IClient *client, const CVariant &parameterObject, CVariant &result)
+{
+  IAE *ae = CServiceBroker::GetActiveAE();
+  if (!ae)
+    return InternalError;
+
+  AEDeviceList devices;
+  ae->EnumerateOutputDevices(devices, false);
+  for (const auto &dev : devices)
+  {
+    result.append(dev.second);
+  }
+  return OK;
+}
+
+JSONRPC_STATUS CApplicationOperations::SetAudioSink(const std::string &method, ITransportLayer *transport, IClient *client, const CVariant &parameterObject, CVariant &result)
+{
+  if (!parameterObject["sink"].isString())
+    return InvalidParams;
+
+  std::string sink = parameterObject["sink"].asString();
+
+  IAE *ae = CServiceBroker::GetActiveAE();
+  if (!ae)
+    return InternalError;
+
+  ae->SetSink(sink);
+  return ACK;
 }
 
 JSONRPC_STATUS CApplicationOperations::Quit(const std::string &method, ITransportLayer *transport, IClient *client, const CVariant &parameterObject, CVariant &result)
