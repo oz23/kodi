@@ -27,7 +27,8 @@ using namespace ActiveAE;
 CActiveAESink::CActiveAESink(CEvent *inMsgEvent) :
   CThread("AESink"),
   m_controlPort("SinkControlPort", inMsgEvent, &m_outMsgEvent),
-  m_dataPort("SinkDataPort", inMsgEvent, &m_outMsgEvent)
+  m_dataPort("SinkDataPort", inMsgEvent, &m_outMsgEvent),
+  m_internalPort("SinkInternalPort", &m_outMsgEvent, &m_outMsgEvent)
 {
   m_inMsgEvent = inMsgEvent;
   m_sink = nullptr;
@@ -233,7 +234,8 @@ enum SINK_STATES
   S_TOP_CONFIGURED_SUSPEND,       // 3
   S_TOP_CONFIGURED_IDLE,          // 4
   S_TOP_CONFIGURED_PLAY,          // 5
-  S_TOP_CONFIGURED_SILENCE,       // 6
+  S_TOP_CONFIGURED_STREAM,        // 6
+  S_TOP_CONFIGURED_STREAM_SYNCED, // 7
 };
 
 int SINK_parentStates[] = {
@@ -243,7 +245,8 @@ int SINK_parentStates[] = {
     2, //TOP_CONFIGURED_SUSPEND
     2, //TOP_CONFIGURED_IDLE
     2, //TOP_CONFIGURED_PLAY
-    2, //TOP_CONFIGURED_SILENCE
+    2, //TOP_CONFIGURED_STREAM
+    6, //TOP_CONFIGURED_STREAM_SYNCED
 };
 
 void CActiveAESink::StateMachine(int signal, Protocol *port, Message *msg)
@@ -271,6 +274,7 @@ void CActiveAESink::StateMachine(int signal, Protocol *port, Message *msg)
           m_extStreaming = false;
           ReturnBuffers();
           OpenSink();
+          m_syncTime = 0;
 
           if (!m_extError)
           {
@@ -321,10 +325,6 @@ void CActiveAESink::StateMachine(int signal, Protocol *port, Message *msg)
           m_extAppFocused = *(bool*)msg->data;
           SetSilenceTimer();
           m_extTimeout = 0;
-          return;
-
-        case CSinkControlProtocol::STREAMING:
-          m_extStreaming = *(bool*)msg->data;
           return;
 
         case CSinkControlProtocol::SETSILENCETIMEOUT:
@@ -396,13 +396,35 @@ void CActiveAESink::StateMachine(int signal, Protocol *port, Message *msg)
         {
         case CSinkControlProtocol::STREAMING:
           m_extStreaming = *(bool*)msg->data;
-          SetSilenceTimer();
-          if (!m_extSilenceTimer.IsTimePast())
+          if (m_extStreaming)
           {
-            m_state = S_TOP_CONFIGURED_SILENCE;
+            m_state = S_TOP_CONFIGURED_STREAM;
+            m_extSilenceTimer.Set(XbmcThreads::EndTime::InfiniteValue);
+            unsigned int samples = 0;
+            while (!m_soundSamples.empty())
+            {
+              CSampleBuffer *buffer = m_soundSamples.front();
+              m_soundSamples.pop_front();
+              samples += m_requestedFormat.m_dataFormat != AE_FMT_RAW ? buffer->pkt->nb_samples : 1;
+              m_dataPort.SendInMessage(CSinkDataProtocol::RETURNSAMPLE, &buffer, sizeof(CSampleBuffer*));
+            }
+            AEDelayStatus status;
+            m_sink->GetDelay(status);
+            m_stats->UpdateSinkDelay(status, samples);
+          }
+          else
+          {
+            SetSilenceTimer();
+            if (!m_extSilenceTimer.IsTimePast())
+            {
+              m_state = S_TOP_CONFIGURED_PLAY;
+            }
           }
           m_extTimeout = 0;
+          m_syncTime = 0;
+          RequestData();
           return;
+
         case CSinkControlProtocol::VOLUME:
           m_volume = *(float*)msg->data;
           m_sink->SetVolume(m_volume);
@@ -432,27 +454,6 @@ void CActiveAESink::StateMachine(int signal, Protocol *port, Message *msg)
           m_state = S_TOP_CONFIGURED_IDLE;
           m_extTimeout = 10000;
           return;
-        case CSinkDataProtocol::SAMPLE:
-          CSampleBuffer *samples;
-          unsigned int delay;
-          samples = *((CSampleBuffer**)msg->data);
-          delay = OutputSamples(samples);
-          msg->Reply(CSinkDataProtocol::RETURNSAMPLE, &samples, sizeof(CSampleBuffer*));
-          if (m_extError)
-          {
-            m_sink->Deinitialize();
-            delete m_sink;
-            m_sink = nullptr;
-            m_state = S_TOP_CONFIGURED_SUSPEND;
-            m_extTimeout = 0;
-          }
-          else
-          {
-            m_state = S_TOP_CONFIGURED_PLAY;
-            m_extTimeout = delay / 2;
-            m_extSilenceTimer.Set(m_extSilenceTimeout);
-          }
-          return;
         default:
           break;
         }
@@ -465,9 +466,18 @@ void CActiveAESink::StateMachine(int signal, Protocol *port, Message *msg)
         switch (signal)
         {
         case CSinkControlProtocol::STREAMING:
-          m_extStreaming = *(bool*)msg->data;
-          SetSilenceTimer();
-          m_extTimeout = 0;
+          m_extError = false;
+          OpenSink();
+          m_syncTime = 0;
+          if (!m_extError)
+          {
+            m_state = S_TOP_CONFIGURED;
+            m_bStateMachineSelfTrigger = true;
+          }
+          else
+          {
+            m_state = S_TOP_UNCONFIGURED;
+          }
           return;
         case CSinkControlProtocol::VOLUME:
           m_volume = *(float*)msg->data;
@@ -483,12 +493,16 @@ void CActiveAESink::StateMachine(int signal, Protocol *port, Message *msg)
         case CSinkDataProtocol::SAMPLE:
           m_extError = false;
           OpenSink();
+          m_syncTime = 0;
           if (!m_extError)
           {
-            OutputSamples(&m_sampleOfSilence);
+            CSampleBuffer *buffer;
+            buffer = *((CSampleBuffer**)msg->data);
+            m_soundSamples.push_back(buffer);
             m_state = S_TOP_CONFIGURED_PLAY;
             m_extTimeout = 0;
-            m_bStateMachineSelfTrigger = true;
+            m_syncTime += 1000.0 * m_sinkFormat.m_frames / m_sinkFormat.m_sampleRate;
+            RequestData();
           }
           else
           {
@@ -521,10 +535,13 @@ void CActiveAESink::StateMachine(int signal, Protocol *port, Message *msg)
         switch (signal)
         {
         case CSinkDataProtocol::SAMPLE:
-          OutputSamples(&m_sampleOfSilence);
+          CSampleBuffer *buffer;
+          buffer = *((CSampleBuffer**)msg->data);
+          m_soundSamples.push_back(buffer);
           m_state = S_TOP_CONFIGURED_PLAY;
           m_extTimeout = 0;
-          m_bStateMachineSelfTrigger = true;
+          m_syncTime += 1000.0 * m_sinkFormat.m_frames / m_sinkFormat.m_sampleRate;
+          RequestData();
           return;
         default:
           break;
@@ -548,17 +565,74 @@ void CActiveAESink::StateMachine(int signal, Protocol *port, Message *msg)
       break;
 
     case S_TOP_CONFIGURED_PLAY:
-      if (port == nullptr) // timeout
+      if (port == &m_dataPort)
+      {
+        switch (signal)
+        {
+        case CSinkDataProtocol::SAMPLE:
+          CSampleBuffer *buffer;
+          buffer = *((CSampleBuffer**)msg->data);
+          m_soundSamples.push_back(buffer);
+          return;
+        default:
+          break;
+        }
+      }
+      else if (port == &m_internalPort)
+      {
+        switch (signal)
+        {
+        case CSinkInternalProtocol::REQUESTDATA:
+          CSampleBuffer *buffer;
+          unsigned int delay;
+          while (m_syncTime < 0 && !m_soundSamples.empty())
+          {
+            buffer = m_soundSamples.front();
+            m_syncTime += 1000.0 * buffer->pkt->nb_samples / buffer->pkt->config.sample_rate;
+            m_soundSamples.pop_front();
+            m_dataPort.SendOutMessage(CSinkDataProtocol::RETURNSAMPLE, &buffer, sizeof(CSampleBuffer*));
+          }
+          if (m_syncTime > 0)
+          {
+            delay = OutputSilence(m_syncTime);
+            m_syncTime -= delay;
+          }
+          else if (m_soundSamples.empty())
+          {
+            delay = OutputSamples(&m_sampleOfSilence);
+          }
+          else
+          {
+            buffer = m_soundSamples.front();
+            m_soundSamples.pop_front();
+            delay = OutputSamples(buffer);
+            m_dataPort.SendInMessage(CSinkDataProtocol::RETURNSAMPLE, &buffer, sizeof(CSampleBuffer*));
+          }
+          if (m_extError)
+          {
+            m_sink->Deinitialize();
+            delete m_sink;
+            m_sink = nullptr;
+            m_state = S_TOP_CONFIGURED_SUSPEND;
+            m_extTimeout = 0;
+          }
+          else
+          {
+            m_extTimeout = delay / 2;
+            m_extSilenceTimer.Set(m_extSilenceTimeout);
+          }
+          RequestData();
+          return;
+        default:
+          break;
+        }
+      }
+      else if (port == nullptr) // timeout
       {
         switch (signal)
         {
         case CSinkControlProtocol::TIMEOUT:
-          if (!m_extSilenceTimer.IsTimePast())
-          {
-            m_state = S_TOP_CONFIGURED_SILENCE;
-            m_extTimeout = 0;
-          }
-          else
+          if (m_extSilenceTimer.IsTimePast())
           {
             m_sink->Drain();
             m_state = S_TOP_CONFIGURED_IDLE;
@@ -574,23 +648,104 @@ void CActiveAESink::StateMachine(int signal, Protocol *port, Message *msg)
       }
       break;
 
-    case S_TOP_CONFIGURED_SILENCE:
-      if (port == nullptr) // timeout
+    case S_TOP_CONFIGURED_STREAM:
+      if (port == &m_controlPort)
       {
         switch (signal)
         {
-        case CSinkControlProtocol::TIMEOUT:
-          OutputSamples(&m_sampleOfSilence);
+        case CSinkControlProtocol::SYNC:
+          int millis;
+          millis = *(int*)msg->data;
+          m_syncTime += millis;
+          return;
+        default:
+          break;
+        }
+      }
+      else if (port == &m_dataPort)
+      {
+        switch (signal)
+        {
+        case CSinkDataProtocol::SAMPLE:
+          CSampleBuffer *buffer;
+          buffer = *((CSampleBuffer**)msg->data);
+          m_streamSamples.push_back(buffer);
+          return;
+        default:
+          break;
+        }
+      }
+      else if (port == &m_internalPort)
+      {
+        switch (signal)
+        {
+        case CSinkInternalProtocol::REQUESTDATA:
+          unsigned int delay;
+          delay = OutputSamples(&m_sampleOfSilence);
           if (m_extError)
           {
             m_sink->Deinitialize();
             delete m_sink;
             m_sink = nullptr;
             m_state = S_TOP_CONFIGURED_SUSPEND;
+            m_extTimeout = 0;
           }
           else
-            m_state = S_TOP_CONFIGURED_PLAY;
-          m_extTimeout = 0;
+          {
+            m_extTimeout = delay / 2;
+            if (delay > m_sink->GetCacheTotal() * 0.8)
+              m_state = S_TOP_CONFIGURED_STREAM_SYNCED;
+          }
+          RequestData();
+          return;
+        }
+      }
+      break;
+
+    case S_TOP_CONFIGURED_STREAM_SYNCED:
+      if (port == &m_internalPort)
+      {
+        switch (signal)
+        {
+        case CSinkInternalProtocol::REQUESTDATA:
+          CSampleBuffer *buffer;
+          unsigned int delay;
+          while (m_syncTime < 0 && !m_streamSamples.empty())
+          {
+            buffer = m_streamSamples.front();
+            m_syncTime += 1000.0 * buffer->pkt->nb_samples / buffer->pkt->config.sample_rate;
+            m_soundSamples.pop_front();
+            m_dataPort.SendOutMessage(CSinkDataProtocol::RETURNSAMPLE, &buffer, sizeof(CSampleBuffer*));
+          }
+          if (m_syncTime > 0)
+          {
+            delay = OutputSilence(m_syncTime);
+            m_syncTime -= delay;
+          }
+          else if (m_streamSamples.empty())
+          {
+            delay = OutputSamples(&m_sampleOfSilence);
+          }
+          else
+          {
+            buffer = m_streamSamples.front();
+            m_streamSamples.pop_front();
+            delay = OutputSamples(buffer);
+            m_dataPort.SendInMessage(CSinkDataProtocol::RETURNSAMPLE, &buffer, sizeof(CSampleBuffer*));
+          }
+          if (m_extError)
+          {
+            m_sink->Deinitialize();
+            delete m_sink;
+            m_sink = nullptr;
+            m_state = S_TOP_CONFIGURED_SUSPEND;
+            m_extTimeout = 0;
+          }
+          else
+          {
+            m_extTimeout = delay / 2;
+          }
+          RequestData();
           return;
         default:
           break;
@@ -645,6 +800,12 @@ void CActiveAESink::Process()
     {
       gotMsg = true;
       port = &m_dataPort;
+    }
+    // check internal port
+    else if (m_internalPort.ReceiveOutMessage(&msg))
+    {
+      gotMsg = true;
+      port = &m_internalPort;
     }
 
     if (gotMsg)
@@ -903,6 +1064,18 @@ void CActiveAESink::ReturnBuffers()
 {
   Message *msg = nullptr;
   CSampleBuffer *samples;
+  while (!m_soundSamples.empty())
+  {
+    samples = m_soundSamples.front();
+    m_soundSamples.pop_front();
+    m_dataPort.SendInMessage(CSinkDataProtocol::RETURNSAMPLE, &samples, sizeof(CSampleBuffer*));
+  }
+  while (!m_streamSamples.empty())
+  {
+    samples = m_streamSamples.front();
+    m_streamSamples.pop_front();
+    m_dataPort.SendInMessage(CSinkDataProtocol::RETURNSAMPLE, &samples, sizeof(CSampleBuffer*));
+  }
   while (m_dataPort.ReceiveOutMessage(&msg))
   {
     if (msg->signal == CSinkDataProtocol::SAMPLE)
@@ -912,6 +1085,11 @@ void CActiveAESink::ReturnBuffers()
     }
     msg->Release();
   }
+}
+
+void CActiveAESink::RequestData()
+{
+  m_internalPort.SendOutMessage(CSinkInternalProtocol::REQUESTDATA);
 }
 
 unsigned int CActiveAESink::OutputSamples(CSampleBuffer* samples)
@@ -926,6 +1104,7 @@ unsigned int CActiveAESink::OutputSamples(CSampleBuffer* samples)
   std::unique_ptr<uint8_t[]> mergebuffer;
   uint8_t* p_mergebuffer = NULL;
   AEDelayStatus status;
+  unsigned int ret = 0;
 
   if (m_requestedFormat.m_dataFormat == AE_FMT_RAW)
   {
@@ -961,7 +1140,7 @@ unsigned int CActiveAESink::OutputSamples(CSampleBuffer* samples)
       else if (samples->pkt->pause_burst_ms > 0)
       {
         // construct a pause burst if we have already output valid audio
-        bool burst = m_extStreaming && (m_packer->GetBuffer()[0] != 0);
+        bool burst = m_extStreaming && m_packer->GetBuffer()[0] != 0;
         if (!m_packer->PackPause(m_sinkFormat.m_streamInfo, samples->pkt->pause_burst_ms, burst))
           skipSwap = true;
       }
@@ -1015,8 +1194,10 @@ unsigned int CActiveAESink::OutputSamples(CSampleBuffer* samples)
       {
         m_sink->AddPause(samples->pkt->pause_burst_ms);
         m_sink->GetDelay(status);
+        ret = status.delay * 1000;
+        status.delay += m_syncTime / 1000.0;
         m_stats->UpdateSinkDelay(status, samples->pool ? 1 : 0);
-        return status.delay * 1000;
+        return ret;
       }
     }
   }
@@ -1059,6 +1240,8 @@ unsigned int CActiveAESink::OutputSamples(CSampleBuffer* samples)
     frames -= written;
 
     m_sink->GetDelay(status);
+    ret = status.delay * 1000;
+    status.delay += m_syncTime / 1000.0;
 
     if (m_requestedFormat.m_dataFormat != AE_FMT_RAW)
       m_stats->UpdateSinkDelay(status, samples->pool ? written : 0);
@@ -1067,7 +1250,37 @@ unsigned int CActiveAESink::OutputSamples(CSampleBuffer* samples)
   if (m_requestedFormat.m_dataFormat == AE_FMT_RAW)
     m_stats->UpdateSinkDelay(status, samples->pool ? 1 : 0);
 
-  return status.delay * 1000;
+  return ret;
+}
+
+unsigned int CActiveAESink::OutputSilence(unsigned int millis)
+{
+  if (m_requestedFormat.m_dataFormat != AE_FMT_RAW)
+  {
+    int tmpSamples = m_sampleOfSilence.pkt->nb_samples;
+    int maxTime = 1000.0 * tmpSamples / m_sampleOfSilence.pkt->config.sample_rate;
+    if (millis < maxTime)
+    {
+      maxTime = millis;
+      m_sampleOfSilence.pkt->nb_samples = m_sampleOfSilence.pkt->config.sample_rate * maxTime / 1000;
+    }
+    OutputSamples(&m_sampleOfSilence);
+    m_sampleOfSilence.pkt->nb_samples = tmpSamples;
+    return maxTime;
+  }
+  else
+  {
+    int tmpPause = m_sampleOfSilence.pkt->pause_burst_ms;
+    int maxTime = tmpPause;
+    if (millis < maxTime)
+    {
+      maxTime = millis;
+      m_sampleOfSilence.pkt->pause_burst_ms = maxTime;
+    }
+    OutputSamples(&m_sampleOfSilence);
+    m_sampleOfSilence.pkt->pause_burst_ms = tmpPause;
+    return maxTime;
+  }
 }
 
 void CActiveAESink::SwapInit(CSampleBuffer* samples)
@@ -1140,9 +1353,7 @@ void CActiveAESink::GenerateNoise()
 
 void CActiveAESink::SetSilenceTimer()
 {
-  if (m_extStreaming)
-    m_extSilenceTimeout = XbmcThreads::EndTime::InfiniteValue;
-  else if (m_extAppFocused)
+  if (m_extAppFocused)
     m_extSilenceTimeout = m_silenceTimeOut;
   else
     m_extSilenceTimeout = 0;

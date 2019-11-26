@@ -54,6 +54,7 @@ public:
     TIMEOUT,
     SETSILENCETIMEOUT,
     SETNOISETYPE,
+    SYNC,
   };
   enum InSignal
   {
@@ -76,6 +77,16 @@ public:
   {
     RETURNSAMPLE,
     ACC,
+  };
+};
+
+class CSinkInternalProtocol : public Protocol
+{
+public:
+  CSinkInternalProtocol(std::string name, CEvent* inEvent, CEvent *outEvent) : Protocol(name, inEvent, outEvent) {};
+  enum OutSignal
+  {
+    REQUESTDATA = 0
   };
 };
 
@@ -105,10 +116,13 @@ protected:
   bool NeedIECPacking();
 
   unsigned int OutputSamples(CSampleBuffer* samples);
+  unsigned int OutputSilence(unsigned int millis);
   void SwapInit(CSampleBuffer* samples);
 
   void GenerateNoise();
+  void RequestData();
 
+  CSinkInternalProtocol m_internalPort;
   CEvent m_outMsgEvent;
   CEvent *m_inMsgEvent;
   int m_state;
@@ -120,6 +134,7 @@ protected:
   bool m_extAppFocused;
   bool m_extStreaming;
   XbmcThreads::EndTime m_extSilenceTimer;
+  int m_syncTime;
 
   CSampleBuffer m_sampleOfSilence;
   enum
@@ -141,6 +156,8 @@ protected:
   CAEBitstreamPacker *m_packer;
   bool m_needIecPack;
   bool m_streamNoise;
+  std::deque<CSampleBuffer*> m_soundSamples;
+  std::deque<CSampleBuffer*> m_streamSamples;
 };
 
 }

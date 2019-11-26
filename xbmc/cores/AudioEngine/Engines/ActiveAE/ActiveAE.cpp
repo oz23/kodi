@@ -681,19 +681,17 @@ void CActiveAE::StateMachine(int signal, Protocol *port, Message *msg)
         case CActiveAEControlProtocol::PAUSESTREAM:
           CActiveAEStream *stream;
           stream = *(CActiveAEStream**)msg->data;
-          if (!stream->m_paused && m_streams.size() == 1)
-          {
+          streaming = false;
+          m_sink.m_controlPort.SendOutMessage(CSinkControlProtocol::STREAMING, &streaming, sizeof(bool));
+          if (stream->m_syncState != CAESyncInfo::AESyncState::SYNC_INSYNC)
             FlushEngine();
-            streaming = false;
-            m_sink.m_controlPort.SendOutMessage(CSinkControlProtocol::STREAMING, &streaming, sizeof(bool));
-          }
           stream->m_paused = true;
           return;
         case CActiveAEControlProtocol::RESUMESTREAM:
           stream = *(CActiveAEStream**)msg->data;
-          if (stream->m_paused)
-            stream->m_syncState = CAESyncInfo::AESyncState::SYNC_START;
           stream->m_paused = false;
+          if (stream->m_syncState != CAESyncInfo::AESyncState::SYNC_INSYNC)
+            stream->m_syncState = CAESyncInfo::AESyncState::SYNC_START;
           streaming = true;
           m_sink.m_controlPort.SendOutMessage(CSinkControlProtocol::STREAMING, &streaming, sizeof(bool));
           m_extTimeout = 0;
@@ -939,10 +937,14 @@ void CActiveAE::StateMachine(int signal, Protocol *port, Message *msg)
         {
         case CActiveAEControlProtocol::RESUMESTREAM:
           CActiveAEStream *stream;
+          bool streaming;
           stream = *(CActiveAEStream**)msg->data;
           stream->m_paused = false;
-          stream->m_syncState = CAESyncInfo::AESyncState::SYNC_START;
+          if (stream->m_syncState != CAESyncInfo::AESyncState::SYNC_INSYNC)
+            stream->m_syncState = CAESyncInfo::AESyncState::SYNC_START;
           m_state = AE_TOP_CONFIGURED_PLAY;
+          streaming = true;
+          m_sink.m_controlPort.SendOutMessage(CSinkControlProtocol::STREAMING, &streaming, sizeof(bool));
           m_extTimeout = 0;
           return;
         case CActiveAEControlProtocol::FLUSHSTREAM:
