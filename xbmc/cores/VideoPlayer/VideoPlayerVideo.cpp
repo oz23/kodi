@@ -604,10 +604,10 @@ bool CVideoPlayerVideo::ProcessDecoderOutput(double &frametime, double &pts)
     CLog::Log(LOGDEBUG, "CVideoPlayerVideo - video decoder was flushed");
     while (!m_packets.empty())
     {
-      CDVDMsgDemuxerPacket* msg = static_cast<CDVDMsgDemuxerPacket*>(m_packets.front().message->Acquire());
-      m_packets.pop_front();
+      CDVDMsgDemuxerPacket* msg = static_cast<CDVDMsgDemuxerPacket*>(m_packets.back().message->Acquire());
+      m_packets.pop_back();
 
-      SendMessage(msg, 10);
+      SendMessageBack(msg, 0);
     }
 
     m_pVideoCodec->Reset();
@@ -621,9 +621,9 @@ bool CVideoPlayerVideo::ProcessDecoderOutput(double &frametime, double &pts)
   {
     while (!m_packets.empty())
     {
-      CDVDMsgDemuxerPacket* msg = static_cast<CDVDMsgDemuxerPacket*>(m_packets.front().message->Acquire());
-      m_packets.pop_front();
-      SendMessage(msg, 10);
+      CDVDMsgDemuxerPacket* msg = static_cast<CDVDMsgDemuxerPacket*>(m_packets.back().message->Acquire());
+      m_packets.pop_back();
+      SendMessageBack(msg, 0);
     }
 
     m_pVideoCodec->Reopen();
